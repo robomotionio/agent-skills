@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "browser": {
+      "type": "stdio",
+      "command": "robomotion-browser-mcp"
+    }
+  }
+}
