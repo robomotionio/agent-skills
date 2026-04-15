@@ -48,29 +48,32 @@ Both binaries are **required** and must be on `PATH`. Install from [robomotion.i
 
 ## Usage
 
-Once installed, agents pick up the skills automatically from their descriptions. Example prompts:
+Once installed, agents pick up the skills automatically from their descriptions. Example flow-creation prompts:
 
 ```
-# Build a new flow
-"Create a flow that scrapes the top 10 posts from r/programming and posts them to my WordPress blog."
+# Web scraping to spreadsheet
+"Create a flow that searches DuckDuckGo for a query I enter in a dialog
+ and saves the result titles and links to an Excel file."
 
-# Run an existing flow
-"Run the write-to-clipboard flow on my Extremis robot."
+# Monitoring + cloud integration
+"Build a flow that reads a list of domains from a Google Sheet, checks
+ each SSL certificate's expiration date, and writes days-until-expiry
+ back to the sheet. Pull the service account JSON from Vault."
 
-# Add tests
-"Write tests for main.ts that mock the HttpRequest and check branch coverage."
+# File operations with real logic
+"Create a flow that scans a directory, computes SHA-256 hashes for
+ every file, and deletes duplicates while keeping the first occurrence.
+ Show a summary dialog at the end."
 
-# Validate before committing
-"Validate the send-get-request flow."
+# Parallel browser automation
+"Build a flow that uses Fork Branch and a Memory Queue to spin up 4
+ concurrent browser instances, dequeue product URLs, navigate to each,
+ and screenshot the pages in parallel."
 
-# Explore a site
-"Explore the login page at example.com and find the selectors."
-
-# Convert to HTTP
-"This browser flow is too slow — find the API it uses and convert it to HTTP."
-
-# Search
-"What Robomotion nodes exist for reading Excel files?"
+# AI chat assistant with state
+"Create a chat assistant flow that logs meals to a SQLite database,
+ tracks daily calorie and macro totals against a user profile, and
+ supports photo-based food logging via an LLM agent."
 ```
 
 ## Layout

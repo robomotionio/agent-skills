@@ -119,11 +119,14 @@ For schemas, examples, and package docs use the `robomotion` CLI:
 | Cross-source fuzzy/semantic search | `robomotion search <query>` |
 | List / filter packages | `robomotion get packages [query]` |
 | List / filter nodes | `robomotion get nodes [query] [--in <ns>]` |
-| List / filter templates, examples | `robomotion get templates/examples [query]` |
+| List / filter templates | `robomotion get templates [query] [--category <name>] [--tag <name>]` |
 | Full node schema + docs + example | `robomotion describe node <type>[,<type>...]` |
 | Package info | `robomotion describe package <namespace>` |
-| Template / example source | `robomotion describe template \| example <name>` |
+| Template source | `robomotion describe template <slug>` |
 | Package docs (llms.txt) | `robomotion docs <namespace>` |
+
+> **Public templates repo.** The canonical source of Robomotion's flow templates is [`github.com/robomotionio/robomotion-templates`](https://github.com/robomotionio/robomotion-templates). `robomotion get templates` / `robomotion describe template <name>` pull from there — browse the repo directly when you want to read full `main.ts` files, see real-world patterns, or copy a template as a starting point. Prefer cloning/forking a matching template over building from scratch when one exists.
+
 | Grep package docs | `robomotion docs <namespace> --grep <pattern>` |
 | List vaults | `robomotion get vaults` |
 | List items in a vault | `robomotion get vault-items <vault-id>` |
@@ -149,8 +152,8 @@ No other MCP servers are required. `robomotion` shells out to `robomotion-sdk-mc
 | `robomotion run` | submit + stream agent-mode events |
 | `robomotion stop` | stop the flow currently running on a robot |
 | `robomotion search` | fuzzy + semantic cross-source search |
-| `robomotion get <resource>` | list / filter — packages, nodes, templates, examples, vaults, vault-items, robots |
-| `robomotion describe <resource>` | detailed view — node, package, template, example |
+| `robomotion get <resource>` | list / filter — packages, nodes, templates, categories, tags, vaults, vault-items, robots |
+| `robomotion describe <resource>` | detailed view — node, package, template |
 | `robomotion docs <namespace>` | read or grep llms.txt |
 | `robomotion install` / `skills` / `version` | admin |
 
