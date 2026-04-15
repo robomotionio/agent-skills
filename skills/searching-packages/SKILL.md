@@ -1,11 +1,11 @@
 ---
 name: searching-packages
-description: Finds Robomotion packages, nodes, templates, and examples via the `robomotion` CLI, which is backed by Bleve full-text search with fuzzy matching and semantic expansion. Use when the user asks to find a package, explore templates, discover what nodes exist for a task, or check exact property names before writing a flow.
+description: Finds Robomotion packages, nodes, and templates via the `robomotion` CLI, which is backed by Bleve full-text search with fuzzy matching and semantic expansion. Use when the user asks to find a package, explore templates, discover what nodes exist for a task, or check exact property names before writing a flow.
 ---
 
 # Searching Robomotion Packages
 
-Discover Robomotion packages, nodes, templates, and examples. All lookups go through the `robomotion` CLI — no separate MCP client required.
+Discover Robomotion packages, nodes, and templates. All lookups go through the `robomotion` CLI — no separate MCP client required.
 
 ## Four verbs cover every lookup
 
@@ -16,8 +16,8 @@ robomotion describe <resource> <name>            # full detail of one thing
 robomotion docs <namespace>                      # read a package's llms.txt
 ```
 
-Resources for `get`: `packages | nodes | templates | examples` (plus `vaults | vault-items | robots` for runtime data).
-Resources for `describe`: `node | package | template | example`.
+Resources for `get`: `packages | nodes | templates | categories | tags` (plus `vaults | vault-items | robots` for runtime data).
+Resources for `describe`: `node | package | template`.
 
 ## Typical workflow when authoring a flow
 
@@ -26,7 +26,11 @@ Resources for `describe`: `node | package | template | example`.
    robomotion search "http request"              # mixed results across sources
    robomotion get nodes click                    # nodes with "click" in the name
    robomotion get nodes --in Core.Browser        # every node in one package
-   robomotion get templates reddit               # example flows
+   robomotion get templates bmi                  # match by slug/name/summary
+   robomotion get templates --category "Web Scraping"
+   robomotion get templates --tag api
+   robomotion get categories                     # vocabulary
+   robomotion get tags                           # vocabulary
    ```
 
 2. **Verify properties** before writing:
@@ -54,7 +58,7 @@ Under the hood `robomotion search` uses **Bleve** full-text search with:
 | Full-text | BM25 ranking across title, name, description, content, keywords |
 | Fuzzy | Levenshtein ≤ 2 — tolerates typos (`browsr` → `browser`, `wordpres` → `wordpress`) |
 | Semantic | Synonym expansion — `browser` also matches `chrome`, `firefox`, `web`, `scraping` |
-| Multi-source | Rules, templates, examples in one call |
+| Multi-source | Package docs (llms.txt) and templates in one call |
 
 Built-in synonym families:
 - `browser ↔ chrome · firefox · web · scraping`
@@ -69,7 +73,7 @@ Built-in synonym families:
 ```bash
 robomotion search "automation" --limit 5
 robomotion get nodes "click" --package Core.Browser
-robomotion get templates "reddit" --limit 10
+robomotion get templates --tag api --limit 10
 robomotion describe node Core.Browser.ClickElement --json     # raw MCP response
 ```
 
