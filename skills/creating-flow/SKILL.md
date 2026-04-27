@@ -174,7 +174,8 @@ No other MCP servers are required. `robomotion` shells out to `robomotion-sdk-mc
 In direct mode:
 1. Verify schemas with `robomotion describe node <type>[,<type2>...]` if unsure.
 2. Write `main.ts` with the `Write` tool. If the flow uses `Core.Flow.SubFlow` nodes, write each subflow file at `subflows/{id}.ts` immediately — ID matches the SubFlow node's ID. Subflow files use `subflow.create(name, fn)` (NOT `flow.create()`), with `Core.Flow.Begin` → task nodes → `Core.Flow.End({sfPort: 0})`.
-3. Validate with `robomotion validate <flow-dir>` — fix errors and re-validate.
+3. Call `validate_flow` — fix errors and re-validate.
+4. Then call `save_flow` to persist. Without it, the Designer canvas does not update and the user sees nothing.
 
 ### Step 0: Gather Requirements (interactive)
 
@@ -255,19 +256,35 @@ If the `browser` MCP server shows `failed` in `/mcp` (or `mcp__browser__*` tools
 
 Read `./docs/patterns/credentials.md` MANDATORY before writing any `Credential()`. Key rule: `Core.Vault.GetItem` REQUIRES `optCredentials: Credential({vaultId, itemId})` — omitting it fails at runtime.
 
-### Step 4: Validate (MANDATORY)
+### Step 4: Validate (MANDATORY — must run BEFORE Step 5)
 
-```bash
-robomotion validate <flow-dir>
+Call the `validate_flow` MCP tool. It compiles AND pspec-validates (catches wrong property names, scopes, types). Fix any errors → re-validate.
+
+> **Order matters.** `save_flow` only runs the *compile* step internally — it will accept and push pspec-broken code straight to the canvas (wrong property names will silently mis-wire nodes, wrong scopes will not error until runtime). `validate_flow` is the only thing that catches that class of bug, and only if you run it BEFORE `save_flow`. Validating after save is meaningless: the broken code is already on the user's canvas.
+
+### Step 5: Save (MANDATORY when `save_flow` is available — must run AFTER Step 4)
+
+If the `save_flow` tool is registered (Designer / pi / Robomotion app context), you MUST call it before ending the turn. The Designer canvas is rendered from the flow's git remote, NOT from the local files in your sandbox — without `save_flow`, your edits are invisible to the user.
+
+Do NOT call `save_flow` if Step 4 reported errors. Fix them first, re-validate, then save.
+
+```
+save_flow({
+  flowPath: ".",                          // resolved against the workspace dir
+  name: "<existing flow name>",           // keep what's already in flow.create(...)
+  commitMessage: "<one-line what changed>"
+})
 ```
 
-Compiles AND validates. Fix any errors → re-validate. Exit 0 with `✔ <name> validated` on stderr means you're good.
+Do NOT say "you can now see the updated flow on your canvas" without a successful `save_flow` in this turn — it is not on the canvas if you didn't save.
 
-### Step 5: Verify Browser Selectors (if browser flow)
+If `save_flow` is NOT registered (pure CLI / Claude Code context), use `git commit` + `git push` from inside `<flow-dir>` instead — the flow's per-project git remote is what the Designer pulls from either way.
+
+### Step 6: Verify Browser Selectors (if browser flow)
 
 Selectors are verified during exploration (Step 3). If the code changed (different selectors, new actions), re-run the exploration — either `Skill(exploring-browser)` or `mcp__browser__*` inline — against the current page to re-verify before running.
 
-### Step 6: Run
+### Step 7: Run
 
 ```bash
 robomotion run <flow-dir>                      # interactive robot picker
@@ -275,8 +292,6 @@ robomotion run <flow-dir> --robot <robot-id>   # scripted
 ```
 
 Streams agent events until the flow ends; exit code reflects outcome. See the `running-flow` skill for the full validate → run → observe → fix loop.
-
-When you're satisfied with the flow, `git commit` and `git push` — the flow is persisted via the repo, no "save to cloud" step is needed.
 
 ## Canonical Examples
 
