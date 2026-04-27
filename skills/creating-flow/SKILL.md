@@ -9,9 +9,23 @@ Robomotion is an RPA platform with a TypeScript SDK and a visual node editor. Th
 
 Pattern and reference docs ship inside this skill under `./docs/`. Read them directly when a topic comes up.
 
+## Required First Line
+
+Every flow file (`main.ts` and every `subflows/*.ts`) MUST start with this exact import — copy it verbatim, even helpers you don't currently use:
+
+```ts
+import { flow, Message, Custom, JS, Global, Flow, Credential, AI } from '@robomotion/sdk';
+```
+
+For library files, swap `flow` for `library`/`subflow` as appropriate but keep every helper imported.
+
+Bun does not warn on unused imports. Always import every scope helper, even if your current draft only uses some of them. Forgetting a helper that you reference later in the body is the **#1 cause of `robomotion build` failure** — it surfaces as a raw `ReferenceError: <Helper> is not defined` thrown out of the bundled flow with no TS hint.
+
+Full reference: `./docs/reference/imports.md` — one screen listing every helper and a minimal example.
+
 ## Core Principles
 
-1. **Import from `@robomotion/sdk` only** — `flow`, `Message`, `Custom`, `Credential`, `JS`, `Global`
+1. **Import from `@robomotion/sdk` only** — `flow`, `Message`, `Custom`, `JS`, `Global`, `Flow`, `Credential`, `AI` (see Required First Line above; import all helpers verbatim)
 2. **`f.node(id, type, name, props)`** — correct param order, 6-char hex IDs
 3. **Only non-default properties** — Go runtime fills ALL defaults from pspec. *Pspec is the source of truth; emitting defaults shadows future schema changes.*
 4. **`Message()` for variables, `Custom()` for literals, `JS()` for one-liner Javascript, `Credential()` for secrets**
@@ -83,13 +97,15 @@ Pattern and reference docs ship inside this skill under `./docs/`. Read them dir
 
 ## Per-Turn Reminders
 
-The five drift-prone rules to re-check before EVERY `Write`/`Edit` that emits flow code:
+The drift-prone rules to re-check before EVERY `Write`/`Edit` that emits flow code:
 
 - **NEVER output TypeScript as chat text** — always use `Write`/`Edit`. Natural-language plans and explanations stay in chat.
 - `f.node(id, type, name, props)` — param order. `.then()` for sequential, `.edge()` for multi-port.
 - `Message(variable)` for variables · `Custom(literal)` for literals · `Credential({vaultId, itemId})` for secrets · `func` is a literal string (not `JS()`) · enum props are plain strings (not `Custom()`).
 - Loops require `Label → ForEach → body → GoTo(label_id)`. GoTo is terminal; `Stop` hangs off ForEach port 1 via `f.edge()`.
 - Every flow ends with `.start()` (libraries use `library.create()` and omit `.start()`).
+- **Pre-build helper-scan**: before calling `bash robomotion build .`, scan `main.ts` (and every `subflows/*.ts` you wrote) for any of: `Message(`, `Custom(`, `JS(`, `Global(`, `Flow(`, `Credential(`, `AI(`. Confirm every name you use appears in the top-line `import` statement. If you used a helper inside a Function node's `func` string (which is JS run by the robot, **not** SDK code), it does NOT need to be imported — only top-level uses do.
+- **GoTo/Label pairing**: if you place any `Core.Flow.GoTo`, confirm a `Core.Flow.Label` node with the matching id exists in this same flow file (or in the subflow you're inside). A GoTo to a non-existent or non-Label id is the #2 cause of mid-turn iteration. (Loops are still wired `Label → ForEach → body → GoTo`; this catches the *standalone* GoTo case — early-exit, retry jumps — where the Label is forgotten.)
 
 ## Quick Reference Map
 
@@ -108,6 +124,7 @@ Pattern docs live on disk under `./docs/`. Read them directly.
 | Subflows | ./docs/patterns/subflows.md |
 | Data tables | ./docs/patterns/data-tables.md |
 | Captcha solving | ./docs/patterns/captcha.md |
+| Imports (every scope helper + example) | ./docs/reference/imports.md |
 | System variables | ./docs/reference/system-variables.md |
 | Node naming (wrong → correct) | ./docs/reference/node-naming.md |
 | Credential categories (field layouts) | ./docs/reference/credential-categories.md |
@@ -159,13 +176,13 @@ No other MCP servers are required. `robomotion` shells out to `robomotion-sdk-mc
 
 ## Workflow
 
-> **Line-1 rule.** `main.ts` MUST start with the import line. If line 1 is an arrow (`→`), a plan description, or a comment, delete it and start with the import:
+> **Line-1 rule.** `main.ts` MUST start with the canonical import line (every scope helper, even if you don't use them all yet — see "Required First Line" above):
 >
 > ```typescript
-> import { flow, Message, Custom } from '@robomotion/sdk';
+> import { flow, Message, Custom, JS, Global, Flow, Credential, AI } from '@robomotion/sdk';
 > ```
 >
-> Never write diagrams, arrows, or pseudo-code to `main.ts` — that belongs in chat text, not the file.
+> If line 1 is an arrow (`→`), a plan description, or a comment, delete it and start with the import. Never write diagrams, arrows, or pseudo-code to `main.ts` — that belongs in chat text, not the file.
 
 ### Direct Mode (non-interactive)
 
@@ -228,7 +245,9 @@ Core rules are already above (Core Principles, Common Mistakes). Then verify pro
 
 #### Write-step checklist
 
-- [ ] Line 1 is `import { flow, Message, Custom } from '@robomotion/sdk';`
+- [ ] Line 1 is `import { flow, Message, Custom, JS, Global, Flow, Credential, AI } from '@robomotion/sdk';` (every helper, even unused — Bun won't flag dead imports, and missing ones become runtime ReferenceErrors)
+- [ ] Every helper used at SDK level (`Message(`, `Custom(`, `JS(`, `Global(`, `Flow(`, `Credential(`, `AI(`) is in the import line
+- [ ] Every `Core.Flow.GoTo` references a `Core.Flow.Label` id that exists in this same flow file (loops or standalone jumps both)
 - [ ] `f.addDependency(namespace, version)` for every non-`Core.*` package (add missing only — never bump existing)
 - [ ] Loops: `Label → ForEach → body → GoTo`. `Stop` is standalone, wired via `f.edge()` on ForEach port 1. **GoTo/Debug/Log/Stop/End are terminal — NEVER `.then()` after them.**
 - [ ] Every flow has a `Core.Flow.Stop` node
