@@ -55,6 +55,8 @@ The CLI accepts either a flow directory (resolves to `main.ts` inside) or a `.ts
 
 **Prereqs:** Step 1 (validate) clean; `ROBOMOTION_API_KEY` set; the target robot online (Step 2).
 
+> **Submit ONCE per fix.** `robomotion run` blocks until the run finishes (Step 4 below covers what blocking looks like — `Flow started successfully` → `Following flow events…` → per-node events → exit). Do not invoke a second `robomotion run` while the first is still streaming — the API will respond with `{"message":"busy","payload":{"flow_id":"main"}}` and fail with exit 1, costing you a wasted submit and a forced cleanup. If a previous session is still occupying the robot from an earlier turn, run `robomotion stop --robot <robot-id>` first, then submit (one stop, one run — never a stop+run loop).
+
 ## Step 4 — Observe the agent event stream
 
 `robomotion run` **follows** the stream by default — it tails a session log file the deskbot writes at:
@@ -151,6 +153,7 @@ Target autonomous iteration (bounded retries; stop on user request):
 | `Flow validation failed` | pspec violation at build time | Fix errors (use `validating-flow` for a detailed report) and re-run. |
 | `No robots found` | No robots registered in workspace | Create a robot at https://app.robomotion.io, then `robomotion-deskbot connect`. |
 | Run submits but no `agent_mode:start` appears | Robot offline or in another workspace | Confirm `connected` event in the agent log; match `-w` and `-r` on the deskbot. |
+| `{"message":"busy","payload":{"flow_id":"main"}}` (CLI exit 1, "Execution failed") | A prior session is still occupying the robot — usually because you submitted twice in a row, or a previous turn never released cleanly | `robomotion stop --robot <robot-id>` (idempotent), then submit again. Submit once and *wait* for the stream to end before re-submitting; never chain two `robomotion run` calls back-to-back. |
 
 ## Related Skills
 
