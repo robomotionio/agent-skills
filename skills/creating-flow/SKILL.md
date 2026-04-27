@@ -104,7 +104,6 @@ The drift-prone rules to re-check before EVERY `Write`/`Edit` that emits flow co
 - `Message(variable)` for variables · `Custom(literal)` for literals · `Credential({vaultId, itemId})` for secrets · `func` is a literal string (not `JS()`) · enum props are plain strings (not `Custom()`).
 - Loops require `Label → ForEach → body → GoTo(label_id)`. GoTo is terminal; `Stop` hangs off ForEach port 1 via `f.edge()`.
 - Every flow ends with `.start()` (libraries use `library.create()` and omit `.start()`).
-- **Pre-build helper-scan**: before calling `bash robomotion build .`, scan `main.ts` (and every `subflows/*.ts` you wrote) for any of: `Message(`, `Custom(`, `JS(`, `Global(`, `Flow(`, `Credential(`, `AI(`. Confirm every name you use appears in the top-line `import` statement. If you used a helper inside a Function node's `func` string (which is JS run by the robot, **not** SDK code), it does NOT need to be imported — only top-level uses do.
 - **GoTo/Label pairing**: if you place any `Core.Flow.GoTo`, confirm a `Core.Flow.Label` node with the matching id exists in this same flow file (or in the subflow you're inside). A GoTo to a non-existent or non-Label id is the #2 cause of mid-turn iteration. (Loops are still wired `Label → ForEach → body → GoTo`; this catches the *standalone* GoTo case — early-exit, retry jumps — where the Label is forgotten.)
 
 ## Quick Reference Map
