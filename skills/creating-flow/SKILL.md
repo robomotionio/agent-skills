@@ -60,12 +60,15 @@ Map an error symptom to the doc that fixes it. When `validate_flow` fails, look 
 | `Core.Programming.If` not found | Node doesn't exist | `Core.Programming.Function` with `outputs: 2` (`./docs/patterns/conditions.md`) |
 | Wrong node name (e.g. `Core.CSV.Read`, `Browser.Click`) | Common naming mistake | `./docs/reference/node-naming.md` |
 | `inPath: Custom('$Home$/file')` literal not resolved | System variables only resolve in Function nodes | `global.get('$Home$') + '/file'` (`./docs/reference/system-variables.md`) |
+| Any CSV / Excel / Sheets / SQLite / Pandas / Airtable / DOMParser / DataTable node in scope | Custom data shape is wrong (e.g. `{header: [...]}`, rows as arrays) | **MANDATORY** read `./docs/patterns/data-tables.md` — the format is `{columns: [...], rows: [{key: value}]}` with row keys matching column names |
+| Write produces empty cells / `ErrFilePath` / "table not recognized" | `header` instead of `columns`, or rows are arrays not objects | `./docs/patterns/data-tables.md` — the property is `columns`, never `header`; rows are objects keyed by column name, never positional arrays |
 
 Drift-prone reminders before every `Write` / `Edit` of flow code:
 
 - Never output TypeScript as chat text — always use `Write` / `Edit`. Plans and explanations stay in chat.
 - Hex IDs from the start. Cross-references (`optNodes.ids`, `Catch.optNodes.ids`, subflow filenames) must use the same hex.
 - For browser flows: explore the live page first (`Skill(exploring-browser)` or `mcp__browser__*` after `ToolSearch` warmup). Don't guess selectors.
+- For any flow that touches CSV / Excel / Google Sheets / Excel 365 / SQLite / Airtable / Pandas / DataTable / DOMParser nodes — read `./docs/patterns/data-tables.md` BEFORE writing the Function that builds the table. The format is `{columns: [...], rows: [{key: value}]}`, never `{header: ...}` and never rows-as-arrays. Don't reason from the node name; the doc is the source of truth.
 - Validate BEFORE save — `save_flow` only compiles, it does NOT pspec-validate.
 
 ## Pattern reference
@@ -81,7 +84,7 @@ Read these docs before writing the corresponding code:
 | Exception handling (Catch, continueOnError) | `./docs/patterns/exceptions.md` |
 | Branches & parallel (ForkBranch, WaitGroup) | `./docs/patterns/branches.md` |
 | Subflows (Begin/End, multi-output) | `./docs/patterns/subflows.md` |
-| Data tables (Excel, CSV, Sheets) | `./docs/patterns/data-tables.md` |
+| Data tables (CSV / Excel / Sheets / SQLite / Pandas / Airtable / DOMParser / DataTable) — **MANDATORY** before writing any code that produces or consumes `msg.table` | `./docs/patterns/data-tables.md` |
 | Captcha solving | `./docs/patterns/captcha.md` |
 
 References:

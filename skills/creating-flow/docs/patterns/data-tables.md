@@ -33,6 +33,41 @@ msg.table = {
 - **columns**: JavaScript array of strings (column names)
 - **rows**: Array of JSON objects (each row holds key-value pairs for every column)
 
+## Common mistakes (DO NOT do these)
+
+The shape is exactly two keys: `columns` (string array) and `rows` (array of objects). Any deviation breaks every reader/writer node — `Core.CSV.WriteCSV`, `Core.Excel.SetRange`, `Robomotion.GoogleSheets.SetRange`, `Robomotion.SQLite.Insert`, etc. — and typically surfaces as `ErrFilePath`, empty cells, missing headers, or "table not recognized".
+
+```javascript
+// WRONG: "header" is not a thing. The property is "columns".
+msg.table = { "header": ["name", "age"], "rows": [...] };
+
+// WRONG: rows must be OBJECTS keyed by column name, not positional arrays.
+msg.table = {
+  "columns": ["name", "age"],
+  "rows": [
+    ["John", 54],          // positional array — WRONG
+    ["Jane", 47]
+  ]
+};
+
+// WRONG: row keys don't match column names (writer emits empty cells).
+msg.table = {
+  "columns": ["Name", "Age"],
+  "rows": [{ "name": "John", "age": 54 }]   // lowercase keys vs capitalized columns
+};
+
+// CORRECT
+msg.table = {
+  "columns": ["name", "age"],
+  "rows": [
+    { "name": "John", "age": 54 },
+    { "name": "Jane", "age": 47 }
+  ]
+};
+```
+
+If a flow is failing on a write/insert and you're tempted to "fix" it by renaming `columns` to `header` or by switching rows to arrays — stop. The format above is the only one any data-package node accepts. The bug is somewhere else (file path, credentials, descriptor scope).
+
 ### Single Row Format
 
 When working with individual rows (InsertRow, AddRow, ForEach output), a row is a JSON object:
