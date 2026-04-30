@@ -1,0 +1,254 @@
+{
+  "skill_name": "creating-flow",
+  "templates_root": "https://github.com/robomotionio/robomotion-templates",
+  "evals": [
+    {
+      "id": 1,
+      "tier": "regression",
+      "title": "Error handling with Catch trigger",
+      "prompt": "Build a flow that opens a browser, navigates to a URL, and on any error closes the browser cleanly and logs the error.",
+      "fixture": "fixtures/01-error-handling.ts",
+      "source_template": "handle-errors",
+      "assertions": [
+        { "kind": "validator-passes" },
+        { "kind": "must-contain", "value": "Core.Trigger.Catch" },
+        { "kind": "must-not-contain", "value": "Core.Flow.Catch", "reason": "Catch is a trigger (Core.Trigger.Catch) — Core.Flow.Catch is a hallucination the SDK validator now hard-rejects." },
+        { "kind": "must-not-contain-regex", "value": "\\.then\\([^)]*Core\\.Flow\\.Log", "reason": "Log is terminal — must be reached via f.edge() and never chained from." },
+        { "kind": "must-contain", "value": "f.edge(", "reason": "Catch is a standalone trigger — its outputs must be wired with f.edge(), not .then()." },
+        { "kind": "rubric", "value": "Catch's optNodes targets specific node IDs (no `all: true` unless the flow is meant to catch everywhere); cleanup chain (Close → Stop) is wired with f.edge() from Catch's port 0; Log is a separate leaf off Catch, not in series with Close." }
+      ]
+    },
+    {
+      "id": 2,
+      "tier": "regression",
+      "title": "ForEach loop over a list",
+      "prompt": "Build a flow that iterates over a list of items and processes each one in turn.",
+      "fixture": "fixtures/02-foreach-loop.ts",
+      "source_template": "merge-csv",
+      "assertions": [
+        { "kind": "validator-passes" },
+        { "kind": "must-contain", "value": "Core.Flow.Label" },
+        { "kind": "must-contain", "value": "Core.Programming.ForEach" },
+        { "kind": "must-contain", "value": "Core.Flow.GoTo" },
+        { "kind": "must-not-contain", "value": "Core.Flow.Goto", "reason": "Real node ID is Core.Flow.GoTo (capital T). Lowercase variant is rejected by the validator." },
+        { "kind": "must-not-contain", "value": "inLabel", "reason": "GoTo uses optNodes: { ids, type: 'goto', all: false }, NOT inLabel." },
+        { "kind": "must-contain", "value": "optNodes" },
+        { "kind": "rubric", "value": "Loop body terminates in GoTo back to the Label, ForEach port 1 (done) wires to Stop. No .then() chained after GoTo." }
+      ]
+    },
+    {
+      "id": 3,
+      "tier": "regression",
+      "title": "Browser scrape with cleanup",
+      "prompt": "Build a flow that opens Chrome, navigates to a URL, scrapes the page, and closes the browser.",
+      "fixture": "fixtures/03-browser-scrape-cleanup.ts",
+      "source_template": "duckduckgo-scraper",
+      "assertions": [
+        { "kind": "validator-passes" },
+        { "kind": "must-contain", "value": "Core.Browser.Open" },
+        { "kind": "must-contain", "value": "Core.Browser.OpenLink" },
+        { "kind": "must-contain", "value": "Core.Browser.Close" },
+        { "kind": "must-contain", "value": "optBrowser: 'chrome'", "reason": "Enum-valued props are plain literal strings — never wrapped in Custom()." },
+        { "kind": "must-not-contain", "value": "Custom('chrome')", "reason": "Custom('chrome') wraps an enum literal as a Message scope, which fails the property-type check at runtime." },
+        { "kind": "must-not-contain-regex", "value": "ScrapeList|ScrapeTable", "reason": "Core.Browser.ScrapeList / ScrapeTable are forbidden in this skill — use Core.Browser.RunScript returning {columns, rows} JSON." },
+        { "kind": "rubric", "value": "Close is paired with Open and runs even when scraping returns 0 rows; outBrowserId from Open is reused as inBrowserId on every subsequent browser node." }
+      ]
+    },
+    {
+      "id": 4,
+      "tier": "regression",
+      "title": "CSV write with headers",
+      "prompt": "Build a flow that writes a small data table to a CSV file with a header row.",
+      "fixture": "fixtures/04-csv-write-with-headers.ts",
+      "source_template": "convert-excel-document-to-csv-file",
+      "assertions": [
+        { "kind": "validator-passes" },
+        { "kind": "must-contain", "value": "Core.CSV.WriteCSV" },
+        { "kind": "must-contain", "value": "optHeaders: true", "reason": "Schema-only boolean props (optHeaders, optJsonify, etc.) must be emitted explicitly when set to non-default — same family as Designer issue #2378." },
+        { "kind": "must-not-contain", "value": "Core.CSV.Read", "reason": "Real node is Core.CSV.ReadCSV — Core.CSV.Read does not exist." },
+        { "kind": "must-not-contain-regex", "value": "optHeaders:\\s*Custom\\(", "reason": "Boolean props use literal true/false, never Custom()." },
+        { "kind": "rubric", "value": "Output table shape ({columns, rows}) matches what CSV.WriteCSV expects; csv path is built via global.get('$Home$') in a Function node, not Custom('$Home$/...')." }
+      ]
+    },
+    {
+      "id": 5,
+      "tier": "regression",
+      "title": "Conditional switch",
+      "prompt": "Build a flow that branches into N different handlers based on a status value.",
+      "fixture": "fixtures/05-conditional-switch.ts",
+      "assertions": [
+        { "kind": "validator-passes" },
+        { "kind": "must-contain", "value": "Core.Programming.Switch" },
+        { "kind": "must-contain", "value": "optConditions" },
+        { "kind": "must-not-contain", "value": "Core.Programming.If", "reason": "Core.Programming.If does not exist — use Switch or Function with outputs:2." },
+        { "kind": "must-contain-regex", "value": "f\\.edge\\([^)]*333333[^)]*0[^)]*\\)", "reason": "Switch port 0 must be wired with f.edge() to the first branch." },
+        { "kind": "must-contain-regex", "value": "f\\.edge\\([^)]*333333[^)]*1", "reason": "Switch port 1 must be wired with f.edge() to the second branch." },
+        { "kind": "rubric", "value": "Number of optConditions entries equals the number of f.edge() calls from the Switch node ports; conditions are { scope: 'Custom', name: '<expr>' } objects." }
+      ]
+    },
+    {
+      "id": 6,
+      "tier": "regression",
+      "title": "Function node with multiple outputs",
+      "prompt": "Build a flow that uses a Function node to branch into two paths based on a condition.",
+      "fixture": "fixtures/06-function-multiple-outputs.ts",
+      "source_template": "json-beautifier",
+      "assertions": [
+        { "kind": "validator-passes" },
+        { "kind": "must-contain", "value": "Core.Programming.Function" },
+        { "kind": "must-contain", "value": "outputs: 2", "reason": "Multi-output Function nodes need an explicit numeric outputs:N property." },
+        { "kind": "must-contain-regex", "value": "return\\s*\\[\\s*msg\\s*,\\s*null\\s*\\]", "reason": "Function with outputs:2 must return an array — [msg, null] for port 0, [null, msg] for port 1." },
+        { "kind": "must-contain-regex", "value": "return\\s*\\[\\s*null\\s*,\\s*msg\\s*\\]" },
+        { "kind": "must-contain-regex", "value": "f\\.edge\\([^)]*333333[^)]*0", "reason": "Branches must be wired with f.edge() to ports 0 and 1." },
+        { "kind": "must-contain-regex", "value": "f\\.edge\\([^)]*333333[^)]*1" },
+        { "kind": "rubric", "value": "func is a literal template string (NOT JS() and NOT Custom()); each branch ends in a non-terminal handler before reaching Stop." }
+      ]
+    },
+    {
+      "id": 7,
+      "tier": "regression",
+      "title": "Subflow",
+      "prompt": "Build a flow that delegates work to a subflow defined in a separate file.",
+      "fixture": "fixtures/07-subflow",
+      "source_template": "use-subflows-to-check-if-file-exists",
+      "assertions": [
+        { "kind": "validator-passes" },
+        { "kind": "must-contain", "value": "Core.Flow.SubFlow" },
+        { "kind": "rubric", "value": "Parent main.ts uses Core.Flow.SubFlow node whose ID equals the subflow filename. Subflow file uses subflow.create(name, fn) (not flow.create), Begin → nodes → End({sfPort: 0}). No `subflow:` property on the parent SubFlow node." }
+      ]
+    },
+    {
+      "id": 8,
+      "tier": "regression",
+      "title": "Credentials via Vault",
+      "prompt": "Build a flow that fetches an API key from the vault and uses it to authenticate an HTTP request.",
+      "fixture": "fixtures/08-credentials-vault.ts",
+      "source_template": "ssl-watch",
+      "assertions": [
+        { "kind": "validator-passes" },
+        { "kind": "must-contain", "value": "Core.Vault.GetItem" },
+        { "kind": "must-contain", "value": "optCredentials: Credential(", "reason": "Core.Vault.GetItem REQUIRES optCredentials with the Credential() helper — omitting fails at runtime with 'Vault has to be selected'." },
+        { "kind": "must-import", "value": ["Credential"], "reason": "Credential() must appear in the line-1 import line whenever it is used." },
+        { "kind": "must-not-contain-regex", "value": "['\"]sk-[A-Za-z0-9]{8,}['\"]|api[_-]?key\\s*[:=]\\s*['\"][A-Za-z0-9]{8,}['\"]", "reason": "No literal API keys / secrets in source — they live in the vault, referenced via vaultId/itemId." },
+        { "kind": "rubric", "value": "Credential() takes { vaultId, itemId } (UUIDs) — never raw strings or { name, scope } shape. Downstream nodes read individual fields via Message('credentials.<field>')." }
+      ]
+    },
+    {
+      "id": 9,
+      "tier": "regression",
+      "title": "Terminal nodes as leaves",
+      "prompt": "Build a flow that branches and uses Log, Debug, and Stop as the leaves of each branch.",
+      "fixture": "fixtures/09-terminal-leaves.ts",
+      "assertions": [
+        { "kind": "validator-passes" },
+        { "kind": "must-contain", "value": "Core.Flow.Log" },
+        { "kind": "must-contain", "value": "Core.Programming.Debug" },
+        { "kind": "must-contain", "value": "Core.Flow.Stop" },
+        { "kind": "must-not-contain-regex", "value": "\\.then\\([^)]*Core\\.Flow\\.Log", "reason": "Log is terminal — wire it as a leaf via f.edge(), never via .then()." },
+        { "kind": "must-not-contain-regex", "value": "\\.then\\([^)]*Core\\.Programming\\.Debug", "reason": "Debug is terminal — wire it as a leaf via f.edge(), never via .then()." },
+        { "kind": "must-not-contain-regex", "value": "\\.then\\([^)]*Core\\.Flow\\.GoTo[^)]*\\)\\s*\\.\\s*then", "reason": "GoTo is terminal — chaining .then() after it triggers 'Cannot chain from node (outputs=0)'." },
+        { "kind": "rubric", "value": "Each terminal (Log, Debug, Stop) is reached only via f.edge(); each is wired from a non-terminal node; no chain extends past any terminal." }
+      ]
+    },
+    {
+      "id": 10,
+      "tier": "regression",
+      "title": "Required imports complete",
+      "prompt": "Verify that the line-1 import statement contains every helper used in the flow body.",
+      "fixture": "fixtures/08-credentials-vault.ts",
+      "assertions": [
+        { "kind": "must-import", "value": ["flow", "Message", "Custom", "Credential"], "reason": "Bun does not warn on unused imports, but a missing helper that is referenced in the body throws 'ReferenceError: <Helper> is not defined' from the bundled flow at runtime — the #1 cause of robomotion build failure." },
+        { "kind": "must-contain", "value": "from '@robomotion/sdk'" },
+        { "kind": "rubric", "value": "Import line is on line 1, includes every scope helper used (Message, Custom, JS, Global, Flow, Credential, AI). Even unused helpers should be imported per the canonical convention." }
+      ]
+    },
+    {
+      "id": 11,
+      "tier": "integration",
+      "title": "Catch-trigger error handling (handle-errors)",
+      "template_slug": "handle-errors",
+      "prompt": "Build a flow that prompts the user for a number > 100 with Core.Dialog.InputBox, validates it in a Core.Programming.Function (throw 'InvalidType' when not numeric, 'InvalidNumber' when ≤ 100), and uses a Core.Trigger.Catch + Core.Programming.Switch on msg.error.message to show the right MessageBox and loop back to the input via Label/GoTo.",
+      "assertions": [
+        { "kind": "validator-passes" },
+        { "kind": "must-import", "value": ["flow", "Message", "Custom"] },
+        { "kind": "must-contain", "value": "Core.Trigger.Catch" },
+        { "kind": "must-not-contain", "value": "Core.Flow.Catch" },
+        { "kind": "must-contain", "value": "Core.Programming.Switch" },
+        { "kind": "must-contain", "value": "Core.Flow.Label" },
+        { "kind": "must-contain", "value": "Core.Flow.GoTo" },
+        { "kind": "must-not-contain", "value": "Core.Flow.Goto", "reason": "Capital T: GoTo, not Goto." },
+        { "kind": "rubric", "value": "Catch references monitored node IDs by GUID, switch routes by msg.error.message string, retry path goes Label → InputBox → validation; no .then() after Catch." }
+      ]
+    },
+    {
+      "id": 12,
+      "tier": "integration",
+      "title": "DuckDuckGo browser scrape (duckduckgo-scraper)",
+      "template_slug": "duckduckgo-scraper",
+      "prompt": "Build a flow that prompts for a search query, opens Chrome, navigates to duckduckgo.com, types the query, clicks search, waits for results, scrapes Title + Link from each result via Core.Browser.RunScript, writes the rows to an Excel file, and closes the browser.",
+      "assertions": [
+        { "kind": "validator-passes" },
+        { "kind": "must-import", "value": ["flow", "Message", "Custom"] },
+        { "kind": "must-contain", "value": "Core.Browser.Open" },
+        { "kind": "must-contain", "value": "Core.Browser.OpenLink" },
+        { "kind": "must-contain", "value": "Core.Browser.RunScript" },
+        { "kind": "must-contain", "value": "Core.Browser.Close" },
+        { "kind": "must-contain", "value": "optBrowser: 'chrome'" },
+        { "kind": "must-not-contain", "value": "Custom('chrome')" },
+        { "kind": "must-not-contain-regex", "value": "ScrapeList|ScrapeTable", "reason": "ScrapeList / ScrapeTable are forbidden — RunScript returning {columns, rows} JSON instead." },
+        { "kind": "must-not-contain", "value": "Core.Flow.Catch" },
+        { "kind": "rubric", "value": "RunScript returns JSON.stringify({columns, rows}); outBrowserId from Open is reused on every subsequent browser node; Close runs even on empty results." }
+      ]
+    },
+    {
+      "id": 13,
+      "tier": "integration",
+      "title": "Subflow + ForEach over CSV files (merge-csv)",
+      "template_slug": "merge-csv",
+      "prompt": "Build a flow that reads every CSV file under a directory and merges them into one output CSV. Use two subflows (Read CSV Files, Merge CSV) called from a linear main.ts. Configuration (in_dir, csv_path, separator) lives in a Core.Programming.Function 'config' node; the main flow ends in Core.Flow.Stop.",
+      "assertions": [
+        { "kind": "validator-passes" },
+        { "kind": "must-import", "value": ["flow"] },
+        { "kind": "must-contain", "value": "Core.Flow.SubFlow" },
+        { "kind": "must-contain", "value": "Core.Flow.Stop" },
+        { "kind": "must-not-contain", "value": "Core.Flow.Catch" },
+        { "kind": "must-not-contain", "value": "Core.Programming.If", "reason": "If does not exist — use Switch or Function with outputs:2." },
+        { "kind": "rubric", "value": "Each Core.Flow.SubFlow node ID maps to a file under subflows/<id>.ts; subflows use subflow.create(name, fn) with Begin → … → End({sfPort: 0})." }
+      ]
+    },
+    {
+      "id": 14,
+      "tier": "integration",
+      "title": "Vault credentials in a 3rd-party loop (ssl-watch)",
+      "template_slug": "ssl-watch",
+      "prompt": "Build a flow that reads a Google Sheets table of domains using a vault-stored credential, then for each row uses Robomotion.Monitoring.SSL to check expiry and validity and writes the results back into the sheet via SetCellValue. Loop with Label → ForEach → body → GoTo. Declare the GoogleSheets and Monitoring packages with f.addDependency().",
+      "assertions": [
+        { "kind": "validator-passes" },
+        { "kind": "must-import", "value": ["flow", "Credential", "Custom", "Message"] },
+        { "kind": "must-contain", "value": "f.addDependency(" },
+        { "kind": "must-contain", "value": "Credential({" },
+        { "kind": "must-contain", "value": "Core.Flow.Label" },
+        { "kind": "must-contain", "value": "Core.Programming.ForEach" },
+        { "kind": "must-contain", "value": "Core.Flow.GoTo" },
+        { "kind": "must-not-contain-regex", "value": "['\"]sk-[A-Za-z0-9]{8,}['\"]|api[_-]?key\\s*[:=]\\s*['\"][A-Za-z0-9]{8,}['\"]", "reason": "No literal secrets in source — they live in the vault." },
+        { "kind": "rubric", "value": "Credential() carries { vaultId, itemId } UUID strings; non-Core packages each get an f.addDependency() with a pinned version; ForEach port 1 wires to Stop." }
+      ]
+    },
+    {
+      "id": 15,
+      "tier": "integration",
+      "title": "REST API server with HttpIn/HttpOut (rest-api)",
+      "template_slug": "rest-api",
+      "prompt": "Build a flow that runs a small REST API server on the robot. Expose POST /echo (echo back the request body) and GET /date (return the current date). Both routes share a single Core.Net.HttpOut response node wired via f.edge() from each handler.",
+      "assertions": [
+        { "kind": "validator-passes" },
+        { "kind": "must-import", "value": ["flow", "Custom"] },
+        { "kind": "must-contain", "value": "Core.Net.HttpIn" },
+        { "kind": "must-contain", "value": "Core.Net.HttpOut" },
+        { "kind": "must-contain", "value": "f.edge(" },
+        { "kind": "must-not-contain", "value": "Core.Flow.Catch" },
+        { "kind": "rubric", "value": "Each HttpIn route is its own entry chain; the shared HttpOut node is a single f.node() reached via f.edge() from every handler — never duplicated per route." }
+      ]
+    }
+  ]
+}

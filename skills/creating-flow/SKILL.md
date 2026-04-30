@@ -163,6 +163,10 @@ flow.create('main', 'Simple Flow', (f) => {
 
 The `robomotion` CLI shells out to `robomotion-sdk-mcp` internally for search-backed commands and calls `api.robomotion.io` directly for run/stop/vault/robot operations. No additional MCP servers required.
 
+## Regression suite
+
+This skill ships with an automated eval suite at `./evals/` — Tier A pinpoint regressions (handcrafted fixtures, one rule each) plus Tier B integration tests (live `main.ts` from the public `robomotion-templates` repo). Run `bun run skills/creating-flow/evals/run-evals.ts` from the agent-skills root before committing edits to this SKILL.md or the `./docs/` files. See `./evals/README.md` for adding new cases and the assertion grammar.
+
 ## Related skills
 
 - `validating-flow` — schema validation
