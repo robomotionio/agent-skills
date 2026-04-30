@@ -1,0 +1,13 @@
+# Secrets — NEVER commit credentials
+.env
+.env.*
+!.env.example
+
+# Bun / Node
+node_modules/
+*.log
+
+# Editor
+.DS_Store
+.idea/
+.vscode/

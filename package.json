@@ -1,0 +1,12 @@
+{
+  "name": "agent-skills",
+  "private": true,
+  "scripts": {
+    "evals": "bun run skills/creating-flow/evals/run-evals.ts",
+    "evals:agent": "bun run skills/creating-flow/evals/run-evals.ts --mode agent",
+    "evals:smoke": "bun run skills/creating-flow/evals/run-evals.ts --mode agent --tier regression --parallel 3",
+    "evals:gen": "bun run skills/creating-flow/evals/scripts/gen-tier-b.ts",
+    "evals:compare": "bun run skills/creating-flow/evals/scripts/compare-runs.ts",
+    "evals:verify": "bun run skills/creating-flow/evals/scripts/verify-data.ts"
+  }
+}
