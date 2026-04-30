@@ -238,13 +238,17 @@ f.node('b18d5f', 'Core.Net.HttpRequest', 'Optional API Call', {
 **ALWAYS** ensure every non-`Core.*` package has an `f.addDependency()` call.
 Without this, the saved flow has empty version strings and breaks the designer dependency panel.
 
+**NEVER** call `f.addDependency()` for any `Core.*` namespace (`Core.Trigger`, `Core.Browser`, `Core.Programming`, `Core.CSV`, `Core.Flow`, `Core.Vault`, `Core.Net`, `Core.Excel`, …). These are embedded in the robot runtime and auto-loaded by the Designer; declaring them is redundant and the package index does not list them. A flow built entirely from `Core.*` nodes has zero `addDependency` calls.
+
 - **New flows:** Get the version from `robomotion search <pkg>` or `robomotion get packages <name>`.
 - **Updating existing flows:** NEVER change existing `addDependency` versions. Only add new lines for newly introduced packages.
 
 ```typescript
-// MANDATORY — one call per external package, BEFORE any nodes
+// MANDATORY — one call per external (non-Core) package, BEFORE any nodes
 f.addDependency('Robomotion.SQLite', 'v1.2.0');
 f.addDependency('Robomotion.WordPress', 'v2.0.0');
+// ✗ NEVER:
+// f.addDependency('Core.Browser', 'v26.4.8');
 ```
 
 ## Scope Helper Functions

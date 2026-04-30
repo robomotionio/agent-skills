@@ -68,7 +68,7 @@ Then verify property names with `robomotion describe node <type>[,<type>...]`.
 - [ ] Line 1 is `import { flow, Message, Custom, JS, Global, Flow, Credential, AI } from '@robomotion/sdk';` (every helper, even unused — Bun won't flag dead imports)
 - [ ] All node IDs are 6-char lowercase hex (`/^[0-9a-f]{6}$/`). No semantic names. See `./reference/id-format.md`.
 - [ ] Subflow node ID equals `subflows/<id>.ts` filename, exactly.
-- [ ] `f.addDependency(namespace, version)` for every non-`Core.*` package — version is concrete (never `'latest'`). Check existence with `robomotion get packages <ns>` first.
+- [ ] `f.addDependency(namespace, version)` for every non-`Core.*` package — version is concrete (never `'latest'`). Check existence with `robomotion get packages <ns>` first. **Never** call `addDependency` for `Core.*` namespaces — they are embedded in the robot and auto-loaded.
 - [ ] Every `Core.Flow.GoTo` references a `Core.Flow.Label` id that exists in this same flow file.
 - [ ] Loops: `Label → ForEach → body → GoTo`. `Stop` is standalone, wired via `f.edge()` on ForEach port 1.
 - [ ] Terminal nodes (`Debug`, `Log`, `Stop`, `GoTo`, `End`, `WaitGroup.Done`) have 0 outputs — wire TO them, never `.then()` after them.

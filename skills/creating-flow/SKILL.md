@@ -38,7 +38,7 @@ For library files swap `flow` for `library` / `subflow`. Full reference: `./docs
 - Loops: `Label → ForEach → body → GoTo`. `Stop` is standalone, wired via `f.edge()` on ForEach port 1.
 - Library projects use `library.create(id, name, fn)` with `Begin`/`End` nodes (no `.start()`). Inline subflows use `subflow.create(name, fn)`.
 - Every flow ends with `.start()`. Every flow has a `Core.Flow.Stop` node.
-- For non-`Core.*` packages, call `f.addDependency(ns, ver)`. When updating an existing flow, NEVER bump existing `addDependency` versions; only add missing ones.
+- `Core.*` packages (`Core.Trigger`, `Core.Browser`, `Core.Programming`, `Core.CSV`, `Core.Flow`, `Core.Vault`, `Core.Net`, `Core.Excel`, …) are **embedded in the robot** — NEVER call `f.addDependency('Core.*', …)`. The Designer auto-loads them. Only call `f.addDependency(ns, ver)` for non-`Core.*` packages. When updating an existing flow, NEVER bump existing `addDependency` versions; only add missing ones.
 
 Full grammar: `./docs/sdk-grammar.md`. Architecture: `./docs/architecture.md`.
 
