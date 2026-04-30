@@ -1,6 +1,8 @@
 # Flow Build Workflow
 
-End-to-end: requirements → plan → write → validate → save → run. The main `SKILL.md` references this doc; load it when you need the verbose body of any step.
+End-to-end: requirements → plan → write → validate → save. This skill ends at save. Running the flow is owned by the `running-flow` skill — invoke it separately when the user explicitly asks to run.
+
+The main `SKILL.md` references this doc; load it when you need the verbose body of any step.
 
 ## Direct mode (non-interactive)
 
@@ -9,7 +11,7 @@ If the user says "Write main.ts for X" or "Generate a flow that does Y", skip St
 1. Verify schemas with `robomotion describe node <type>[,<type2>...]` if unsure.
 2. Write `main.ts` with the `Write` tool. If the flow uses `Core.Flow.SubFlow` nodes, also write each subflow file at `subflows/<id>.ts` immediately — ID matches the SubFlow node's ID. Subflow files use `subflow.create(name, fn)` with `Core.Flow.Begin` → task nodes → `Core.Flow.End({sfPort: 0})`.
 3. Call `validate_flow` — fix errors and re-validate.
-4. Then call `save_flow` to persist. Without it, the Designer canvas does not update.
+4. Then call `save_flow` to persist. Without it, the Designer canvas does not update. **Stop here** — do not run the flow.
 
 ## Step 0: Gather requirements (interactive)
 
@@ -126,13 +128,8 @@ If `save_flow` is NOT registered (pure CLI / Claude Code context), use `git comm
 
 ## Step 6: Verify browser selectors (if browser flow)
 
-Selectors are verified during exploration (Step 3). If the code changed (different selectors, new actions), re-run the exploration against the current page to re-verify before running.
+Selectors are verified during exploration (Step 3). If the code changed (different selectors, new actions), re-run the exploration against the current page to re-verify **before saving**.
 
-## Step 7: Run
+## End of workflow
 
-```bash
-robomotion run <flow-dir>                      # interactive robot picker
-robomotion run <flow-dir> --robot <robot-id>   # scripted
-```
-
-Streams agent events until the flow ends; exit code reflects outcome. See the `running-flow` skill for the full validate → run → observe → fix loop.
+After a successful `save_flow` (or `git push`), the create-flow lifecycle is **complete**. Report what changed and stop. Do NOT call `robomotion run`, `RemoteTrigger`, or any other run path on your own — running a flow is a separate user request, handled by the `running-flow` skill. Wait for the user to ask.

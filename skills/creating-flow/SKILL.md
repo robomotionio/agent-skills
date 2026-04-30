@@ -123,11 +123,11 @@ Full step-by-step: **`./docs/workflow.md`**. Outline:
 2. **Plan** — output plan as chat text, then `AskUserQuestion(["Build it", "Modify plan"])`.
 3. **Write** — read 1-2 relevant `./docs/patterns/*.md`, verify property names with `robomotion describe node`, then `Write` `main.ts` (and any `subflows/<id>.ts`). For browser flows: explore live first.
 4. **Validate** — call `validate_flow` MCP tool. Pspec-checks AND dependency-checks. MUST run BEFORE save.
-5. **Save** — `save_flow` if registered (Designer / pi); else `git commit && git push` from inside the flow dir.
-6. **(Browser) re-verify selectors** if code changed.
-7. **Run** — `robomotion run <flow-dir>` or `--robot <robot-id>`.
+5. **Save** — `save_flow` if registered (Designer / pi); else `git commit && git push` from inside the flow dir. **This is the terminal step.** Stop here and report success — do NOT chain into running the flow. Running is a separate user request handled by the `running-flow` skill.
 
 If invoked in **direct mode** ("Write main.ts for X", "Generate a flow that does Y"), skip 0-2 and jump to 3.
+
+**Browser caveat:** if code changed after the initial exploration (different selectors, new actions), re-verify selectors against the live page before saving. Selectors are owned by Step 3, not a post-save step.
 
 ## Canonical example (simple chain)
 
