@@ -267,7 +267,7 @@ f.node('c29e6a', 'Core.Browser.OpenLink', 'Navigate', {
 
 ### Custom() - Literal Value
 
-Use for static literal values on **input properties** (inXxx):
+Use for static literal values on **input properties** — strings, numbers, and booleans alike. Anything that maps to an input port needs a scope helper; raw literals are silently dropped because the runtime expects `{scope, value}`:
 
 ```typescript
 f.node('d3af7b', 'Core.Browser.OpenLink', 'Navigate', {
@@ -275,10 +275,19 @@ f.node('d3af7b', 'Core.Browser.OpenLink', 'Navigate', {
   inUrl: Custom('https://example.com'),
   outPageId: Message('page_id')
 });
+
+// Numeric input props (timeout, retries, …) — wrap them too
+f.node('a91c4f', 'Core.Browser.WaitElement', 'Wait', {
+  inPageId: Message('page_id'),
+  inSelector: Custom('#login'),
+  optTimeout: Custom('30')   // ✓ wrapped — even for numbers
+  // optTimeout: 30          // ✗ silently dropped, default applies
+});
 ```
 
-**NEVER use Custom() for enum/option properties** like `optType`, `optMode`, `optSort`.
-These are plain strings:
+**Two narrow exceptions where you DO use raw literals (no `Custom()`):**
+
+1. **Enum / option string props** like `optType`, `optMode`, `optSort`, `optMethod` — plain strings, no scope helper:
 
 ```typescript
 // WRONG - creates scope object, causes config parse error
@@ -286,6 +295,14 @@ optType: Custom('directory')
 
 // CORRECT - plain string
 optType: 'directory'
+```
+
+2. **Common runtime props** (`delayBefore`, `delayAfter`, `continueOnError`) — these are NOT input ports, they are runtime hints, so they take raw literals:
+
+```typescript
+delayBefore: 2          // ✓ raw number
+continueOnError: true   // ✓ raw bool
+delayAfter: Custom('2') // ✗ wraps a runtime hint as a port value
 ```
 
 ### JS() - JavaScript Expression

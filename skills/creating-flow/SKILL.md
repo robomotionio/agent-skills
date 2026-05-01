@@ -31,9 +31,10 @@ For library files swap `flow` for `library` / `subflow`. Full reference: `./docs
 
 - `f.node(id, type, name, props)` — param order. Only emit non-default props (Go runtime fills defaults from pspec).
 - `.then()` for sequential, `.edge()` for multi-port wiring.
-- `Message(name)` for variables · `Custom(literal)` for literal strings · `JS(expr)` for one-line JS · `Credential({vaultId, itemId})` for secrets.
-- `func` is a literal string (NOT `JS()`). Enum props are plain strings (NOT `Custom()`).
-- Common node props are literal values: `delayBefore: 2`, `continueOnError: true`.
+- `Message(name)` for variables · `Custom(value)` for literals · `JS(expr)` for one-line JS · `Credential({vaultId, itemId})` for secrets.
+- **Input-port props (`in*`, plus `opt*` props that map to input ports like `optTimeout`, `optUrl`, `optMaxRetries`) MUST be wrapped in a scope helper, even for numbers and booleans** — `optTimeout: Custom('30')`, not `optTimeout: 30`. Raw `30` is silently dropped because the runtime expects `{scope, value}`.
+- `func` is a literal string (NOT `JS()`). Enum/option props (`optType`, `optMethod`, `optMode`, …) are plain strings (NOT `Custom()`).
+- Common node props are the only numeric/boolean literals that take raw values: `delayBefore: 2`, `delayAfter: 0.5`, `continueOnError: true`. Everything else input-bound goes through `Custom()` / `Message()` / `JS()`.
 - ES5-only inside `func`: no `=>`, no template literals, no `const`/`let`, no destructuring. No `require()` / `fs` / `Buffer` / `process` (pure JS sandbox).
 - Loops: `Label → ForEach → body → GoTo`. `Stop` is standalone, wired via `f.edge()` on ForEach port 1.
 - Library projects use `library.create(id, name, fn)` with `Begin`/`End` nodes (no `.start()`). Inline subflows use `subflow.create(name, fn)`.
@@ -60,6 +61,7 @@ Map an error symptom to the doc that fixes it. When `validate_flow` fails, look 
 | `Core.Programming.If` not found | Node doesn't exist | `Core.Programming.Function` with `outputs: 2` (`./docs/patterns/conditions.md`) |
 | Wrong node name (e.g. `Core.CSV.Read`, `Browser.Click`) | Common naming mistake | `./docs/reference/node-naming.md` |
 | `inPath: Custom('$Home$/file')` literal not resolved | System variables only resolve in Function nodes | `global.get('$Home$') + '/file'` (`./docs/reference/system-variables.md`) |
+| `optTimeout: 30` (or any numeric input prop as raw literal) silently dropped / not honored | Input-port props need a scope helper, even for numbers | `optTimeout: Custom('30')`. Raw literals are reserved for `delayBefore` / `delayAfter` / `continueOnError`. |
 | Any CSV / Excel / Sheets / SQLite / Pandas / Airtable / DOMParser / DataTable node in scope | Custom data shape is wrong (e.g. `{header: [...]}`, rows as arrays) | **MANDATORY** read `./docs/patterns/data-tables.md` — the format is `{columns: [...], rows: [{key: value}]}` with row keys matching column names |
 | Write produces empty cells / `ErrFilePath` / "table not recognized" | `header` instead of `columns`, or rows are arrays not objects | `./docs/patterns/data-tables.md` — the property is `columns`, never `header`; rows are objects keyed by column name, never positional arrays |
 
