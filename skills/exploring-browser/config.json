@@ -1,0 +1,19 @@
+{
+  "name": "Exploring Browser",
+  "namespace": "Robomotion.Skill.ExploringBrowser",
+  "version": "0.1.0",
+  "categories": [
+    "Artificial Intelligence"
+  ],
+  "description": "Explores a website interactively via the robomotion-browser-mcp server to discover selectors, record action sequences, capture network traffic, and produce a JSON flow sequence that maps to Robomotion SDK TypeScript. Use when the user says \"explore this page\", \"find the selector for X\", \"record the login flow\", \"what API does this page use\", or before writing ANY `Core.Browser.*` flow. Pairs with `reversing-network` when the captured traffic reveals a clean API.",
+  "icon": "icon.png",
+  "skill": {
+    "runtime": "none",
+    "command": "exploring-browser",
+    "platforms": [
+      "linux",
+      "darwin",
+      "windows"
+    ]
+  }
+}

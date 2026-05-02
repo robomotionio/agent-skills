@@ -1,0 +1,47 @@
+{
+  "schema_version": "1",
+  "skills": [
+    {
+      "name": "creating-flow",
+      "path": "skills/creating-flow",
+      "version": "0.1.0",
+      "runtime": "none"
+    },
+    {
+      "name": "exploring-browser",
+      "path": "skills/exploring-browser",
+      "version": "0.1.0",
+      "runtime": "none"
+    },
+    {
+      "name": "reversing-network",
+      "path": "skills/reversing-network",
+      "version": "0.1.0",
+      "runtime": "none"
+    },
+    {
+      "name": "running-flow",
+      "path": "skills/running-flow",
+      "version": "0.1.0",
+      "runtime": "none"
+    },
+    {
+      "name": "searching-packages",
+      "path": "skills/searching-packages",
+      "version": "0.1.0",
+      "runtime": "none"
+    },
+    {
+      "name": "testing-flow",
+      "path": "skills/testing-flow",
+      "version": "0.1.0",
+      "runtime": "none"
+    },
+    {
+      "name": "validating-flow",
+      "path": "skills/validating-flow",
+      "version": "0.1.0",
+      "runtime": "none"
+    }
+  ]
+}
