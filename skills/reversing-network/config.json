@@ -1,0 +1,19 @@
+{
+  "name": "Reversing Network",
+  "namespace": "Robomotion.Skill.ReversingNetwork",
+  "version": "0.1.0",
+  "categories": [
+    "Artificial Intelligence"
+  ],
+  "description": "Reverses the network traffic behind a browser flow to replace slow browser automation with direct HTTP requests. Use when the user says \"this browser flow is too slow\", \"find the API this page uses\", \"convert to HTTP\", \"can we call the API instead\", or when `exploring-browser` reveals a clean REST/GraphQL endpoint.",
+  "icon": "icon.png",
+  "skill": {
+    "runtime": "none",
+    "command": "reversing-network",
+    "platforms": [
+      "linux",
+      "darwin",
+      "windows"
+    ]
+  }
+}

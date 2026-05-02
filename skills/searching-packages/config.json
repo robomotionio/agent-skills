@@ -1,0 +1,19 @@
+{
+  "name": "Searching Packages",
+  "namespace": "Robomotion.Skill.SearchingPackages",
+  "version": "0.1.0",
+  "categories": [
+    "Artificial Intelligence"
+  ],
+  "description": "Finds Robomotion packages, nodes, and templates via the `robomotion` CLI, which is backed by Bleve full-text search with fuzzy matching and semantic expansion. Use when the user asks to find a package, explore templates, discover what nodes exist for a task, or check exact property names before writing a flow.",
+  "icon": "icon.png",
+  "skill": {
+    "runtime": "none",
+    "command": "searching-packages",
+    "platforms": [
+      "linux",
+      "darwin",
+      "windows"
+    ]
+  }
+}

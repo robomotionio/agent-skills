@@ -1,0 +1,19 @@
+{
+  "name": "Validating Flow",
+  "namespace": "Robomotion.Skill.ValidatingFlow",
+  "version": "0.1.0",
+  "categories": [
+    "Artificial Intelligence"
+  ],
+  "description": "Validates a compiled Robomotion flow against pspec schemas via `robomotion validate <flow-dir>`. Exits 0 on clean, 1 on error with node-by-node report on stderr; no stdout output (composes in shell pipelines). Use when the user says \"validate this flow\", \"check the flow\", \"is this correct\", or before running. Does NOT run the flow \u2014 for behavioral tests use testing-flow.",
+  "icon": "icon.png",
+  "skill": {
+    "runtime": "none",
+    "command": "validating-flow",
+    "platforms": [
+      "linux",
+      "darwin",
+      "windows"
+    ]
+  }
+}

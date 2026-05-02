@@ -1,0 +1,19 @@
+{
+  "name": "Running Flow",
+  "namespace": "Robomotion.Skill.RunningFlow",
+  "version": "0.1.0",
+  "categories": [
+    "Artificial Intelligence"
+  ],
+  "description": "Validates locally (`robomotion validate`) then executes a Robomotion flow on a robot (`robomotion run <flow-dir>`), tailing the agent-mode JSONL session log to drive a validate \u2192 run \u2192 observe \u2192 fix loop with bounded retries. Use when the user says \"run the flow\", \"start on robot X\", \"trigger this on the robot\", \"test on a robot\", or \"deploy and run\".",
+  "icon": "icon.png",
+  "skill": {
+    "runtime": "none",
+    "command": "running-flow",
+    "platforms": [
+      "linux",
+      "darwin",
+      "windows"
+    ]
+  }
+}
