@@ -22,8 +22,8 @@ This is the part that breaks naive migrations.
 | | **Legacy `Robomotion.Assistant`** | **New `Robomotion.ChatAssistant`** |
 |---|---|---|
 | Execution model | **One long-running, blocking flow.** The whole conversation is a single execution. Each node blocks (`AppRequestV2`) until the user acts, then the flow continues to the next node. | **Turn-based.** `ChatIn` is a **trigger** (0 inputs); it fires per incoming message. The flow handles that turn and ends at `ChatOut` (0 outputs). |
-| Entry point | A generic trigger (e.g. `Core.Trigger.Inject`) starts the flow. | **`Robomotion.ChatAssistant.ChatIn`** replaces the trigger. |
-| Exit point | `Assistant.End` (End Conversation) publishes a "done" command. | **`Robomotion.ChatAssistant.ChatOut`** terminates the turn (terminal node — wire **TO** it, never `.then()` from it). |
+| Entry point | **`Core.Application.In`** ("App In") — a trigger (**0 inputs**) that fires when the app/conversation starts. The launch message lands on its output var **`outInput`** (default `Message('in')`) as `{ id, payload, meta }`, so downstream nodes read `msg.in.payload`. Widgets then block via **`Core.Application.Request`** (AppRequestV2). | **`Robomotion.ChatAssistant.ChatIn`** replaces App In (also 0 inputs, but fires **per message**). |
+| Exit point | **`Core.Application.Out`** ("App Out") — terminal (**0 outputs**); set its input var **`inOutput`** (default `Message('out')`) to the response payload sent back to the app. `Assistant.End` (End Conversation) publishes a "done" command. Both map to ChatOut. | **`Robomotion.ChatAssistant.ChatOut`** terminates the turn (terminal node — wire **TO** it, never `.then()` from it). |
 | Two modes | n/a (mode toggled at runtime via `Change Mode`). | Mode is set **on the Agent** (Admin Console), read by `ChatIn`: **`guided`** vs **`conversational`**. There is no mode node. |
 | AI | None built in — you scripted prompts/streaming manually. | Pair with an **LLM Agent** node (`Robomotion.ADK.Agent.LLMAgent` / `Robomotion.Agents.Agent.LLMAgent`) for conversational flows. |
 | Widget result | `outPayload` — a **map** keyed by the widget's ID (e.g. `payload.dropdown1`, `payload.textbox1`). | `outResult` — the **selected value directly** (string, or array for multi-select). No per-widget IDs. |
@@ -39,8 +39,8 @@ Pick the mode that matches the *legacy* flow's intent, then pick the structure:
   like the old linear flow.
 
   ```
-  Legacy:  [Inject] → Header → Dropdown → Textbox → ButtonGroup → End
-  New:     ChatIn   → Header → Dropdown → Textbox → ButtonGroup → ChatOut   (Agent mode: guided)
+  Legacy:  [App In] → Header → Dropdown → Textbox → ButtonGroup → App Out / End
+  New:     ChatIn   → Header → Dropdown → Textbox → ButtonGroup → ChatOut       (Agent mode: guided)
   ```
 
 - **Conversational** — the legacy flow was chat-like (used `Prompt` to read free text, looped, fed
@@ -73,10 +73,11 @@ For conversational flows also add an LLM Agent package (verify the live version)
 
 ## 3. Node ID mapping
 
-| Legacy node (`Robomotion.Assistant.*`) | New node (`Robomotion.ChatAssistant.*`) | Notes |
+| Legacy node | New node (`Robomotion.ChatAssistant.*`) | Notes |
 |---|---|---|
-| — (generic trigger) | **`ChatIn`** | new entry point / trigger |
-| `End` (End Conversation) | **`ChatOut`** | terminal; wire TO it |
+| `Core.Application.In` (**App In**, 0 inputs) | **`ChatIn`** | new entry point / trigger; launch payload was `msg.in.payload`, now the `ChatIn` payload |
+| `Core.Application.Out` (**App Out**, terminal) | **`ChatOut`** | App Out sent the response via `msg.out` (`inOutput`); ChatOut terminates the turn |
+| `Assistant.End` (End Conversation) | **`ChatOut`** | terminal; wire TO it |
 | `Prompt` | **`ChatIn` payload** (conversational) or **`Textbox`** (guided) | see §5 |
 | `Text` | `Text` | markdown preserved |
 | `Header` | `Header` | `optAlignment` ➜ **gone**; new `inLevel` (h1–h6) |
@@ -263,7 +264,7 @@ Notes:
 1. **Read the legacy flow** and classify it: **form/wizard → guided**, or **chat/LLM →
    conversational** (§1).
 2. **Swap dependencies** (§2). Pin the live ChatAssistant version.
-3. **Replace the trigger** with `ChatIn`, and every `End` with `ChatOut`.
+3. **Replace the entry** (`Core.Application.In` / any trigger) with `ChatIn`, and every `Core.Application.Out` (**App Out**) and `Assistant.End` with `ChatOut`.
 4. **Rename each widget** node ID per §3 and **remap its properties** per §7. Delete `ChangeMode`
    and `Theme` nodes.
 5. **Convert options**: `optOptions`/`optLabels` → the `opt*Array` prop, fed from a Function node
@@ -286,7 +287,7 @@ Notes:
 import { flow, Message, Custom } from '@robomotion/sdk';
 flow.create('…', 'Support Form', (f) => {
   f.addDependency('Robomotion.Assistant', '0.4.3');
-  f.node('11aa11', 'Core.Trigger.Inject', 'Start', {})
+  f.node('11aa11', 'Core.Application.In', 'App In', {})   // 0 inputs; launch payload at msg.in.payload
     .then('22bb22', 'Robomotion.Assistant.Header', 'Title', { inText: Custom('Support') })
     .then('33cc33', 'Core.Programming.Function', 'Opts', { func: `msg.options=['Refund','Replace']; return msg;` })
     .then('44dd44', 'Robomotion.Assistant.Dropdown', 'Pick', {
@@ -296,9 +297,9 @@ flow.create('…', 'Support Form', (f) => {
       inTextboxID: Custom('textbox1'), inLabel: Custom('Tell us more'), outPayload: Message('payload')
     })
     .then('66ff66', 'Core.Programming.Function', 'Read', {
-      func: `msg.choice = msg.payload.dropdown1; msg.detail = msg.payload.textbox1; return msg;`
+      func: `msg.out = { choice: msg.payload.dropdown1, detail: msg.payload.textbox1 }; return msg;`
     })
-    .then('77aa77', 'Robomotion.Assistant.End', 'End', {});
+    .then('77aa77', 'Core.Application.Out', 'App Out', { inOutput: Message('out') }); // + Assistant.End would publish "done"
 }).start();
 ```
 
@@ -325,16 +326,16 @@ flow.create('…', 'Support Form', (f) => {
 }).start();
 ```
 
-Key diffs: trigger→`ChatIn`; `End`→`ChatOut`; `optOptions`→`optDropdownArray`; dropped
-`inDropdownID`/`inTextboxID`; `msg.payload.dropdown1`→`msg.choice` (`outResult`); `Header` gains
-`inLevel`.
+Key diffs: `App In`→`ChatIn`; `App Out` / `End`→`ChatOut` (no more `msg.out` payload — wire to `ChatOut`);
+`optOptions`→`optDropdownArray`; dropped `inDropdownID`/`inTextboxID`; `msg.payload.dropdown1`→`msg.choice`
+(`outResult`); `Header` gains `inLevel`.
 
 ---
 
 ## 10. Pitfalls checklist
 
 - [ ] Did **not** keep `Robomotion.Assistant.*` IDs — all renamed to `Robomotion.ChatAssistant.*`.
-- [ ] Flow starts at `ChatIn` (not `Inject`) and every branch ends at `ChatOut`.
+- [ ] Flow starts at `ChatIn` (not `App In` / `Inject`) and every branch ends at `ChatOut` (replacing `App Out` / `End`).
 - [ ] `ChangeMode` and `Theme` nodes deleted (no equivalent).
 - [ ] Options moved from `optOptions`/`optLabels` to `opt*Array`, wrapped in `Message()`/`JS()`.
 - [ ] All `msg.payload.<widgetId>` reads rewritten to the new `outResult` variables.
