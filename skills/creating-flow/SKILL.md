@@ -88,6 +88,7 @@ Read these docs before writing the corresponding code:
 | Subflows (Begin/End, multi-output) | `./docs/patterns/subflows.md` |
 | Data tables (CSV / Excel / Sheets / SQLite / Pandas / Airtable / DOMParser / DataTable) — **MANDATORY** before writing any code that produces or consumes `msg.table` | `./docs/patterns/data-tables.md` |
 | Captcha solving | `./docs/patterns/captcha.md` |
+| Migrating a legacy `Robomotion.Assistant` flow → `Robomotion.ChatAssistant` | `./docs/patterns/assistant-migration.md` |
 
 References:
 
