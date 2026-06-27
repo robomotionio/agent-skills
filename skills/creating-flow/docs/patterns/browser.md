@@ -83,6 +83,17 @@ Rules (follow exactly):
 - Be consistent across a flow: don't mix XPath on some nodes and bare CSS strings
   on others. Pick XPath for everything unless a CSS selector is unavoidable.
 
+- **Target an input by its OWN attributes, not by nearby label text.** The visible
+  label next to a field ("Verification code", "Email") is almost always a separate
+  `<label>`/text element — it is NOT the input's `@placeholder`. Writing
+  `//input[@placeholder='<the label you saw>']` is a frequent cause of
+  `element not found`. Use the input's real, stable attributes from your snapshot,
+  in order of preference: `@id` → `@name` → `@type`/`@autocomplete`. Example: a
+  field you explored as `id="code"` (label "Verification code") is
+  `//input[@id='code']` — **never** `//input[@placeholder='Verification code']`.
+  Only use `@placeholder` if you confirmed that exact placeholder is on the input
+  itself in the snapshot.
+
 ## Browser Options
 
 ```typescript
@@ -191,6 +202,67 @@ f.node('a6c4b7', 'Core.Browser.WaitElement', 'Wait for Results', {
     outResult: Message('table_json')
   });
 ```
+
+## NEVER "wait for the dashboard" with a guessed selector (top login failure)
+
+`Wait element timed out: element not found` is the #1 runtime failure. It is
+almost always a `WaitElement` (or a `Wait for Dashboard`/`Wait for MFA` node) that
+waits on a selector you **assumed** rather than one you **verified on that exact
+page**. Two hard rules:
+
+- **Action nodes already wait for their own target.** A `ClickElement` on
+  `//a[normalize-space()='Statements']` waits for that link to exist. So after a
+  login you do NOT need a separate "Wait for Dashboard" node — just make the next
+  real step (click a nav link, read a value) target an element you confirmed is on
+  the post-login page. A standalone wait for a *guessed* dashboard element only
+  adds a 30-second timeout and a failure.
+- **Only `WaitElement` on a SPECIFIC element you explored** (a spinner to
+  disappear, a results table to appear) — never a vague "page is ready" guess.
+
+## Logins can have more than one step — explore through to the goal
+
+Every site is different. Do not assume a login is `type → type → click Sign In →
+dashboard`. Submitting a login form often lands on **another step** (a
+verification / 2FA / "confirm it's you" screen, a consent page, a redirect) before
+the real destination. If you build `Sign In → Wait for Dashboard`, you time out,
+because the page is on that in-between step, not the dashboard.
+
+So: **explore THROUGH the whole flow** (`/exploring-browser`) — submit, snapshot
+the *next* page, and keep going until you reach the goal. Build exactly the steps
+you actually saw, with the selectors from your own snapshots. Whatever extra
+screen appears, handle it before moving on.
+
+If a verification step asks for a code: the code is **per-run and secret — never
+hardcode it**. Take it from a flow variable / input the user provides
+(`Message('otp_code')`), or from email/SMS via the relevant node. How the field
+and button are identified is entirely site-specific — use what you explored.
+
+The shape (selectors below are **examples only** — every site's are different):
+
+```typescript
+// ... Type Email → Type Password → Click 'Sign In' (each waits for its target) ...
+
+// Whatever screen Sign In landed on, build what you explored. If it's a code
+// field, the TypeText already waits for it — no separate "Wait" node:
+f.node('a11111', 'Core.Browser.TypeText', 'Enter Code', {
+  inPageId: Message('page_id'),
+  inSelector: Custom('<xpath you explored for the code field>'),  // example
+  inText: Message('otp_code')                                     // per-run, NOT hardcoded
+});
+
+f.node('a22222', 'Core.Browser.ClickElement', 'Confirm', {
+  inPageId: Message('page_id'),
+  inSelector: Custom('<xpath you explored for the confirm button>')
+});
+
+// Reached the destination — don't "wait" for it, just target the first real
+// element you need (that action node waits for it on its own).
+```
+
+None of the selectors here are universal — `#code`, `Verify`, the on-page-code
+handle are examples. Always build from what `/exploring-browser` showed on the
+real verification page; the point is the SHAPE (handle the code step; don't wait
+on a guessed dashboard), not these exact strings.
 
 ## Execute JavaScript
 
