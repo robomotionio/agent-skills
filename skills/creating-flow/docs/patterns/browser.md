@@ -29,18 +29,110 @@ Reference for `Core.Browser.*` nodes and common patterns.
 | `Screenshot` | Capture screenshot | `inPageId`, `inPath` |
 | `Select` | Select dropdown option | `inPageId`, `inSelector`, `inValue` |
 
+## Selectors — the default is XPath (most common runtime failure)
+
+**Every `Core.Browser.*` element node — `ClickElement`, `TypeText`, `GetValue`,
+`SetValue`, `WaitElement`, `Select` — interprets `inSelector` as XPath by
+default.** The node has an `inSelectorType` property with two values:
+`xpath:position` (the default) and `css`. Get this wrong and the element is
+never found: the flow fails at runtime with
+`Wait element timed out: element not found` even though the URL and page are
+correct and the selector looks fine in DevTools.
+
+Rules (follow exactly):
+
+- **Prefer XPath and omit `inSelectorType`.** When you explore a page
+  (`/exploring-browser`) you'll note CSS-style handles like `#email` or
+  `input[type="email"]` — you MUST translate them to XPath before writing the
+  node:
+
+  | What you found | Write this XPath (NOT the CSS) |
+  |----------------|-------------------------------|
+  | `#email` | `//input[@id='email']` |
+  | `input[type="email"]` | `//input[@type='email']` |
+  | `.submit` | `//*[contains(@class,'submit')]` |
+  | button text "Sign In" | `//button[normalize-space()='Sign In']` |
+  | link text "Statements" | `//a[normalize-space()='Statements']` |
+  | first of many identical | `(//button[@data-testid='download-pdf'])[1]` |
+
+  ```typescript
+  f.node('000004', 'Core.Browser.TypeText', 'Type Email', {
+    inPageId: Message('page_id'),
+    inSelector: Custom("//input[@id='email']"),   // XPath, no inSelectorType
+    inText: Custom('user@example.com')
+  });
+  ```
+
+- **NEVER pass a CSS-style string (`#id`, `.class`, `input[type="email"]`) without
+  setting the type** — it is parsed as XPath and silently fails.
+
+- If you genuinely need CSS, set the type explicitly to `css`:
+
+  ```typescript
+  f.node('000004', 'Core.Browser.TypeText', 'Type Email', {
+    inPageId: Message('page_id'),
+    inSelectorType: Custom('css'),       // REQUIRED whenever inSelector is CSS
+    inSelector: Custom('#email'),
+    inText: Custom('user@example.com')
+  });
+  ```
+
+- **Do NOT write `inSelectorType: 'xpath'`** — that is not a valid value (the
+  XPath enum is `xpath:position`). For XPath, just omit `inSelectorType`.
+
+- Be consistent across a flow: don't mix XPath on some nodes and bare CSS strings
+  on others. Pick XPath for everything unless a CSS selector is unavoidable.
+
 ## Browser Options
 
 ```typescript
 f.node('4a9e12', 'Core.Browser.Open', 'Open Browser', {
-  optBrowser: Custom('chrome'),        // chrome, headlesschrome, firefox, edge
-  optProxy: Custom('robomotion-proxy'), // for protected sites
-  optMaximized: true,
+  optBrowser: 'chrome',          // PLAIN STRING — chrome | headlesschrome | firefox | edge
+  optProxy: 'robomotion-proxy',  // PLAIN STRING — no-proxy | robomotion-proxy | custom
+  optMaximized: true,            // boolean literal
   outBrowserId: Message('browser_id')
 });
 ```
 
-| `optBrowser` | Description |
+> **CRITICAL — enum/dropdown options take a PLAIN value, NOT `Custom()`.**
+> `optBrowser`, `optProxy`, `optProxyAuth`, `optClickType` and similar fixed-choice
+> "opt*" fields are plain strings (or booleans like `optMaximized`). Wrapping them
+> in `Custom(...)` emits a `{name, scope}` object, and the robot rejects it at load
+> time with **`Config parse error`** / `interface conversion: ... is string, not
+> []interface {}` — the flow never starts (no `flow_start`, no node runs).
+> `Custom()` / `Message()` are ONLY for value fields that accept a variable
+> (selectors, URLs, text, paths: `inSelector`, `inUrl`, `inText`, `optDownloadDir`,
+> `optProxyAddr`, …). When unsure whether an option is an enum, omit it and take
+> the default rather than guessing `Custom()`.
+
+## Downloading files (set `optDownloadDir`)
+
+When the task is to **download a file** (PDF, statement, export, etc.), clicking the
+download control is NOT enough: a headless browser discards downloads unless you tell
+it where to put them. On `Core.Browser.Open` set **`optDownloadDir`** to an absolute
+folder (it's a value field, so `Custom(...)` is correct here), and give the download
+a moment to finish before `Close`:
+
+```typescript
+f.node('4a9e12', 'Core.Browser.Open', 'Open Browser', {
+  optBrowser: 'chrome',
+  optDownloadDir: Custom('/home/<user>/Downloads'),  // REQUIRED to persist downloads
+  outBrowserId: Message('browser_id')
+});
+// ... navigate / click the download control ...
+f.node('a6c4b7', 'Core.Browser.WaitElement', 'Settle', {   // or a short Sleep
+  inPageId: Message('page_id'),
+  inSelector: Custom("//body"),
+  optTimeout: Custom('5')
+})
+  .then('8e7d6c', 'Core.Browser.Close', 'Close Browser', { inBrowserId: Message('browser_id') });
+```
+
+Without `optDownloadDir` the flow will still report `flow_end success` (the click
+succeeded) but **no file lands on disk** — a confusing "it worked but nothing
+downloaded" outcome. Always set it for download tasks.
+
+| `optBrowser` (plain string) | Description |
 |--------------|-------------|
 | `chrome` | Chrome with UI |
 | `headlesschrome` | Chrome headless (no UI) |
@@ -224,7 +316,7 @@ For sites that block datacenter IPs, route the browser through the Robomotion pr
 ```typescript
 f.node('4a9e12', 'Core.Browser.Open', 'Open Browser', {
   optBrowser: 'chrome',
-  optProxy: Custom('robomotion-proxy'),
+  optProxy: 'robomotion-proxy',
   outBrowserId: Message('browser_id')
 });
 ```
