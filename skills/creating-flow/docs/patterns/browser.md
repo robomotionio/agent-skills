@@ -52,8 +52,8 @@ Rules (follow exactly):
   | `input[type="email"]` | `//input[@type='email']` |
   | `.submit` | `//*[contains(@class,'submit')]` |
   | button text "Sign In" | `//button[normalize-space()='Sign In']` |
-  | link text "Statements" | `//a[normalize-space()='Statements']` |
-  | first of many identical | `(//button[@data-testid='download-pdf'])[1]` |
+  | link text "Reports" | `//a[normalize-space()='Reports']` |
+  | first of many identical | `(//button[@data-testid='row-action'])[1]` |
 
   ```typescript
   f.node('000004', 'Core.Browser.TypeText', 'Type Email', {
@@ -84,15 +84,14 @@ Rules (follow exactly):
   on others. Pick XPath for everything unless a CSS selector is unavoidable.
 
 - **Target an input by its OWN attributes, not by nearby label text.** The visible
-  label next to a field ("Verification code", "Email") is almost always a separate
-  `<label>`/text element — it is NOT the input's `@placeholder`. Writing
-  `//input[@placeholder='<the label you saw>']` is a frequent cause of
-  `element not found`. Use the input's real, stable attributes from your snapshot,
-  in order of preference: `@id` → `@name` → `@type`/`@autocomplete`. Example: a
-  field you explored as `id="code"` (label "Verification code") is
-  `//input[@id='code']` — **never** `//input[@placeholder='Verification code']`.
-  Only use `@placeholder` if you confirmed that exact placeholder is on the input
-  itself in the snapshot.
+  label next to a field is almost always a separate `<label>`/text element — it is
+  NOT the input's `@placeholder`. Writing `//input[@placeholder='<the label you
+  saw>']` is a frequent cause of `element not found`. Use the input's real, stable
+  attributes from your snapshot, in order of preference: `@id` → `@name` →
+  `@type`/`@autocomplete`. For example, if you explored a field whose label reads
+  "Full name" but the input is `<input id="fullName">`, write `//input[@id='fullName']`
+  — **never** `//input[@placeholder='Full name']`. Only use `@placeholder` if you
+  confirmed that exact placeholder is on the input itself in the snapshot.
 
 ## Never pick an ambiguous XPath (it must match exactly ONE element)
 
@@ -101,15 +100,15 @@ automations: at runtime the robot acts on the first/wrong match or the node
 errors. As you explore, **confirm every selector you write resolves to exactly one
 element on that page.** Prefer the most robust form available:
 
-1. **A stable, unique attribute** — `//input[@id='code']`, `//*[@data-testid='x']`,
-   `//input[@name='code']`. Best choice; use it whenever the element has one.
+1. **A stable, unique attribute** — `//input[@id='email']`, `//*[@data-testid='x']`,
+   `//input[@name='username']`. Best choice; use it whenever the element has one.
 2. **A distinctive attribute** — `@type`, `@autocomplete`, `@aria-label`, `@role`.
-3. **Exact text on the right element** — `//button[normalize-space()='Verify']`.
+3. **Exact text on the right element** — `//button[normalize-space()='Submit']`.
    Use exact `normalize-space()='...'`, not `contains(text(),'...')`, which
    over-matches and silently grabs the first hit.
 4. **Last resort: a scoped path or explicit index** — only when you have verified
-   the order is stable and you genuinely want the Nth match (e.g. "the latest of
-   44 identical buttons" → `(//button[@data-testid='download-pdf'])[1]`).
+   the order is stable and you genuinely want the Nth match (e.g. "the first of
+   many identical row buttons" → `(//table//button[@data-testid='row-action'])[1]`).
 
 Avoid:
 
@@ -149,7 +148,7 @@ f.node('4a9e12', 'Core.Browser.Open', 'Open Browser', {
 
 ## Downloading files (set `optDownloadDir`)
 
-When the task is to **download a file** (PDF, statement, export, etc.), clicking the
+When the task is to **download a file** (PDF, export, report, etc.), clicking the
 download control is NOT enough: a headless browser discards downloads unless you tell
 it where to put them. On `Core.Browser.Open` set **`optDownloadDir`** to an absolute
 folder (it's a value field, so `Custom(...)` is correct here).
@@ -157,8 +156,9 @@ folder (it's a value field, so `Custom(...)` is correct here).
 **Clicking only STARTS the download — wait for it to FINISH before `Close`/`Stop`.**
 A click returns immediately; the file is still streaming to disk. If `Close Browser`
 or the flow's `Stop` runs right after, the browser is torn down mid-transfer and the
-file is **cancelled / never lands**. So put a real fixed delay between the download
-click and `Close`:
+file is **cancelled / never lands**. So leave a real delay between the download click
+and `Close`. The simplest way is the common `delayAfter` runtime prop on the click
+node (raw seconds, no extra node) — or `delayBefore` on Close/Stop:
 
 ```typescript
 f.node('4a9e12', 'Core.Browser.Open', 'Open Browser', {
@@ -166,24 +166,26 @@ f.node('4a9e12', 'Core.Browser.Open', 'Open Browser', {
   optDownloadDir: Custom('/home/<user>/Downloads'),  // REQUIRED to persist downloads
   outBrowserId: Message('browser_id')
 });
-// ... navigate / click the download control ...
-f.node('a6c4b7', 'Core.Programming.Sleep', 'Wait for Download', {
-  optDuration: Custom('5')   // seconds — let the file finish writing to disk
+// ... navigate to the download control ...
+f.node('a1b2c3', 'Core.Browser.ClickElement', 'Download', {
+  inPageId: Message('page_id'),
+  inSelector: Custom('<xpath you explored for the download control>'),
+  delayAfter: 5   // seconds AFTER the click — let the file finish writing to disk
 })
   .then('8e7d6c', 'Core.Browser.Close', 'Close Browser', { inBrowserId: Message('browser_id') });
 ```
 
-**Do NOT "wait" with `Core.Browser.WaitElement` on `//body` (or any element that's
-already on the page).** `WaitElement` waits for an element to *appear*; `body` (and
-the page you just clicked on) already exists, so it returns in ~0ms and waits for
-nothing — the download still gets cut off. To pause for a download, use
-`Core.Programming.Sleep` with `optDuration` (seconds), not a WaitElement. (Only use
-WaitElement to wait for something that is genuinely not there yet.)
+`delayBefore`/`delayAfter` are common runtime props on every node (raw float seconds,
+NOT wrapped in `Custom()`). A `Core.Programming.Sleep` node works too — but **do NOT
+"wait" with `Core.Browser.WaitElement` on `//body` or any element already on the
+page**: `WaitElement` waits for an element to *appear*, and those already exist, so
+it returns in ~0ms and waits for nothing — the download still gets cut off. Only use
+WaitElement to wait for something that is genuinely not there yet.
 
 Without `optDownloadDir`, OR if `Close`/`Stop` races the download, the flow still
 reports `flow_end success` (the click succeeded) but **no file lands on disk** — a
 confusing "it worked but nothing downloaded" outcome. Always set `optDownloadDir`
-AND a real Sleep before Close for download tasks.
+AND a real delay before Close for download tasks.
 
 | `optBrowser` (plain string) | Description |
 |--------------|-------------|
@@ -253,7 +255,7 @@ waits on a selector you **assumed** rather than one you **verified on that exact
 page**. Two hard rules:
 
 - **Action nodes already wait for their own target.** A `ClickElement` on
-  `//a[normalize-space()='Statements']` waits for that link to exist. So after a
+  `//a[normalize-space()='Reports']` waits for that link to exist. So after a
   login you do NOT need a separate "Wait for Dashboard" node — just make the next
   real step (click a nav link, read a value) target an element you confirmed is on
   the post-login page. A standalone wait for a *guessed* dashboard element only
