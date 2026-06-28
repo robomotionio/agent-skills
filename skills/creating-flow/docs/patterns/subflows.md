@@ -184,7 +184,7 @@ subflow.create('Login SubFlow', (f) => {
     .then('d1a2b3', 'Core.Browser.WaitElement', 'Wait Dashboard', {
       inPageId: Message('page_id'),
       inSelector: Custom('//div[@class="dashboard"]'),
-      optTimeout: Custom('30')
+      optTimeout: 30
     })
     // End node - exit point (REQUIRED)
     .then('e4f6c8', 'Core.Flow.End', 'End', {

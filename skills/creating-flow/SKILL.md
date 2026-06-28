@@ -32,9 +32,9 @@ For library files swap `flow` for `library` / `subflow`. Full reference: `./docs
 - `f.node(id, type, name, props)` — param order. Only emit non-default props (Go runtime fills defaults from pspec).
 - `.then()` for sequential, `.edge()` for multi-port wiring.
 - `Message(name)` for variables · `Custom(value)` for literals · `JS(expr)` for one-line JS · `Credential({vaultId, itemId})` for secrets.
-- **Input-port props (`in*`, plus `opt*` props that map to input ports like `optTimeout`, `optUrl`, `optMaxRetries`) MUST be wrapped in a scope helper, even for numbers and booleans** — `optTimeout: Custom('30')`, not `optTimeout: 30`. Raw `30` is silently dropped because the runtime expects `{scope, value}`.
-- `func` is a literal string (NOT `JS()`). Enum/option props (`optType`, `optMethod`, `optMode`, …) are plain strings (NOT `Custom()`).
-- Common node props are the only numeric/boolean literals that take raw values: `delayBefore: 2`, `delayAfter: 0.5`, `continueOnError: true`. Everything else input-bound goes through `Custom()` / `Message()` / `JS()`.
+- **A field takes a scope helper based on its TYPE, not its `in*`/`opt*` name.** Every `in*`/`out*` port and the variable-backed `opt*` fields (URLs, paths, dynamic counts: `optUrl`, `optDownloadDir`, `optNofBranches`) wrap a literal in `Custom('…')` / `Message()` — a bare literal there is silently dropped. **Plain-typed config fields take a PLAIN literal and must NOT be wrapped:** numbers (`optTimeout: 30`, `optMaxRetries: 3`), booleans (`optInsecure: true`), enum strings (`optBrowser: 'chrome'`, `optMethod: 'post'`, `optType: 'directory'`). **`optTimeout: Custom('30')` VALIDATES but FAILS TO LOAD on the robot** (object sent to a number field → `flow_error: failed`, no nodes run) — write `optTimeout: 30`. When unsure, check `get_node_schema`: number/boolean/enum → plain; variableType/object → scope helper.
+- `func` is a literal string (NOT `JS()`).
+- Common runtime props also take raw values: `delayBefore: 2`, `delayAfter: 0.5`, `continueOnError: true`.
 - ES5-only inside `func`: no `=>`, no template literals, no `const`/`let`, no destructuring. No `require()` / `fs` / `Buffer` / `process` (pure JS sandbox).
 - Loops: `Label → ForEach → body → GoTo`. `Stop` is standalone, wired via `f.edge()` on ForEach port 1.
 - Library projects use `library.create(id, name, fn)` with `Begin`/`End` nodes (no `.start()`). Inline subflows use `subflow.create(name, fn)`.
@@ -61,7 +61,7 @@ Map an error symptom to the doc that fixes it. When `validate_flow` fails, look 
 | `Core.Programming.If` not found | Node doesn't exist | `Core.Programming.Function` with `outputs: 2` (`./docs/patterns/conditions.md`) |
 | Wrong node name (e.g. `Core.CSV.Read`, `Browser.Click`) | Common naming mistake | `./docs/reference/node-naming.md` |
 | `inPath: Custom('$Home$/file')` literal not resolved | System variables only resolve in Function nodes | `global.get('$Home$') + '/file'` (`./docs/reference/system-variables.md`) |
-| `optTimeout: 30` (or any numeric input prop as raw literal) silently dropped / not honored | Input-port props need a scope helper, even for numbers | `optTimeout: Custom('30')`. Raw literals are reserved for `delayBefore` / `delayAfter` / `continueOnError`. |
+| Flow VALIDATES but FAILS TO LOAD on robot (`flow_error: failed`, no nodes run) | A plain-typed `opt*` field was wrapped in `Custom()` (object sent to a number/bool/enum field) | `optTimeout: 30` not `Custom('30')`; `optBrowser: 'chrome'` not `Custom('chrome')`. Only variable-backed fields (`optUrl`, `optDownloadDir`, `optNofBranches`, all `in*`) take `Custom()`/`Message()`. |
 | Any CSV / Excel / Sheets / SQLite / Pandas / Airtable / DOMParser / DataTable node in scope | Custom data shape is wrong (e.g. `{header: [...]}`, rows as arrays) | **MANDATORY** read `./docs/patterns/data-tables.md` — the format is `{columns: [...], rows: [{key: value}]}` with row keys matching column names |
 | Write produces empty cells / `ErrFilePath` / "table not recognized" | `header` instead of `columns`, or rows are arrays not objects | `./docs/patterns/data-tables.md` — the property is `columns`, never `header`; rows are objects keyed by column name, never positional arrays |
 
