@@ -152,8 +152,13 @@ f.node('4a9e12', 'Core.Browser.Open', 'Open Browser', {
 When the task is to **download a file** (PDF, statement, export, etc.), clicking the
 download control is NOT enough: a headless browser discards downloads unless you tell
 it where to put them. On `Core.Browser.Open` set **`optDownloadDir`** to an absolute
-folder (it's a value field, so `Custom(...)` is correct here), and give the download
-a moment to finish before `Close`:
+folder (it's a value field, so `Custom(...)` is correct here).
+
+**Clicking only STARTS the download — wait for it to FINISH before `Close`/`Stop`.**
+A click returns immediately; the file is still streaming to disk. If `Close Browser`
+or the flow's `Stop` runs right after, the browser is torn down mid-transfer and the
+file is **cancelled / never lands**. So put a real fixed delay between the download
+click and `Close`:
 
 ```typescript
 f.node('4a9e12', 'Core.Browser.Open', 'Open Browser', {
@@ -162,17 +167,23 @@ f.node('4a9e12', 'Core.Browser.Open', 'Open Browser', {
   outBrowserId: Message('browser_id')
 });
 // ... navigate / click the download control ...
-f.node('a6c4b7', 'Core.Browser.WaitElement', 'Settle', {   // or a short Sleep
-  inPageId: Message('page_id'),
-  inSelector: Custom("//body"),
-  optTimeout: Custom('5')
+f.node('a6c4b7', 'Core.Programming.Sleep', 'Wait for Download', {
+  optDuration: Custom('5')   // seconds — let the file finish writing to disk
 })
   .then('8e7d6c', 'Core.Browser.Close', 'Close Browser', { inBrowserId: Message('browser_id') });
 ```
 
-Without `optDownloadDir` the flow will still report `flow_end success` (the click
-succeeded) but **no file lands on disk** — a confusing "it worked but nothing
-downloaded" outcome. Always set it for download tasks.
+**Do NOT "wait" with `Core.Browser.WaitElement` on `//body` (or any element that's
+already on the page).** `WaitElement` waits for an element to *appear*; `body` (and
+the page you just clicked on) already exists, so it returns in ~0ms and waits for
+nothing — the download still gets cut off. To pause for a download, use
+`Core.Programming.Sleep` with `optDuration` (seconds), not a WaitElement. (Only use
+WaitElement to wait for something that is genuinely not there yet.)
+
+Without `optDownloadDir`, OR if `Close`/`Stop` races the download, the flow still
+reports `flow_end success` (the click succeeded) but **no file lands on disk** — a
+confusing "it worked but nothing downloaded" outcome. Always set `optDownloadDir`
+AND a real Sleep before Close for download tasks.
 
 | `optBrowser` (plain string) | Description |
 |--------------|-------------|
