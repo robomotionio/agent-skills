@@ -94,6 +94,37 @@ Rules (follow exactly):
   Only use `@placeholder` if you confirmed that exact placeholder is on the input
   itself in the snapshot.
 
+## Never pick an ambiguous XPath (it must match exactly ONE element)
+
+A selector that matches **more than one** element is a top cause of wrong/flaky
+automations: at runtime the robot acts on the first/wrong match or the node
+errors. As you explore, **confirm every selector you write resolves to exactly one
+element on that page.** Prefer the most robust form available:
+
+1. **A stable, unique attribute** — `//input[@id='code']`, `//*[@data-testid='x']`,
+   `//input[@name='code']`. Best choice; use it whenever the element has one.
+2. **A distinctive attribute** — `@type`, `@autocomplete`, `@aria-label`, `@role`.
+3. **Exact text on the right element** — `//button[normalize-space()='Verify']`.
+   Use exact `normalize-space()='...'`, not `contains(text(),'...')`, which
+   over-matches and silently grabs the first hit.
+4. **Last resort: a scoped path or explicit index** — only when you have verified
+   the order is stable and you genuinely want the Nth match (e.g. "the latest of
+   44 identical buttons" → `(//button[@data-testid='download-pdf'])[1]`).
+
+Avoid:
+
+- **Brittle absolute paths** (`/html/body/div[2]/div[3]/...`) — break on any layout
+  change.
+- **Bare tag matches** that hit many nodes (`//input`, `//button`, `//a`).
+- **`contains(...)` that over-matches** several elements — prefer exact text, or
+  scope it: `//form[@id='login']//button[normalize-space()='Sign In']`.
+- **Guessed positional `[n]`** — index only when you verified the order.
+
+When unsure, **scope by a nearby stable container** instead of reaching for an
+index: `//*[@id='login']//input[@type='password']` beats `(//input)[2]`. This is
+mandatory even if the user does not ask for it — robust, unambiguous selectors are
+the default, not an option.
+
 ## Browser Options
 
 ```typescript
