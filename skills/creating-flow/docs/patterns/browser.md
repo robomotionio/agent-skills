@@ -381,6 +381,12 @@ f.node('c3d4e5', 'Core.Browser.RunScript', 'Extract Table', {
 - Use our Data Table format: `{ columns: string[], rows: object[] }`
 - Row object keys MUST match column names exactly
 - Use `element ? element.innerText : ''` (NOT optional chaining `?.` — ES5 only in func strings)
+- **Extract CLEAN text — prefer `.innerText`/`.textContent`, which are already
+  decoded.** Reading an attribute (`getAttribute('title')`) or `innerHTML` can
+  carry raw HTML entities into the data (`&#39;`, `&amp;`, `&quot;`), which then
+  land verbatim in the user's CSV/sheet. If you must read one of those, decode it:
+  `var d = document.createElement('textarea'); d.innerHTML = s; s = d.value;` —
+  the user should see `it's`, never `it&#39;s`.
 
 ## Cookie & Session Management
 

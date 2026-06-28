@@ -166,6 +166,25 @@ return msg;
 `
 ```
 
+## Always write the header row
+
+A spreadsheet/CSV that a person will open is expected to have a **header row** —
+the column names in row 1, then one data row each. The writer nodes do NOT add it
+unless you turn it on, so a flow that "works" can still produce a headerless file
+that's useless to the user. Always enable the header option when writing:
+
+| Writer | Option to set | Result |
+|--------|---------------|--------|
+| `Core.CSV.WriteCSV` | `optHeaders: true` | first line is the column names |
+| `Core.Excel.SetRange` | `optHeader: true` | first row is the column names |
+| `Robomotion.GoogleSheets.SetRange` / `AppendRange` | `optHeader: true` | header row written |
+
+The header text comes from the `columns` array of the `{columns, rows}` table — so
+name your columns the way the user should see them (e.g. `title`, `price`), and the
+header takes care of itself. Don't hand-prepend a header row into `rows`; that
+double-writes it. (Reading back uses the same flag: `optHeaders: true` on
+`ReadCSV`/`GetRange` so row keys come from the header.)
+
 ## Operations Using This Format
 
 | Operation | Direction |
