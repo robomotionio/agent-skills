@@ -274,26 +274,28 @@ The deciding factor is the **field's type in the node**, not the `in*`/`opt*` na
   (`optUrl`, `optDownloadDir`, `optNofBranches`). Use `Custom('…')` for a static
   literal (string OR number), or `Message()`/`Global()` for a dynamic value. A bare
   literal on one of these is silently dropped — the runtime expects `{scope, value}`.
-- **Plain-typed config fields take a PLAIN literal — never `Custom()`.** Numbers
-  (`optTimeout`, `optMaxRetries`), booleans (`optInsecure`, `optHeaders`), and
-  enum/mode strings (`optBrowser`, `optMethod`, `optType`, `optProxy`).
+- **Plain-typed config fields take a PLAIN literal — never `Custom()`.** Booleans
+  (`optInsecure`, `optHeaders`) and enum/mode strings (`optBrowser`, `optMethod`,
+  `optType`, `optProxy`). Numeric `opt*` fields are **node-dependent** — see below.
+
+> ⚠️ **The kind is per-NODE, not per-name — the same property differs between nodes.**
+> `optTimeout` is a plain `number` on `Core.Browser.OpenLink` (`optTimeout: 32`) but
+> `variableType:Integer` on `Core.Browser.WaitElement` (`optTimeout: Custom('30')`).
+> Mismatching EITHER way makes the flow VALIDATE but FAIL TO LOAD on the robot
+> (`flow_error: failed` / `Config parse error`, no nodes run): a `Custom()` wrapper
+> on a plain field sends a `{scope,name}` object to a scalar, and a bare literal on
+> a `variableType` field sends a scalar into a scope slot — the robot can't
+> unmarshal either. **Always check `get_node_schema`:** a `number`/`boolean`/`enum`
+> field takes a plain literal; a field typed `object` with `variableType` takes a
+> scope helper (`Custom()`/`Message()`).
 
 ```typescript
 f.node('a91c4f', 'Core.Browser.WaitElement', 'Wait', {
   inPageId: Message('page_id'),
   inSelector: Custom('//input[@id="login"]'),  // input port → scope helper
-  optTimeout: 30                               // number option → plain
+  optTimeout: Custom('30')                     // WaitElement.optTimeout is variableType:Integer → scope helper
 });
 ```
-
-> ⚠️ **Wrapping a plain-typed `opt*` field in `Custom()` makes the flow VALIDATE
-> but FAIL TO LOAD on the robot.** `optTimeout: Custom('30')` compiles to a
-> `{scope, name}` object, but the node's `OptTimeout` is a plain number — the robot
-> can't unmarshal the object, so the run dies at load (`flow_error: failed`, no
-> nodes run) with no obvious cause. Write `optTimeout: 30`.
->
-> **When unsure, check `get_node_schema`:** a `number` / `boolean` / `enum` field is
-> a plain literal; a `variableType` / object field takes a scope helper.
 
 **Examples of the rule:**
 
@@ -304,11 +306,15 @@ optUrl: Custom('https://api.example.com')   // ✓ optUrl is a Var
 optDownloadDir: Custom('/home/me/Downloads')// ✓ optDownloadDir is a Var
 optNofBranches: Custom('3')                 // ✓ optNofBranches is a Var
 
-// plain-typed config → plain literal, NEVER Custom()
-optTimeout: 30          // ✓   optTimeout: Custom('30')     // ✗ won't load on robot
+// enum / boolean config → ALWAYS plain literal, NEVER Custom()
 optBrowser: 'chrome'    // ✓   optBrowser: Custom('chrome') // ✗ config parse error
 optType: 'directory'    // ✓   optType: Custom('directory') // ✗
 optInsecure: true       // ✓   optInsecure: Custom('true')  // ✗
+
+// numeric opt → PER-NODE, check get_node_schema (variableType?)
+optTimeout: 32          // ✓ on Core.Browser.OpenLink  (type: number)
+optTimeout: Custom('30')// ✓ on Core.Browser.WaitElement (variableType: Integer)
+//   using the wrong one for the node → validates but FAILS TO LOAD
 
 // runtime hints — also plain literals
 delayBefore: 2          // ✓        delayAfter: Custom('2')  // ✗ wraps a hint as a port value

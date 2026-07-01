@@ -16,7 +16,7 @@ flow.create('a1f003', 'Browser Scrape with Cleanup', (f) => {
       inPageId: Message('page_id'),
       inSelector: Custom('h1'),
       inSelectorType: 'css',
-      optTimeout: 15
+      optTimeout: Custom('15')
     })
     .then('555555', 'Core.Browser.RunScript', 'Scrape', {
       inPageId: Message('page_id'),
