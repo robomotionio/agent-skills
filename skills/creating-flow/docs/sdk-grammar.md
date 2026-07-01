@@ -267,42 +267,52 @@ f.node('c29e6a', 'Core.Browser.OpenLink', 'Navigate', {
 
 ### Custom() - Literal Value
 
-Use for static literal values on **input properties** — strings, numbers, and booleans alike. Anything that maps to an input port needs a scope helper; raw literals are silently dropped because the runtime expects `{scope, value}`:
+The deciding factor is the **field's type in the node**, not the `in*`/`opt*` name:
+
+- **Variable-backed fields take a scope helper.** Every `in*`/`out*` port, and the
+  `opt*` fields whose value can be a variable — URLs, file paths, dynamic counts
+  (`optUrl`, `optDownloadDir`, `optNofBranches`). Use `Custom('…')` for a static
+  literal (string OR number), or `Message()`/`Global()` for a dynamic value. A bare
+  literal on one of these is silently dropped — the runtime expects `{scope, value}`.
+- **Plain-typed config fields take a PLAIN literal — never `Custom()`.** Numbers
+  (`optTimeout`, `optMaxRetries`), booleans (`optInsecure`, `optHeaders`), and
+  enum/mode strings (`optBrowser`, `optMethod`, `optType`, `optProxy`).
 
 ```typescript
-f.node('d3af7b', 'Core.Browser.OpenLink', 'Navigate', {
-  inBrowserId: Message('browser_id'),
-  inUrl: Custom('https://example.com'),
-  outPageId: Message('page_id')
-});
-
-// Numeric input props (timeout, retries, …) — wrap them too
 f.node('a91c4f', 'Core.Browser.WaitElement', 'Wait', {
   inPageId: Message('page_id'),
-  inSelector: Custom('#login'),
-  optTimeout: Custom('30')   // ✓ wrapped — even for numbers
-  // optTimeout: 30          // ✗ silently dropped, default applies
+  inSelector: Custom('//input[@id="login"]'),  // input port → scope helper
+  optTimeout: 30                               // number option → plain
 });
 ```
 
-**Two narrow exceptions where you DO use raw literals (no `Custom()`):**
+> ⚠️ **Wrapping a plain-typed `opt*` field in `Custom()` makes the flow VALIDATE
+> but FAIL TO LOAD on the robot.** `optTimeout: Custom('30')` compiles to a
+> `{scope, name}` object, but the node's `OptTimeout` is a plain number — the robot
+> can't unmarshal the object, so the run dies at load (`flow_error: failed`, no
+> nodes run) with no obvious cause. Write `optTimeout: 30`.
+>
+> **When unsure, check `get_node_schema`:** a `number` / `boolean` / `enum` field is
+> a plain literal; a `variableType` / object field takes a scope helper.
 
-1. **Enum / option string props** like `optType`, `optMode`, `optSort`, `optMethod` — plain strings, no scope helper:
-
-```typescript
-// WRONG - creates scope object, causes config parse error
-optType: Custom('directory')
-
-// CORRECT - plain string
-optType: 'directory'
-```
-
-2. **Common runtime props** (`delayBefore`, `delayAfter`, `continueOnError`) — these are NOT input ports, they are runtime hints, so they take raw literals:
+**Examples of the rule:**
 
 ```typescript
-delayBefore: 2          // ✓ raw number
-continueOnError: true   // ✓ raw bool
-delayAfter: Custom('2') // ✗ wraps a runtime hint as a port value
+// variable-backed → scope helper
+inUrl: Custom('https://example.com')        // ✓ input port
+optUrl: Custom('https://api.example.com')   // ✓ optUrl is a Var
+optDownloadDir: Custom('/home/me/Downloads')// ✓ optDownloadDir is a Var
+optNofBranches: Custom('3')                 // ✓ optNofBranches is a Var
+
+// plain-typed config → plain literal, NEVER Custom()
+optTimeout: 30          // ✓   optTimeout: Custom('30')     // ✗ won't load on robot
+optBrowser: 'chrome'    // ✓   optBrowser: Custom('chrome') // ✗ config parse error
+optType: 'directory'    // ✓   optType: Custom('directory') // ✗
+optInsecure: true       // ✓   optInsecure: Custom('true')  // ✗
+
+// runtime hints — also plain literals
+delayBefore: 2          // ✓        delayAfter: Custom('2')  // ✗ wraps a hint as a port value
+continueOnError: true   // ✓
 ```
 
 ### JS() - JavaScript Expression

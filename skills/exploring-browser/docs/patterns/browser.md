@@ -33,8 +33,8 @@ Reference for `Core.Browser.*` nodes and common patterns.
 
 ```typescript
 f.node('4a9e12', 'Core.Browser.Open', 'Open Browser', {
-  optBrowser: Custom('chrome'),        // chrome, headlesschrome, firefox, edge
-  optProxy: Custom('robomotion-proxy'), // for protected sites
+  optBrowser: 'chrome',        // chrome, headlesschrome, firefox, edge
+  optProxy: 'robomotion-proxy', // for protected sites
   optMaximized: true,
   outBrowserId: Message('browser_id')
 });
@@ -78,7 +78,7 @@ Wait for dynamic content before interacting:
 f.node('a6c4b7', 'Core.Browser.WaitElement', 'Wait for Results', {
   inPageId: Message('page_id'),
   inSelector: Custom('//div[@class="results"]'),
-  optTimeout: Custom('10')
+  optTimeout: 10
 })
   .then('d38e0f', 'Core.Browser.RunScript', 'Extract Data', {
     inPageId: Message('page_id'),
@@ -224,7 +224,7 @@ For sites that block datacenter IPs, route the browser through the Robomotion pr
 ```typescript
 f.node('4a9e12', 'Core.Browser.Open', 'Open Browser', {
   optBrowser: 'chrome',
-  optProxy: Custom('robomotion-proxy'),
+  optProxy: 'robomotion-proxy',
   outBrowserId: Message('browser_id')
 });
 ```

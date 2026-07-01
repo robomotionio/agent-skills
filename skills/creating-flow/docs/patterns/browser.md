@@ -29,18 +29,182 @@ Reference for `Core.Browser.*` nodes and common patterns.
 | `Screenshot` | Capture screenshot | `inPageId`, `inPath` |
 | `Select` | Select dropdown option | `inPageId`, `inSelector`, `inValue` |
 
+## Selectors — ALWAYS use XPath (the default; most common runtime failure)
+
+**Every `Core.Browser.*` element node — `ClickElement`, `TypeText`, `GetValue`,
+`SetValue`, `WaitElement`, `Select` — interprets `inSelector` as XPath by
+default.** The node has an `inSelectorType` property with two values:
+`xpath:position` (the default) and `css`. Get this wrong and the element is
+never found: the flow fails at runtime with
+`Wait element timed out: element not found` even though the URL and page are
+correct and the selector looks fine in DevTools.
+
+**The rule is simple: always write XPath.** Every selector on every element node
+is XPath — no exceptions in normal flows. CSS is a rare last resort (see below)
+that you should almost never need. Do not reach for `inSelectorType: 'css'`
+because a CSS handle was easier to copy from DevTools — translate it to XPath.
+
+Rules (follow exactly):
+
+- **Always write XPath and omit `inSelectorType`.** When you explore a page
+  (`/exploring-browser`) you'll note CSS-style handles like `#email` or
+  `input[type="email"]` — you MUST translate them to XPath before writing the
+  node:
+
+  | What you found | Write this XPath (NOT the CSS) |
+  |----------------|-------------------------------|
+  | `#email` | `//input[@id='email']` |
+  | `input[type="email"]` | `//input[@type='email']` |
+  | `.submit` | `//*[contains(@class,'submit')]` |
+  | button text "Sign In" | `//button[normalize-space()='Sign In']` |
+  | link text "Reports" | `//a[normalize-space()='Reports']` |
+  | first of many identical | `(//button[@data-testid='row-action'])[1]` |
+
+  ```typescript
+  f.node('000004', 'Core.Browser.TypeText', 'Type Email', {
+    inPageId: Message('page_id'),
+    inSelector: Custom("//input[@id='email']"),   // XPath, no inSelectorType
+    inText: Custom('user@example.com')
+  });
+  ```
+
+- **NEVER pass a CSS-style string (`#id`, `.class`, `input[type="email"]`) without
+  setting the type** — it is parsed as XPath and silently fails. The fix is to
+  rewrite it as XPath, NOT to switch the node to CSS.
+
+- **Last resort only** — if a selector is genuinely impossible to express in
+  XPath (extremely rare), set the type explicitly to `css`. Treat this as the
+  exception you have to justify, not a convenience:
+
+  ```typescript
+  f.node('000004', 'Core.Browser.TypeText', 'Type Email', {
+    inPageId: Message('page_id'),
+    inSelectorType: 'css',               // PLAIN literal (enum) — REQUIRED whenever inSelector is CSS
+    inSelector: Custom('#email'),
+    inText: Custom('user@example.com')
+  });
+  ```
+
+- **Do NOT write `inSelectorType: 'xpath'`** — that is not a valid value (the
+  XPath enum value is `xpath:position`). For XPath, just omit `inSelectorType`
+  entirely — that's the default. (If you ever did set it, it would be the plain
+  literal `'xpath:position'`, never `Custom(...)` — but omitting it is correct.)
+
+- **Summary rule: XPath ⇒ omit `inSelectorType`; CSS ⇒ always set
+  `inSelectorType: 'css'`.** Any node whose `inSelector` is a CSS selector MUST
+  also carry `inSelectorType: 'css'` — no exceptions. Note `inSelectorType` is an
+  enum, so it takes the PLAIN literal `'css'`, NEVER `Custom('css')` (wrapping an
+  enum in `Custom()` makes the robot reject the node at load — see Browser
+  Options below).
+
+- Be consistent across a flow: XPath on every node. Never mix XPath on some nodes
+  and CSS strings on others — use XPath everywhere.
+
+- **Target an input by its OWN attributes, not by nearby label text.** The visible
+  label next to a field is almost always a separate `<label>`/text element — it is
+  NOT the input's `@placeholder`. Writing `//input[@placeholder='<the label you
+  saw>']` is a frequent cause of `element not found`. Use the input's real, stable
+  attributes from your snapshot, in order of preference: `@id` → `@name` →
+  `@type`/`@autocomplete`. For example, if you explored a field whose label reads
+  "Full name" but the input is `<input id="fullName">`, write `//input[@id='fullName']`
+  — **never** `//input[@placeholder='Full name']`. Only use `@placeholder` if you
+  confirmed that exact placeholder is on the input itself in the snapshot.
+
+## Never pick an ambiguous XPath (it must match exactly ONE element)
+
+A selector that matches **more than one** element is a top cause of wrong/flaky
+automations: at runtime the robot acts on the first/wrong match or the node
+errors. As you explore, **confirm every selector you write resolves to exactly one
+element on that page.** Prefer the most robust form available:
+
+1. **A stable, unique attribute** — `//input[@id='email']`, `//*[@data-testid='x']`,
+   `//input[@name='username']`. Best choice; use it whenever the element has one.
+2. **A distinctive attribute** — `@type`, `@autocomplete`, `@aria-label`, `@role`.
+3. **Exact text on the right element** — `//button[normalize-space()='Submit']`.
+   Use exact `normalize-space()='...'`, not `contains(text(),'...')`, which
+   over-matches and silently grabs the first hit.
+4. **Last resort: a scoped path or explicit index** — only when you have verified
+   the order is stable and you genuinely want the Nth match (e.g. "the first of
+   many identical row buttons" → `(//table//button[@data-testid='row-action'])[1]`).
+
+Avoid:
+
+- **Brittle absolute paths** (`/html/body/div[2]/div[3]/...`) — break on any layout
+  change.
+- **Bare tag matches** that hit many nodes (`//input`, `//button`, `//a`).
+- **`contains(...)` that over-matches** several elements — prefer exact text, or
+  scope it: `//form[@id='login']//button[normalize-space()='Sign In']`.
+- **Guessed positional `[n]`** — index only when you verified the order.
+
+When unsure, **scope by a nearby stable container** instead of reaching for an
+index: `//*[@id='login']//input[@type='password']` beats `(//input)[2]`. This is
+mandatory even if the user does not ask for it — robust, unambiguous selectors are
+the default, not an option.
+
 ## Browser Options
 
 ```typescript
 f.node('4a9e12', 'Core.Browser.Open', 'Open Browser', {
-  optBrowser: Custom('chrome'),        // chrome, headlesschrome, firefox, edge
-  optProxy: Custom('robomotion-proxy'), // for protected sites
-  optMaximized: true,
+  optBrowser: 'chrome',          // PLAIN STRING — chrome | headlesschrome | firefox | edge
+  optProxy: 'robomotion-proxy',  // PLAIN STRING — no-proxy | robomotion-proxy | custom
+  optMaximized: true,            // boolean literal
   outBrowserId: Message('browser_id')
 });
 ```
 
-| `optBrowser` | Description |
+> **CRITICAL — enum/dropdown options take a PLAIN value, NOT `Custom()`.**
+> `optBrowser`, `optProxy`, `optProxyAuth`, `optClickType` and similar fixed-choice
+> "opt*" fields are plain strings (or booleans like `optMaximized`). Wrapping them
+> in `Custom(...)` emits a `{name, scope}` object, and the robot rejects it at load
+> time with **`Config parse error`** / `interface conversion: ... is string, not
+> []interface {}` — the flow never starts (no `flow_start`, no node runs).
+> `Custom()` / `Message()` are ONLY for value fields that accept a variable
+> (selectors, URLs, text, paths: `inSelector`, `inUrl`, `inText`, `optDownloadDir`,
+> `optProxyAddr`, …). When unsure whether an option is an enum, omit it and take
+> the default rather than guessing `Custom()`.
+
+## Downloading files (set `optDownloadDir`)
+
+When the task is to **download a file** (PDF, export, report, etc.), clicking the
+download control is NOT enough: a headless browser discards downloads unless you tell
+it where to put them. On `Core.Browser.Open` set **`optDownloadDir`** to an absolute
+folder (it's a value field, so `Custom(...)` is correct here).
+
+**Clicking only STARTS the download — wait for it to FINISH before `Close`/`Stop`.**
+A click returns immediately; the file is still streaming to disk. If `Close Browser`
+or the flow's `Stop` runs right after, the browser is torn down mid-transfer and the
+file is **cancelled / never lands**. So leave a real delay between the download click
+and `Close`. The simplest way is the common `delayAfter` runtime prop on the click
+node (raw seconds, no extra node) — or `delayBefore` on Close/Stop:
+
+```typescript
+f.node('4a9e12', 'Core.Browser.Open', 'Open Browser', {
+  optBrowser: 'chrome',
+  optDownloadDir: Custom('/home/<user>/Downloads'),  // REQUIRED to persist downloads
+  outBrowserId: Message('browser_id')
+});
+// ... navigate to the download control ...
+f.node('a1b2c3', 'Core.Browser.ClickElement', 'Download', {
+  inPageId: Message('page_id'),
+  inSelector: Custom('<xpath you explored for the download control>'),
+  delayAfter: 5   // seconds AFTER the click — let the file finish writing to disk
+})
+  .then('8e7d6c', 'Core.Browser.Close', 'Close Browser', { inBrowserId: Message('browser_id') });
+```
+
+`delayBefore`/`delayAfter` are common runtime props on every node (raw float seconds,
+NOT wrapped in `Custom()`). A `Core.Programming.Sleep` node works too — but **do NOT
+"wait" with `Core.Browser.WaitElement` on `//body` or any element already on the
+page**: `WaitElement` waits for an element to *appear*, and those already exist, so
+it returns in ~0ms and waits for nothing — the download still gets cut off. Only use
+WaitElement to wait for something that is genuinely not there yet.
+
+Without `optDownloadDir`, OR if `Close`/`Stop` races the download, the flow still
+reports `flow_end success` (the click succeeded) but **no file lands on disk** — a
+confusing "it worked but nothing downloaded" outcome. Always set `optDownloadDir`
+AND a real delay before Close for download tasks.
+
+| `optBrowser` (plain string) | Description |
 |--------------|-------------|
 | `chrome` | Chrome with UI |
 | `headlesschrome` | Chrome headless (no UI) |
@@ -78,7 +242,7 @@ Wait for dynamic content before interacting:
 f.node('a6c4b7', 'Core.Browser.WaitElement', 'Wait for Results', {
   inPageId: Message('page_id'),
   inSelector: Custom('//div[@class="results"]'),
-  optTimeout: Custom('10')
+  optTimeout: 10
 })
   .then('d38e0f', 'Core.Browser.RunScript', 'Extract Data', {
     inPageId: Message('page_id'),
@@ -99,6 +263,67 @@ f.node('a6c4b7', 'Core.Browser.WaitElement', 'Wait for Results', {
     outResult: Message('table_json')
   });
 ```
+
+## NEVER "wait for the dashboard" with a guessed selector (top login failure)
+
+`Wait element timed out: element not found` is the #1 runtime failure. It is
+almost always a `WaitElement` (or a `Wait for Dashboard`/`Wait for MFA` node) that
+waits on a selector you **assumed** rather than one you **verified on that exact
+page**. Two hard rules:
+
+- **Action nodes already wait for their own target.** A `ClickElement` on
+  `//a[normalize-space()='Reports']` waits for that link to exist. So after a
+  login you do NOT need a separate "Wait for Dashboard" node — just make the next
+  real step (click a nav link, read a value) target an element you confirmed is on
+  the post-login page. A standalone wait for a *guessed* dashboard element only
+  adds a 30-second timeout and a failure.
+- **Only `WaitElement` on a SPECIFIC element you explored** (a spinner to
+  disappear, a results table to appear) — never a vague "page is ready" guess.
+
+## Logins can have more than one step — explore through to the goal
+
+Every site is different. Do not assume a login is `type → type → click Sign In →
+dashboard`. Submitting a login form often lands on **another step** (a
+verification / 2FA / "confirm it's you" screen, a consent page, a redirect) before
+the real destination. If you build `Sign In → Wait for Dashboard`, you time out,
+because the page is on that in-between step, not the dashboard.
+
+So: **explore THROUGH the whole flow** (`/exploring-browser`) — submit, snapshot
+the *next* page, and keep going until you reach the goal. Build exactly the steps
+you actually saw, with the selectors from your own snapshots. Whatever extra
+screen appears, handle it before moving on.
+
+If a verification step asks for a code: the code is **per-run and secret — never
+hardcode it**. Take it from a flow variable / input the user provides
+(`Message('otp_code')`), or from email/SMS via the relevant node. How the field
+and button are identified is entirely site-specific — use what you explored.
+
+The shape (selectors below are **examples only** — every site's are different):
+
+```typescript
+// ... Type Email → Type Password → Click 'Sign In' (each waits for its target) ...
+
+// Whatever screen Sign In landed on, build what you explored. If it's a code
+// field, the TypeText already waits for it — no separate "Wait" node:
+f.node('a11111', 'Core.Browser.TypeText', 'Enter Code', {
+  inPageId: Message('page_id'),
+  inSelector: Custom('<xpath you explored for the code field>'),  // example
+  inText: Message('otp_code')                                     // per-run, NOT hardcoded
+});
+
+f.node('a22222', 'Core.Browser.ClickElement', 'Confirm', {
+  inPageId: Message('page_id'),
+  inSelector: Custom('<xpath you explored for the confirm button>')
+});
+
+// Reached the destination — don't "wait" for it, just target the first real
+// element you need (that action node waits for it on its own).
+```
+
+None of the selectors here are universal — `#code`, `Verify`, the on-page-code
+handle are examples. Always build from what `/exploring-browser` showed on the
+real verification page; the point is the SHAPE (handle the code step; don't wait
+on a guessed dashboard), not these exact strings.
 
 ## Execute JavaScript
 
@@ -173,6 +398,12 @@ f.node('c3d4e5', 'Core.Browser.RunScript', 'Extract Table', {
 - Use our Data Table format: `{ columns: string[], rows: object[] }`
 - Row object keys MUST match column names exactly
 - Use `element ? element.innerText : ''` (NOT optional chaining `?.` — ES5 only in func strings)
+- **Extract CLEAN text — prefer `.innerText`/`.textContent`, which are already
+  decoded.** Reading an attribute (`getAttribute('title')`) or `innerHTML` can
+  carry raw HTML entities into the data (`&#39;`, `&amp;`, `&quot;`), which then
+  land verbatim in the user's CSV/sheet. If you must read one of those, decode it:
+  `var d = document.createElement('textarea'); d.innerHTML = s; s = d.value;` —
+  the user should see `it's`, never `it&#39;s`.
 
 ## Cookie & Session Management
 
@@ -224,7 +455,7 @@ For sites that block datacenter IPs, route the browser through the Robomotion pr
 ```typescript
 f.node('4a9e12', 'Core.Browser.Open', 'Open Browser', {
   optBrowser: 'chrome',
-  optProxy: Custom('robomotion-proxy'),
+  optProxy: 'robomotion-proxy',
   outBrowserId: Message('browser_id')
 });
 ```

@@ -28,12 +28,18 @@ In `Core.Programming.Function` nodes, use `global.get('$VariableName$')`:
 // Get home directory (works on Linux, Windows, Mac)
 msg.home = global.get('$Home$');
 
-// Build cross-platform paths
-msg.outputPath = global.get('$Home$') + global.get('$PathSeparator$') + 'output';
+// Build paths with a literal '/' separator (works everywhere the robot runs)
+msg.outputPath = global.get('$Home$') + '/' + 'output.xlsx';
 
 // Use temp directory for temporary files
 msg.tempFile = global.get('$TempDir$') + '/' + 'data.json';
 ```
+
+> **Do NOT use `global.get('$PathSeparator$')` to join paths.** At runtime it can
+> come back as the character CODE `47` (not the string `"/"`), so
+> `home + global.get('$PathSeparator$') + 'file'` builds `/home/user47file` —
+> a broken path that fails with `permission denied`. Always join with a literal
+> `'/'`; the robot accepts forward slashes on every OS it runs on.
 
 ## Available Variables
 
@@ -43,7 +49,7 @@ msg.tempFile = global.get('$TempDir$') + '/' + 'data.json';
 |----------|-------------|----------------|
 | `$Home$` | User's home directory | `/home/user`, `C:\Users\user`, `/Users/user` |
 | `$TempDir$` | System temp directory | `/tmp`, `C:\Users\user\AppData\Local\Temp` |
-| `$PathSeparator$` | OS path separator | `/` (Linux/Mac), `\` (Windows) |
+| `$PathSeparator$` | OS path separator — **unreliable, may return char code `47`; join paths with a literal `'/'` instead** | `/` (Linux/Mac), `\` (Windows) |
 
 ### Operating System
 
@@ -98,11 +104,10 @@ f.node('42ec21', 'Core.Programming.Function', 'Setup Paths', {
 // Get system directories
 var home = global.get('$Home$');
 var temp = global.get('$TempDir$');
-var sep = global.get('$PathSeparator$');
 
-// Build portable paths
-msg.outputDir = home + sep + 'Documents' + sep + 'output';
-msg.logFile = temp + sep + 'flow_' + Date.now() + '.log';
+// Build paths with a literal '/' (do NOT use $PathSeparator$ — see warning above)
+msg.outputDir = home + '/' + 'Documents' + '/' + 'output';
+msg.logFile = temp + '/' + 'flow_' + Date.now() + '.log';
 
 return msg;
 `
