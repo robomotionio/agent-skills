@@ -29,7 +29,7 @@ Reference for `Core.Browser.*` nodes and common patterns.
 | `Screenshot` | Capture screenshot | `inPageId`, `inPath` |
 | `Select` | Select dropdown option | `inPageId`, `inSelector`, `inValue` |
 
-## Selectors — the default is XPath (most common runtime failure)
+## Selectors — ALWAYS use XPath (the default; most common runtime failure)
 
 **Every `Core.Browser.*` element node — `ClickElement`, `TypeText`, `GetValue`,
 `SetValue`, `WaitElement`, `Select` — interprets `inSelector` as XPath by
@@ -39,9 +39,14 @@ never found: the flow fails at runtime with
 `Wait element timed out: element not found` even though the URL and page are
 correct and the selector looks fine in DevTools.
 
+**The rule is simple: always write XPath.** Every selector on every element node
+is XPath — no exceptions in normal flows. CSS is a rare last resort (see below)
+that you should almost never need. Do not reach for `inSelectorType: 'css'`
+because a CSS handle was easier to copy from DevTools — translate it to XPath.
+
 Rules (follow exactly):
 
-- **Prefer XPath and omit `inSelectorType`.** When you explore a page
+- **Always write XPath and omit `inSelectorType`.** When you explore a page
   (`/exploring-browser`) you'll note CSS-style handles like `#email` or
   `input[type="email"]` — you MUST translate them to XPath before writing the
   node:
@@ -64,24 +69,36 @@ Rules (follow exactly):
   ```
 
 - **NEVER pass a CSS-style string (`#id`, `.class`, `input[type="email"]`) without
-  setting the type** — it is parsed as XPath and silently fails.
+  setting the type** — it is parsed as XPath and silently fails. The fix is to
+  rewrite it as XPath, NOT to switch the node to CSS.
 
-- If you genuinely need CSS, set the type explicitly to `css`:
+- **Last resort only** — if a selector is genuinely impossible to express in
+  XPath (extremely rare), set the type explicitly to `css`. Treat this as the
+  exception you have to justify, not a convenience:
 
   ```typescript
   f.node('000004', 'Core.Browser.TypeText', 'Type Email', {
     inPageId: Message('page_id'),
-    inSelectorType: Custom('css'),       // REQUIRED whenever inSelector is CSS
+    inSelectorType: 'css',               // PLAIN literal (enum) — REQUIRED whenever inSelector is CSS
     inSelector: Custom('#email'),
     inText: Custom('user@example.com')
   });
   ```
 
 - **Do NOT write `inSelectorType: 'xpath'`** — that is not a valid value (the
-  XPath enum is `xpath:position`). For XPath, just omit `inSelectorType`.
+  XPath enum value is `xpath:position`). For XPath, just omit `inSelectorType`
+  entirely — that's the default. (If you ever did set it, it would be the plain
+  literal `'xpath:position'`, never `Custom(...)` — but omitting it is correct.)
 
-- Be consistent across a flow: don't mix XPath on some nodes and bare CSS strings
-  on others. Pick XPath for everything unless a CSS selector is unavoidable.
+- **Summary rule: XPath ⇒ omit `inSelectorType`; CSS ⇒ always set
+  `inSelectorType: 'css'`.** Any node whose `inSelector` is a CSS selector MUST
+  also carry `inSelectorType: 'css'` — no exceptions. Note `inSelectorType` is an
+  enum, so it takes the PLAIN literal `'css'`, NEVER `Custom('css')` (wrapping an
+  enum in `Custom()` makes the robot reject the node at load — see Browser
+  Options below).
+
+- Be consistent across a flow: XPath on every node. Never mix XPath on some nodes
+  and CSS strings on others — use XPath everywhere.
 
 - **Target an input by its OWN attributes, not by nearby label text.** The visible
   label next to a field is almost always a separate `<label>`/text element — it is
