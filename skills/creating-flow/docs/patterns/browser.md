@@ -242,7 +242,7 @@ Wait for dynamic content before interacting:
 f.node('a6c4b7', 'Core.Browser.WaitElement', 'Wait for Results', {
   inPageId: Message('page_id'),
   inSelector: Custom('//div[@class="results"]'),
-  optTimeout: 10
+  optTimeout: Custom('10')   // WaitElement.optTimeout is variableType:Integer → scope helper, not a bare number
 })
   .then('d38e0f', 'Core.Browser.RunScript', 'Extract Data', {
     inPageId: Message('page_id'),
