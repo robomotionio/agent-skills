@@ -27,6 +27,39 @@ f.node('3a7c92', 'Robomotion.GoogleGemini.GenerateText', 'Generate', {
 - **Literal URL / config value** — use `Custom('https://example.com')`, not `Credential()`. `Credential()` is ONLY for `inCredentials` / `optCredentials`.
 - **Non-secret test strings** — keep them in `Custom()` or a Function-node constant.
 - **You've already called `Core.Vault.GetItem`** — read individual fields from `msg.credentials.*` via `Message()`, not a second `Credential()` call.
+- **An OPTIONAL credential property you don't need** — omit it entirely. See "Optional vs required credential properties" below.
+
+## Optional vs required credential properties
+
+Not every `optCredentials` property is mandatory. Some nodes take credentials only for an *optional* capability — e.g. `Core.Excel.Open`'s `optCredentials` exists solely to open **password-protected** files. For a normal, unprotected file you must **leave the property out completely**.
+
+Do NOT emit `optCredentials` with placeholder/empty vault values (`{ vaultId: '_', itemId: '_' }` or blank strings). The validator rejects it with:
+
+> Property 'optCredentials' requires vault credentials but has empty/placeholder values.
+
+```typescript
+// WRONG — placeholder credentials on an unprotected file → validation error
+f.node('a1b2c3', 'Core.Excel.Open', 'Open Excel', {
+  inPath: Custom('/data/report.xlsx'),
+  optCredentials: Credential({ vaultId: '_', itemId: '_' }),   // remove this
+  outFileDescriptor: Message('excel_fd')
+});
+
+// CORRECT — no password needed: omit optCredentials entirely
+f.node('a1b2c3', 'Core.Excel.Open', 'Open Excel', {
+  inPath: Custom('/data/report.xlsx'),
+  outFileDescriptor: Message('excel_fd')
+});
+
+// CORRECT — password-protected file: real vault reference
+f.node('a1b2c3', 'Core.Excel.Open', 'Open Excel', {
+  inPath: Custom('/data/secret.xlsx'),
+  optCredentials: Credential({ vaultId: 'vault-uuid', itemId: 'item-uuid' }),
+  outFileDescriptor: Message('excel_fd')
+});
+```
+
+Rule of thumb: only set a credential property when you have a **real** `vaultId`/`itemId` to put in it. If you don't, drop the property. (The exception is `Core.Vault.GetItem`, where `optCredentials` is the node's whole purpose and is always required — see Pattern 3.)
 
 ## The Four Patterns
 
@@ -163,12 +196,14 @@ robomotion get vault-items <vault-id>          # list items in a vault
 | `Core.Mail.Connect` | `optCredentials` | 2 (EmailItem) |
 | `Robomotion.SQLite.Connect` | `inCredentials` | 5 (DatabaseItem) |
 | `Core.Vault.GetItem` | `optCredentials` | Any — use `Credential()` wrapper |
+| `Core.Excel.Open` | `optCredentials` | 4 — **OPTIONAL**, only for password-protected files; omit otherwise |
 
 ## Common Mistakes
 
 | Mistake | Consequence | Fix |
 |---------|-------------|-----|
 | `Core.Vault.GetItem` without `optCredentials` | "Vault has to be selected" | Add `optCredentials: Credential({...})` |
+| Setting an OPTIONAL `optCredentials` (e.g. `Core.Excel.Open`) with `_`/blank placeholders | "requires vault credentials but has empty/placeholder values" | Omit the property unless the file is password-protected |
 | `Credential()` on non-credential property (e.g. `inText`) | "Config parse error" | Use `Core.Vault.GetItem` first, then `Message('creds.field')` |
 | Hardcoding API keys in `Custom()` | Secret exposed in code | Use `Credential()` with vault reference |
 | `Custom()` wrapping credential object | Runtime panic | Use `Credential()` or plain object on `inCredentials` |
