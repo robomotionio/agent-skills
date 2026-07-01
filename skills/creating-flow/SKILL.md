@@ -57,6 +57,8 @@ Map an error symptom to the doc that fixes it. When `validate_flow` fails, look 
 | `Cannot chain from node (outputs=0)` | `.then()` after `Debug`/`Log`/`Stop`/`GoTo`/`End` | Wire TO terminals via `f.edge()`, never FROM them |
 | `Invalid input port 0. Node has 0 input(s)` on a Label | Wired into `Core.Flow.Label` (Label has 0 inputs in some pspecs) | Use `Core.Flow.GoTo` with `optNodes.ids: [<labelId>]` to jump to the Label |
 | `Vault has to be selected` at runtime | Missing `optCredentials` on `Core.Vault.GetItem` | `./docs/patterns/credentials.md` |
+| `Property 'optCredentials' requires vault credentials but has empty/placeholder values` | An OPTIONAL credential prop (e.g. `Core.Excel.Open` for password-protected files) set with `_`/blank placeholders | Omit `optCredentials` entirely unless you have a real vault reference — `./docs/patterns/credentials.md` |
+| `inSelectorType` invalid value `'xpath'` (allowed: `xpath:position`, `css`) | Wrote `inSelectorType: 'xpath'` — not a valid enum value | For XPath just OMIT `inSelectorType` (it's the default); the XPath enum literal is `xpath:position`, never `xpath`. CSS ⇒ `inSelectorType: 'css'`. `./docs/patterns/browser.md` |
 | `inLabel` property not found on GoTo | Wrong property | `optNodes: { ids: [...], type: 'goto', all: false }` |
 | `Core.Programming.If` not found | Node doesn't exist | `Core.Programming.Function` with `outputs: 2` (`./docs/patterns/conditions.md`) |
 | Wrong node name (e.g. `Core.CSV.Read`, `Browser.Click`) | Common naming mistake | `./docs/reference/node-naming.md` |

@@ -218,7 +218,16 @@ f.node('8b3e72', 'Core.CSV.ReadCSV', 'Read CSV', {
 ```
 
 ### Excel Range (Local)
+
+Reading a local `.xlsx` first needs `Core.Excel.Open` to get the file descriptor. **Do NOT set `optCredentials`** — it's optional and only for password-protected files. Passing placeholder vault values (`{ vaultId: '_', itemId: '_' }`) fails validation with *"Property 'optCredentials' requires vault credentials but has empty/placeholder values."* Omit it entirely (see `credentials.md` → "Optional vs required credential properties").
+
 ```typescript
+// Open the existing file — no credentials for a normal, unprotected workbook
+f.node('b1c2d3', 'Core.Excel.Open', 'Open Excel', {
+  inPath: Custom('/data/report.xlsx'),
+  outFileDescriptor: Message('excel_fd')
+});
+
 f.node('c5f4a1', 'Core.Excel.GetRange', 'Get Range', {
   inFileDescriptor: Message('excel_fd'),
   inFromCell: Custom('A1'),
