@@ -40,6 +40,7 @@ For library files swap `flow` for `library` / `subflow`. Full reference: `./docs
 - Library projects use `library.create(id, name, fn)` with `Begin`/`End` nodes (no `.start()`). Inline subflows use `subflow.create(name, fn)`.
 - Every flow ends with `.start()`. Every flow has a `Core.Flow.Stop` node.
 - `Core.*` packages (`Core.Trigger`, `Core.Browser`, `Core.Programming`, `Core.CSV`, `Core.Flow`, `Core.Vault`, `Core.Net`, `Core.Excel`, …) are **embedded in the robot** — NEVER call `f.addDependency('Core.*', …)`. The Designer auto-loads them. Only call `f.addDependency(ns, ver)` for non-`Core.*` packages. When updating an existing flow, NEVER bump existing `addDependency` versions; only add missing ones.
+- **Comments & canvas layout** — `Core.Flow.Comment` nodes (with an `optText` markdown string) title the flow and fence its logical phases; the visual arrangement — node `positions`, comment box colors/sizes, and Sugiyama-style layering — lives in `main.designer.ts`. Layout is cosmetic (never affects runtime) but it's what makes a flow readable. See `./docs/patterns/comments-and-layout.md`.
 
 Full grammar: `./docs/sdk-grammar.md`. Architecture: `./docs/architecture.md`.
 
@@ -91,6 +92,7 @@ Read these docs before writing the corresponding code:
 | Data tables (CSV / Excel / Sheets / SQLite / Pandas / Airtable / DOMParser / DataTable) — **MANDATORY** before writing any code that produces or consumes `msg.table` | `./docs/patterns/data-tables.md` |
 | Captcha solving | `./docs/patterns/captcha.md` |
 | Migrating a legacy `Robomotion.Assistant` flow → `Robomotion.ChatAssistant` | `./docs/patterns/assistant-migration.md` |
+| Comments, grouping & Sugiyama layout (title box, colored phase headers + description text, box sizing, `main.designer.ts`) | `./docs/patterns/comments-and-layout.md` |
 
 References:
 
