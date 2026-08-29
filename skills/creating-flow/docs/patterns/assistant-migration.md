@@ -45,7 +45,7 @@ Pick the mode that matches the *legacy* flow's intent, then pick the structure:
 
 - **Conversational** — the legacy flow was chat-like (used `Prompt` to read free text, looped, fed
   an LLM). Restructure around an LLM Agent. Interactive widgets are **rejected at runtime in
-  conversational mode** (see §6).
+  conversational mode before ChatAssistant 1.9.0** (see §6).
 
   ```
   New:     ChatIn → LLM Agent → Text → ChatOut
@@ -203,17 +203,26 @@ a Function / the widget label):
 
 ---
 
-## 6. Mode rule (will fail at runtime if ignored)
+## 6. Mode rule (depends on the ChatAssistant version)
 
-In **conversational** mode the interactive widgets error out
-(`Cannot use <widget> in conversational mode`): **ButtonGroup, Dropdown, Checkbox, RadioButton,
-Datepicker, Textbox, UploadFile, DownloadFile, Auth, CustomWidget(interactive)**.
+**From `Robomotion.ChatAssistant` 1.9.0 every widget works in both modes.** The composer is
+locked for the whole turn, so a mid-turn `ButtonGroup` is unambiguous — there is nowhere else
+for the user to answer. An agent can ask a real multiple-choice question instead of "reply
+with 1, 2 or 3".
 
-Display-only nodes work in **both** modes: **Text, Header, Divider, Image, Video, Error,
-StreamingText**, and `CustomWidget` in `static` mode.
+**Before 1.9.0** these error out in conversational mode with
+`Cannot use <widget> in conversational mode`: **ButtonGroup, Dropdown, Checkbox, RadioButton,
+Datepicker, UploadFile, DownloadFile**, and `Image`/`Video` given a *local file path* (a URL
+was always fine). `Textbox`, `Auth` and `CustomWidget` were never restricted, despite what
+earlier revisions of this doc said.
 
-➡ If the legacy flow was a widget form, target **guided** mode. If it was chat/LLM, target
-**conversational** and replace input widgets with the conversation itself.
+Display-only nodes — **Text, Header, Divider, Image, Video, Error, StreamingText** — have
+always worked in both.
+
+➡ Pick the mode by the *shape of the interaction*, not by which widgets you need: a
+deterministic form the flow drives from start to finish is **guided**; a conversation the
+user opens each turn is **conversational**. See `./conversational-chat.md` for the turn
+contract, streaming and attachments.
 
 ---
 
@@ -339,7 +348,7 @@ Key diffs: `App In`→`ChatIn`; `App Out` / `End`→`ChatOut` (no more `msg.out`
 - [ ] `ChangeMode` and `Theme` nodes deleted (no equivalent).
 - [ ] Options moved from `optOptions`/`optLabels` to `opt*Array`, wrapped in `Message()`/`JS()`.
 - [ ] All `msg.payload.<widgetId>` reads rewritten to the new `outResult` variables.
-- [ ] No interactive widgets left in a **conversational**-mode flow.
+- [ ] Interactive widgets in a **conversational**-mode flow: fine from ChatAssistant 1.9.0; before that, pinned to a version that allows them or removed.
 - [ ] Numeric inputs wrapped in a scope helper (`inLevel: Custom('2')`, `optRows: Custom('4')`).
 - [ ] LLM Agent + Catch/Error branch present for conversational migrations.
 - [ ] `addDependency('Robomotion.ChatAssistant', …)` pinned to a real published version.
