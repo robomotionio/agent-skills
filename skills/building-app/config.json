@@ -1,0 +1,19 @@
+{
+  "name": "Building App",
+  "namespace": "Robomotion.Skill.BuildingApp",
+  "version": "0.1.0",
+  "categories": [
+    "Artificial Intelligence"
+  ],
+  "description": "Builds a Robomotion App - a real React web app plus a robot backend - by conversation with a non-technical person. Owns the full lifecycle: clarify → contract (app.json) → screens with sample data → live preview → backend actions → publish. Use when the user wants an app, dashboard, portal, form, approval queue, or any screens people will click.",
+  "icon": "icon.png",
+  "skill": {
+    "runtime": "none",
+    "command": "building-app",
+    "platforms": [
+      "linux",
+      "darwin",
+      "windows"
+    ]
+  }
+}

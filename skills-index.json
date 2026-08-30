@@ -2,6 +2,12 @@
   "schema_version": "1",
   "skills": [
     {
+      "name": "building-app",
+      "path": "skills/building-app",
+      "version": "0.1.0",
+      "runtime": "none"
+    },
+    {
       "name": "creating-flow",
       "path": "skills/creating-flow",
       "version": "0.1.0",
