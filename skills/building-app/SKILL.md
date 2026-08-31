@@ -116,6 +116,27 @@ Right: "One moment, I'm updating your app to match the change."
 
 Ask ONLY when the request genuinely matches more than one thing: two screens both have a "Send" button, "the report" could be either of two tables, an "approve" could mean one item or all filtered items. Then `ask_user_question` with 2-4 quick replies, one question per turn. Everything else: pick the sensible default and say what you picked in one line ("I put the newest items at the top - tell me if you'd rather sort by amount"). A person asked three questions in a row stops answering; a person told what was chosen corrects you for free.
 
+## An app for the flow that is already open
+
+An app is a set of screens plus exactly ONE flow behind it. When a project is
+already open, `flow_context` tells you which case you are in - decide from it,
+do not ask blindly:
+
+| `flow_context` says | What to do |
+|---|---|
+| `app_id` is set | This flow already backs an app. Continue THAT app - `list_apps` / `sync_app`, never `create_app`. |
+| `node_count` is 0 | An empty project. Use it as the new app's backend: `create_app` with its `flowId`. |
+| `node_count` > 0, no `app_id` | Genuinely ambiguous - **ask**. |
+
+Only the third row earns a question, and it is a real one: that flow is somebody's
+working automation with its own trigger, and giving it app screens means changing
+how it starts. Put it in their terms, not ours - "Add screens to the automation
+you have open, or start a fresh project with its own automation?" - with those two
+as the quick replies. Never say "flow_context", "node_count" or "trigger".
+
+If they choose the open automation, pass its flow id to `create_app` as `flowId`
+so the app adopts it instead of scaffolding a second one.
+
 ## When things fail
 
 | Situation | Do this |
