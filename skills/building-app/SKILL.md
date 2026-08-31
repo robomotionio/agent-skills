@@ -39,7 +39,7 @@ Narrate progress through `todo_write`, with items phrased in the user's language
 2. **Write `app.json`** - read `./docs/contract.md` first. Every `description` line doubles as the Designer's UI copy, so write it for the end user.
 3. **Generate the screens from the archetype, with sample data baked in.** Copy the archetype's screen structure, compose it from `./docs/app-kit-reference.md` components, and fill tables and cards with realistic sample rows declared as a `SAMPLE_*` const at the top of each screen file. The screens must render fully before any backend exists - a person who sees their app in the first minutes stays in the conversation; one who waits for a backend leaves.
 4. **`save_app`, then `push_app`.** `save_app` commits the working copy; `push_app` publishes it to the app repo and brings the preview up in about 90 seconds. Tell the person to look at it, and that the numbers are sample data until their robot is connected.
-4b. **`bun run codegen`** whenever `app.json` changes, before writing code against it. It regenerates both typed clients and prints the contract hash.
+4b. **`robomotion app codegen`** whenever `app.json` changes, before writing code against it. Run it from the app folder; it regenerates both typed clients and prints the contract hash.
 
 5. **Build the flow backend, one action at a time**, in the order the user will click them. For each action: `App Action` trigger → the real work → `App Respond` on EVERY path (an unresponded call only ends by timeout, which the user experiences as a hung button). Long work sends `App Progress`. The generated `flow/src/generated/actions.gen.ts` gives you the param/result types. Flow SDK mechanics (node grammar, browser, credentials) are the `creating-flow` skill - use it.
 6. **`start_app_session`.** Creates a draft instance and starts the flow on the LOCAL robot; the preview's buttons now hit a real robot. Replace each `SAMPLE_*` const with the live `useCollection` / `useAction` data as its backend action comes alive, then delete the const.
@@ -56,11 +56,13 @@ and `<apps>/<appId>/flow`. Work only in those.
   wastes the whole turn, and risks copying one person's app into another's.
   Anchor every path at the two you were given.
 - **Never compute the contract hash yourself, and never shell out to `python`,
-  `node -e` or `jq` to do it.** Run `bun run codegen` in the app folder: it
-  writes both `actions.gen.ts` files from `app.json` and prints the hash.
-  `bun run contract-hash` prints just the hash. Hand-hashing gets a different
+  `node -e` or `jq` to do it.** Run `robomotion app codegen` in the app folder:
+  it writes both `actions.gen.ts` files from `app.json` and prints the hash.
+  `robomotion app hash` prints just the hash. Hand-hashing gets a different
   answer than the server's canonicalisation, which blocks the app from
-  connecting - and python is not installed on most people's machines.
+  connecting with `contract_mismatch` - and python is not installed on most
+  people's machines. `robomotion` is the tool that is always present; do not
+  reach for `bun run`, `npm run` or `npx` to do a job it already does.
 - Prefer the app tools over raw shell generally: `sync_app`, `save_app`,
   `push_app`, `validate_app`, `app_dev_server` each do one job properly.
 
