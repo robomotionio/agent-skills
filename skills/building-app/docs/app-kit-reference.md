@@ -208,6 +208,8 @@ The Build view shows a small badge on every widget that leads somewhere in the f
 ```tsx
 import { bindAction, bindCollection, markGesture } from "@robomotion/apps-runtime/react";
 
+When the rows handed to `DataTable` were sorted or mapped into a new array, pass the hook result as `source={invoices}` so the table still links to the nodes that fill it; an empty derived array carries no identity.
+
 // a custom widget that runs an action (a hand-made drop zone, a card, a link)
 <div {...bindAction(upload)} onDrop={onDrop}>Drop an invoice PDF here</div>
 
