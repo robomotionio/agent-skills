@@ -61,15 +61,16 @@ Never read `window.location.hash` and never build URLs by hand; the app is mount
 
 ### `Button`
 
-`variant`: `primary` / `secondary` / `ghost` / `danger`. `loading` state is built in - feed it from the hook, never track your own spinner flag.
+`variant`: `primary` / `secondary` / `ghost` / `danger`. A button that makes the robot do something takes the action through `action` (the object from `useAction`) and its `params` (a value, or a function of the click event). The click runs it, the spinner shows and the button is disabled while it runs, and the Build view can jump from the button to the step in the flow. Never write your own `onClick={() => run(...)}` plus `loading` plus `disabled` for that.
 
 ```tsx
 const approve = useAction("approveInvoice");
-<Button variant="primary" loading={approve.loading}
-        onClick={() => approve.run({ number: invoice.number })}>
+<Button variant="primary" action={approve} params={{ number: invoice.number }}>
   Approve
 </Button>
 ```
+
+`loading` still exists for a button whose busy state comes from somewhere else, and `onClick` still runs first when both are given. Inside a `<Form action={…}>` the submit button takes no `action` of its own; the form runs it.
 
 ### `Progress`
 
@@ -104,7 +105,7 @@ Icon, title, one action. Every table and list MUST have a designed empty state -
 
 ```tsx
 <EmptyState title="No invoices waiting"
-            action={<Button variant="secondary" onClick={() => refresh.run({})}>Check again</Button>} />
+            action={<Button variant="secondary" action={refresh} params={{}}>Check again</Button>} />
 ```
 
 ### `ErrorState`
@@ -132,20 +133,24 @@ Grouping. A dashboard stat, a detail panel, a form section.
 
 ### `DataTable`
 
-Columns, rows, sort, filter, empty state, row actions, pagination - all built in. This is the workhorse of three of the four archetypes. Give it the collection's records directly; never re-implement sorting or paging in the screen.
+Columns, rows, sort, filter, empty state, row actions, pagination - all built in. This is the workhorse of three of the four archetypes. Give it the collection's records directly (or a filtered or sorted copy of them; never a mapped one) and it knows which collection it shows; never re-implement sorting or paging in the screen. A row action that runs an action is written as `{ label, action, params }` with `params` built from the row; one that only navigates keeps `onSelect`.
 
 ```tsx
 const { records, loading } = useCollection("queue");
+const approve = useAction("approveInvoice");
 <DataTable
   columns={[
-    { key: "number", label: "Invoice" },
-    { key: "supplier", label: "Supplier" },
-    { key: "amount", label: "Amount" },
+    { key: "number", header: "Invoice" },
+    { key: "supplier", header: "Supplier" },
+    { key: "amount", header: "Amount" },
   ]}
   rows={records}
-  rowActions={(row) => <Button variant="ghost" onClick={() => open(row)}>Review</Button>}
+  rowActions={[
+    { label: "Review", onSelect: (row) => navigate(`/review?id=${row.number}`) },
+    { label: "Approve", action: approve, params: (row) => ({ number: row.number }) },
+  ]}
   loading={loading}
-  empty={<EmptyState title="No invoices waiting" />}
+  emptyState={<EmptyState title="No invoices waiting" />}
 />
 ```
 
@@ -157,7 +162,7 @@ const { records, loading } = useCollection("queue");
 
 ```tsx
 const submit = useAction("submitExpense");
-<Form onSubmit={(values) => submit.run(values)}>
+<Form action={submit}>
   <Field name="category" label="Category">
     <Select options={["Travel", "Meals", "Supplies"]} />
   </Field>
@@ -167,25 +172,19 @@ const submit = useAction("submitExpense");
   <Field name="note" label="Note">
     <TextArea />
   </Field>
-  <Button variant="primary" loading={submit.loading}>Submit</Button>
+  <Button type="submit" variant="primary" loading={submit.loading}>Submit</Button>
 </Form>
 ```
 
+`action` runs `submit.run(values)` once the values validate, after `onSubmit` if you also gave one, and links the submit button to the step in the flow. When the screen checks the fields by hand before calling (trimming, custom messages), keep `onSubmit` and spread `bindAction(submit)` on the submit button instead so the link is still declared.
+
 ### `FileUpload`
 
-Drag-and-drop. Returns a `FileRef` via `useFileUpload`; the bytes go over REST, never through the action call. Pass the `FileRef` to the action.
+Drag-and-drop. It uploads by itself and hands back a `FileRef`; the bytes go over REST, never through the action call. Give it the action the file feeds through `action`: once the upload lands it runs `extract.run({ file: ref, ...params })`, and the drop zone is linked to that step in the flow. `onUpload(ref)` still fires first for anything else the screen needs to do (show a "reading" state, say).
 
 ```tsx
-const { upload, uploading, progress } = useFileUpload();
 const extract = useAction("extractInvoice");
-<FileUpload
-  onFile={async (file) => {
-    const ref = await upload(file);
-    extract.run({ file: ref });
-  }}
-  uploading={uploading}
-  progress={progress}
-/>
+<FileUpload action={extract} accept="application/pdf" hint="PDF works best." />
 ```
 
 ## Layout
@@ -202,6 +201,25 @@ Layout without hand-rolled flex classes. `Stack` for vertical, `Row` for horizon
 </Grid>
 ```
 
+## Action links
+
+The Build view shows a small badge on every widget that leads somewhere in the flow and jumps from it to the step that runs (and back). You get that for free by using `action` on `Button`, `FileUpload` and `Form`, and by handing tables the records straight from `useCollection` or `useAction().data`. Three helpers cover anything custom; `useAction` and `useCollection` results carry `name`, which is what they read. Never write `data-rm-*` attributes by hand.
+
+```tsx
+import { bindAction, bindCollection, markGesture } from "@robomotion/apps-runtime/react";
+
+// a custom widget that runs an action (a hand-made drop zone, a card, a link)
+<div {...bindAction(upload)} onDrop={onDrop}>Drop an invoice PDF here</div>
+
+// a hand-rolled list of a collection's records (mapping them loses the link)
+<ul {...bindCollection(invoices)}>{invoices.records.map(…)}</ul>
+
+// custom async code that finishes a person's click later: re-mark the widget
+// right before calling the action, so the call still belongs to it
+markGesture(zoneRef.current);
+void extract.run({ file: ref });
+```
+
 ## The runtime hooks (`@robomotion/apps-runtime/react`)
 
 Screens talk to the robot ONLY through these. Never `app.call` in a screen, never hand-rolled transport.
@@ -209,13 +227,14 @@ Screens talk to the robot ONLY through these. Never `app.call` in a screen, neve
 ```tsx
 import {
   AppProvider, useAction, useCollection, useEvent, useConnection, useFileUpload,
+  bindAction, bindCollection, markGesture,
 } from "@robomotion/apps-runtime/react";
 ```
 
 | Hook | Returns | Use for |
 |---|---|---|
-| `useAction(name)` | `{ run, data, error, loading, progress, cancel }` | every button that makes the robot do something |
-| `useCollection(name)` | `{ records, loading, error }` | every table or list backed by a collection; live-updates itself |
+| `useAction(name)` | `{ run, data, error, loading, progress, cancel, name }` | every button that makes the robot do something; pass the whole object to `Button`'s `action` |
+| `useCollection(name)` | `{ records, loading, error, name }` | every table or list backed by a collection; live-updates itself |
 | `useEvent(name, cb)` | subscribes for the component's lifetime | toasts and refreshes when the robot announces something |
 | `useConnection()` | `{ state, robotOnline }` | anything that must react to `"connecting" \| "ready" \| "offline" \| "robot_offline" \| "contract_mismatch"` |
 | `useFileUpload()` | `{ upload, uploading, progress, error }` | getting a `FileRef` to pass into an action |
