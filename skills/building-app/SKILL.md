@@ -79,7 +79,7 @@ Each rule carries its reason. The reason is why you don't route around the rule 
 
 Full protocol: `./docs/preview-loop.md`. The short version:
 
-- `app_dev_server` is your native tool: `start` (idempotent, returns `{url, port}`), `stop`, `status`, `logs`, `get_preview_errors`.
+- `app_dev_server` is your native tool: `start` (idempotent), `stop`, `status`, `logs`, `get_preview_errors`. The preview appears in the person's app preview panel by itself; never tell them to open a link, and never quote a `127.0.0.1` address (their robot may be on another machine). If they ask where the app lives, give the address from the tool result.
 - **Route context.** When the person navigates the preview, the current route arrives silently prepended to their next message. "Make that button green" resolves against the screen they are LOOKING AT - use that route, don't guess across screens, and don't ask which screen when the context already says.
 - **After EVERY edit batch, call `get_preview_errors` before telling the user you're done.** Reporting success on a preview that is throwing is worse than reporting the error.
 

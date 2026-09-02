@@ -21,9 +21,9 @@ The page frame: header, optional nav, content slot, and the connection banner bu
 
 ```tsx
 <AppShell title="Invoice Approvals" nav={[
-  { label: "Queue", to: "/" },
-  { label: "Review", to: "/review" },
-]}>
+  { label: "Queue", path: "/" },
+  { label: "Review", path: "/review" },
+]} activePath={usePath()} onNavigate={navigate}>
   {/* routed screens render here */}
 </AppShell>
 ```
@@ -41,6 +41,21 @@ One routed screen with a title and description. One `Screen` per file under `src
 ### `ConnectionBanner`
 
 Renders the robot-offline and contract-mismatch states. `AppShell` already includes it; only place it yourself in a screen that must show connection state inline. Never build your own offline warning.
+
+### Routing (`src/lib/router.tsx`)
+
+The scaffold ships a tiny History API router; it is not a package and there is nothing to install. Screens are real paths that match the `route` of each screen in `app.json`: `/`, `/review`, never `#/review`. A link to a screen is an ordinary URL that can be shared and reloaded.
+
+```tsx
+import { navigate, usePath, useSearch, screenHref } from "@/lib/router";
+
+navigate("/review?id=7");          // go to a screen, optionally with a query
+const path = usePath();            // "/review" - the screen, without the query
+const id = new URLSearchParams(useSearch()).get("id");
+<a href={screenHref("/review")}>   // an href for a plain link
+```
+
+Never read `window.location.hash` and never build URLs by hand; the app is mounted under a prefix (`/<app id>/` when published, `/preview/<instance>/` in the preview) that only `screenHref` and `navigate` know about.
 
 ## Actions and feedback
 
