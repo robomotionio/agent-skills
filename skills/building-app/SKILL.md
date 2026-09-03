@@ -66,7 +66,7 @@ One complete action, start to finish:
 import { flow, Message } from '@robomotion/sdk';
 
 flow.create('<flowId>', '<Flow Name>', (f) => {
-  f.addDependency('Robomotion.Apps', '0.1.0');
+  f.addDependency('Robomotion.Apps', '0.1.1');
 
   f.node('a3c1f9', 'Robomotion.Apps.Action', 'Search Call', { optActionName: 'search' })
     .then('b8e274', 'Core.Programming.Function', 'Do The Work', {
