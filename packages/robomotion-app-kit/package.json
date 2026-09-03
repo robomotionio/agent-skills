@@ -1,0 +1,59 @@
+{
+  "name": "@robomotion/app-kit",
+  "version": "0.1.0",
+  "description": "UI kit for Robomotion Apps: Tailwind styled, dark mode aware, accessible components themed from app.json.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./vite": {
+      "types": "./dist/vite/index.d.ts",
+      "import": "./dist/vite/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.6.0"
+  },
+  "peerDependencies": {
+    "@robomotion/apps-runtime": ">=0.1.0",
+    "react": ">=18",
+    "react-dom": ">=18",
+    "tailwindcss": ">=3",
+    "vite": ">=5"
+  },
+  "peerDependenciesMeta": {
+    "tailwindcss": {
+      "optional": true
+    },
+    "vite": {
+      "optional": true
+    }
+  },
+  "overrides": {
+    "@robomotion/apps-runtime": "file:../robomotion-apps-runtime"
+  },
+  "devDependencies": {
+    "@robomotion/apps-runtime": "file:../robomotion-apps-runtime",
+    "@types/node": "^22.10.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.11"
+  }
+}
