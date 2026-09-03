@@ -42,6 +42,54 @@ Narrate progress through `todo_write`, with items phrased in the user's language
 4b. **`robomotion app codegen`** whenever `app.json` changes, before writing code against it. Run it from the app folder; it regenerates both typed clients and prints the contract hash.
 
 5. **Build the flow backend, one action at a time**, in the order the user will click them. For each action: `App Action` trigger → the real work → `App Respond` on EVERY path (an unresponded call only ends by timeout, which the user experiences as a hung button). Long work sends `App Progress`. The generated `flow/src/generated/actions.gen.ts` gives you the param/result types. Flow SDK mechanics (node grammar, browser, credentials) are the `creating-flow` skill - use it.
+
+### The flow side, exactly
+
+The general node grammar belongs to `creating-flow`, but these eight types ship
+only in this package, and hunting for them costs a search round every build.
+`f.node` takes the **type**, never the display name:
+
+| Type | Shows as | What you actually set |
+|---|---|---|
+| `Robomotion.Apps.Action` | App Action | `optActionName` - the action's name in `app.json` |
+| `Robomotion.Apps.Respond` | App Respond | nothing; it answers with `msg.result` |
+| `Robomotion.Apps.RespondError` | App Respond Error | `optCode`, `optRetryable` |
+| `Robomotion.Apps.Progress` | App Progress | `optPercent` |
+| `Robomotion.Apps.EmitEvent` | App Emit Event | `optEventName`, `optAudience` |
+| `Robomotion.Apps.UpdateData` | App Update Data | `optCollection`, `optOperation` |
+| `Robomotion.Apps.GetFile` | App Get File | `optDownloadDir` |
+| `Robomotion.Apps.SaveFile` | App Save File | nothing |
+
+One complete action, start to finish:
+
+```ts
+import { flow, Message } from '@robomotion/sdk';
+
+flow.create('<flowId>', '<Flow Name>', (f) => {
+  f.addDependency('Robomotion.Apps', '0.1.0');
+
+  f.node('a3c1f9', 'Robomotion.Apps.Action', 'Search Call', { optActionName: 'search' })
+    .then('b8e274', 'Core.Programming.Function', 'Do The Work', {
+      func: 'msg.result = { hits: [] };\nreturn msg;',
+    })
+    .then('c4d952', 'Robomotion.Apps.Respond', 'Send Results', {});
+}).start();
+```
+
+The caller's arguments arrive as **`msg.params.<field>`**; the answer is whatever
+sits on **`msg.result`** when `App Respond` runs. Both shapes are already typed
+for you in `flow/src/generated/actions.gen.ts`.
+
+`App Action` is a trigger, so it has no input port and the validator reports it
+as an unreachable node. That warning is expected. Never restructure the flow to
+silence it.
+
+**Never end an action with `Core.Flow.Stop`.** An app's backend is not a
+one-shot automation: it stays running and serves every press of every button.
+Stopping the flow after the first call leaves the app looking fine and dead on
+the second press, and the screen blames the robot ("The robot for this app is
+not connected") for something the flow did to itself. Let each path finish at
+its `App Respond` or `App Respond Error` and go no further.
 6. **`start_app_session`.** Creates a draft instance and starts the flow on the LOCAL robot; the preview's buttons now hit a real robot. Replace each `SAMPLE_*` const with the live `useCollection` / `useAction` data as its backend action comes alive, then delete the const.
 7. **`validate_app`.** Fix until clean. It compiles both projects against the contract, checks the schema, and checks the dependency allowlist.
 8. **Offer to publish.** Never publish unasked. When the person says yes, `publish_app`.
