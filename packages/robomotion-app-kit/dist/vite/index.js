@@ -1,6 +1,8 @@
 // src/vite/index.ts
+import { createRequire } from "module";
 import { readFileSync } from "fs";
-import { isAbsolute, resolve } from "path";
+import { isAbsolute, join, resolve } from "path";
+import { pathToFileURL } from "url";
 function loadContract(root, contractPath) {
   const candidates = contractPath ? [isAbsolute(contractPath) ? contractPath : resolve(root, contractPath)] : [resolve(root, "app.json"), resolve(root, "../app.json")];
   for (const candidate of candidates) {
@@ -111,7 +113,41 @@ function bridgeScript(screens) {
 
 })();`;
 }
+var SHARED_SPECIFIERS = [
+  "@robomotion/apps-runtime",
+  "@robomotion/apps-runtime/react",
+  "react",
+  "react-dom",
+  "react-dom/client",
+  "react/jsx-runtime",
+  "react/jsx-dev-runtime"
+];
+function sharedResolvePlugin() {
+  return {
+    name: "robomotion-app-kit:resolve",
+    enforce: "pre",
+    config(userConfig) {
+      const root = userConfig.root ? resolve(userConfig.root) : process.cwd();
+      const req = createRequire(pathToFileURL(join(root, "package.json")));
+      const alias = [];
+      for (const spec of SHARED_SPECIFIERS) {
+        try {
+          alias.push({
+            find: new RegExp(`^${spec.replace(/[/\\^$*+?.()|[\]{}]/g, "\\$&")}$`),
+            replacement: req.resolve(spec)
+          });
+        } catch {
+        }
+      }
+      if (alias.length === 0) return void 0;
+      return { resolve: { alias, dedupe: SHARED_SPECIFIERS } };
+    }
+  };
+}
 function robomotionAppKit(options = {}) {
+  return [sharedResolvePlugin(), bridgePlugin(options)];
+}
+function bridgePlugin(options = {}) {
   let root = process.cwd();
   let base = "/";
   return {

@@ -14,6 +14,10 @@ interface RobomotionAppKitOptions {
     /** Defaults for /__rm/config.json fields the query string does not set. */
     config?: Partial<AppRuntimeConfig>;
 }
-declare function robomotionAppKit(options?: RobomotionAppKitOptions): Plugin;
+/**
+ * The dev preview loop plus the resolution the kit needs wherever it lives.
+ * Returns both plugins; Vite flattens an array in `plugins`.
+ */
+declare function robomotionAppKit(options?: RobomotionAppKitOptions): Plugin[];
 
 export { type AppRuntimeConfig, type RobomotionAppKitOptions, robomotionAppKit as default, robomotionAppKit };
