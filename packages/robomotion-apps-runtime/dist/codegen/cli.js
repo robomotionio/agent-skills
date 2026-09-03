@@ -2,7 +2,7 @@
 import {
   contractHashOf,
   generate
-} from "../chunk-DVAUVKNF.js";
+} from "../chunk-CQFG2NX5.js";
 
 // src/codegen/cli.ts
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";

@@ -61,10 +61,10 @@ Never read `window.location.hash` and never build URLs by hand; the app is mount
 
 ### `Button`
 
-`variant`: `primary` / `secondary` / `ghost` / `danger`. A button that makes the robot do something takes the action through `action` (the object from `useAction`) and its `params` (a value, or a function of the click event). The click runs it, the spinner shows and the button is disabled while it runs, and the Build view can jump from the button to the step in the flow. Never write your own `onClick={() => run(...)}` plus `loading` plus `disabled` for that.
+`variant`: `primary` / `secondary` / `ghost` / `danger`. A button that makes the robot do something takes the action through `action` (the object the generated `use<Action>()` hook returns) and its `params` (a value, or a function of the click event). The click runs it, the spinner shows and the button is disabled while it runs, and the Build view can jump from the button to the step in the flow. Never write your own `onClick={() => run(...)}` plus `loading` plus `disabled` for that.
 
 ```tsx
-const approve = useAction("approveInvoice");
+const approve = useApproveInvoice();
 <Button variant="primary" action={approve} params={{ number: invoice.number }}>
   Approve
 </Button>
@@ -77,7 +77,7 @@ const approve = useAction("approveInvoice");
 Determinate and indeterminate, fed by action progress. Show it whenever an action has `progress: true` in the contract.
 
 ```tsx
-const extract = useAction("extractInvoice");
+const extract = useExtractInvoice();
 {extract.loading && <Progress value={extract.progress?.percent} />}
 ```
 
@@ -113,7 +113,7 @@ Icon, title, one action. Every table and list MUST have a designed empty state -
 Message plus retry, driven by an `AppError`. Use it when a screen's data failed to load; the `retryable` flag on the error tells you whether to offer the retry.
 
 ```tsx
-const refresh = useAction("refreshNow");
+const refresh = useRefreshNow();
 {refresh.error && <ErrorState error={refresh.error} onRetry={() => refresh.run({})} />}
 ```
 
@@ -137,7 +137,7 @@ Columns, rows, sort, filter, empty state, row actions, pagination - all built in
 
 ```tsx
 const { records, loading } = useCollection("queue");
-const approve = useAction("approveInvoice");
+const approve = useApproveInvoice();
 <DataTable
   columns={[
     { key: "number", header: "Invoice" },
@@ -161,7 +161,7 @@ const approve = useAction("approveInvoice");
 `TextInput`, `NumberInput`, `TextArea`, `Select`, `Checkbox`, `RadioGroup`, `DatePicker`. Wired to a schema: the form validates against the action's params shape, so a required field or a wrong type never reaches the robot (the robot would reject it with `invalid_params` anyway - catch it in the form instead).
 
 ```tsx
-const submit = useAction("submitExpense");
+const submit = useSubmitExpense();
 <Form action={submit}>
   <Field name="category" label="Category">
     <Select options={["Travel", "Meals", "Supplies"]} />
@@ -183,7 +183,7 @@ const submit = useAction("submitExpense");
 Drag-and-drop. It uploads by itself and hands back a `FileRef`; the bytes go over REST, never through the action call. Give it the action the file feeds through `action`: once the upload lands it runs `extract.run({ file: ref, ...params })`, and the drop zone is linked to that step in the flow. `onUpload(ref)` still fires first for anything else the screen needs to do (show a "reading" state, say).
 
 ```tsx
-const extract = useAction("extractInvoice");
+const extract = useExtractInvoice();
 <FileUpload action={extract} accept="application/pdf" hint="PDF works best." />
 ```
 
@@ -203,7 +203,7 @@ Layout without hand-rolled flex classes. `Stack` for vertical, `Row` for horizon
 
 ## Action links
 
-The Build view shows a small badge on every widget that leads somewhere in the flow and jumps from it to the step that runs (and back). You get that for free by using `action` on `Button`, `FileUpload` and `Form`, and by handing tables the records straight from `useCollection` or `useAction().data`. Three helpers cover anything custom; `useAction` and `useCollection` results carry `name`, which is what they read. Never write `data-rm-*` attributes by hand.
+The Build view shows a small badge on every widget that leads somewhere in the flow and jumps from it to the step that runs (and back). You get that for free by using `action` on `Button`, `FileUpload` and `Form`, and by handing tables the records straight from `useCollection` or an action hook's `.data`. Three helpers cover anything custom; the generated action hooks and `useCollection` results carry `name`, which is what they read. Never write `data-rm-*` attributes by hand.
 
 ```tsx
 import { bindAction, bindCollection, markGesture } from "@robomotion/apps-runtime/react";
@@ -235,7 +235,7 @@ import {
 
 | Hook | Returns | Use for |
 |---|---|---|
-| `useAction(name)` | `{ run, data, error, loading, progress, cancel, name }` | every button that makes the robot do something; pass the whole object to `Button`'s `action` |
+| `use<Action>()` (generated) | `{ run, data, error, loading, progress, cancel, name }`, typed from the contract | every button that makes the robot do something; pass the whole object to `Button`'s `action`. Import it from `@/generated/actions.gen`, never write `useAction("name")` yourself |
 | `useCollection(name)` | `{ records, loading, error, name }` | every table or list backed by a collection; live-updates itself |
 | `useEvent(name, cb)` | subscribes for the component's lifetime | toasts and refreshes when the robot announces something |
 | `useConnection()` | `{ state, robotOnline }` | anything that must react to `"connecting" \| "ready" \| "offline" \| "robot_offline" \| "contract_mismatch"` |
