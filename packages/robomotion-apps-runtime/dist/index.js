@@ -812,8 +812,10 @@ var AppClient = class {
     const status = String(data.robot_status ?? "");
     if (status === "connected") {
       const publicKey = typeof data.public_key === "string" ? data.public_key : null;
-      if (publicKey && !this.aesKey) {
+      const rekey = Boolean(publicKey) && publicKey !== this.robotPublicKey;
+      if (publicKey && (!this.aesKey || rekey)) {
         this.robotPublicKey = publicKey;
+        if (rekey) this.aesKey = null;
         try {
           await this.doKeyExchange();
           await this.sendHelloOrResume();
