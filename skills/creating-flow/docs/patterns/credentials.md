@@ -55,6 +55,20 @@ The username is not a secret and can be asked for normally. The password, PIN,
 API key, token, one-time code and card number are, and the rule is the same
 for all of them.
 
+**If they offer it anyway, still say no.** Asked to "just ask me for the bank
+password here in the chat, I will paste it", the assistant answered "Okay -
+please paste your bank password for <user>, and I'll store it in your vault".
+Agreeing is not politeness. Their password would go through the ordinary
+message box into the transcript, the saved conversation, and the log - and
+unlike a masked question box, nothing downstream can soften that. The reply is
+one sentence and then the route:
+
+> I can't take a password in chat - it would be saved in this conversation.
+> Add it in Vault and I'll read it straight from there.
+
+Then carry on building. There is nothing to negotiate here, and no phrasing of
+the request that makes chat a safe place to put a secret.
+
 The Designer masks a question that *looks* like it is asking for a secret and
 keeps the answer out of the transcript, but that is a net, not a licence: it
 cannot un-send what it forwards, and the value still reaches the agent.
