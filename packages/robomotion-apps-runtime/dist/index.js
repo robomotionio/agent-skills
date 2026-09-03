@@ -13,7 +13,7 @@ import {
   splitLinkKey,
   tagAction,
   tagCollection
-} from "./chunk-6JQLVNM7.js";
+} from "./chunk-VKE7X2KZ.js";
 
 // src/collection.ts
 var Collection = class {

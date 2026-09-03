@@ -249,6 +249,14 @@ function installInspector() {
 }
 
 // src/links.ts
+var hookUses = /* @__PURE__ */ new Map();
+var onHookUsesChanged = null;
+function noteHookUse(key, delta) {
+  const next = (hookUses.get(key) ?? 0) + delta;
+  if (next <= 0) hookUses.delete(key);
+  else hookUses.set(key, next);
+  onHookUsesChanged?.();
+}
 var OVERLAY_ATTR2 = "data-rm-links";
 var ATTR_ACTION = "data-rm-action";
 var ATTR_COLLECTION = "data-rm-collection";
@@ -588,6 +596,16 @@ function installLinks(options = {}) {
         });
       }
     }
+    const covered = new Set(links.map((l) => l.key));
+    for (const key of hookUses.keys()) {
+      if (covered.has(key)) continue;
+      links.push({
+        ...describeKey(key),
+        id: `${key}@hook:${route}`,
+        label: "Used on this screen",
+        kind: "hook"
+      });
+    }
     return links;
   };
   const emitLinks = (force = false) => {
@@ -600,6 +618,7 @@ function installLinks(options = {}) {
     lastRoute = route;
     post("rm-links", { route, links });
   };
+  onHookUsesChanged = () => tick();
   const tick = (force = false) => {
     if (debounce) {
       clearTimeout(debounce);
@@ -1085,6 +1104,7 @@ function installLinks(options = {}) {
   }
   installed2 = {
     stop() {
+      onHookUsesChanged = null;
       for (const type of gestureTypes) document.removeEventListener(type, recordGesture, true);
       document.removeEventListener("mousemove", onMove, true);
       window.removeEventListener("rm:action-invoked", onInvoked);
@@ -1119,6 +1139,7 @@ export {
   AppError,
   isAppError,
   installInspector,
+  noteHookUse,
   linkKey,
   splitLinkKey,
   tagCollection,
@@ -1131,4 +1152,4 @@ export {
   markGesture,
   installLinks
 };
-//# sourceMappingURL=chunk-6JQLVNM7.js.map
+//# sourceMappingURL=chunk-VKE7X2KZ.js.map

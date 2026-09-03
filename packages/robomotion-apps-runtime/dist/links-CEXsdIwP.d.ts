@@ -222,7 +222,7 @@ declare function isAppError(e: unknown): e is AppError;
 
 type LinkMode = "off" | "hover" | "all";
 type LinkState = "linked" | "running" | "ok" | "failed" | "missing";
-type LinkKind = "declared" | "inferred" | "screen";
+type LinkKind = "declared" | "inferred" | "screen" | "hook";
 type LinkNamespace = "action" | "collection" | "event";
 /** What the host knows about one link key. */
 interface LinkHandler {

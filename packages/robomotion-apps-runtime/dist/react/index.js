@@ -2,9 +2,11 @@ import {
   AppError,
   bindAction,
   bindCollection,
+  linkKey,
   markGesture,
+  noteHookUse,
   tagAction
-} from "../chunk-6JQLVNM7.js";
+} from "../chunk-VKE7X2KZ.js";
 
 // src/react/index.ts
 import {
@@ -46,6 +48,11 @@ function useAction(name) {
       abortRef.current?.abort();
     };
   }, []);
+  useEffect(() => {
+    const key = linkKey("action", name);
+    noteHookUse(key, 1);
+    return () => noteHookUse(key, -1);
+  }, [name]);
   const cancel = useCallback(() => {
     abortRef.current?.abort();
   }, []);
@@ -87,6 +94,11 @@ function useAction(name) {
 function useCollection(name) {
   const app = useAppClient();
   const col = useMemo(() => app.collection(name), [app, name]);
+  useEffect(() => {
+    const key = linkKey("collection", name);
+    noteHookUse(key, 1);
+    return () => noteHookUse(key, -1);
+  }, [name]);
   const [records, setRecords] = useState(col.records);
   const [loading, setLoading] = useState(col.loading);
   const [error] = useState(void 0);
