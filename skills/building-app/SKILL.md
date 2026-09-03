@@ -84,12 +84,11 @@ for you in `flow/src/generated/actions.gen.ts`.
 as an unreachable node. That warning is expected. Never restructure the flow to
 silence it.
 
-**Never end an action with `Core.Flow.Stop`.** An app's backend is not a
-one-shot automation: it stays running and serves every press of every button.
-Stopping the flow after the first call leaves the app looking fine and dead on
-the second press, and the screen blames the robot ("The robot for this app is
-not connected") for something the flow did to itself. Let each path finish at
-its `App Respond` or `App Respond Error` and go no further.
+Note what the example does **not** have: an ending. No `Core.Flow.Stop`, no
+`Core.Flow.End`. The flow is the app's backend and stays up forever behind the
+screens (hard rule 5) - the last node on every path is its `App Respond` or
+`App Respond Error`. This is the single easiest way to ship an app that works
+exactly once, so check for it before you save.
 6. **`start_app_session`.** Creates a draft instance and starts the flow on the LOCAL robot; the preview's buttons now hit a real robot. Replace each `SAMPLE_*` const with the live `useCollection` / `useAction` data as its backend action comes alive, then delete the const.
 7. **`validate_app`.** Fix until clean. It compiles both projects against the contract, checks the schema, and checks the dependency allowlist.
 8. **Offer to publish.** Never publish unasked. When the person says yes, `publish_app`.
@@ -140,6 +139,7 @@ Each rule carries its reason. The reason is why you don't route around the rule 
 2. **Actions only through the generated typed stubs.** `src/generated/actions.gen.ts` exports one hook per action, `use<Action>()` (for `greet`: `const greet = useGreet()`), plus `<Action>Params` / `<Action>Result` types; `greet.data` is typed and `<Form action={greet}>` / `<Button action={greet}>` link the control. Use those. Never write `useAction("name")` yourself - untyped, its `data` is `{}` and `tsc` fails on the first field you read. Collections and events use `useCollection` / `useEvent` with the generated types. Never hand-write transport, never invent a message format, never call `app.call` from screen code. Reason: the old app system died because clients hand-invented protocols over a raw channel and drift was discovered by users in production; the stubs make a contract change break `tsc` instead of a person.
 3. **One component per file, flat directories, no barrel files.** `src/pages/Review.tsx`, `src/components/InvoiceCard.tsx` - that's the whole depth. Reason: "make that button green" must resolve to exactly one file from the route context; barrels and deep nesting break targeted edits and make hot reload touch more than it should.
 4. **Never hand-edit generated files.** Anything under `src/generated/` is regenerated from `app.json`; edit `app.json` and regenerate. Reason: the next regeneration silently erases your edit, and an edited file no longer matches `contract_hash`, which blocks the app from connecting at all.
+5. **An app flow never ends. It is the backend, not a script.** It comes up with the app session and stays up for as long as the app lives, serving every press of every button by every person. So no path may end it: **never `Core.Flow.Stop`, never `Core.Flow.End`**, and never a "finish", "cleanup" or "done" step that reaches one. Every path finishes at its `App Respond` or `App Respond Error` and goes no further; anything that has to happen after answering (closing a browser, deleting a temp file) belongs before that node, not after a stop. Reason: a flow that stops once it has answered leaves an app that looks perfect and is dead on the second press. The first person to try it gets their results; everyone after that is told "The robot for this app is not connected", which blames the robot for something the flow did to itself, and the screen keeps the previous results under the new question so the failure even reads as a success. This is not hypothetical: a search app returned ten real results, stopped itself, and refused every search after that.
 
 ## The preview loop
 

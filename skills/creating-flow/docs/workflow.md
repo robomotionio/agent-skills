@@ -72,7 +72,7 @@ Then verify property names with `robomotion describe node <type>[,<type>...]`.
 - [ ] Every `Core.Flow.GoTo` references a `Core.Flow.Label` id that exists in this same flow file.
 - [ ] Loops: `Label → ForEach → body → GoTo`. `Stop` is standalone, wired via `f.edge()` on ForEach port 1.
 - [ ] Terminal nodes (`Debug`, `Log`, `Stop`, `GoTo`, `End`, `WaitGroup.Done`) have 0 outputs — wire TO them, never `.then()` after them.
-- [ ] Every flow has a `Core.Flow.Stop` node.
+- [ ] Every flow has a `Core.Flow.Stop` node — **except an app backend**, which must never stop. A flow whose trigger is `Robomotion.Apps.Action` is the backend of a Robomotion App and stays up serving its screens for as long as the app lives; each path ends at `App Respond` / `App Respond Error` and no further. See the `building-app` skill, hard rule 5.
 - [ ] Ends with `.start()` (libraries omit `.start()`).
 
 ### SubFlow files

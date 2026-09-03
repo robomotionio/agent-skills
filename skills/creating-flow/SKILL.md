@@ -38,7 +38,7 @@ For library files swap `flow` for `library` / `subflow`. Full reference: `./docs
 - ES5-only inside `func`: no `=>`, no template literals, no `const`/`let`, no destructuring. No `require()` / `fs` / `Buffer` / `process` (pure JS sandbox).
 - Loops: `Label → ForEach → body → GoTo`. `Stop` is standalone, wired via `f.edge()` on ForEach port 1.
 - Library projects use `library.create(id, name, fn)` with `Begin`/`End` nodes (no `.start()`). Inline subflows use `subflow.create(name, fn)`.
-- Every flow ends with `.start()`. Every flow has a `Core.Flow.Stop` node.
+- Every flow ends with `.start()`. Every flow has a `Core.Flow.Stop` node — **except an app backend**: a flow triggered by `Robomotion.Apps.Action` is a long-lived service behind a Robomotion App's screens and must never stop, so it has no `Stop` and no `End`. See the `building-app` skill.
 - `Core.*` packages (`Core.Trigger`, `Core.Browser`, `Core.Programming`, `Core.CSV`, `Core.Flow`, `Core.Vault`, `Core.Net`, `Core.Excel`, …) are **embedded in the robot** — NEVER call `f.addDependency('Core.*', …)`. The Designer auto-loads them. Only call `f.addDependency(ns, ver)` for non-`Core.*` packages. When updating an existing flow, NEVER bump existing `addDependency` versions; only add missing ones.
 
 Full grammar: `./docs/sdk-grammar.md`. Architecture: `./docs/architecture.md`.
