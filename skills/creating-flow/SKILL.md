@@ -121,7 +121,7 @@ For schemas, examples, and package docs, use the `robomotion` CLI (it's already 
 
 Full step-by-step: **`./docs/workflow.md`**. Outline:
 
-0. **Gather requirements** (interactive only) — credentials (commit to a vault-item pick, don't quiz the user), URLs, files, iteration, error handling.
+0. **Gather requirements** (interactive only) — credentials (commit to a vault-item pick, don't quiz the user; **never ask for the secret itself** — `vault_picker`, or ask them to add it to Vault first: `./docs/patterns/credentials.md`), URLs, files, iteration, error handling.
 1. **Discover** — `robomotion search`, `robomotion get nodes`, `robomotion docs <namespace>` (MANDATORY for every non-`Core.*` package).
 2. **Plan** — output plan as chat text, then `AskUserQuestion(["Build it", "Modify plan"])`.
 3. **Write** — read 1-2 relevant `./docs/patterns/*.md`, verify property names with `robomotion describe node`, then `Write` `main.ts` (and any `subflows/<id>.ts`). For browser flows: explore live first.

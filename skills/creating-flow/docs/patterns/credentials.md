@@ -22,6 +22,43 @@ f.node('3a7c92', 'Robomotion.GoogleGemini.GenerateText', 'Generate', {
 });
 ```
 
+## Never ask for the secret itself
+
+You do not collect passwords. Ever. Not in chat, not with `AskUserQuestion`,
+not "just this once so I can store it securely".
+
+Asked to build an app that signs in to a bank, the assistant asked
+
+    Bank password
+    Enter the password for hiroshi.tanaka@globex.example
+
+as an ordinary text question. That renders a plain box in the chat: the
+password was on screen as it was typed, in the transcript for the rest of the
+session, and in the on-disk conversation. The person had done nothing wrong -
+they were answering the question they were asked.
+
+What to do instead, in order:
+
+1. **`AskUserQuestion` with `type: "vault_picker"`.** The person picks an item
+   they already hold; you receive `{vault_id, item_id}` and nothing else. This
+   is the whole answer when the credential exists.
+2. **If they have no item yet, ask them to create one** and say where: Vault
+   in their workspace, the category that matches the site (see
+   `reference/credential-categories.md`). Then use the picker. A sentence like
+   "add it in Vault and I'll pick it up from there" costs one turn and is the
+   only safe path.
+3. **Build everything else meanwhile.** A missing credential does not block
+   the screens, the flow shape, or the preview - wire `Credential({vaultId,
+   itemId})` once you have the pick.
+
+The username is not a secret and can be asked for normally. The password, PIN,
+API key, token, one-time code and card number are, and the rule is the same
+for all of them.
+
+The Designer masks a question that *looks* like it is asking for a secret and
+keeps the answer out of the transcript, but that is a net, not a licence: it
+cannot un-send what it forwards, and the value still reaches the agent.
+
 ## When NOT to use
 
 - **Literal URL / config value** — use `Custom('https://example.com')`, not `Credential()`. `Credential()` is ONLY for `inCredentials` / `optCredentials`.
