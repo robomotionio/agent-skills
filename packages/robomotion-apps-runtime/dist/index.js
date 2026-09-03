@@ -492,6 +492,7 @@ var DEFAULT_PROXY_URL = "wss://amq.robomotion.io";
 var DEFAULT_TIMEOUT_MS = 3e4;
 var DEFAULT_RECONNECT_MS = 5e3;
 var DEFAULT_PING_MS = 3e4;
+var ROBOT_RECHECK_INTERVAL_MS = 5e3;
 function dispatchDom(type, detail) {
   if (typeof window === "undefined" || typeof CustomEvent === "undefined") return;
   try {
@@ -556,6 +557,8 @@ var AppClient = class {
   helloSentOnce = false;
   closed = false;
   reconnectTimer = null;
+  /** Throttles the instance re-resolve in reconnectIfRobotChanged. */
+  lastRobotRecheck = 0;
   pingTimer = null;
   sendChain = Promise.resolve();
   recvChain = Promise.resolve();
@@ -834,7 +837,46 @@ var AppClient = class {
       this.failInFlight(
         new AppError("robot_offline", "The robot for this app is not connected.", true)
       );
+      void this.reconnectIfRobotChanged();
     }
+  }
+  /**
+   * Re-resolve the instance when the proxy says no robot is attached, and
+   * reconnect if it now names a different one.
+   *
+   * An instance is created bound to the app's OWN application robot, which
+   * exists as a quota row and never runs anything. A draft session started
+   * from the Build view rewrites that binding to the robot the person
+   * actually runs on. A preview page that resolved the instance before the
+   * session started therefore holds the application robot's id, opens its
+   * socket against a robot that will never connect, and waits for ever under
+   * "the robot for this app is offline" while the real robot sits there
+   * running the flow. Nothing recovered it but a full reload.
+   *
+   * Being told nothing is attached is exactly the moment to check, so this
+   * costs one request in the case that was already broken and none in the
+   * case that works.
+   */
+  async reconnectIfRobotChanged() {
+    if (this.closed || !this.instance || !this.apiUrl) return;
+    if (this.opts.instance) return;
+    const now = Date.now();
+    if (now - this.lastRobotRecheck < ROBOT_RECHECK_INTERVAL_MS) return;
+    this.lastRobotRecheck = now;
+    let fresh;
+    try {
+      fresh = await resolveInstance(this.apiUrl, this.instance.id, this.fetchFn);
+    } catch {
+      return;
+    }
+    if (this.closed || !fresh.robotId || fresh.robotId === this.instance.robotId) return;
+    this.instance = fresh;
+    try {
+      this.ws?.close();
+    } catch {
+    }
+    this.ws = null;
+    this.connect();
   }
   async doKeyExchange() {
     if (!this.robotPublicKey || !this.ws) return;

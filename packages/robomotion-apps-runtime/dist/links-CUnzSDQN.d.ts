@@ -140,6 +140,8 @@ declare class AppClient {
     private helloSentOnce;
     private closed;
     private reconnectTimer;
+    /** Throttles the instance re-resolve in reconnectIfRobotChanged. */
+    private lastRobotRecheck;
     private pingTimer;
     private sendChain;
     private recvChain;
@@ -168,6 +170,24 @@ declare class AppClient {
     private handleMessage;
     private isAppType;
     private handleRobotStatus;
+    /**
+     * Re-resolve the instance when the proxy says no robot is attached, and
+     * reconnect if it now names a different one.
+     *
+     * An instance is created bound to the app's OWN application robot, which
+     * exists as a quota row and never runs anything. A draft session started
+     * from the Build view rewrites that binding to the robot the person
+     * actually runs on. A preview page that resolved the instance before the
+     * session started therefore holds the application robot's id, opens its
+     * socket against a robot that will never connect, and waits for ever under
+     * "the robot for this app is offline" while the real robot sits there
+     * running the flow. Nothing recovered it but a full reload.
+     *
+     * Being told nothing is attached is exactly the moment to check, so this
+     * costs one request in the case that was already broken and none in the
+     * case that works.
+     */
+    private reconnectIfRobotChanged;
     private doKeyExchange;
     /** First connection sends hello; every reconnect sends resume (protocol.md section 8). */
     private sendHelloOrResume;
