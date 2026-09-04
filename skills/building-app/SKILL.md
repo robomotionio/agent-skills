@@ -117,7 +117,7 @@ One complete action, start to finish:
 import { flow, Message } from '@robomotion/sdk';
 
 flow.create('<flowId>', '<Flow Name>', (f) => {
-  f.addDependency('Robomotion.Apps', '0.1.4');
+  f.addDependency('Robomotion.Apps', '0.1.5');
 
   f.node('a3c1f9', 'Robomotion.Apps.Action', 'Search Call', { optActionName: 'search' })
     .then('b8e274', 'Core.Programming.Function', 'Do The Work', {
@@ -172,6 +172,19 @@ it comes from the caller, and **the caller's fields arrive under `msg.params`**:
 })
 ```
 
+The key you send has to be the collection's **`key` field**, the same value the
+record was stored under. From `Robomotion.Apps` 0.1.5 a delete whose key is not
+one the collection holds **fails**, saying so:
+
+    "jobs" has no record with the key "row-3", so nothing was deleted
+
+That error is not a platform failure and there is nothing to retry. It means
+the screen is sending a different value than the one the collection is keyed
+by - the row's array index instead of its id, or a field the record does not
+have. Fix the key at the screen, or fix the `key` field in `app.json`. Before
+0.1.5 that same mistake removed nothing and answered ok, so the row stayed on
+screen and no layer said a word; a loud error is the fix, not the fault.
+
 ### An upsert REPLACES the record. Half a record destroys it.
 
 `optOperation: 'upsert'` writes the record it is given, whole. It does not
@@ -216,6 +229,23 @@ screens (hard rule 5) - the last node on every path is its `App Respond` or
 `App Respond Error`. This is the single easiest way to ship an app that works
 exactly once, so check for it before you save.
 6. **`start_app_session`.** Creates a draft instance and starts the flow on the LOCAL robot; the preview's buttons now hit a real robot. Delete each `SAMPLE_*` const as its backend action comes alive. The buttons need no change, because step 3a wired them to the real action from the start; if changing one is what makes it work, the app was a mockup until now and you have just found that out later than the person would have.
+
+6a. **If it says the app has no robot of its own, the question is a CARD, not a
+   sentence.** This is the last question of the build, it arrives at the end of
+   a long summary, and **five builds out of six have asked it in prose** -
+   which leaves the person with a paragraph ending in a question mark and
+   nothing to press. Call `ask_user_question`. Exactly this shape:
+
+       ask_user_question
+         question:  "Your app needs a robot to run on. Shall I set one up?"
+         options:   "Yes, set it up"  /  "Not now"
+
+   Writing the same words into your reply instead is not a different spelling
+   of the same thing, it is the fault. And the word is **"robot"** - never
+   "app-robot", never "one of your app-robot slots", never "application_lc".
+   The person owns robots; slots and types are our bookkeeping, and naming
+   them here is the exact vocabulary that had to be removed from the run
+   dialog. Say what it costs only if they ask.
 7. **`validate_app`.** Fix until clean. It compiles both projects against the contract, checks the schema, and checks the dependency allowlist.
 8. **Offer to publish.** Never publish unasked. When the person says yes, `publish_app`.
 
@@ -436,7 +466,7 @@ so the app adopts it instead of scaffolding a second one.
 | Robot is offline (`robot_offline` state or error) | It's retryable and the kit's `ConnectionBanner` already shows it. Tell the person plainly: "Your robot is offline - start it and the buttons will work again." Do NOT rebuild or edit anything. |
 | **The app's OWN robot shows as offline in `list_robots`** | **This is never the reason a button did nothing, so never give it as one.** Every app owns a robot of type `application_lc`, named after the app. Nothing ever connects as it - it is a quota row, and it is offline by design, permanently. The preview runs on the robot already connected to this computer. It is also the first thing anybody looking for a fault will find, which is why it has been given as a confident wrong answer three times in observed builds. Look at what actually failed instead: `poll_logs` on the app's session, and the robot's own log. |
 | The buttons do nothing and the app says "The robot for this app is not connected" - about a robot that IS connected and running the flow | The chat path and the app path are different transports, and this message comes from the app one. Do not rebuild anything and do not blame the robot. The two causes seen live: the flow stopped itself (see rule 5 - an app flow never ends), or the robot's app connection was churning while the page's key exchange was in flight, in which case the robot's log says `dropping <type> for unknown conn ... (no key exchange yet)` and a reload of the app gets a fresh key. Say what you found; if it is the second, say the connection dropped and ask them to reload the preview. |
-| `start_app_session` says the app has no robot of its own | Expected on a brand-new app: a draft does not get a robot until somebody asks to run it. **Ask, then act** - "Your app needs its own robot to run on. Shall I set one up?" with quick replies. On yes: `create_app_robot` and then `start_app_session` **in the same turn** - the preview runs on the robot that is already on this computer, so there is nothing for them to start and nothing to wait for. Never end the turn on "now start that robot": one build did, and the person was sent looking in a tray for a robot that does not appear there and does not need to. On no: stop there and say the preview still shows the screens with sample data. Never call `create_app_robot` without the yes: it spends one of a small number of slots in their workspace. |
+| `start_app_session` says the app has no robot of its own | Expected on a brand-new app: a draft does not get a robot until somebody asks to run it. **Ask with `ask_user_question`, then act** - question "Your app needs a robot to run on. Shall I set one up?", replies "Yes, set it up" / "Not now". **Prose is not an acceptable spelling of this question** (step 6a): asking it in a sentence at the end of your summary leaves the person nothing to press, and it is what five builds of six did. The word is "robot" - not "app-robot", not "app-robot slots". On yes: `create_app_robot` and then `start_app_session` **in the same turn** - the preview runs on the robot that is already on this computer, so there is nothing for them to start and nothing to wait for. Never end the turn on "now start that robot": one build did, and the person was sent looking in a tray for a robot that does not appear there and does not need to. On no: stop there and say the preview still shows the screens with sample data. Never call `create_app_robot` without the yes: it spends one of a small number of slots in their workspace. |
 | `create_app_robot` says the workspace is full | Give them the numbers it returns and the one way out - deleting an app robot they no longer use frees a slot, from Manage robots. Do not delete anything yourself and do not retry. |
 | `start_app_session` says the robot is busy | Another app's DRAFT preview is freed for you automatically, so if you still see this, what holds the robot is something else - a published app, a schedule, or a run the person started. Name it if the result does, ask whether to stop it, and stop it only if they say yes. |
 | `start_app_session` did not start (robot not connected, or it did not take the run) | Say it in one sentence and **end your turn**: "Your robot isn't running - start it and tell me, and I'll connect the app." Do NOT retry, do NOT call `stop_flow`, do NOT inspect packages, the package server or the network: the tool result already says what happened, and one observed build spent six minutes and three retries proving the same thing. When the person says the robot is up, call `start_app_session` once more. |
