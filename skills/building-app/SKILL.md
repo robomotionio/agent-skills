@@ -43,6 +43,38 @@ Narrate progress through `todo_write`, with items phrased in the user's language
 
     Anything it lists that you did not write is debris from the demo: delete it. `src/screens.tsx` tells you which screens the app actually mounts, so anything unreachable from there goes too, whether or not it still compiles.
 3. **Generate the screens from the archetype, with sample data baked in.** Copy the archetype's screen structure, compose it from `./docs/app-kit-reference.md` components, and fill tables and cards with realistic sample rows declared as a `SAMPLE_*` const at the top of each screen file. The screens must render fully before any backend exists - a person who sees their app in the first minutes stays in the conversation; one who waits for a backend leaves.
+
+3a. **Sample data is a FALLBACK, never a switch. Every button is wired to its
+   real action from the first draft.** Write the sample rows as what the table
+   shows when there is no answer yet:
+
+   ```tsx
+   const rows = search.data?.matches ?? SAMPLE_MATCHES;   // yes
+   <Form action={search} ...>                             // always the real one
+   ```
+
+   Never a mode constant, and never anything that makes the action
+   conditional:
+
+   ```tsx
+   const SAMPLE_MODE = true;                              // NO
+   <Form action={SAMPLE_MODE ? undefined : search} ...>   // NO - dead button
+   ```
+
+   **The app template's `OverviewPage.tsx` does exactly this**, and it is the
+   one thing in that file you must not copy. A build did copy it: `SAMPLE_MODE`
+   stayed `true`, the Search button submitted nothing for ever, five invented
+   rows sat in the table, and every check was green - `tsc`, `validate_app` and
+   the model's own review all pass an app whose button is not connected to
+   anything, because nothing about it is a type error. The person was told
+   "those sample rows go away as soon as the robot is connected", which was
+   not true and could never become true.
+
+   There is nothing for a mode flag to do. Before a session exists the kit
+   already shows "Not connected to your robot yet. The screens below show
+   sample data." at the top of the app, and an action that cannot reach a
+   robot fails honestly and says so. A wired button on a draft app is correct;
+   an unwired one is a mockup you will tell somebody is an app.
 3b. **Every view that waits on the robot renders THREE states, always: loading,
    empty, and failed.** Not two. A price-watch app built without the third one
    showed `Loading` under its table for ever after the backend stopped
@@ -140,6 +172,34 @@ it comes from the caller, and **the caller's fields arrive under `msg.params`**:
 })
 ```
 
+### An upsert REPLACES the record. Half a record destroys it.
+
+`optOperation: 'upsert'` writes the record it is given, whole. It does not
+merge. So a button that changes one field of an existing row has to send
+**every field that row has**, or the fields it left out are gone.
+
+A build shipped exactly this. `app.json` declared `setPaid` with six params
+(id, vehicle, work, date, cost, paid), the flow rebuilt the whole record from
+them correctly, and the screen sent two:
+
+```tsx
+params: (row: Job) => ({ id: row.id, paid: true }),    // NO - four fields die
+params: (row: Job) => ({ ...row, paid: true }),        // yes - the whole row
+```
+
+One press turned `Blue Van | Tyres | 2026-09-10 | 480.00` into
+`- | - | - | 0.00`, and the totals line above it into "Unknown 0.00". It
+survives a reload, because the robot did exactly what it was told. Nothing
+failed: the action returned ok, no node errored, no log line looks wrong.
+
+**So: a row action that toggles or edits a field spreads the row.** And when
+you change what an action takes, change all three halves in the same breath -
+`app.json`, the flow's record-building step, and every screen that calls it.
+The one that was forgotten here was the screen, and it was forgotten in the
+same turn the other two were deliberately changed to carry the whole row.
+`validate_app` reports a call site that passes fewer fields than `app.json`
+declares; do not wave that through.
+
 `Message('id')` reads `msg.id`, which nothing has set, so the node deletes
 nothing - and answers as if it had. One build shipped exactly that: the
 person pressed Returned, every node in the path ran, the app said it was
@@ -155,7 +215,7 @@ Note what the example does **not** have: an ending. No `Core.Flow.Stop`, no
 screens (hard rule 5) - the last node on every path is its `App Respond` or
 `App Respond Error`. This is the single easiest way to ship an app that works
 exactly once, so check for it before you save.
-6. **`start_app_session`.** Creates a draft instance and starts the flow on the LOCAL robot; the preview's buttons now hit a real robot. Replace each `SAMPLE_*` const with the live `useCollection` / `useAction` data as its backend action comes alive, then delete the const.
+6. **`start_app_session`.** Creates a draft instance and starts the flow on the LOCAL robot; the preview's buttons now hit a real robot. Delete each `SAMPLE_*` const as its backend action comes alive. The buttons need no change, because step 3a wired them to the real action from the start; if changing one is what makes it work, the app was a mockup until now and you have just found that out later than the person would have.
 7. **`validate_app`.** Fix until clean. It compiles both projects against the contract, checks the schema, and checks the dependency allowlist.
 8. **Offer to publish.** Never publish unasked. When the person says yes, `publish_app`.
 
