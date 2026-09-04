@@ -75,7 +75,7 @@ only in this package, and hunting for them costs a search round every build.
 | `Robomotion.Apps.RespondError` | App Respond Error | `optCode`, `optRetryable` |
 | `Robomotion.Apps.Progress` | App Progress | `optPercent` |
 | `Robomotion.Apps.EmitEvent` | App Emit Event | `optEventName`, `optAudience` |
-| `Robomotion.Apps.UpdateData` | App Update Data | `optCollection`, `optOperation` |
+| `Robomotion.Apps.UpdateData` | App Update Data | `optCollection`, `optOperation`, `inRecord` - **never `inKey`**, see below |
 | `Robomotion.Apps.GetFile` | App Get File | `optDownloadDir` |
 | `Robomotion.Apps.SaveFile` | App Save File | nothing |
 
@@ -100,8 +100,40 @@ sits on **`msg.result`** when `App Respond` runs. Both shapes are already typed
 for you in `flow/src/generated/actions.gen.ts`.
 
 `App Action` is a trigger, so it has no input port and the validator reports it
-as an unreachable node. That warning is expected. Never restructure the flow to
-silence it.
+as an unreachable node. `App Respond` and `App Respond Error` end a path, so it
+reports them as dead ends. Both warnings are expected on every app. Never
+restructure the flow to silence either.
+
+An action that calls a website uses `Core.Net.HttpRequest`, which is not in this
+package and is the one node worth naming here so you do not spend a search
+round on it.
+
+### Writing to a collection: leave `inKey` out
+
+`App Update Data` with `optOperation: 'upsert'` takes the record's key **from
+the record**, using the `key` field the collection declares in `app.json`. That
+is the whole design - the node reads it for you.
+
+```ts
+.then('b1c2d3', 'Robomotion.Apps.UpdateData', 'Add To List', {
+  optCollection: 'items',
+  optOperation: 'upsert',
+  inRecord: Message('result'),        // and nothing else
+})
+```
+
+**Never write `inKey: Custom('id')`.** `Custom(x)` is a fixed value, not a field
+selector, so that stores every record under the literal string `"id"`: each add
+lands on the same record and replaces the one before it. The person sees only
+the last thing they saved, a reload does not bring the others back, and nothing
+in the flow or the robot's log looks wrong - the robot did exactly what it was
+told. This has already destroyed a real app's data once.
+
+If you truly need to pass a key, read it from the message: `Message('id')`.
+`validate_app` fails a literal `inKey` that names the collection's key field,
+and `read_app_data` shows what each record is actually stored under - use it the
+moment someone says an app is losing or not showing saved data, before touching
+the screens.
 
 Note what the example does **not** have: an ending. No `Core.Flow.Stop`, no
 `Core.Flow.End`. The flow is the app's backend and stays up forever behind the
