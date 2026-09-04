@@ -1,4 +1,4 @@
-import { d as CollectionOp, l as FileUploadOptions, F as FileRef, e as ConnectionState, k as CreateAppOptions, C as CallOptions, c as AppErrorCode } from './types-D-1fQGTm.js';
+import { d as CollectionOp, l as FileUploadOptions, F as FileRef, e as ConnectionState, k as CreateAppOptions, C as CallOptions, c as AppErrorCode } from './types-BMEKkskn.js';
 
 /**
  * A live view over one server-side collection (sdk.md "Collections",
@@ -190,11 +190,27 @@ declare class AppClient {
      * case that works.
      */
     private reconnectIfRobotChanged;
+    /**
+     * Start this app's backend on its robot.
+     *
+     * The page has always had exactly one thing to offer a person whose app is
+     * not running: nothing. It said the robot was offline, which was usually
+     * untrue, and there was no button. Starting is a request the signed-in
+     * person is entitled to make, and the recheck loop above notices the
+     * backend coming up, so success needs no further wiring.
+     */
+    startBackend(): Promise<void>;
     /** Begin asking, while we are waiting on a robot that may never come. */
     private startRobotRecheck;
     private scheduleRobotRecheck;
     /** Back off and go round again, unless we got somewhere. */
     private continueRobotRecheck;
+    /**
+     * Whether we are still waiting on something to appear on the other end.
+     * Both states are a wait: one for the robot, one for its backend, and a
+     * backend someone starts from the Designer has to be noticed either way.
+     */
+    private isWaitingForBackend;
     private stopRobotRecheck;
     private doKeyExchange;
     /** First connection sends hello; every reconnect sends resume (protocol.md section 8). */

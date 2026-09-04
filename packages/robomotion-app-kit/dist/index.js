@@ -2672,16 +2672,60 @@ function ConnectionBanner({ state, className }) {
 function AutoBanner({ className }) {
   const app = useMaybeAppClient();
   const [state, setState] = useState(app?.connection.state);
+  const [starting, setStarting] = useState(false);
+  const [startError, setStartError] = useState(null);
   useEffect(() => {
     if (!app) return;
     setState(app.connection.state);
     return app.connection.onChange(setState);
   }, [app]);
+  const onStart = app && typeof app.startBackend === "function" ? async () => {
+    setStarting(true);
+    setStartError(null);
+    try {
+      await app.startBackend();
+    } catch (e) {
+      setStartError(e instanceof Error ? e.message : "This app could not be started.");
+    } finally {
+      setStarting(false);
+    }
+  } : void 0;
   if (!app || state === void 0) return null;
-  return /* @__PURE__ */ jsx2(BannerView, { state, className });
+  return /* @__PURE__ */ jsx2(
+    BannerView,
+    {
+      state,
+      className,
+      onStart,
+      starting,
+      startError
+    }
+  );
 }
-function BannerView({ state, className }) {
+function BannerView({
+  state,
+  className,
+  onStart,
+  starting,
+  startError
+}) {
   if (state === "ready" || state === "connecting") return null;
+  if (state === "app_not_running") {
+    return /* @__PURE__ */ jsxs2(
+      "div",
+      {
+        role: "status",
+        className: cn(
+          "flex flex-wrap items-center justify-between gap-2 border-b border-amber-200 bg-amber-50 px-4 py-2.5 text-left dark:border-amber-500/30 dark:bg-amber-950",
+          className
+        ),
+        children: [
+          /* @__PURE__ */ jsx2("p", { className: "text-sm font-medium text-amber-800 dark:text-amber-300", children: startError ?? "This app isn't running, so nothing on this page will respond yet." }),
+          onStart ? /* @__PURE__ */ jsx2(Button, { variant: "secondary", size: "sm", disabled: starting, onClick: onStart, children: starting ? "Starting\u2026" : "Start it" }) : null
+        ]
+      }
+    );
+  }
   if (state === "contract_mismatch") {
     return /* @__PURE__ */ jsxs2(
       "div",

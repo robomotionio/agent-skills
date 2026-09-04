@@ -391,7 +391,8 @@ async function resolveInstance(apiUrl, instanceUuid, fetchFn) {
     isPublic: Boolean(d.is_public),
     runId: d.run_id ? String(d.run_id) : void 0,
     flowId: d.flow_id ? String(d.flow_id) : void 0,
-    name: d.name ? String(d.name) : void 0
+    name: d.name ? String(d.name) : void 0,
+    isRunning: typeof d.is_running === "boolean" ? d.is_running : void 0
   };
 }
 
@@ -878,7 +879,12 @@ var AppClient = class {
     } catch {
       return;
     }
-    if (this.closed || !fresh.robotId || fresh.robotId === this.instance.robotId) return;
+    if (this.closed) return;
+    if (fresh.isRunning === false && fresh.robotId === this.instance.robotId) {
+      this.connection.set("app_not_running");
+      return;
+    }
+    if (!fresh.robotId || fresh.robotId === this.instance.robotId) return;
     this.instance = fresh;
     try {
       this.ws?.close();
@@ -886,6 +892,48 @@ var AppClient = class {
     }
     this.ws = null;
     this.connect();
+  }
+  /**
+   * Start this app's backend on its robot.
+   *
+   * The page has always had exactly one thing to offer a person whose app is
+   * not running: nothing. It said the robot was offline, which was usually
+   * untrue, and there was no button. Starting is a request the signed-in
+   * person is entitled to make, and the recheck loop above notices the
+   * backend coming up, so success needs no further wiring.
+   */
+  async startBackend() {
+    if (this.closed || !this.instance || !this.apiUrl) {
+      throw new AppError("internal", "This app has no backend to start.", false);
+    }
+    const body = { id: this.instance.id };
+    if (this.instance.flowId) body.flow_id = this.instance.flowId;
+    if (this.instance.robotId) body.robot_id = this.instance.robotId;
+    let res;
+    try {
+      res = await this.fetchFn(`${this.apiUrl.replace(/\/$/, "")}/v1/apps.instance.start`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+    } catch {
+      throw new AppError("internal", "Could not reach Robomotion to start this app.", true);
+    }
+    let payload = {};
+    try {
+      payload = await res.json();
+    } catch {
+    }
+    if (payload.code === "application_already_running") return;
+    if (!res.ok || payload.ok === false) {
+      throw new AppError(
+        payload.code === "robot_not_connected" ? "robot_offline" : "internal",
+        payload.code === "robot_not_connected" ? "The robot for this app is not connected, so it cannot be started yet." : payload.error || "This app could not be started.",
+        true
+      );
+    }
+    void this.reconnectIfRobotChanged(false);
   }
   /** Begin asking, while we are waiting on a robot that may never come. */
   startRobotRecheck() {
@@ -897,7 +945,7 @@ var AppClient = class {
     if (this.closed || this.robotRecheckTimer) return;
     this.robotRecheckTimer = setTimeout(() => {
       this.robotRecheckTimer = null;
-      if (this.closed || this.connection.state !== "robot_offline") return;
+      if (this.closed || !this.isWaitingForBackend()) return;
       void this.reconnectIfRobotChanged(false).then(
         () => this.continueRobotRecheck(),
         () => this.continueRobotRecheck()
@@ -906,12 +954,21 @@ var AppClient = class {
   }
   /** Back off and go round again, unless we got somewhere. */
   continueRobotRecheck() {
-    if (this.closed || this.connection.state !== "robot_offline") return;
+    if (this.closed || !this.isWaitingForBackend()) return;
     this.robotRecheckDelayMs = Math.min(
       Math.round(this.robotRecheckDelayMs * 1.5),
       ROBOT_RECHECK_MAX_MS
     );
     this.scheduleRobotRecheck();
+  }
+  /**
+   * Whether we are still waiting on something to appear on the other end.
+   * Both states are a wait: one for the robot, one for its backend, and a
+   * backend someone starts from the Designer has to be noticed either way.
+   */
+  isWaitingForBackend() {
+    const s = this.connection.state;
+    return s === "robot_offline" || s === "app_not_running";
   }
   stopRobotRecheck() {
     if (this.robotRecheckTimer) {

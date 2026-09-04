@@ -1,5 +1,18 @@
 /** Connection state observable on `app.connection.state` (sdk.md "Connection"). */
-type ConnectionState = "connecting" | "ready" | "offline" | "robot_offline" | "contract_mismatch"
+type ConnectionState = "connecting" | "ready" | "offline" | "robot_offline"
+/**
+ * The robot is there; this app's backend is not running on it.
+ *
+ * These look identical from the socket - the proxy says "no robot is
+ * attached to this instance" either way - and for a long time the page
+ * said the robot was offline for both. It was routinely untrue: a backend
+ * with no App Action node runs to the end and exits in a second, so it is
+ * never resident, so no robot is ever attached, and the person was shown
+ * "The robot for this app is offline. Waiting for it to come back" about a
+ * robot that was connected and idle, with nothing to press and nothing to
+ * wait for. The instance record knows which of the two it is.
+ */
+ | "app_not_running" | "contract_mismatch"
 /**
  * No backend is configured for this app yet - there is no instance to talk
  * to, so there is nothing to connect TO.
@@ -172,6 +185,8 @@ interface ResolvedInstance {
     runId?: string;
     flowId?: string;
     name?: string;
+    /** Whether the app's backend is running on that robot right now. */
+    isRunning?: boolean;
 }
 /** Minimal WebSocket surface the client needs; the browser WebSocket satisfies it. */
 interface WebSocketLike {
