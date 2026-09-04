@@ -162,6 +162,16 @@ and `<apps>/<appId>/flow`. Work only in those.
   already. A wrong explanation is worse than none: it spends their trust and
   sends them back into the same failure. If the logs say nothing, say that,
   and say what you are going to try next.
+
+  **Read the logs BEFORE restarting anything.** `start_app_session` mints a
+  NEW `studio_id`, and the failure the person is describing happened under
+  the old one - restart first and you are polling a clean, empty log, which
+  reads exactly like "the press never arrived". That is how the same wrong
+  answer gets given three times in a row while the robot's own log has said
+  `no such table: products` since the first attempt. Poll the session that
+  was live when it broke; restart afterwards, if at all. `node_error` is a
+  `poll_logs` event like any other - the failing node and its message are
+  there for the asking.
 - **Never show identifiers.** App ids, flow ids, commit shas, contract hashes,
   file names and node property names are yours, not the person's. "The app is
   created" - not "The app was created (id `0cfd...`)".
