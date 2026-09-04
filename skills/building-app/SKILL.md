@@ -207,6 +207,15 @@ Each rule carries its reason. The reason is why you don't route around the rule 
    directory check). An app whose first save is its first crash never gets a
    second chance from the person who just built it.
 
+   **On every path that touches it, not one of them.** Told to fix exactly
+   this, one build added `CREATE TABLE IF NOT EXISTS products` - and wired it
+   into the "check prices" path only, while the failure was on "add product".
+   The very next press failed identically. A person adds their first item
+   before they ever run a check, so the path they reach first is the one that
+   has to be ready. Either put the setup at the start of every path that
+   reads or writes, or run it once where the flow comes up, before any
+   trigger can be served.
+
 ## The preview loop
 
 Full protocol: `./docs/preview-loop.md`. The short version:
