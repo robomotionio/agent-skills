@@ -163,6 +163,26 @@ An action that calls a website uses `Core.Net.HttpRequest`, which is not in this
 package and is the one node worth naming here so you do not spend a search
 round on it.
 
+**`outBody` is only parsed when the server says `application/json`.** Plenty of
+real APIs return JSON under another content type - `itunes.apple.com` sends
+`text/javascript` - and then `msg.response` is a **string**, `msg.response.items`
+is `undefined`, and your not-found branch fires on every single query. Nothing
+errors: the robot's log shows all four steps finished, the screen politely says
+nothing matched, and the person believes the search is broken rather than the
+app. Parse defensively, always:
+
+```ts
+.then('d8f317', 'Core.Programming.Function', 'Build The List', {
+  func: `var data = msg.response;
+if (typeof data === 'string') { try { data = JSON.parse(data); } catch (e) { data = null; } }
+// ... now read data.results
+return msg;`
+})
+```
+
+And when a search legitimately finds nothing, say which it was: an empty answer
+from the service and an answer you could not read are the same screen otherwise.
+
 ### Writing to a collection: leave `inKey` out
 
 `App Update Data` with `optOperation: 'upsert'` takes the record's key **from
