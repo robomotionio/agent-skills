@@ -216,6 +216,21 @@ Each rule carries its reason. The reason is why you don't route around the rule 
    reads or writes, or run it once where the flow comes up, before any
    trigger can be served.
 
+   **And when a first save does nothing, read the flow before you read the
+   session.** Asked twice more to fix that same app - once with the person
+   saying in as many words "this is the very first thing I have done in this
+   app; I have never pressed Check prices now" - the assistant spent both
+   turns on sessions and restarts (32 shell calls, five log polls, zero reads
+   of its own flow) and told them "nothing had ever successfully run, so the
+   table had nothing to show". The robot's log had said
+   `no such table: products` since the first press.
+
+   A button that answers nothing on a brand-new app is a setup question until
+   proved otherwise. Open the flow, follow the path that button runs, and
+   check the storage it writes to is created on THAT path. That costs one
+   read. Restarting the session costs the person another round trip and tells
+   you nothing you did not already know.
+
 ## The preview loop
 
 Full protocol: `./docs/preview-loop.md`. The short version:

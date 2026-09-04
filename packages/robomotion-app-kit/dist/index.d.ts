@@ -390,6 +390,6 @@ interface ConnectionBannerProps {
     className?: string;
 }
 /** Renders robot-offline / contract-mismatch states (sdk.md). */
-declare function ConnectionBanner({ state, className }: ConnectionBannerProps): react.JSX.Element;
+declare function ConnectionBanner({ state, className }: ConnectionBannerProps): react.JSX.Element | null;
 
 export { type ActionLike, AppShell, type AppShellNavItem, type AppShellProps, Button, type ButtonProps, Card, CardBody, CardFooter, CardHeader, type CardHeaderProps, type CardProps, Checkbox, type CheckboxProps, ConnectionBanner, type ConnectionBannerProps, DEFAULT_ACCENT, DataTable, type DataTableColumn, type DataTableProps, type DataTableRowAction, type DataTableRowCallbackAction, type DataTableRowLinkedAction, type DataTableSource, DatePicker, type DatePickerProps, EmptyState, type EmptyStateProps, ErrorState, type ErrorStateProps, Field, type FieldProps, FileUpload, type FileUploadProps, Form, type FormProps, type FormValues, Grid, type GridProps, NumberInput, type NumberInputProps, type ParamsOf, Progress, type ProgressProps, RadioGroup, type RadioGroupProps, Row, type RowProps, Screen, type ScreenProps, Select, type SelectOption, type SelectProps, Spinner, Stack, type StackProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, TextArea, type TextAreaProps, TextInput, type TextInputProps, Toast, type ToastOptions, type ToastProps, type UseToastResult, accentStyle, cn, dismissToast, focusRing, toast, useFormValues, useToast };

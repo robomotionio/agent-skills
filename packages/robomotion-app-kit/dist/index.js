@@ -2487,7 +2487,7 @@ var focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:r
 var inputBase = "block w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-colors placeholder:text-neutral-400 focus:border-[color:var(--rm-accent)] focus:outline-none focus:ring-1 focus:ring-[color:var(--rm-accent)] disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-500 aria-[invalid=true]:border-red-500 aria-[invalid=true]:focus:ring-red-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:disabled:bg-neutral-800 dark:disabled:text-neutral-500";
 
 // src/components/connection-banner.tsx
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState, useSyncExternalStore } from "react";
 import { useMaybeAppClient } from "@robomotion/apps-runtime/react";
 
 // src/components/button.tsx
@@ -2634,7 +2634,38 @@ function Spinner({ className }) {
 
 // src/components/connection-banner.tsx
 import { jsx as jsx2, jsxs as jsxs2 } from "react/jsx-runtime";
+var order = [];
+var listeners = /* @__PURE__ */ new Set();
+function emit() {
+  for (const l of listeners) l();
+}
+function subscribe(l) {
+  listeners.add(l);
+  return () => {
+    listeners.delete(l);
+  };
+}
+var useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
+function useOwnsBannerSlot() {
+  const [id] = useState(() => /* @__PURE__ */ Symbol("connection-banner"));
+  useIsomorphicLayoutEffect(() => {
+    order.push(id);
+    emit();
+    return () => {
+      const i = order.indexOf(id);
+      if (i >= 0) order.splice(i, 1);
+      emit();
+    };
+  }, [id]);
+  return useSyncExternalStore(
+    subscribe,
+    () => order.length === 0 || order[0] === id,
+    () => true
+  );
+}
 function ConnectionBanner({ state, className }) {
+  const owns = useOwnsBannerSlot();
+  if (!owns) return null;
   if (state !== void 0) return /* @__PURE__ */ jsx2(BannerView, { state, className });
   return /* @__PURE__ */ jsx2(AutoBanner, { className });
 }
@@ -2710,10 +2741,10 @@ function causeAttrs(cause) {
 }
 var items = [];
 var counter = 0;
-var listeners = /* @__PURE__ */ new Set();
+var listeners2 = /* @__PURE__ */ new Set();
 var timers = /* @__PURE__ */ new Map();
-function emit() {
-  for (const l of listeners) l(items);
+function emit2() {
+  for (const l of listeners2) l(items);
 }
 function toast(opts) {
   const id = `toast-${++counter}`;
@@ -2724,7 +2755,7 @@ function toast(opts) {
   }
   const item = { variant: "default", ...opts, id, cause };
   items = [...items, item];
-  emit();
+  emit2();
   const duration = opts.durationMs ?? 5e3;
   if (duration > 0) {
     timers.set(
@@ -2742,7 +2773,7 @@ function dismissToast(id) {
   }
   const before = items.length;
   items = items.filter((i) => i.id !== id);
-  if (items.length !== before) emit();
+  if (items.length !== before) emit2();
 }
 function useToast() {
   return { toast, dismiss: dismissToast };
@@ -2756,10 +2787,10 @@ function Toast({ className }) {
   const [list, setList] = useState2(items);
   useEffect2(() => {
     const listener = (l) => setList(l);
-    listeners.add(listener);
+    listeners2.add(listener);
     setList(items);
     return () => {
-      listeners.delete(listener);
+      listeners2.delete(listener);
     };
   }, []);
   if (list.length === 0) return null;

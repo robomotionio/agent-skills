@@ -142,6 +142,8 @@ declare class AppClient {
     private reconnectTimer;
     /** Throttles the instance re-resolve in reconnectIfRobotChanged. */
     private lastRobotRecheck;
+    private robotRecheckTimer;
+    private robotRecheckDelayMs;
     private pingTimer;
     private sendChain;
     private recvChain;
@@ -188,6 +190,12 @@ declare class AppClient {
      * case that works.
      */
     private reconnectIfRobotChanged;
+    /** Begin asking, while we are waiting on a robot that may never come. */
+    private startRobotRecheck;
+    private scheduleRobotRecheck;
+    /** Back off and go round again, unless we got somewhere. */
+    private continueRobotRecheck;
+    private stopRobotRecheck;
     private doKeyExchange;
     /** First connection sends hello; every reconnect sends resume (protocol.md section 8). */
     private sendHelloOrResume;

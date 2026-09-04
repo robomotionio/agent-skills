@@ -493,6 +493,8 @@ var DEFAULT_TIMEOUT_MS = 3e4;
 var DEFAULT_RECONNECT_MS = 5e3;
 var DEFAULT_PING_MS = 3e4;
 var ROBOT_RECHECK_INTERVAL_MS = 5e3;
+var ROBOT_RECHECK_START_MS = 3e3;
+var ROBOT_RECHECK_MAX_MS = 3e4;
 function dispatchDom(type, detail) {
   if (typeof window === "undefined" || typeof CustomEvent === "undefined") return;
   try {
@@ -559,6 +561,8 @@ var AppClient = class {
   reconnectTimer = null;
   /** Throttles the instance re-resolve in reconnectIfRobotChanged. */
   lastRobotRecheck = 0;
+  robotRecheckTimer = null;
+  robotRecheckDelayMs = ROBOT_RECHECK_START_MS;
   pingTimer = null;
   sendChain = Promise.resolve();
   recvChain = Promise.resolve();
@@ -575,6 +579,10 @@ var AppClient = class {
     this.reconnectDelayMs = options.reconnectDelayMs ?? DEFAULT_RECONNECT_MS;
     this.pingIntervalMs = options.pingIntervalMs ?? DEFAULT_PING_MS;
     this.storage = options.storage ?? (typeof localStorage !== "undefined" ? localStorage : new MemoryStorage());
+    this.connection.onChange((state) => {
+      if (state === "robot_offline") this.startRobotRecheck();
+      else this.stopRobotRecheck();
+    });
     this.files = new FilesApi(() => ({
       apiUrl: this.apiUrl,
       appId: this.instance?.appId ?? "",
@@ -684,6 +692,7 @@ var AppClient = class {
   close() {
     this.closed = true;
     this.clearReconnect();
+    this.stopRobotRecheck();
     this.stopPing();
     const ws = this.ws;
     this.ws = null;
@@ -857,11 +866,11 @@ var AppClient = class {
    * costs one request in the case that was already broken and none in the
    * case that works.
    */
-  async reconnectIfRobotChanged() {
+  async reconnectIfRobotChanged(throttled = true) {
     if (this.closed || !this.instance || !this.apiUrl) return;
     if (this.opts.instance) return;
     const now = Date.now();
-    if (now - this.lastRobotRecheck < ROBOT_RECHECK_INTERVAL_MS) return;
+    if (throttled && now - this.lastRobotRecheck < ROBOT_RECHECK_INTERVAL_MS) return;
     this.lastRobotRecheck = now;
     let fresh;
     try {
@@ -877,6 +886,39 @@ var AppClient = class {
     }
     this.ws = null;
     this.connect();
+  }
+  /** Begin asking, while we are waiting on a robot that may never come. */
+  startRobotRecheck() {
+    if (this.closed || this.opts.instance) return;
+    this.robotRecheckDelayMs = ROBOT_RECHECK_START_MS;
+    this.scheduleRobotRecheck();
+  }
+  scheduleRobotRecheck() {
+    if (this.closed || this.robotRecheckTimer) return;
+    this.robotRecheckTimer = setTimeout(() => {
+      this.robotRecheckTimer = null;
+      if (this.closed || this.connection.state !== "robot_offline") return;
+      void this.reconnectIfRobotChanged(false).then(
+        () => this.continueRobotRecheck(),
+        () => this.continueRobotRecheck()
+      );
+    }, this.robotRecheckDelayMs);
+  }
+  /** Back off and go round again, unless we got somewhere. */
+  continueRobotRecheck() {
+    if (this.closed || this.connection.state !== "robot_offline") return;
+    this.robotRecheckDelayMs = Math.min(
+      Math.round(this.robotRecheckDelayMs * 1.5),
+      ROBOT_RECHECK_MAX_MS
+    );
+    this.scheduleRobotRecheck();
+  }
+  stopRobotRecheck() {
+    if (this.robotRecheckTimer) {
+      clearTimeout(this.robotRecheckTimer);
+      this.robotRecheckTimer = null;
+    }
+    this.robotRecheckDelayMs = ROBOT_RECHECK_START_MS;
   }
   async doKeyExchange() {
     if (!this.robotPublicKey || !this.ws) return;
