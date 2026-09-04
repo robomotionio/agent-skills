@@ -15,8 +15,8 @@ function loadContract(root, contractPath) {
 }
 function loadDevSession(root) {
   for (const candidate of [
-    resolve(root, ".robomotion/dev-session.json"),
-    resolve(root, "../.robomotion/dev-session.json")
+    resolve(root, "../.robomotion/dev-session.json"),
+    resolve(root, ".robomotion/dev-session.json")
   ]) {
     try {
       return JSON.parse(readFileSync(candidate, "utf-8"));
@@ -35,18 +35,81 @@ function screensOf(contract) {
 }
 function bridgeScript(screens) {
   return `(function () {
-  if (window.parent === window) return;
+  var embedded = window.parent !== window;
   var post = function (type, data) {
+    if (!embedded) return;
     try {
       var msg = { type: type };
       if (data) for (var k in data) msg[k] = data[k];
       window.parent.postMessage(msg, "*");
     } catch (e) { /* the preview host is gone; nothing to do */ }
   };
+
+  // A page load's identity. The host uses it to tell an error left over from
+  // a previous load - which a fresh "ready" should clear - from one this very
+  // load produced, which it must not (issue 41).
+  var loadId = "L" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  var errorCount = 0;
+
+  // Errors the DEV SERVER can never see (issue 40).
+  //
+  // Vite serves a module that fails on import perfectly happily, so a wrong
+  // import name, a crash on first render or a rejected promise leaves nothing
+  // in the dev server's output at all - and the dev server's output is the
+  // only thing the assistant can read. It reported "the screens are live with
+  // no errors" about a page that had failed to load. Sending them back here
+  // is what lets get_preview_errors answer honestly.
+  var reportToDevServer = function (payload) {
+    try {
+      var url = new URL("__rm/errors", document.baseURI).toString();
+      fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        keepalive: true,
+      }).catch(function () { /* the dev server is gone; the panel still has it */ });
+    } catch (e) { /* no fetch, no URL: not worth failing the page over */ }
+  };
+
+  var reportError = function (message, stack, source) {
+    errorCount++;
+    var payload = {
+      message: String(message || "Unknown error"),
+      stack: stack ? String(stack) : "",
+      source: source ? String(source) : "",
+      url: String(location.href),
+      loadId: loadId,
+      at: Date.now(),
+    };
+    post("rm-app-error", payload);
+    reportToDevServer(payload);
+  };
   var screens = ${JSON.stringify(screens)};
-  var ready = function () { post("rm-app-ready", { screens: screens }); };
+  var ready = function () { post("rm-app-ready", { screens: screens, loadId: loadId }); };
   if (document.readyState === "complete" || document.readyState === "interactive") ready();
   else document.addEventListener("DOMContentLoaded", ready);
+
+  // A hot update that lands cleanly is the app coming back, and it is the
+  // only "came back" signal there is: HMR patches modules in place, so no
+  // second page load ever happens. Wait a beat first - if the update itself
+  // threw, the error arrives under the CURRENT load id and greeting the host
+  // would clear an error that is still true.
+  window.addEventListener("vite:afterUpdate", function () {
+    var seen = errorCount;
+    setTimeout(function () {
+      if (errorCount !== seen) return;
+      loadId = "L" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+      ready();
+    }, 300);
+  });
+
+  // Vite's own compile/transform failures, which reach the page as an overlay
+  // event rather than as a thrown error.
+  window.addEventListener("vite:error", function (e) {
+    var err = e && e.detail && e.detail.err;
+    if (!err) return;
+    reportError(err.message, err.stack, err.id || "vite");
+  });
 
   // The route as the app's own router sees it: "/review", not
   // "/preview/<instance>/review". The mount prefix is announced by the
@@ -79,19 +142,15 @@ function bridgeScript(screens) {
   window.addEventListener("hashchange", emitRoute);
 
   window.addEventListener("error", function (e) {
-    post("rm-app-error", {
-      message: String((e && e.message) || "Unknown error"),
-      stack: e && e.error && e.error.stack ? String(e.error.stack) : "",
-      source: ((e && e.filename) || "") + (e && e.lineno ? ":" + e.lineno : "")
-    });
+    reportError(
+      (e && e.message) || "Unknown error",
+      e && e.error && e.error.stack ? e.error.stack : "",
+      ((e && e.filename) || "") + (e && e.lineno ? ":" + e.lineno : "")
+    );
   });
   window.addEventListener("unhandledrejection", function (e) {
     var r = e && e.reason;
-    post("rm-app-error", {
-      message: r && r.message ? String(r.message) : String(r),
-      stack: r && r.stack ? String(r.stack) : "",
-      source: "unhandledrejection"
-    });
+    reportError(r && r.message ? r.message : r, r && r.stack ? r.stack : "", "unhandledrejection");
   });
 
   window.addEventListener("rm:action-invoked", function (e) {
@@ -161,8 +220,52 @@ function bridgePlugin(options = {}) {
     },
     configureServer(server) {
       const configPath = "/__rm/config.json";
+      const errorsPath = "/__rm/errors";
       const base2 = server.config.base || "/";
-      const basedConfigPath = base2 === "/" ? configPath : base2.replace(/\/$/, "") + configPath;
+      const withBase = (p) => base2 === "/" ? p : base2.replace(/\/$/, "") + p;
+      const basedConfigPath = withBase(configPath);
+      const basedErrorsPath = withBase(errorsPath);
+      const browserErrors = [];
+      const MAX_BROWSER_ERRORS = 50;
+      server.middlewares.use((req, res, next) => {
+        const pathname = (req.url ?? "/").replace(/[?#].*$/, "");
+        if (pathname !== errorsPath && pathname !== basedErrorsPath) {
+          next();
+          return;
+        }
+        res.setHeader("Cache-Control", "no-store");
+        if ((req.method ?? "GET").toUpperCase() === "POST") {
+          let body = "";
+          req.on("data", (chunk) => {
+            if (body.length < 64e3) body += String(chunk);
+          });
+          req.on("end", () => {
+            try {
+              const raw = JSON.parse(body);
+              browserErrors.push({
+                message: String(raw.message ?? "Unknown error"),
+                stack: typeof raw.stack === "string" ? raw.stack : "",
+                source: typeof raw.source === "string" ? raw.source : "",
+                url: typeof raw.url === "string" ? raw.url : "",
+                at: typeof raw.at === "number" ? raw.at : Date.now()
+              });
+              while (browserErrors.length > MAX_BROWSER_ERRORS) browserErrors.shift();
+            } catch {
+            }
+            res.statusCode = 204;
+            res.end();
+          });
+          return;
+        }
+        if ((req.method ?? "GET").toUpperCase() === "DELETE") {
+          browserErrors.length = 0;
+          res.statusCode = 204;
+          res.end();
+          return;
+        }
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({ errors: browserErrors }));
+      });
       server.middlewares.use((req, res, next) => {
         const pathname = (req.url ?? "/").replace(/[?#].*$/, "");
         if (pathname !== configPath && pathname !== basedConfigPath) {

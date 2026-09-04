@@ -214,12 +214,10 @@ parameter as a string in `app.json` and convert in the flow, or convert on the
 way in with the form's `onSubmit`. Decide which when you write the contract,
 not after the robot refuses the call.
 
-Signatures, for the props that are not obvious:
+Every input's props are in **Props, in full** at the foot of this file. The
+two that trip people up:
 
 ```ts
-Form:        { action?, schema?, values?, initialValues?, onChange?, onSubmit?, disabled? }
-Field:       { name, label, hint?, error?, required? }
-TextInput:   { value?: string, onChange?: (v: string) => void, type?: "text"|"email"|"password"|"url"|"tel"|"search" }
 NumberInput: { value?: number, onChange?: (v: number | undefined) => void }   // writes a NUMBER
 Select:      { options: { value: string; label: ReactNode; disabled?: boolean }[],
                value?: string, onChange?: (v: string) => void, placeholder?: string }  // writes a STRING
@@ -295,6 +293,136 @@ import {
 | `useConnection()` | `{ state, robotOnline }` | anything that must react to `"connecting" \| "ready" \| "offline" \| "robot_offline" \| "contract_mismatch"` |
 | `useFileUpload()` | `{ upload, uploading, progress, error }` | getting a `FileRef` to pass into an action |
 
+`data` and `error` are mutually exclusive, and only the latest `run` writes
+either: a failure clears the previous answer, a success clears the previous
+failure, and a run that has been superseded writes nothing at all. So a screen
+renders `error` when it is set and `data` when it is set, and never has to
+guard against both. Do not keep your own copy of the last result alongside
+them - that copy is exactly what used to leave a stale answer under a red
+error card.
+
 Action params and results are typed by `src/generated/actions.gen.ts` (which also exports `CONTRACT_HASH` and the `typedApp` wrapper). If `tsc` complains about a param, the contract changed - fix the call site or the contract, never cast.
 
 Errors are `AppError { code, message, retryable, details }` with codes `invalid_params` · `unknown_action` · `contract_mismatch` · `robot_offline` · `queue_full` · `timeout` · `cancelled` · `concurrency_rejected` · `internal`. `robot_offline` and `queue_full` are retryable; `invalid_params` and `unknown_action` are not - those are contract bugs to fix, not to retry.
+
+## Props, in full
+
+The complete surface, so nothing here is worth a `grep` through
+`node_modules`. Every component also takes the native props of the element it
+renders (`className`, `id`, `aria-*`, and so on) unless the row says
+otherwise; only the kit's own props are listed.
+
+Every prop type is exported alongside its component (`ButtonProps`,
+`NumberInputProps`, `SelectProps`, …), so a screen that needs one can import
+it by name from `@robomotion/app-kit`.
+
+**Frame**
+
+```ts
+AppShell:         { title: ReactNode, accent?: string, logo?: ReactNode,
+                    nav?: { label: string; path: string }[], activePath?: string,
+                    onNavigate?: (path: string) => void, connectionState?: ConnectionState,
+                    headerRight?: ReactNode, children?: ReactNode }
+Screen:           { title: ReactNode, description?: ReactNode, actions?: ReactNode,
+                    children?: ReactNode }
+ConnectionBanner: { state?: ConnectionState, className?: string }
+```
+
+**Actions and feedback**
+
+```ts
+Button:      { variant?: "primary"|"secondary"|"ghost"|"danger", size?: "sm"|"md"|"lg",
+               loading?: boolean, action?: ActionLike, params?: unknown | ((e) => unknown),
+               type?: "button"|"submit", children?: ReactNode }
+Spinner:     { className?: string }
+Progress:    { value?: number /* 0-100; omit for indeterminate */, label?: string,
+               showValue?: boolean }
+StatusBadge: { status: "ok"|"warn"|"error"|"pending", children?: ReactNode }
+EmptyState:  { title: ReactNode, description?: ReactNode, icon?: ReactNode,
+               action?: ReactNode /* usually a Button */ }
+ErrorState:  { error: unknown /* AppError, Error or string */, title?: ReactNode,
+               onRetry?: () => void, retryLabel?: string }
+Toast:       { className?: string }        // the viewport; AppShell mounts one already
+useToast():  { toast: (o: ToastOptions) => string, dismiss: (id: string) => void }
+                                           // or the standalone toast() / dismissToast()
+
+ToastOptions: { title: ReactNode, description?: ReactNode,
+                variant?: "default"|"success"|"error",
+                durationMs?: number /* default 5000; 0 keeps it until closed */ }
+```
+
+**Content**
+
+```ts
+Card:       { children?: ReactNode }
+CardHeader: { title?: ReactNode, description?: ReactNode, children?: ReactNode }
+CardBody:   { children?: ReactNode }
+CardFooter: { children?: ReactNode }
+
+DataTable<T>: { columns: DataTableColumn<T>[], rows: T[],
+                rowKey?: (row: T) => string,
+                filterable?: boolean, filterPlaceholder?: string,
+                pageSize?: number /* default 10; 0 disables pagination */,
+                rowActions?: DataTableRowAction<T>[], onRowClick?: (row: T) => void,
+                caption?: string,
+                emptyTitle?: ReactNode, emptyDescription?: ReactNode, emptyState?: ReactNode,
+                loading?: boolean, source?: { name: string; records?: unknown } }
+
+DataTableColumn<T>: { key: string, header: ReactNode, sortable?: boolean,
+                      render?: (row: T) => ReactNode,
+                      value?: (row: T) => string | number | null | undefined,
+                      align?: "left"|"right"|"center", className?: string }
+
+DataTableRowAction<T>: { label: string, danger?: boolean, disabled?: (row: T) => boolean }
+                       & ( { onSelect: (row: T) => void }
+                         | { action: ActionLike, params: (row: T) => unknown } )
+```
+
+**Input**
+
+```ts
+Form:        { action?: ActionLike, schema?: ContractSchema, values?: FormValues,
+               initialValues?: FormValues, onChange?: (v: FormValues) => void,
+               onSubmit?: (v: FormValues) => void | Promise<void>,
+               disabled?: boolean, children?: ReactNode }
+Field:       { name: string, label: ReactNode, help?: ReactNode, required?: boolean,
+               error?: ReactNode, children?: ReactNode }   // it is `help`, NOT `hint`
+TextInput:   { value?: string, onChange?: (v: string) => void,
+               type?: "text"|"email"|"password"|"url"|"tel"|"search" }
+NumberInput: { value?: number, onChange?: (v: number | undefined) => void }   // writes a NUMBER
+TextArea:    { value?: string, onChange?: (v: string) => void, rows?: number }
+Select:      { options: SelectOption[], value?: string, onChange?: (v: string) => void,
+               placeholder?: string }                                        // writes a STRING
+Checkbox:    { checked?: boolean, onChange?: (checked: boolean) => void, label?: ReactNode }
+RadioGroup:  { options: SelectOption[], value?: string, onChange?: (v: string) => void,
+               name?: string, disabled?: boolean }
+DatePicker:  { value?: string /* ISO "yyyy-mm-dd" */, onChange?: (v: string) => void }
+FileUpload:  { action?: ActionLike, params?: Record<string, unknown> | (() => Record<string, unknown>),
+               onUpload?: (ref: FileRef) => void, onError?: (e: AppError) => void,
+               accept?: string, label?: string, hint?: string,
+               isPublic?: boolean, disabled?: boolean }
+
+SelectOption:  { value: string, label: ReactNode, disabled?: boolean }
+useFormValues(): FormValues            // the current bag, inside a Form
+```
+
+**Layout**
+
+```ts
+type Gap   = 0 | 1 | 2 | 3 | 4 | 6 | 8            // no 5, no 10, no 12
+type Align = "start" | "center" | "end" | "stretch"
+
+Stack: { gap?: Gap /* default 4 */, align?: Align }
+Row:   { gap?: Gap, align?: Align /* default "center" */,
+         justify?: "start"|"center"|"end"|"between", wrap?: boolean }
+Grid:  { gap?: Gap, cols?: 1|2|3|4|6 /* default 1 */, mdCols?: 1|2|3|4|6, lgCols?: 1|2|3|4|6 }
+```
+
+**Helpers**
+
+```ts
+cn(...classes)            // class merge
+accentStyle(accent)       // the --rm-accent CSS variable, for a custom surface
+focusRing                 // the focus classes, when a custom control needs them
+DEFAULT_ACCENT            // the brand orange
+```

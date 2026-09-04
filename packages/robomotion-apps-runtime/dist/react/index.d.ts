@@ -29,6 +29,18 @@ interface UseActionResult<TParams = unknown, TData = unknown> {
  * Bind one action. `run` resolves with the result and also lands it in
  * `data`; failures land in `error` (the returned promise resolves undefined
  * instead of rejecting, so screens never need try/catch).
+ *
+ * `data` and `error` are mutually exclusive, and only the LATEST run may
+ * write either. Both halves of that were bugs people saw:
+ *
+ * - A failure used to leave the previous `data` in place, so a website
+ *   checker showed "Could not reach <url>" and "OK, the site is up, 200,
+ *   641 ms" at the same time, for the same address (issue 30).
+ * - A run aborts the one before it, and the aborted call's rejection landed
+ *   AFTER the new run had cleared the error - so "The action was cancelled"
+ *   sat above a correct answer for the rest of a session (issue 44's tail).
+ *   The sequence number is what stops a call that nobody is waiting for from
+ *   writing anything at all.
  */
 declare function useAction<TParams = unknown, TData = unknown>(name: string): UseActionResult<TParams, TData>;
 interface UseCollectionResult<T = unknown> {

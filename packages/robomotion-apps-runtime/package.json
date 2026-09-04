@@ -1,6 +1,6 @@
 {
   "name": "@robomotion/apps-runtime",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Transport runtime for Robomotion Apps: connect, call, subscribe, upload.",
   "license": "MIT",
   "type": "module",

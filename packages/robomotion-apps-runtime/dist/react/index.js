@@ -41,6 +41,7 @@ function useAction(name) {
   const [progress, setProgress] = useState(void 0);
   const abortRef = useRef(null);
   const aliveRef = useRef(true);
+  const runSeqRef = useRef(0);
   useEffect(() => {
     aliveRef.current = true;
     return () => {
@@ -61,7 +62,10 @@ function useAction(name) {
       abortRef.current?.abort();
       const controller = new AbortController();
       abortRef.current = controller;
-      if (aliveRef.current) {
+      runSeqRef.current += 1;
+      const seq = runSeqRef.current;
+      const current = () => aliveRef.current && runSeqRef.current === seq;
+      if (current()) {
         setLoading(true);
         setError(void 0);
         setProgress(void 0);
@@ -72,19 +76,25 @@ function useAction(name) {
           timeoutMs: opts?.timeoutMs,
           onProgress: (p) => {
             tagAction(p, name);
-            if (aliveRef.current) setProgress(p);
+            if (current()) setProgress(p);
           }
         });
         tagAction(result, name);
-        if (aliveRef.current) setData(result);
+        if (current()) {
+          setData(result);
+          setError(void 0);
+        }
         return result;
       } catch (e) {
         const err = e instanceof AppError ? e : new AppError("internal", String(e), false);
         tagAction(err, name);
-        if (aliveRef.current) setError(err);
+        if (current()) {
+          setError(err);
+          setData(void 0);
+        }
         return void 0;
       } finally {
-        if (aliveRef.current) setLoading(false);
+        if (current()) setLoading(false);
       }
     },
     [app, name]
