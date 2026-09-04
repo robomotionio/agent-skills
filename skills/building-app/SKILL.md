@@ -129,7 +129,22 @@ the last thing they saved, a reload does not bring the others back, and nothing
 in the flow or the robot's log looks wrong - the robot did exactly what it was
 told. This has already destroyed a real app's data once.
 
-If you truly need to pass a key, read it from the message: `Message('id')`.
+When you do need a key - a DELETE is the case where it is the whole point -
+it comes from the caller, and **the caller's fields arrive under `msg.params`**:
+
+```ts
+.then('d4e9f0', 'Robomotion.Apps.UpdateData', 'Remove From List', {
+  optCollection: 'items',
+  optOperation: 'delete',
+  inKey: Message('params.id'),      // NOT Message('id') - that reads nothing
+})
+```
+
+`Message('id')` reads `msg.id`, which nothing has set, so the node deletes
+nothing - and answers as if it had. One build shipped exactly that: the
+person pressed Returned, every node in the path ran, the app said it was
+done, and the row was still there after a reload. Nothing in the flow or the
+robot's log looks wrong, because the robot did what it was told.
 `validate_app` fails a literal `inKey` that names the collection's key field,
 and `read_app_data` shows what each record is actually stored under - use it the
 moment someone says an app is losing or not showing saved data, before touching
