@@ -4,13 +4,30 @@ The complete catalogue. Compose screens from these and Tailwind layout classes; 
 
 The knobs named here are the normative surface. For exact prop spellings beyond them, the authority is the package's own types in `node_modules/@robomotion/app-kit` - when `tsc` disagrees with a snippet here, trust `tsc`.
 
+A screen imports from **two** packages, and which name lives in which is not
+guessable. Everything visual comes from the kit; everything that talks to the
+robot comes from the runtime. Importing a runtime name from the kit is not a
+type error you will see in a review - it is a blank white preview and
+`does not provide an export named '<name>'` in the browser console.
+
 ```tsx
+// Everything you can render. There is nothing else, and nothing else is allowed.
 import {
-  AppShell, Screen, Button, Card, CardHeader, CardBody, CardFooter,
-  DataTable, Form, Field, TextInput, NumberInput, TextArea, Select,
-  Checkbox, RadioGroup, DatePicker, FileUpload, Progress, StatusBadge,
-  EmptyState, ErrorState, Toast, useToast, Stack, Row, Grid, ConnectionBanner,
+  AppShell, Screen, ConnectionBanner,
+  Button, Spinner, Card, CardHeader, CardBody, CardFooter, DataTable,
+  Form, Field, TextInput, NumberInput, TextArea, Select, Checkbox,
+  RadioGroup, DatePicker, useFormValues, FileUpload,
+  Progress, StatusBadge, EmptyState, ErrorState,
+  Toast, useToast, toast, dismissToast,
+  Stack, Row, Grid, cn, accentStyle, focusRing, DEFAULT_ACCENT,
 } from "@robomotion/app-kit";
+
+// Everything that reaches the robot. NONE of these are in the kit.
+import {
+  AppProvider, useAppClient, useMaybeAppClient,
+  useAction, useCollection, useEvent, useConnection, useFileUpload,
+  bindAction, bindCollection, markGesture,
+} from "@robomotion/apps-runtime/react";
 ```
 
 ## Frame
@@ -158,13 +175,27 @@ const approve = useApproveInvoice();
 
 ### `Form` / `Field` and the inputs
 
-`TextInput`, `NumberInput`, `TextArea`, `Select`, `Checkbox`, `RadioGroup`, `DatePicker`. Wired to a schema: the form validates against the action's params shape, so a required field or a wrong type never reaches the robot (the robot would reject it with `invalid_params` anyway - catch it in the form instead).
+`TextInput`, `NumberInput`, `TextArea`, `Select`, `Checkbox`, `RadioGroup`, `DatePicker`.
+
+**Always pass `schema`.** It is the generated params schema for the action, and
+without it the form checks nothing at all. The types in `actions.gen.ts` are
+gone by run time, and a form's values are a bag of unknowns, so `schema` is the
+only thing that connects the fields to the contract. Skip it and a `Select`
+writing the string `"20"` into a field the contract declares as a `number`
+compiles, passes `validate_app`, and comes back from the robot as
+**"invalid parameters"** with no step having run and nothing in the robot's log
+to read. A type mismatch between a screen and its contract has no other net.
 
 ```tsx
+import { useSubmitExpense, SubmitExpenseParamsSchema } from "../generated/actions.gen";
+
 const submit = useSubmitExpense();
-<Form action={submit}>
+<Form action={submit} schema={SubmitExpenseParamsSchema}>
   <Field name="category" label="Category">
-    <Select options={["Travel", "Meals", "Supplies"]} />
+    <Select options={[
+      { value: "travel", label: "Travel" },
+      { value: "meals", label: "Meals" },
+    ]} />
   </Field>
   <Field name="amount" label="Amount">
     <NumberInput />
@@ -175,6 +206,29 @@ const submit = useSubmitExpense();
   <Button type="submit" variant="primary" loading={submit.loading}>Submit</Button>
 </Form>
 ```
+
+**`Select` options are `{ value, label }` objects, and `value` is always a
+string** - a bare array of strings does not compile. So a picker feeding a
+numeric parameter needs the number made somewhere: either declare that
+parameter as a string in `app.json` and convert in the flow, or convert on the
+way in with the form's `onSubmit`. Decide which when you write the contract,
+not after the robot refuses the call.
+
+Signatures, for the props that are not obvious:
+
+```ts
+Form:        { action?, schema?, values?, initialValues?, onChange?, onSubmit?, disabled? }
+Field:       { name, label, hint?, error?, required? }
+TextInput:   { value?: string, onChange?: (v: string) => void, type?: "text"|"email"|"password"|"url"|"tel"|"search" }
+NumberInput: { value?: number, onChange?: (v: number | undefined) => void }   // writes a NUMBER
+Select:      { options: { value: string; label: ReactNode; disabled?: boolean }[],
+               value?: string, onChange?: (v: string) => void, placeholder?: string }  // writes a STRING
+```
+
+A control given its own `value`/`onChange` is yours, not the form's: it writes
+to the form only when it changes, so an untouched picker submits **nothing**
+for that field. Give the `Form` an `initialValues` covering it, or leave the
+control uncontrolled and let the form hold it.
 
 `action` runs `submit.run(values)` once the values validate, after `onSubmit` if you also gave one, and links the submit button to the step in the flow. When the screen checks the fields by hand before calling (trimming, custom messages), keep `onSubmit` and spread `bindAction(submit)` on the submit button instead so the link is still declared.
 
