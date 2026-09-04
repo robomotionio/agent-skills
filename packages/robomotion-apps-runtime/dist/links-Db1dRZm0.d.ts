@@ -1,4 +1,4 @@
-import { d as CollectionOp, l as FileUploadOptions, F as FileRef, e as ConnectionState, k as CreateAppOptions, C as CallOptions, c as AppErrorCode } from './types-BMEKkskn.js';
+import { d as CollectionOp, l as FileUploadOptions, F as FileRef, e as ConnectionState, k as CreateAppOptions, C as CallOptions, c as AppErrorCode } from './types-CIteYOXM.js';
 
 /**
  * A live view over one server-side collection (sdk.md "Collections",

@@ -60,8 +60,8 @@ interface ContractSchema {
     type?: "object" | "array" | "string" | "number" | "integer" | "boolean" | "null";
     properties?: Record<string, ContractSchema>;
     items?: ContractSchema;
-    required?: string[];
-    enum?: unknown[];
+    required?: readonly string[];
+    enum?: readonly unknown[];
     format?: string;
     description?: string;
     default?: unknown;
