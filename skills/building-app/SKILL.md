@@ -43,6 +43,20 @@ Narrate progress through `todo_write`, with items phrased in the user's language
 
     Anything it lists that you did not write is debris from the demo: delete it. `src/screens.tsx` tells you which screens the app actually mounts, so anything unreachable from there goes too, whether or not it still compiles.
 3. **Generate the screens from the archetype, with sample data baked in.** Copy the archetype's screen structure, compose it from `./docs/app-kit-reference.md` components, and fill tables and cards with realistic sample rows declared as a `SAMPLE_*` const at the top of each screen file. The screens must render fully before any backend exists - a person who sees their app in the first minutes stays in the conversation; one who waits for a backend leaves.
+3b. **Every view that waits on the robot renders THREE states, always: loading,
+   empty, and failed.** Not two. A price-watch app built without the third one
+   showed `Loading` under its table for ever after the backend stopped
+   mid-action - no message, no retry, nothing to tell the person that the
+   thing they were waiting for was never coming. Ten minutes later it still
+   said `Loading`. The runtime times a call out after 30s and rejects the
+   promise; if the screen has nowhere to put that rejection, the person is
+   left with a spinner that means "broken" and reads as "nearly there".
+
+   Use the kit's `ErrorState` for the failure and `EmptyState` for "nothing
+   here yet" (`./docs/app-kit-reference.md`), and give the failure a button
+   that tries again. A screen where the loading branch is the only branch is
+   not finished.
+
 4. **`save_app`, then `push_app`.** `save_app` commits the working copy; `push_app` publishes it to the app repo and brings the preview up in about 90 seconds. Tell the person to look at it, and that the numbers are sample data until their robot is connected.
 4b. **`robomotion app codegen`** whenever `app.json` changes, before writing code against it. Run it from the app folder; it regenerates both typed clients and prints the contract hash.
 
