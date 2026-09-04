@@ -260,15 +260,23 @@ exactly once, so check for it before you save.
    nothing to press. Call `ask_user_question`. Exactly this shape:
 
        ask_user_question
+         header:    "Robot"
          question:  "Your app needs a robot to run on. Shall I set one up?"
          options:   "Yes, set it up"  /  "Not now"
+
+   The **header** is a word the person reads too, and it is the one that got
+   away: three builds asked with a card and one titled its card "App robot".
+   The word is "Robot". Not "App robot", not "App-robot", not "Robot slot".
 
    Writing the same words into your reply instead is not a different spelling
    of the same thing, it is the fault. And the word is **"robot"** - never
    "app-robot", never "one of your app-robot slots", never "application_lc".
    The person owns robots; slots and types are our bookkeeping, and naming
    them here is the exact vocabulary that had to be removed from the run
-   dialog. Say what it costs only if they ask.
+   dialog. **The same holds in your closing summary**, which is where it came
+   back: one build ended "it has its own robot now (2 of your 4 robot slots in
+   use)". Nobody asked what it cost. Say what it costs only if they ask, and
+   then say "robots", not "slots".
 7. **`validate_app`.** Fix until clean. It compiles both projects against the contract, checks the schema, and checks the dependency allowlist.
 8. **Offer to publish.** Never publish unasked. When the person says yes, `publish_app`.
 
