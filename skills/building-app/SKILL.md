@@ -160,6 +160,25 @@ Each rule carries its reason. The reason is why you don't route around the rule 
 4. **Never hand-edit generated files.** Anything under `src/generated/` is regenerated from `app.json`; edit `app.json` and regenerate. Reason: the next regeneration silently erases your edit, and an edited file no longer matches `contract_hash`, which blocks the app from connecting at all.
 5. **An app flow never ends. It is the backend, not a script.** It comes up with the app session and stays up for as long as the app lives, serving every press of every button by every person. So no path may end it: **never `Core.Flow.Stop`, never `Core.Flow.End`**, and never a "finish", "cleanup" or "done" step that reaches one. Every path finishes at its `App Respond` or `App Respond Error` and goes no further; anything that has to happen after answering (closing a browser, deleting a temp file) belongs before that node, not after a stop. Reason: a flow that stops once it has answered leaves an app that looks perfect and is dead on the second press. The first person to try it gets their results; everyone after that is told "The robot for this app is not connected", which blames the robot for something the flow did to itself, and the screen keeps the previous results under the new question so the failure even reads as a success. This is not hypothetical: a search app returned ten real results, stopped itself, and refused every search after that.
 
+   **An unhandled error ends the flow just as surely as a `Stop` node, so
+   every app backend needs `Core.Trigger.Catch` wired to an `App Respond
+   Error`.** Without it the first node that throws takes the whole app down -
+   not that action, the app. A price-watch backend died on its very first
+   press because one node hit `no such table: products`; every node in the
+   flow then closed, the caller was never answered, and the screen sat on
+   `Loading` for ever. One typo in one query, and an app that had just been
+   built was permanently dead with nothing on screen to say so. Catch turns
+   that into a message on the one action that failed, with the app still
+   serving every other button.
+
+6. **If the flow stores anything, it creates its own storage first.** The same
+   price-watch backend wrote products into a SQLite file that had no
+   `products` table, because nothing had made one. Whatever holds the data -
+   a table, a file, a folder - is created on a path that runs before the
+   first write and is safe to run again (`CREATE TABLE IF NOT EXISTS`, a
+   directory check). An app whose first save is its first crash never gets a
+   second chance from the person who just built it.
+
 ## The preview loop
 
 Full protocol: `./docs/preview-loop.md`. The short version:
