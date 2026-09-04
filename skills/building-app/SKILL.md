@@ -104,7 +104,7 @@ only in this package, and hunting for them costs a search round every build.
 |---|---|---|
 | `Robomotion.Apps.Action` | App Action | `optActionName` - the action's name in `app.json` |
 | `Robomotion.Apps.Respond` | App Respond | nothing; it answers with `msg.result` |
-| `Robomotion.Apps.RespondError` | App Respond Error | `optCode`, `optRetryable` |
+| `Robomotion.Apps.RespondError` | App Respond Error | `optCode`, `optRetryable`, **`inMessage`** - the sentence the person reads, see below |
 | `Robomotion.Apps.Progress` | App Progress | `optPercent` |
 | `Robomotion.Apps.EmitEvent` | App Emit Event | `optEventName`, `optAudience` |
 | `Robomotion.Apps.UpdateData` | App Update Data | `optCollection`, `optOperation`, `inRecord` - **never `inKey`**, see below |
@@ -135,6 +135,29 @@ for you in `flow/src/generated/actions.gen.ts`.
 as an unreachable node. `App Respond` and `App Respond Error` end a path, so it
 reports them as dead ends. Both warnings are expected on every app. Never
 restructure the flow to silence either.
+
+**`App Respond Error` needs a message.** Its message input defaults to empty,
+and a build that left it empty put this on screen:
+
+> **Couldn't work that out**
+> [Try again]
+
+with nothing between the two - a person told that something failed and never
+told what, while the reason ("Charge to must be higher than charge now") sat in
+the robot's log. Give it the reason, in the words the person would use:
+
+```ts
+.then('f9a4c6', 'Robomotion.Apps.RespondError', 'Say What Went Wrong', {
+  optRetryable: true,
+  inMessage: Message('error.message'),   // the caught error, or better:
+})
+```
+
+Better still on a branch you can predict, write the sentence yourself -
+`inMessage: Custom('Those percentages are the wrong way round.')` - because the
+error text was written for you and the message is read by them. Never pass a
+raw stack: `Error: x at main (main.js)` on a screen is a bug report, not an
+answer.
 
 An action that calls a website uses `Core.Net.HttpRequest`, which is not in this
 package and is the one node worth naming here so you do not spend a search
