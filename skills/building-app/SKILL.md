@@ -144,6 +144,24 @@ and `<apps>/<appId>/flow`. Work only in those.
   as a `debug` event, with the value in it. One observed build spent four
   minutes disassembling the runtime bundle to fake a call it was never going
   to be allowed to make.
+- **When something fails, read the robot's error BEFORE explaining it.**
+  `poll_logs` on the app session's `studio_id` carries the node that failed
+  and why, in the robot's own words. Diagnosing from the shape of the symptom
+  instead produces confident fiction. Observed, in full: a person said "I
+  added a product but the table just says Loading and nothing happens", and
+  the reply was
+
+  > The connection between the app and the robot had dropped - when we
+  > stopped the stuck task, the app's link went down with it, so your "add
+  > product" press never reached the robot.
+
+  The press had reached the robot. `Add Product`, `Build New Product` and
+  `Save Product` had all run, and `Save Product` failed on `no such table:
+  products`. The session was restarted, the person was asked to try again,
+  and they hit the identical wall - now believing it had been fixed once
+  already. A wrong explanation is worse than none: it spends their trust and
+  sends them back into the same failure. If the logs say nothing, say that,
+  and say what you are going to try next.
 - **Never show identifiers.** App ids, flow ids, commit shas, contract hashes,
   file names and node property names are yours, not the person's. "The app is
   created" - not "The app was created (id `0cfd...`)".
