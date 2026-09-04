@@ -30,7 +30,7 @@ Any behavior change starts in `app.json`, then regenerate, then touch screens an
 
 Narrate progress through `todo_write`, with items phrased in the user's language ("Design the review screen", "Teach the robot to read invoices") - never internal steps ("run typegen", "start dev server").
 
-**The tools, in the order you need them:** `create_app` (once, first) -> `sync_app` -> `save_app` -> `push_app` -> `start_app_session` -> `validate_app` -> `publish_app`. `list_apps` finds an existing app; `app_dev_server` controls the preview process. Never write app or flow files before `create_app` has returned - there is no working copy to write into until it has.
+**The tools, in the order you need them:** `create_app` (once, first) -> `sync_app` -> `save_app` -> `start_app_session` -> `validate_app` -> `publish_app`. There is no `push_app` step: the app half of every save is sent to Robomotion when your turn ends, whether or not you ask, so calling it yourself only makes the person wait twice. `list_apps` finds an existing app; `app_dev_server` controls the preview process. Never write app or flow files before `create_app` has returned - there is no working copy to write into until it has.
 
 0. **Create the app first.** Call `create_app` with a short human name and, WHEN YOU ARE ALREADY IN A FLOW, its id as `flowId` - in the Build view you always are, and omitting it binds the app to a different flow than the one on the user's screen. It returns `app_id`, `flow_id` and the local paths, and clones both working copies. Then `sync_app` before you read or write anything. Continuing an existing app instead? `list_apps`, then `sync_app`.
 
@@ -57,7 +57,7 @@ Narrate progress through `todo_write`, with items phrased in the user's language
    that tries again. A screen where the loading branch is the only branch is
    not finished.
 
-4. **`save_app`, then `push_app`.** `save_app` commits the working copy; `push_app` publishes it to the app repo and brings the preview up in about 90 seconds. Tell the person to look at it, and that the numbers are sample data until their robot is connected.
+4. **`save_app`.** It records the app's working copy and saves the flow behind it - the half the robot actually runs. The app's own copy goes to Robomotion when the turn ends, on its own; do not call `push_app` to make that happen sooner, because nothing between here and the end of the turn reads it. Then bring the preview up, tell the person to look at it, and say that the numbers are sample data until their robot is connected.
 4b. **`robomotion app codegen`** whenever `app.json` changes, before writing code against it. Run it from the app folder; it regenerates both typed clients and prints the contract hash.
 
 5. **Build the flow backend, one action at a time**, in the order the user will click them. For each action: `App Action` trigger → the real work → `App Respond` on EVERY path (an unresponded call only ends by timeout, which the user experiences as a hung button). Long work sends `App Progress`. The generated `flow/src/generated/actions.gen.ts` gives you the param/result types. Flow SDK mechanics (node grammar, browser, credentials) are the `creating-flow` skill - use it.
@@ -162,7 +162,7 @@ and `<apps>/<appId>/flow`. Work only in those.
   people's machines. `robomotion` is the tool that is always present; do not
   reach for `bun run`, `npm run` or `npx` to do a job it already does.
 - Prefer the app tools over raw shell generally: `sync_app`, `save_app`,
-  `push_app`, `validate_app`, `app_dev_server` each do one job properly.
+  `validate_app`, `app_dev_server` each do one job properly.
 - **`archetypes/` in the app repo is reference material.** It is not compiled
   and not checked; leave it where it is. Never delete it and never edit
   `tsconfig.json` to work around it.
