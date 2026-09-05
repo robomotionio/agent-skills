@@ -133,6 +133,20 @@ declare class ConnectionInfo {
     } | null): void;
     /** @internal */
     set(state: ConnectionState): void;
+    /**
+     * Tell whatever framed this page how the app is connected.
+     *
+     * The Designer's preview panel cannot see inside the iframe, so until now
+     * it could only tell whether the SCREENS were being served - never whether
+     * the robot behind them was running. It painted "The preview isn't running"
+     * over a live app, and framed an app with no backend at all as if pressing
+     * its buttons would do something. The banner inside the app knew the
+     * truth the whole time; this is how it gets out.
+     *
+     * A DOM event, relayed to the parent by the app-kit's vite bridge as
+     * `rm-connection`, the same way action events already travel.
+     */
+    private announce;
 }
 /**
  * The core app client (docs/apps/sdk.md, docs/apps/protocol.md).

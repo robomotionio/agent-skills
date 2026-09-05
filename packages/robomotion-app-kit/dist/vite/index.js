@@ -169,6 +169,15 @@ function bridgeScript(screens) {
     try { d.relayed = true; } catch (err) { /* see above */ }
     post("rm-action-progress", { action: d.action, callId: d.callId, percent: d.percent, message: d.message });
   });
+  // How the app is connected to its robot - the one thing the host framing
+  // this page could never see. It could tell whether the SCREENS were being
+  // served, and nothing else, so it painted "isn't running" over a live app
+  // and framed an app with no backend as if its buttons would answer. The
+  // runtime announces every transition; this carries it across the frame.
+  window.addEventListener("rm:connection", function (e) {
+    var d = (e && e.detail) || {};
+    post("rm-connection", { state: d.state, mismatch: d.mismatch || null });
+  });
 
 })();`;
 }
