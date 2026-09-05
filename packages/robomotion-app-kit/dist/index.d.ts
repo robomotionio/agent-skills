@@ -56,6 +56,8 @@ interface ActionLike<P = unknown> {
     name: string;
     /** True while a call is in flight. */
     loading: boolean;
+    /** The last call's failure, when there was one; a Form shows it. */
+    error?: unknown;
     /** Method syntax keeps typed actions assignable to ActionLike<unknown>. */
     run(params?: P): Promise<unknown>;
 }
@@ -218,9 +220,16 @@ interface FormProps extends Omit<FormHTMLAttributes<HTMLFormElement>, "onSubmit"
      */
     action?: ActionLike;
     disabled?: boolean;
+    /**
+     * A form shows its action's failure under the fields on its own. A screen
+     * that navigated away on success and rendered nothing on failure left the
+     * person pressing Add book at a form that simply stayed, while the robot
+     * refused every press. Pass `hideError` when the screen shows it elsewhere.
+     */
+    hideError?: boolean;
     children?: ReactNode;
 }
-declare function Form({ schema, initialValues, values: controlledValues, onChange, onSubmit, action, disabled, children, className, ...props }: FormProps): react.JSX.Element;
+declare function Form({ schema, initialValues, values: controlledValues, onChange, onSubmit, action, disabled, hideError, children, className, ...props }: FormProps): react.JSX.Element;
 /** Read the surrounding form's values and errors (advanced layouts). */
 declare function useFormValues(): FormValues;
 interface FieldProps {

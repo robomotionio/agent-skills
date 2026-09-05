@@ -493,6 +493,7 @@ var DEFAULT_PROXY_URL = "wss://amq.robomotion.io";
 var DEFAULT_TIMEOUT_MS = 3e4;
 var DEFAULT_RECONNECT_MS = 5e3;
 var DEFAULT_PING_MS = 3e4;
+var DEFAULT_CALL_CONNECT_WAIT_MS = 8e3;
 var ROBOT_RECHECK_INTERVAL_MS = 5e3;
 var ROBOT_RECHECK_START_MS = 3e3;
 var ROBOT_RECHECK_MAX_MS = 3e4;
@@ -590,6 +591,7 @@ var AppClient = class {
   fetchFn;
   reconnectDelayMs;
   pingIntervalMs;
+  callConnectWaitMs;
   instance = null;
   connId = "";
   clientId = "";
@@ -619,6 +621,7 @@ var AppClient = class {
     this.fetchFn = options.fetchFn ?? ((...args) => fetch(...args));
     this.reconnectDelayMs = options.reconnectDelayMs ?? DEFAULT_RECONNECT_MS;
     this.pingIntervalMs = options.pingIntervalMs ?? DEFAULT_PING_MS;
+    this.callConnectWaitMs = options.callConnectWaitMs ?? DEFAULT_CALL_CONNECT_WAIT_MS;
     this.storage = options.storage ?? (typeof localStorage !== "undefined" ? localStorage : new MemoryStorage());
     this.connection.onChange((state) => {
       if (state === "robot_offline") this.startRobotRecheck();
@@ -1237,6 +1240,27 @@ var AppClient = class {
   // Actions
   // -------------------------------------------------------------------------
   /**
+   * Resolve with the first connection state that is not "connecting", or
+   * with "connecting" itself once `ms` have passed without one.
+   */
+  waitWhileConnecting(ms) {
+    if (this.connection.state !== "connecting") return Promise.resolve(this.connection.state);
+    return new Promise((resolve) => {
+      let off = () => {
+      };
+      const timer = setTimeout(() => {
+        off();
+        resolve(this.connection.state);
+      }, ms);
+      off = this.connection.onChange((s) => {
+        if (s === "connecting") return;
+        clearTimeout(timer);
+        off();
+        resolve(s);
+      });
+    });
+  }
+  /**
    * Invoke one action (sdk.md "Calling actions"). Resolves with the action
    * result; rejects with AppError using the protocol.md section 4.3 codes.
    */
@@ -1249,6 +1273,16 @@ var AppClient = class {
       return Promise.reject(
         new AppError("contract_mismatch", "This app was updated. Reload the page to continue.", false)
       );
+    }
+    if (state === "connecting" && this.callConnectWaitMs > 0 && !opts.signal?.aborted) {
+      return this.waitWhileConnecting(this.callConnectWaitMs).then((settled) => {
+        if (settled === "connecting") {
+          return Promise.reject(
+            new AppError("robot_offline", "The robot for this app is not connected.", true)
+          );
+        }
+        return this.call(action, params, opts);
+      });
     }
     if (state !== "ready") {
       return Promise.reject(

@@ -1,8 +1,8 @@
 import * as react from 'react';
 import { ReactNode } from 'react';
-import { A as AppClient, a as AppError } from '../links-D8vf-9h3.js';
-export { j as bindAction, k as bindCollection, t as markGesture } from '../links-D8vf-9h3.js';
-import { b as ActionProgress, e as ConnectionState, l as FileUploadOptions, F as FileRef } from '../types-CIteYOXM.js';
+import { A as AppClient, a as AppError } from '../links-_-nKGB9M.js';
+export { j as bindAction, k as bindCollection, t as markGesture } from '../links-_-nKGB9M.js';
+import { b as ActionProgress, e as ConnectionState, l as FileUploadOptions, F as FileRef } from '../types-CeiFtloU.js';
 
 interface AppProviderProps {
     app: AppClient;
@@ -43,6 +43,13 @@ interface UseActionResult<TParams = unknown, TData = unknown> {
  *   writing anything at all.
  */
 declare function useAction<TParams = unknown, TData = unknown>(name: string): UseActionResult<TParams, TData>;
+/**
+ * A call refused for want of the robot is asked again, once, when the robot
+ * is back. Only that failure: a refusal the robot itself gave (bad
+ * parameters, the app's own error) is an answer and stands until the person
+ * acts.
+ */
+declare function shouldRetryOnReconnect(error: AppError | undefined, state: ConnectionState): boolean;
 interface UseCollectionResult<T = unknown> {
     records: T[];
     loading: boolean;
@@ -69,4 +76,4 @@ interface UseFileUploadResult {
 /** Upload files over /v1/artifacts.* and get FileRefs back. */
 declare function useFileUpload(): UseFileUploadResult;
 
-export { AppProvider, type AppProviderProps, type UseActionResult, type UseCollectionResult, type UseConnectionResult, type UseFileUploadResult, useAction, useAppClient, useCollection, useConnection, useEvent, useFileUpload, useMaybeAppClient };
+export { AppProvider, type AppProviderProps, type UseActionResult, type UseCollectionResult, type UseConnectionResult, type UseFileUploadResult, shouldRetryOnReconnect, useAction, useAppClient, useCollection, useConnection, useEvent, useFileUpload, useMaybeAppClient };

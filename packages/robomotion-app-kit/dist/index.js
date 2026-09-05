@@ -3568,7 +3568,75 @@ import {
   useRef as useRef2,
   useState as useState4
 } from "react";
+
+// src/components/error-state.tsx
+import { AppError } from "@robomotion/apps-runtime";
 import { jsx as jsx9, jsxs as jsxs9 } from "react/jsx-runtime";
+function messageOf(error) {
+  if (error instanceof AppError) return error.message;
+  if (error instanceof Error) return error.message;
+  if (typeof error === "string") return error;
+  return "Something went wrong.";
+}
+function defaultTitle(error) {
+  if (error instanceof AppError) {
+    if (error.code === "robot_offline") return "Not connected to your robot right now";
+    if (error.code === "contract_mismatch") return "This app needs a restart";
+    if (error.code === "timeout") return "That took too long";
+  }
+  return "Something went wrong";
+}
+function ErrorState({
+  error,
+  title,
+  onRetry,
+  retryLabel = "Try again",
+  className,
+  ...props
+}) {
+  const retryable = error instanceof AppError ? error.retryable : true;
+  const heading = title ?? defaultTitle(error);
+  return /* @__PURE__ */ jsxs9(
+    "div",
+    {
+      role: "alert",
+      className: cn(
+        "flex flex-col items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-4 text-left dark:border-red-500/30 dark:bg-red-500/10",
+        className
+      ),
+      ...props,
+      children: [
+        /* @__PURE__ */ jsxs9("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ jsx9(
+            "svg",
+            {
+              "aria-hidden": "true",
+              className: "h-5 w-5 shrink-0 text-red-500",
+              viewBox: "0 0 24 24",
+              fill: "none",
+              stroke: "currentColor",
+              strokeWidth: "1.75",
+              children: /* @__PURE__ */ jsx9(
+                "path",
+                {
+                  strokeLinecap: "round",
+                  strokeLinejoin: "round",
+                  d: "M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"
+                }
+              )
+            }
+          ),
+          /* @__PURE__ */ jsx9("h3", { className: "text-sm font-semibold text-red-800 dark:text-red-300", children: heading })
+        ] }),
+        /* @__PURE__ */ jsx9("p", { className: "text-sm text-red-700 dark:text-red-300/90", children: messageOf(error) }),
+        onRetry && retryable && /* @__PURE__ */ jsx9(Button, { variant: "secondary", size: "sm", className: "mt-1", onClick: onRetry, children: retryLabel })
+      ]
+    }
+  );
+}
+
+// src/components/form.tsx
+import { jsx as jsx10, jsxs as jsxs10 } from "react/jsx-runtime";
 var FormContext = createContext(null);
 var FieldContext = createContext(null);
 function validateAgainstSchema(schema, values) {
@@ -3624,6 +3692,7 @@ function Form({
   onSubmit,
   action,
   disabled = false,
+  hideError = false,
   children,
   className,
   ...props
@@ -3659,7 +3728,7 @@ function Form({
     () => ({ values, errors, disabled, setValue }),
     [values, errors, disabled, setValue]
   );
-  return /* @__PURE__ */ jsx9(FormContext.Provider, { value: ctx, children: /* @__PURE__ */ jsx9(
+  return /* @__PURE__ */ jsx10(FormContext.Provider, { value: ctx, children: /* @__PURE__ */ jsxs10(
     "form",
     {
       ref: formRef,
@@ -3687,7 +3756,10 @@ function Form({
         }
       },
       ...props,
-      children
+      children: [
+        children,
+        !hideError && action?.error ? /* @__PURE__ */ jsx10(ErrorState, { error: action.error, className: "mt-3" }) : null
+      ]
     }
   ) });
 }
@@ -3705,14 +3777,14 @@ function Field({ name, label, help, required = false, error, className, children
     () => ({ name, id, describedBy, invalid: Boolean(shownError), required }),
     [name, id, describedBy, shownError, required]
   );
-  return /* @__PURE__ */ jsx9(FieldContext.Provider, { value: ctx, children: /* @__PURE__ */ jsxs9("div", { className: cn("flex flex-col gap-1.5", className), children: [
-    /* @__PURE__ */ jsxs9("label", { htmlFor: id, className: "text-sm font-medium text-neutral-800 dark:text-neutral-200", children: [
+  return /* @__PURE__ */ jsx10(FieldContext.Provider, { value: ctx, children: /* @__PURE__ */ jsxs10("div", { className: cn("flex flex-col gap-1.5", className), children: [
+    /* @__PURE__ */ jsxs10("label", { htmlFor: id, className: "text-sm font-medium text-neutral-800 dark:text-neutral-200", children: [
       label,
-      required && /* @__PURE__ */ jsx9("span", { "aria-hidden": "true", className: "ml-0.5 text-red-500", children: "*" })
+      required && /* @__PURE__ */ jsx10("span", { "aria-hidden": "true", className: "ml-0.5 text-red-500", children: "*" })
     ] }),
     children,
-    help !== void 0 && /* @__PURE__ */ jsx9("p", { id: helpId, className: "text-xs text-neutral-500 dark:text-neutral-400", children: help }),
-    shownError && /* @__PURE__ */ jsx9("p", { id: errorId, className: "text-xs font-medium text-red-600 dark:text-red-400", children: shownError })
+    help !== void 0 && /* @__PURE__ */ jsx10("p", { id: helpId, className: "text-xs text-neutral-500 dark:text-neutral-400", children: help }),
+    shownError && /* @__PURE__ */ jsx10("p", { id: errorId, className: "text-xs font-medium text-red-600 dark:text-red-400", children: shownError })
   ] }) });
 }
 function useControl(explicitId) {
@@ -3740,7 +3812,7 @@ function useControl(explicitId) {
 function TextInput({ value, onChange, className, id, disabled, type = "text", ...props }) {
   const c = useControl(id);
   const current = value ?? c.read() ?? "";
-  return /* @__PURE__ */ jsx9(
+  return /* @__PURE__ */ jsx10(
     "input",
     {
       id: c.id,
@@ -3760,7 +3832,7 @@ function TextInput({ value, onChange, className, id, disabled, type = "text", ..
 function NumberInput({ value, onChange, className, id, disabled, ...props }) {
   const c = useControl(id);
   const current = value ?? c.read();
-  return /* @__PURE__ */ jsx9(
+  return /* @__PURE__ */ jsx10(
     "input",
     {
       id: c.id,
@@ -3783,7 +3855,7 @@ function NumberInput({ value, onChange, className, id, disabled, ...props }) {
 function TextArea({ value, onChange, className, id, disabled, rows = 4, ...props }) {
   const c = useControl(id);
   const current = value ?? c.read() ?? "";
-  return /* @__PURE__ */ jsx9(
+  return /* @__PURE__ */ jsx10(
     "textarea",
     {
       id: c.id,
@@ -3812,7 +3884,7 @@ function Select({
 }) {
   const c = useControl(id);
   const current = value ?? c.read() ?? "";
-  return /* @__PURE__ */ jsxs9(
+  return /* @__PURE__ */ jsxs10(
     "select",
     {
       id: c.id,
@@ -3826,8 +3898,8 @@ function Select({
       ...c.ariaProps,
       ...props,
       children: [
-        placeholder !== void 0 && /* @__PURE__ */ jsx9("option", { value: "", disabled: true, children: placeholder }),
-        options.map((opt) => /* @__PURE__ */ jsx9("option", { value: opt.value, disabled: opt.disabled, children: opt.label }, opt.value))
+        placeholder !== void 0 && /* @__PURE__ */ jsx10("option", { value: "", disabled: true, children: placeholder }),
+        options.map((opt) => /* @__PURE__ */ jsx10("option", { value: opt.value, disabled: opt.disabled, children: opt.label }, opt.value))
       ]
     }
   );
@@ -3835,7 +3907,7 @@ function Select({
 function Checkbox({ checked, onChange, label, className, id, disabled, ...props }) {
   const c = useControl(id);
   const current = checked ?? Boolean(c.read());
-  return /* @__PURE__ */ jsxs9(
+  return /* @__PURE__ */ jsxs10(
     "label",
     {
       className: cn(
@@ -3844,7 +3916,7 @@ function Checkbox({ checked, onChange, label, className, id, disabled, ...props 
         className
       ),
       children: [
-        /* @__PURE__ */ jsx9(
+        /* @__PURE__ */ jsx10(
           "input",
           {
             id: c.id,
@@ -3872,14 +3944,14 @@ function RadioGroup({ options, value, onChange, name, className, disabled }) {
   const c = useControl();
   const groupName = name ?? c.field?.name ?? c.id;
   const current = value ?? c.read() ?? "";
-  return /* @__PURE__ */ jsx9(
+  return /* @__PURE__ */ jsx10(
     "div",
     {
       role: "radiogroup",
       "aria-describedby": c.ariaProps["aria-describedby"],
       "aria-invalid": c.ariaProps["aria-invalid"],
       className: cn("flex flex-col gap-2", className),
-      children: options.map((opt) => /* @__PURE__ */ jsxs9(
+      children: options.map((opt) => /* @__PURE__ */ jsxs10(
         "label",
         {
           className: cn(
@@ -3887,7 +3959,7 @@ function RadioGroup({ options, value, onChange, name, className, disabled }) {
             (disabled || c.disabled || opt.disabled) && "cursor-not-allowed opacity-60"
           ),
           children: [
-            /* @__PURE__ */ jsx9(
+            /* @__PURE__ */ jsx10(
               "input",
               {
                 type: "radio",
@@ -3916,7 +3988,7 @@ function RadioGroup({ options, value, onChange, name, className, disabled }) {
 function DatePicker({ value, onChange, className, id, disabled, ...props }) {
   const c = useControl(id);
   const current = value ?? c.read() ?? "";
-  return /* @__PURE__ */ jsx9(
+  return /* @__PURE__ */ jsx10(
     "input",
     {
       id: c.id,
@@ -3940,19 +4012,19 @@ import { markGesture } from "@robomotion/apps-runtime";
 import { useFileUpload } from "@robomotion/apps-runtime/react";
 
 // src/components/progress.tsx
-import { Fragment, jsx as jsx10, jsxs as jsxs10 } from "react/jsx-runtime";
+import { Fragment, jsx as jsx11, jsxs as jsxs11 } from "react/jsx-runtime";
 function Progress({ value, label, showValue = false, className, ...props }) {
   const determinate = typeof value === "number" && Number.isFinite(value);
   const clamped = determinate ? Math.min(100, Math.max(0, value)) : 0;
-  return /* @__PURE__ */ jsxs10("div", { className: cn("w-full", className), ...props, children: [
-    (label || showValue && determinate) && /* @__PURE__ */ jsxs10("div", { className: "mb-1 flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400", children: [
-      /* @__PURE__ */ jsx10("span", { children: label }),
-      showValue && determinate && /* @__PURE__ */ jsxs10("span", { children: [
+  return /* @__PURE__ */ jsxs11("div", { className: cn("w-full", className), ...props, children: [
+    (label || showValue && determinate) && /* @__PURE__ */ jsxs11("div", { className: "mb-1 flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400", children: [
+      /* @__PURE__ */ jsx11("span", { children: label }),
+      showValue && determinate && /* @__PURE__ */ jsxs11("span", { children: [
         Math.round(clamped),
         "%"
       ] })
     ] }),
-    /* @__PURE__ */ jsx10(
+    /* @__PURE__ */ jsx11(
       "div",
       {
         role: "progressbar",
@@ -3961,15 +4033,15 @@ function Progress({ value, label, showValue = false, className, ...props }) {
         "aria-valuemax": 100,
         "aria-valuenow": determinate ? Math.round(clamped) : void 0,
         className: "h-2 w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800",
-        children: determinate ? /* @__PURE__ */ jsx10(
+        children: determinate ? /* @__PURE__ */ jsx11(
           "div",
           {
             className: "h-full rounded-full bg-[color:var(--rm-accent)] transition-[width] duration-300",
             style: { width: `${clamped}%` }
           }
-        ) : /* @__PURE__ */ jsxs10(Fragment, { children: [
-          /* @__PURE__ */ jsx10("style", { children: `@keyframes rm-indeterminate{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}` }),
-          /* @__PURE__ */ jsx10(
+        ) : /* @__PURE__ */ jsxs11(Fragment, { children: [
+          /* @__PURE__ */ jsx11("style", { children: `@keyframes rm-indeterminate{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}` }),
+          /* @__PURE__ */ jsx11(
             "div",
             {
               className: "h-full w-1/3 rounded-full bg-[color:var(--rm-accent)]",
@@ -3983,7 +4055,7 @@ function Progress({ value, label, showValue = false, className, ...props }) {
 }
 
 // src/components/file-upload.tsx
-import { jsx as jsx11, jsxs as jsxs11 } from "react/jsx-runtime";
+import { jsx as jsx12, jsxs as jsxs12 } from "react/jsx-runtime";
 function FileUpload({
   onUpload,
   onError,
@@ -4025,8 +4097,8 @@ function FileUpload({
     setDragOver(false);
     void start(e.dataTransfer.files?.[0]);
   };
-  return /* @__PURE__ */ jsxs11("div", { className: cn("text-left", className), children: [
-    /* @__PURE__ */ jsx11(
+  return /* @__PURE__ */ jsxs12("div", { className: cn("text-left", className), children: [
+    /* @__PURE__ */ jsx12(
       "input",
       {
         ref: inputRef,
@@ -4041,7 +4113,7 @@ function FileUpload({
         }
       }
     ),
-    /* @__PURE__ */ jsxs11(
+    /* @__PURE__ */ jsxs12(
       "button",
       {
         ref: zoneRef,
@@ -4063,7 +4135,7 @@ function FileUpload({
           (disabled || uploading) && "cursor-not-allowed opacity-60"
         ),
         children: [
-          /* @__PURE__ */ jsx11(
+          /* @__PURE__ */ jsx12(
             "svg",
             {
               "aria-hidden": "true",
@@ -4072,7 +4144,7 @@ function FileUpload({
               fill: "none",
               stroke: "currentColor",
               strokeWidth: "1.5",
-              children: /* @__PURE__ */ jsx11(
+              children: /* @__PURE__ */ jsx12(
                 "path",
                 {
                   strokeLinecap: "round",
@@ -4082,23 +4154,23 @@ function FileUpload({
               )
             }
           ),
-          /* @__PURE__ */ jsx11("span", { className: "text-sm font-medium text-neutral-700 dark:text-neutral-300", children: label }),
-          hint && /* @__PURE__ */ jsx11("span", { className: "text-xs text-neutral-500 dark:text-neutral-400", children: hint })
+          /* @__PURE__ */ jsx12("span", { className: "text-sm font-medium text-neutral-700 dark:text-neutral-300", children: label }),
+          hint && /* @__PURE__ */ jsx12("span", { className: "text-xs text-neutral-500 dark:text-neutral-400", children: hint })
         ]
       }
     ),
-    uploading && /* @__PURE__ */ jsx11("div", { className: "mt-3", children: /* @__PURE__ */ jsx11(Progress, { value: progress, label: "Uploading", showValue: true }) }),
-    !uploading && uploaded && /* @__PURE__ */ jsxs11("p", { className: "mt-2 flex items-center gap-1.5 text-sm text-green-700 dark:text-green-400", children: [
-      /* @__PURE__ */ jsx11("svg", { "aria-hidden": "true", className: "h-4 w-4", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: /* @__PURE__ */ jsx11("path", { strokeLinecap: "round", strokeLinejoin: "round", d: "m5 13 4 4L19 7" }) }),
+    uploading && /* @__PURE__ */ jsx12("div", { className: "mt-3", children: /* @__PURE__ */ jsx12(Progress, { value: progress, label: "Uploading", showValue: true }) }),
+    !uploading && uploaded && /* @__PURE__ */ jsxs12("p", { className: "mt-2 flex items-center gap-1.5 text-sm text-green-700 dark:text-green-400", children: [
+      /* @__PURE__ */ jsx12("svg", { "aria-hidden": "true", className: "h-4 w-4", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: /* @__PURE__ */ jsx12("path", { strokeLinecap: "round", strokeLinejoin: "round", d: "m5 13 4 4L19 7" }) }),
       uploaded.name,
       " uploaded"
     ] }),
-    !uploading && error && /* @__PURE__ */ jsx11("p", { role: "alert", className: "mt-2 text-sm font-medium text-red-600 dark:text-red-400", children: error.message })
+    !uploading && error && /* @__PURE__ */ jsx12("p", { role: "alert", className: "mt-2 text-sm font-medium text-red-600 dark:text-red-400", children: error.message })
   ] });
 }
 
 // src/components/status-badge.tsx
-import { jsx as jsx12, jsxs as jsxs12 } from "react/jsx-runtime";
+import { jsx as jsx13, jsxs as jsxs13 } from "react/jsx-runtime";
 var STYLES = {
   ok: {
     pill: "bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-500/10 dark:text-green-400 dark:ring-green-500/30",
@@ -4123,7 +4195,7 @@ var STYLES = {
 };
 function StatusBadge({ status, children, className, ...props }) {
   const s = STYLES[status];
-  return /* @__PURE__ */ jsxs12(
+  return /* @__PURE__ */ jsxs13(
     "span",
     {
       className: cn(
@@ -4133,65 +4205,8 @@ function StatusBadge({ status, children, className, ...props }) {
       ),
       ...props,
       children: [
-        /* @__PURE__ */ jsx12("span", { "aria-hidden": "true", className: cn("h-1.5 w-1.5 rounded-full", s.dot) }),
+        /* @__PURE__ */ jsx13("span", { "aria-hidden": "true", className: cn("h-1.5 w-1.5 rounded-full", s.dot) }),
         children ?? s.label
-      ]
-    }
-  );
-}
-
-// src/components/error-state.tsx
-import { AppError } from "@robomotion/apps-runtime";
-import { jsx as jsx13, jsxs as jsxs13 } from "react/jsx-runtime";
-function messageOf(error) {
-  if (error instanceof AppError) return error.message;
-  if (error instanceof Error) return error.message;
-  if (typeof error === "string") return error;
-  return "Something went wrong.";
-}
-function ErrorState({
-  error,
-  title = "Something went wrong",
-  onRetry,
-  retryLabel = "Try again",
-  className,
-  ...props
-}) {
-  const retryable = error instanceof AppError ? error.retryable : true;
-  return /* @__PURE__ */ jsxs13(
-    "div",
-    {
-      role: "alert",
-      className: cn(
-        "flex flex-col items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-4 text-left dark:border-red-500/30 dark:bg-red-500/10",
-        className
-      ),
-      ...props,
-      children: [
-        /* @__PURE__ */ jsxs13("div", { className: "flex items-center gap-2", children: [
-          /* @__PURE__ */ jsx13(
-            "svg",
-            {
-              "aria-hidden": "true",
-              className: "h-5 w-5 shrink-0 text-red-500",
-              viewBox: "0 0 24 24",
-              fill: "none",
-              stroke: "currentColor",
-              strokeWidth: "1.75",
-              children: /* @__PURE__ */ jsx13(
-                "path",
-                {
-                  strokeLinecap: "round",
-                  strokeLinejoin: "round",
-                  d: "M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"
-                }
-              )
-            }
-          ),
-          /* @__PURE__ */ jsx13("h3", { className: "text-sm font-semibold text-red-800 dark:text-red-300", children: title })
-        ] }),
-        /* @__PURE__ */ jsx13("p", { className: "text-sm text-red-700 dark:text-red-300/90", children: messageOf(error) }),
-        onRetry && retryable && /* @__PURE__ */ jsx13(Button, { variant: "secondary", size: "sm", className: "mt-1", onClick: onRetry, children: retryLabel })
       ]
     }
   );

@@ -57,8 +57,21 @@ function useAction(name) {
   const cancel = useCallback(() => {
     abortRef.current?.abort();
   }, []);
+  const lastCallRef = useRef(null);
+  const errorRef = useRef(void 0);
+  errorRef.current = error;
+  const runRef = useRef(null);
+  useEffect(
+    () => app.connection.onChange((state) => {
+      const last = lastCallRef.current;
+      if (!last || !shouldRetryOnReconnect(errorRef.current, state)) return;
+      void runRef.current?.(last.params, last.opts);
+    }),
+    [app]
+  );
   const run = useCallback(
     async (params, opts) => {
+      lastCallRef.current = { params, opts };
       abortRef.current?.abort();
       const controller = new AbortController();
       abortRef.current = controller;
@@ -99,7 +112,11 @@ function useAction(name) {
     },
     [app, name]
   );
+  runRef.current = run;
   return { run, data, error, loading, progress, cancel, name };
+}
+function shouldRetryOnReconnect(error, state) {
+  return state === "ready" && !!error && error.code === "robot_offline";
 }
 function useCollection(name) {
   const app = useAppClient();
@@ -189,6 +206,7 @@ export {
   bindAction,
   bindCollection,
   markGesture,
+  shouldRetryOnReconnect,
   useAction,
   useAppClient,
   useCollection,

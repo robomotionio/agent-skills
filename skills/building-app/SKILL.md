@@ -357,7 +357,12 @@ and `<apps>/<appId>/flow`. Work only in those.
   starts there again.** A `cd` in one command does not carry to the next, so
   `pwd && ls && cat src/generated/actions.gen.ts` finds nothing and the next
   call goes hunting. Begin every command with `cd` into the folder you mean,
-  with the absolute path `create_app` gave you.
+  with the absolute path `create_app` gave you. **The same for the write and
+  edit tools**: the robot's steps live at `<flow_path>/main.ts` from
+  `create_app`'s result, and a bare `main.ts` lands wherever the shell
+  happens to be - one build wrote its whole backend into the wrong folder
+  that way, saved it, and the next save replaced it with the empty skeleton.
+  Always the absolute path.
 - **Never read, glob or grep another app's folder.** The apps directory holds
   every app on this machine. A pattern like `*/flow/main.ts` walks all of them,
   wastes the whole turn, and risks copying one person's app into another's.

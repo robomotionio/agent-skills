@@ -240,6 +240,15 @@ interface CreateAppOptions {
     storage?: StorageLike;
     reconnectDelayMs?: number;
     pingIntervalMs?: number;
+    /**
+     * How long a call made while the page is still connecting waits for the
+     * connection before it is refused. A person who presses a button in the
+     * first second after a reload is not pressing it "while the robot is
+     * offline"; they are pressing it while the handshake is in flight, and the
+     * honest answer is to send the call once it lands. Defaults to 8000; 0
+     * refuses at once (the old behaviour).
+     */
+    callConnectWaitMs?: number;
 }
 interface FileUploadOptions {
     onProgress?: (percent: number) => void;

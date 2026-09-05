@@ -1,4 +1,4 @@
-import { A as AppContract } from '../types-CIteYOXM.js';
+import { A as AppContract } from '../types-CeiFtloU.js';
 
 declare function canonicalizeJson(text: string): string;
 /** Compute "sha256:<hex>" over the canonical form of a JSON text. */

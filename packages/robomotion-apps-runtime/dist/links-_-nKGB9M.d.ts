@@ -1,4 +1,4 @@
-import { d as CollectionOp, l as FileUploadOptions, F as FileRef, e as ConnectionState, k as CreateAppOptions, C as CallOptions, c as AppErrorCode } from './types-CIteYOXM.js';
+import { d as CollectionOp, l as FileUploadOptions, F as FileRef, e as ConnectionState, k as CreateAppOptions, C as CallOptions, c as AppErrorCode } from './types-CeiFtloU.js';
 
 /**
  * A live view over one server-side collection (sdk.md "Collections",
@@ -167,6 +167,7 @@ declare class AppClient {
     private readonly fetchFn;
     private readonly reconnectDelayMs;
     private readonly pingIntervalMs;
+    private readonly callConnectWaitMs;
     private instance;
     private connId;
     private clientId;
@@ -261,6 +262,11 @@ declare class AppClient {
      * two calls' envelopes.
      */
     private sendEnvelope;
+    /**
+     * Resolve with the first connection state that is not "connecting", or
+     * with "connecting" itself once `ms` have passed without one.
+     */
+    private waitWhileConnecting;
     /**
      * Invoke one action (sdk.md "Calling actions"). Resolves with the action
      * result; rejects with AppError using the protocol.md section 4.3 codes.
