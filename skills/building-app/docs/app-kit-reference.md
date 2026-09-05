@@ -51,6 +51,11 @@ One routed screen with a title and description. One `Screen` per file under `src
 
 ```tsx
 <Screen title="Queue" description="Invoices waiting for a decision.">
+{/* The shell's title is the app's name and it is already on screen. A screen's
+    title says what THIS screen does ("Queue", "Work out the roast"), and a
+    card's title what the card holds ("Oven time") - never the app's name
+    again. A one-screen app showed its name three times on its first screen:
+    shell, screen, card. */}
   {/* content */}
 </Screen>
 ```
@@ -426,3 +431,14 @@ accentStyle(accent)       // the --rm-accent CSS variable, for a custom surface
 focusRing                 // the focus classes, when a custom control needs them
 DEFAULT_ACCENT            // the brand orange
 ```
+
+## A form runs its action once
+
+`<Form action={addPlant}>` runs `addPlant.run(values)` itself, after `onSubmit`.
+So `onSubmit` must never call `run` - a screen that did (`onSubmit={async (v) =>
+{ await addPlant.run({...v}); navigate("/") }}`) ran the flow twice for every
+press and every plant it added arrived twice. Shape the values in the flow's
+first step or with `onChange`; do what must follow the call - navigate, a toast -
+in a `useEffect` on `addPlant.data`. `validate_app` reports the shape as
+`form-runs-once`, and kit 0.1.6 ignores its own run when `onSubmit` already ran
+the action, but an app carries the kit it was built with.

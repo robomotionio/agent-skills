@@ -210,6 +210,11 @@ interface FormProps extends Omit<FormHTMLAttributes<HTMLFormElement>, "onSubmit"
      * The action a submit runs (the object from useAction): `action.run(values)`
      * once they validate, after `onSubmit`. The submit button, or the form when
      * it has none, is linked to the action's node in the flow.
+     *
+     * An `onSubmit` that runs the action itself is honoured and the form does
+     * not run it a second time. A screen wrote `onSubmit={async (v) => { await
+     * addPlant.run({...v, ...}) }}` beside `action={addPlant}` and every plant
+     * it added arrived twice, through a flow that ran twice for one press.
      */
     action?: ActionLike;
     disabled?: boolean;

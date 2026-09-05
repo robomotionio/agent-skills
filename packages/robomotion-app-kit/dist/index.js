@@ -3670,8 +3670,20 @@ function Form({
         const nextErrors = validateAgainstSchema(schema, values);
         setErrors(nextErrors);
         if (Object.keys(nextErrors).length === 0) {
-          void onSubmit?.(values);
-          if (action) void Promise.resolve(action.run(values)).catch(() => void 0);
+          let ranInSubmit = false;
+          const originalRun = action?.run;
+          if (action && originalRun) {
+            action.run = ((params) => {
+              ranInSubmit = true;
+              return originalRun.call(action, params);
+            });
+          }
+          try {
+            void onSubmit?.(values);
+          } finally {
+            if (action && originalRun) action.run = originalRun;
+          }
+          if (action && !ranInSubmit) void Promise.resolve(action.run(values)).catch(() => void 0);
         }
       },
       ...props,

@@ -42,7 +42,11 @@ Narrate progress through `todo_write`, with items phrased in the user's language
     grep -rl "generated/actions.gen" src/
 
     Anything it lists that you did not write is debris from the demo: delete it. `src/screens.tsx` tells you which screens the app actually mounts, so anything unreachable from there goes too, whether or not it still compiles.
-3. **Generate the screens from the archetype, with sample data baked in.** Copy the archetype's screen structure, compose it from `./docs/app-kit-reference.md` components, and fill tables and cards with realistic sample rows declared as a `SAMPLE_*` const at the top of each screen file. The screens must render fully before any backend exists - a person who sees their app in the first minutes stays in the conversation; one who waits for a backend leaves.
+3. **Generate the screens from the archetype, with sample data baked in.** The
+   app's name belongs to the shell's title and nowhere else on a screen: a
+   screen's title is what that screen does, a card's title is what the card
+   holds. A one-screen app that repeats its name on the shell, the screen and
+   the card reads as a template, not as somebody's app. Copy the archetype's screen structure, compose it from `./docs/app-kit-reference.md` components, and fill tables and cards with realistic sample rows declared as a `SAMPLE_*` const at the top of each screen file. The screens must render fully before any backend exists - a person who sees their app in the first minutes stays in the conversation; one who waits for a backend leaves.
 
 3a. **Sample data is a FALLBACK, never a switch. Every button is wired to its
    real action from the first draft.** Write the sample rows as what the table
@@ -218,6 +222,25 @@ return msg;`
 
 And when a search legitimately finds nothing, say which it was: an empty answer
 from the service and an answer you could not read are the same screen otherwise.
+
+**A row that lacks what the person asked for is not a match.** Public indexes
+mix kinds of record: Crossref returns datasets, books and encyclopaedia entries
+beside papers, Hacker News returns comments beside stories, iTunes returns
+albums beside songs. Asked for "research papers with the title, who wrote it,
+the journal and the year", a build sent Crossref's first ten works as they
+came, and the top four rows on screen read `Not listed | AccessScience | —` -
+no author, no year, one of them twice. Two things, both every time:
+
+- **Ask the service for the kind the person named** when it can be asked -
+  `filter=type:journal-article` on Crossref, `tags=story` on Hacker News,
+  `entity=song` on iTunes - and prefer an index whose records are that kind
+  (OpenAlex for papers: `api.openalex.org/works?search=`, authors under
+  `authorships[].author.display_name`, the journal under
+  `primary_location.source.display_name`, `publication_year`).
+- **Drop a row that is missing a column the person asked for**, and ask for
+  more rows than you show so the ten on screen are ten real ones. A cell
+  reading "Not listed" in every row is this rule skipped, and a person reads
+  a table whose first rows are blanks as a search that does not work.
 
 ### Writing to a collection: leave `inKey` out
 
