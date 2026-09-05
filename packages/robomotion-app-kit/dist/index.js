@@ -3294,7 +3294,7 @@ function DataTable({
             col.key
           );
         }),
-        rowActions && rowActions.length > 0 && /* @__PURE__ */ jsx8("th", { scope: "col", className: "w-12 px-3 py-2.5", children: /* @__PURE__ */ jsx8("span", { className: "sr-only", children: "Row actions" }) })
+        rowActions && rowActions.length > 0 && /* @__PURE__ */ jsx8("th", { scope: "col", className: "w-12 px-3 py-2.5", children: /* @__PURE__ */ jsx8("span", { className: "sr-only", children: "Actions" }) })
       ] }) }),
       /* @__PURE__ */ jsxs8("tbody", { children: [
         loading && /* @__PURE__ */ jsx8("tr", { children: /* @__PURE__ */ jsx8(
@@ -3494,7 +3494,7 @@ function RowMenu({ row, actions }) {
         type: "button",
         "aria-haspopup": "menu",
         "aria-expanded": open,
-        "aria-label": "Row actions",
+        "aria-label": "More",
         "data-rm-action": linkedNames,
         onClick: () => setOpen((v) => !v),
         onKeyDown: (e) => {
@@ -3518,7 +3518,7 @@ function RowMenu({ row, actions }) {
       "div",
       {
         role: "menu",
-        "aria-label": "Row actions",
+        "aria-label": "Actions",
         onKeyDown: onMenuKeyDown,
         className: "absolute right-0 z-20 mt-1 w-44 overflow-hidden rounded-md border border-neutral-200 bg-white py-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-900",
         children: actions.map((action, i) => {
@@ -3597,8 +3597,18 @@ function defaultTitle(error) {
     if (error.code === "robot_offline") return "Not connected to your robot right now";
     if (error.code === "contract_mismatch") return "This app needs a restart";
     if (error.code === "timeout") return "That took too long";
+    if (error.code === "invalid_params" || looksLikeRefusal(error)) return "That didn't go through";
   }
   return "Something went wrong";
+}
+function looksLikeRefusal(error) {
+  if (error.retryable) return false;
+  const text = plainMessage(error.message);
+  if (!text || text === "Something went wrong.") return false;
+  if (/[\/\\]|\bat\s+\S+\(|\b(?:undefined|null|NaN|TypeError|ReferenceError|ENOENT|EACCES|ECONN)\b|[{}<>;=]/.test(text)) {
+    return false;
+  }
+  return /[.!]$/.test(text) && /^[A-Z"']/.test(text);
 }
 function ErrorState({
   error,

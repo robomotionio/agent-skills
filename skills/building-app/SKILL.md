@@ -461,6 +461,19 @@ Each rule carries its reason. The reason is why you don't route around the rule 
    That costs one read. Restarting the session costs the person another
    round trip and tells you nothing you did not already know.
 
+   **Where records live, so you do not go looking.** The app's own
+   collections come first: declare the collection in `app.json`, write with
+   `Robomotion.Apps.UpdateData`, read with `useCollection` - nothing to
+   create, nothing to check. When the person asks for a file, the nodes are
+   `Core.FileSystem.PathExists` (ask first), `Core.FileSystem.Create`,
+   `Core.FileSystem.ReadFile` and `Core.FileSystem.WriteFile` for a JSON
+   file, and `Core.CSV.ReadCSV` / `Core.CSV.WriteCSV` / `Core.CSV.AppendCSV`
+   for a spreadsheet-shaped one. Read the node cards for their properties;
+   do not tour the catalogue for them. A flow that reads a file and never
+   asks whether it is there fails `validate_app` when its Catch passes
+   `error.message` through - the first press before the file exists would
+   show a raw path.
+
 7. **Saving is `save_flow` and `save_app`. Never git by hand.** `git add`,
    `git commit`, `git push`, `git reset` and the rest are refused inside the
    checkouts; reading (`git status`, `git log`, `git diff`) is free. Reason:
@@ -594,3 +607,10 @@ so the app adopts it instead of scaffolding a second one.
 - `creating-flow` - the flow SDK grammar for the backend (node IDs, wiring, browser, credentials, data tables)
 - `exploring-browser` - map a live website before the backend automates it
 - `searching-packages` - find the right package/node for a backend action
+
+## Dates on screen
+
+Format a date for the person's own locale, never by hand:
+`new Date(iso).toLocaleDateString(undefined, { dateStyle: "medium" })` (and
+`toLocaleString` when the time matters). A hand-built `M/D/YYYY` reads as
+the wrong day to most of the world, and a raw ISO string reads as nothing.
