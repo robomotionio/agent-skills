@@ -2486,8 +2486,63 @@ function accentStyle(accent) {
 var focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--rm-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-neutral-950";
 var inputBase = "block w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-colors placeholder:text-neutral-400 focus:border-[color:var(--rm-accent)] focus:outline-none focus:ring-1 focus:ring-[color:var(--rm-accent)] disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-500 aria-[invalid=true]:border-red-500 aria-[invalid=true]:focus:ring-red-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:disabled:bg-neutral-800 dark:disabled:text-neutral-500";
 
+// src/theme-sync.ts
+import { useEffect } from "react";
+var STORAGE_KEY = "rm-theme";
+function applyTheme(theme) {
+  if (typeof document === "undefined") return;
+  const el = document.documentElement;
+  el.classList.toggle("dark", theme === "dark");
+  el.style.colorScheme = theme;
+}
+function themeWasChosen() {
+  if (typeof window === "undefined") return false;
+  try {
+    const p = new URLSearchParams(window.location.search).get("theme");
+    if (p === "dark" || p === "light") return true;
+  } catch {
+  }
+  try {
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    if (stored === "dark" || stored === "light") return true;
+  } catch {
+  }
+  return false;
+}
+function useThemeBridge() {
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let chosen = themeWasChosen();
+    const onMessage = (event) => {
+      const data = event.data;
+      if (!data || typeof data !== "object" || data.type !== "rm-theme") return;
+      const theme = data.theme === "dark" ? "dark" : data.theme === "light" ? "light" : null;
+      if (!theme) return;
+      chosen = true;
+      applyTheme(theme);
+    };
+    window.addEventListener("message", onMessage);
+    const mq = window.matchMedia?.("(prefers-color-scheme: dark)");
+    const onSystemChange = (event) => {
+      if (chosen) return;
+      applyTheme(event.matches ? "dark" : "light");
+    };
+    mq?.addEventListener?.("change", onSystemChange);
+    if (window.parent !== window) {
+      try {
+        window.parent.postMessage({ type: "rm-theme-ready" }, "*");
+      } catch {
+      }
+    }
+    return () => {
+      window.removeEventListener("message", onMessage);
+      mq?.removeEventListener?.("change", onSystemChange);
+    };
+  }, []);
+}
+
 // src/components/connection-banner.tsx
-import { useEffect, useLayoutEffect, useState, useSyncExternalStore } from "react";
+import { useEffect as useEffect2, useLayoutEffect, useState, useSyncExternalStore } from "react";
 import { useMaybeAppClient } from "@robomotion/apps-runtime/react";
 
 // src/components/button.tsx
@@ -2645,7 +2700,7 @@ function subscribe(l) {
     listeners.delete(l);
   };
 }
-var useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
+var useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect2 : useLayoutEffect;
 function useOwnsBannerSlot() {
   const [id] = useState(() => /* @__PURE__ */ Symbol("connection-banner"));
   useIsomorphicLayoutEffect(() => {
@@ -2674,7 +2729,7 @@ function AutoBanner({ className }) {
   const [state, setState] = useState(app?.connection.state);
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState(null);
-  useEffect(() => {
+  useEffect2(() => {
     if (!app) return;
     setState(app.connection.state);
     return app.connection.onChange(setState);
@@ -2792,7 +2847,7 @@ function BannerView({
 }
 
 // src/components/toast.tsx
-import { useEffect as useEffect2, useState as useState2 } from "react";
+import { useEffect as useEffect3, useState as useState2 } from "react";
 import { currentCause, splitLinkKey } from "@robomotion/apps-runtime";
 import { jsx as jsx3, jsxs as jsxs3 } from "react/jsx-runtime";
 function causeAttrs(cause) {
@@ -2846,7 +2901,7 @@ var VARIANT_STYLES = {
 };
 function Toast({ className }) {
   const [list, setList] = useState2(items);
-  useEffect2(() => {
+  useEffect3(() => {
     const listener = (l) => setList(l);
     listeners2.add(listener);
     setList(items);
@@ -2912,6 +2967,7 @@ function AppShell({
   style,
   ...props
 }) {
+  useThemeBridge();
   return /* @__PURE__ */ jsxs4(
     "div",
     {
@@ -3049,7 +3105,7 @@ function CardFooter({ className, ...props }) {
 
 // src/components/data-table.tsx
 import {
-  useEffect as useEffect3,
+  useEffect as useEffect4,
   useMemo,
   useRef,
   useState as useState3
@@ -3168,7 +3224,7 @@ function DataTable({
   const pageCount = paging ? Math.max(1, Math.ceil(sorted.length / pageSize)) : 1;
   const clampedPage = Math.min(page, pageCount - 1);
   const pageRows = paging ? sorted.slice(clampedPage * pageSize, clampedPage * pageSize + pageSize) : sorted;
-  useEffect3(() => {
+  useEffect4(() => {
     if (page > pageCount - 1) setPage(pageCount - 1);
   }, [page, pageCount]);
   const toggleSort = (col) => {
@@ -3379,7 +3435,7 @@ function RowMenu({ row, actions }) {
   const buttonRef = useRef(null);
   const rootRef = useRef(null);
   const itemRefs = useRef([]);
-  useEffect3(() => {
+  useEffect4(() => {
     if (!open) return;
     const onDocClick = (e) => {
       if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
@@ -3506,7 +3562,7 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect as useEffect4,
+  useEffect as useEffect5,
   useId as useId2,
   useMemo as useMemo2,
   useRef as useRef2,
@@ -3576,7 +3632,7 @@ function Form({
   const [errors, setErrors] = useState4({});
   const values = controlledValues ?? ownValues;
   const formRef = useRef2(null);
-  useEffect4(() => {
+  useEffect5(() => {
     const form = formRef.current;
     if (!form || !action) return;
     const target = submitControlOf(form) ?? form;
@@ -3867,7 +3923,7 @@ function DatePicker({ value, onChange, className, id, disabled, ...props }) {
 }
 
 // src/components/file-upload.tsx
-import { useEffect as useEffect5, useRef as useRef3, useState as useState5 } from "react";
+import { useEffect as useEffect6, useRef as useRef3, useState as useState5 } from "react";
 import { markGesture } from "@robomotion/apps-runtime";
 import { useFileUpload } from "@robomotion/apps-runtime/react";
 
@@ -3935,7 +3991,7 @@ function FileUpload({
   const [uploaded, setUploaded] = useState5(null);
   const onErrorRef = useRef3(onError);
   onErrorRef.current = onError;
-  useEffect5(() => {
+  useEffect6(() => {
     if (error) onErrorRef.current?.(error);
   }, [error]);
   const start = async (file) => {
@@ -4252,11 +4308,13 @@ export {
   TextInput,
   Toast,
   accentStyle,
+  applyTheme,
   cn,
   dismissToast,
   focusRing,
   toast,
   useFormValues,
+  useThemeBridge,
   useToast
 };
 //# sourceMappingURL=index.js.map

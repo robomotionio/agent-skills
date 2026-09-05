@@ -19,6 +19,38 @@ declare function accentStyle(accent?: string): CSSProperties;
 /** Shared focus ring, visible in both themes, driven by the accent. */
 declare const focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--rm-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-neutral-950";
 
+/** The two themes an app paints in. */
+type AppTheme = "light" | "dark";
+/**
+ * Apply a theme to the document, exactly as index.html's inline bootstrap
+ * does, so the two can never disagree.
+ *
+ * `colorScheme` matters as much as the class: native controls, scrollbars and
+ * date pickers follow it and nothing else, so without it a dark app keeps
+ * white dropdowns and a white scrollbar.
+ */
+declare function applyTheme(theme: AppTheme): void;
+/**
+ * Keep the app's theme in step with whatever framed it.
+ *
+ * index.html paints the first frame in the right theme; this keeps it right
+ * afterwards. Two things it handles that the bootstrap cannot:
+ *
+ *   - The host CHANGES theme while the app is open. Someone working in the
+ *     Build view switches the Designer to light and the app beside it should
+ *     follow, without reloading - a reload would cost them everything they
+ *     had typed.
+ *   - The app loads AFTER the host announced its theme. The host cannot know
+ *     when this document exists, so waiting to be told would lose the race on
+ *     a slow boot. The app announces itself instead and is answered.
+ *
+ * A theme pushed by the host is deliberately NOT remembered. It describes the
+ * page the app is embedded in, not a preference of the person using it: an
+ * app opened on its own later should follow their operating system, the way
+ * it always has.
+ */
+declare function useThemeBridge(): void;
+
 interface ActionLike<P = unknown> {
     /** The action name; becomes data-rm-action on the widget. */
     name: string;
@@ -392,4 +424,4 @@ interface ConnectionBannerProps {
 /** Renders robot-offline / contract-mismatch states (sdk.md). */
 declare function ConnectionBanner({ state, className }: ConnectionBannerProps): react.JSX.Element | null;
 
-export { type ActionLike, AppShell, type AppShellNavItem, type AppShellProps, Button, type ButtonProps, Card, CardBody, CardFooter, CardHeader, type CardHeaderProps, type CardProps, Checkbox, type CheckboxProps, ConnectionBanner, type ConnectionBannerProps, DEFAULT_ACCENT, DataTable, type DataTableColumn, type DataTableProps, type DataTableRowAction, type DataTableRowCallbackAction, type DataTableRowLinkedAction, type DataTableSource, DatePicker, type DatePickerProps, EmptyState, type EmptyStateProps, ErrorState, type ErrorStateProps, Field, type FieldProps, FileUpload, type FileUploadProps, Form, type FormProps, type FormValues, Grid, type GridProps, NumberInput, type NumberInputProps, type ParamsOf, Progress, type ProgressProps, RadioGroup, type RadioGroupProps, Row, type RowProps, Screen, type ScreenProps, Select, type SelectOption, type SelectProps, Spinner, Stack, type StackProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, TextArea, type TextAreaProps, TextInput, type TextInputProps, Toast, type ToastOptions, type ToastProps, type UseToastResult, accentStyle, cn, dismissToast, focusRing, toast, useFormValues, useToast };
+export { type ActionLike, AppShell, type AppShellNavItem, type AppShellProps, type AppTheme, Button, type ButtonProps, Card, CardBody, CardFooter, CardHeader, type CardHeaderProps, type CardProps, Checkbox, type CheckboxProps, ConnectionBanner, type ConnectionBannerProps, DEFAULT_ACCENT, DataTable, type DataTableColumn, type DataTableProps, type DataTableRowAction, type DataTableRowCallbackAction, type DataTableRowLinkedAction, type DataTableSource, DatePicker, type DatePickerProps, EmptyState, type EmptyStateProps, ErrorState, type ErrorStateProps, Field, type FieldProps, FileUpload, type FileUploadProps, Form, type FormProps, type FormValues, Grid, type GridProps, NumberInput, type NumberInputProps, type ParamsOf, Progress, type ProgressProps, RadioGroup, type RadioGroupProps, Row, type RowProps, Screen, type ScreenProps, Select, type SelectOption, type SelectProps, Spinner, Stack, type StackProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, TextArea, type TextAreaProps, TextInput, type TextInputProps, Toast, type ToastOptions, type ToastProps, type UseToastResult, accentStyle, applyTheme, cn, dismissToast, focusRing, toast, useFormValues, useThemeBridge, useToast };
