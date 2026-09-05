@@ -117,7 +117,7 @@ One complete action, start to finish:
 import { flow, Message } from '@robomotion/sdk';
 
 flow.create('<flowId>', '<Flow Name>', (f) => {
-  f.addDependency('Robomotion.Apps', '0.1.6');
+  f.addDependency('Robomotion.Apps', '0.1.7');
 
   f.node('a3c1f9', 'Robomotion.Apps.Action', 'Search Call', { optActionName: 'search' })
     .then('b8e274', 'Core.Programming.Function', 'Do The Work', {
@@ -214,6 +214,12 @@ it comes from the caller, and **the caller's fields arrive under `msg.params`**:
   inKey: Message('params.id'),      // NOT Message('id') - that reads nothing
 })
 ```
+
+From `Robomotion.Apps` **0.1.7** a call the robot refuses for the wrong
+parameters says which ones: *the screen sent the wrong details for
+"recordPayment": missing required property "pledge". It sent: id, person, ...*
+If you ever see a bare "invalid parameters" on a screen, the app is pinned to
+an older version.
 
 The key you send has to be the collection's **`key` field**, the same value the
 record was stored under. From `Robomotion.Apps` 0.1.5 a delete whose key is not
