@@ -353,6 +353,11 @@ exactly once, so check for it before you save.
 `create_app` and `sync_app` return the paths for THIS app: `<apps>/<appId>/app`
 and `<apps>/<appId>/flow`. Work only in those.
 
+- **Your shell starts in the FLOW's folder, not the app's, and every command
+  starts there again.** A `cd` in one command does not carry to the next, so
+  `pwd && ls && cat src/generated/actions.gen.ts` finds nothing and the next
+  call goes hunting. Begin every command with `cd` into the folder you mean,
+  with the absolute path `create_app` gave you.
 - **Never read, glob or grep another app's folder.** The apps directory holds
   every app on this machine. A pattern like `*/flow/main.ts` walks all of them,
   wastes the whole turn, and risks copying one person's app into another's.
@@ -476,6 +481,10 @@ Jargon leaking into narration is the single most common quality failure on this 
 | collection, schema, contract | "your list of X", "the plan of your app" (or say nothing) |
 | mock data | "sample data" |
 | deploy | "make it live", "publish" |
+| scaffold, template, demo files | "what the app started with" (or say nothing) |
+| typed client, generated types, typegen, regenerate | say nothing - it is your bookkeeping |
+| checkout, working copy, flow checkout | "the robot's side", "your app" |
+| contract hash, app.json | "the plan of your app" (or say nothing) |
 
 Wrong: "I added a trigger node for the approve endpoint and validated the flow."
 Right: "The Approve button works now. When you press it, the robot records the decision."
