@@ -117,7 +117,7 @@ One complete action, start to finish:
 import { flow, Message } from '@robomotion/sdk';
 
 flow.create('<flowId>', '<Flow Name>', (f) => {
-  f.addDependency('Robomotion.Apps', '0.1.7');
+  f.addDependency('Robomotion.Apps', '0.1.8');
 
   f.node('a3c1f9', 'Robomotion.Apps.Action', 'Search Call', { optActionName: 'search' })
     .then('b8e274', 'Core.Programming.Function', 'Do The Work', {
@@ -214,6 +214,12 @@ it comes from the caller, and **the caller's fields arrive under `msg.params`**:
   inKey: Message('params.id'),      // NOT Message('id') - that reads nothing
 })
 ```
+
+From `Robomotion.Apps` **0.1.8** a page whose contract does not match is told
+WHICH kind of mismatch it is. One local robot runs one app session at a time,
+so on a machine with several apps the ordinary answer is "this robot is
+running something else" - not "your app was updated". The screen says so, in
+amber, and offers to start this app rather than a Reload that cannot help.
 
 From `Robomotion.Apps` **0.1.7** a call the robot refuses for the wrong
 parameters says which ones: *the screen sent the wrong details for

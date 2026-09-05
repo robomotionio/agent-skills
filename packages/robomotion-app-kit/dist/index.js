@@ -2698,7 +2698,8 @@ function AutoBanner({ className }) {
       className,
       onStart,
       starting,
-      startError
+      startError,
+      mismatch: app.connection.mismatch ?? void 0
     }
   );
 }
@@ -2707,7 +2708,8 @@ function BannerView({
   className,
   onStart,
   starting,
-  startError
+  startError,
+  mismatch
 }) {
   if (state === "ready" || state === "connecting") return null;
   if (state === "app_not_running") {
@@ -2727,17 +2729,32 @@ function BannerView({
     );
   }
   if (state === "contract_mismatch") {
+    const otherApp = mismatch?.reason === "other_app";
     return /* @__PURE__ */ jsxs2(
       "div",
       {
         role: "alert",
         className: cn(
-          "flex flex-wrap items-center justify-between gap-2 border-b border-red-200 bg-red-50 px-4 py-2.5 text-left dark:border-red-500/30 dark:bg-red-950",
+          "flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2.5 text-left",
+          otherApp ? "border-amber-200 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-950" : "border-red-200 bg-red-50 dark:border-red-500/30 dark:bg-red-950",
           className
         ),
         children: [
-          /* @__PURE__ */ jsx2("p", { className: "text-sm font-medium text-red-800 dark:text-red-300", children: "This app was updated. Reload the page to continue." }),
           /* @__PURE__ */ jsx2(
+            "p",
+            {
+              className: cn(
+                "text-sm font-medium",
+                otherApp ? "text-amber-800 dark:text-amber-300" : "text-red-800 dark:text-red-300"
+              ),
+              children: mismatch?.message ?? "This app was updated. Reload the page to continue."
+            }
+          ),
+          otherApp ? (
+            // Starting this app IS the fix, and it is one press when the page
+            // can do it. Reload is not offered at all: it is the loop.
+            onStart ? /* @__PURE__ */ jsx2(Button, { variant: "secondary", size: "sm", disabled: starting, onClick: onStart, children: starting ? "Starting\u2026" : "Start this app" }) : null
+          ) : /* @__PURE__ */ jsx2(
             Button,
             {
               variant: "danger",

@@ -517,6 +517,17 @@ var MemoryStorage = class {
 };
 var ConnectionInfo = class {
   _state = "connecting";
+  /**
+   * Why the contract does not match, and what the robot said about it.
+   *
+   * A mismatch means one of two things and the screen used to say only one of
+   * them. "This app was updated. Reload the page to continue" is right for a
+   * stale page; when the robot is simply busy running ANOTHER app it is not
+   * only wrong, it is a loop - the reload asks the same question and gets the
+   * same answer. Carried here so the banner can say which, instead of
+   * hard-coding a sentence and a button that cannot work.
+   */
+  _mismatch = null;
   cbs = /* @__PURE__ */ new Set();
   get state() {
     return this._state;
@@ -524,6 +535,14 @@ var ConnectionInfo = class {
   onChange(cb) {
     this.cbs.add(cb);
     return () => this.cbs.delete(cb);
+  }
+  /** Set when `state === "contract_mismatch"`, null otherwise. */
+  get mismatch() {
+    return this._state === "contract_mismatch" ? this._mismatch : null;
+  }
+  /** @internal */
+  setMismatch(info) {
+    this._mismatch = info;
   }
   /** @internal */
   set(state) {
@@ -1058,14 +1077,17 @@ var AppClient = class {
         return;
       }
       case "contract_mismatch": {
+        const reason = typeof body.reason === "string" ? body.reason : "stale_page";
+        const runningAppName = typeof body.running_app_name === "string" ? body.running_app_name : void 0;
+        const message = typeof body.message === "string" && body.message ? body.message : "This app was updated. Reload the page to continue.";
+        this.connection.setMismatch({ reason, message, runningAppName });
         this.connection.set("contract_mismatch");
         this.failInFlight(
-          new AppError(
-            "contract_mismatch",
-            "This app was updated. Reload the page to continue.",
-            false,
-            { expected: body.expected, got: body.got }
-          )
+          new AppError("contract_mismatch", message, false, {
+            expected: body.expected,
+            got: body.got,
+            reason
+          })
         );
         return;
       }

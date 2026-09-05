@@ -105,9 +105,32 @@ declare class FilesApi {
 /** Observable connection state (sdk.md "Connection"). */
 declare class ConnectionInfo {
     private _state;
+    /**
+     * Why the contract does not match, and what the robot said about it.
+     *
+     * A mismatch means one of two things and the screen used to say only one of
+     * them. "This app was updated. Reload the page to continue" is right for a
+     * stale page; when the robot is simply busy running ANOTHER app it is not
+     * only wrong, it is a loop - the reload asks the same question and gets the
+     * same answer. Carried here so the banner can say which, instead of
+     * hard-coding a sentence and a button that cannot work.
+     */
+    private _mismatch;
     private cbs;
     get state(): ConnectionState;
     onChange(cb: (s: ConnectionState) => void): () => void;
+    /** Set when `state === "contract_mismatch"`, null otherwise. */
+    get mismatch(): {
+        reason: string;
+        message: string;
+        runningAppName?: string;
+    } | null;
+    /** @internal */
+    setMismatch(info: {
+        reason: string;
+        message: string;
+        runningAppName?: string;
+    } | null): void;
     /** @internal */
     set(state: ConnectionState): void;
 }
