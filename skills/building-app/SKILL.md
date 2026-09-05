@@ -65,14 +65,10 @@ Narrate progress through `todo_write`, with items phrased in the user's language
    <Form action={SAMPLE_MODE ? undefined : search} ...>   // NO - dead button
    ```
 
-   **The app template's `OverviewPage.tsx` does exactly this**, and it is the
-   one thing in that file you must not copy. A build did copy it: `SAMPLE_MODE`
-   stayed `true`, the Search button submitted nothing for ever, five invented
-   rows sat in the table, and every check was green - `tsc`, `validate_app` and
-   the model's own review all pass an app whose button is not connected to
-   anything, because nothing about it is a type error. The person was told
-   "those sample rows go away as soon as the robot is connected", which was
-   not true and could never become true.
+   A mode flag leaves a button that submits nothing for ever, and `tsc` passes
+   it, because nothing about an unwired button is a type error. `validate_app`
+   reports the shape (`screens-wired`); the person finds it sooner, by pressing
+   it, and by then it is their app.
 
    There is nothing for a mode flag to do. Before a session exists the kit
    already shows "Not connected to your robot yet. The screens below show
@@ -83,9 +79,9 @@ Narrate progress through `todo_write`, with items phrased in the user's language
    **And the sample answer goes the moment the robot is connected.** The
    banner that explained it goes with the connection, so a sample result
    left on a connected app reads as a real answer to a form nobody has
-   filled in: two builds showed "9 panels, 10 posts, 452.50" and ten
-   invented stories under an empty form, with the robot live. Gate the
-   fallback on the connection, which `useConnection()` reports:
+   filled in. Gate the fallback on the connection, which `useConnection()`
+   reports (`validate_app`'s `sample-gated` check fails a fallback that is
+   not):
 
    ```tsx
    const { state } = useConnection();
@@ -95,20 +91,18 @@ Narrate progress through `todo_write`, with items phrased in the user's language
    Connected and no answer yet is the EMPTY state ("Type a topic and press
    Search"), never the sample one.
 3b. **Every view that waits on the robot renders THREE states, always: loading,
-   empty, and failed.** Not two. A price-watch app built without the third one
-   showed `Loading` under its table for ever after the backend stopped
-   mid-action - no message, no retry, nothing to tell the person that the
-   thing they were waiting for was never coming. Ten minutes later it still
-   said `Loading`. The runtime times a call out after 30s and rejects the
-   promise; if the screen has nowhere to put that rejection, the person is
-   left with a spinner that means "broken" and reads as "nearly there".
+   empty, and failed.** Not two. The runtime times a call out after 30s and
+   rejects the promise; if the screen has nowhere to put that rejection, the
+   person is left with a spinner that means "broken" and reads as "nearly
+   there" - no message, no retry, nothing to say that what they are waiting
+   for is never coming.
 
    Use the kit's `ErrorState` for the failure and `EmptyState` for "nothing
    here yet" (`./docs/app-kit-reference.md`), and give the failure a button
    that tries again. A screen where the loading branch is the only branch is
    not finished.
 
-4. **`save_app`.** It records the app's working copy and saves the flow behind it - the half the robot actually runs. The app's own copy goes to Robomotion when the turn ends, on its own; do not call `push_app` to make that happen sooner, because nothing between here and the end of the turn reads it. Then bring the preview up, tell the person to look at it, and say that the numbers are sample data until their robot is connected.
+4. **`save_app`.** It records the app's working copy and saves the flow behind it - the half the robot actually runs. The app's own copy goes to Robomotion when the turn ends, on its own; do not call `push_app` to make that happen sooner, because nothing between here and the end of the turn reads it. **The preview comes up on its own a few seconds after this first save** - the harness starts it and it appears in the person's preview panel - so do not call `app_dev_server start` for it: the tool answers "already running", and every such call is one more row on the person's screen that did nothing. Call `app_dev_server status` only when you have a reason to think the preview is down. Tell the person to look at the preview, and say that the numbers are sample data until their robot is connected.
 4b. **`robomotion app codegen`** whenever `app.json` changes, before writing code against it. Run it from the app folder; it regenerates both typed clients and prints the contract hash.
 
 5. **Build the flow backend, one action at a time**, in the order the user will click them. For each action: `App Action` trigger → the real work → `App Respond` on EVERY path (an unresponded call only ends by timeout, which the user experiences as a hung button). Long work sends `App Progress`. The generated `flow/src/generated/actions.gen.ts` gives you the param/result types. Flow SDK mechanics (node grammar, browser, credentials) are the `creating-flow` skill - use it.
@@ -168,8 +162,6 @@ there is nothing to look up in `creating-flow` for it:
 `Catch` is a second trigger beside your `App Action` nodes (a separate
 `f.node(...)` chain, never `.then()`ed after anything), `optNodes` as written
 catches every node, and `msg.error.message` is the thrown error's own text.
-Two builds in a row spent three doc reads each finding this shape; it is here
-so the third does not.
 
 `App Action` is a trigger, so it has no input port and the validator reports it
 as an unreachable node. `App Respond` and `App Respond Error` end a path, so it
@@ -177,14 +169,10 @@ reports them as dead ends. Both warnings are expected on every app. Never
 restructure the flow to silence either.
 
 **`App Respond Error` needs a message.** Its message input defaults to empty,
-and a build that left it empty put this on screen:
-
-> **Couldn't work that out**
-> [Try again]
-
-with nothing between the two - a person told that something failed and never
-told what, while the reason ("Charge to must be higher than charge now") sat in
-the robot's log. Give it the reason, in the words the person would use:
+and an empty one puts a title and a Try again button on screen with nothing
+between them - a person told that something failed and never told what, while
+the reason sits in the robot's log. Give it the reason, in the words the
+person would use:
 
 ```ts
 .then('f9a4c6', 'Robomotion.Apps.RespondError', 'Say What Went Wrong', {
@@ -204,10 +192,10 @@ package and is the one node worth naming here so you do not spend a search
 round on it.
 
 **`outBody` is only parsed when the server says `application/json`.** Plenty of
-real APIs return JSON under another content type - `itunes.apple.com` sends
-`text/javascript` - and then `msg.response` is a **string**, `msg.response.items`
+real services return JSON under another content type (`text/javascript`,
+`text/plain`), and then `msg.response` is a **string**, `msg.response.items`
 is `undefined`, and your not-found branch fires on every single query. Nothing
-errors: the robot's log shows all four steps finished, the screen politely says
+errors: the robot's log shows every step finished, the screen politely says
 nothing matched, and the person believes the search is broken rather than the
 app. Parse defensively, always:
 
@@ -224,19 +212,13 @@ And when a search legitimately finds nothing, say which it was: an empty answer
 from the service and an answer you could not read are the same screen otherwise.
 
 **A row that lacks what the person asked for is not a match.** Public indexes
-mix kinds of record: Crossref returns datasets, books and encyclopaedia entries
-beside papers, Hacker News returns comments beside stories, iTunes returns
-albums beside songs. Asked for "research papers with the title, who wrote it,
-the journal and the year", a build sent Crossref's first ten works as they
-came, and the top four rows on screen read `Not listed | AccessScience | —` -
-no author, no year, one of them twice. Two things, both every time:
+mix kinds of record - datasets and books beside papers, comments beside
+stories, albums beside songs - and the first rows a search returns are often
+not the kind the person named. Two things, both every time:
 
-- **Ask the service for the kind the person named** when it can be asked -
-  `filter=type:journal-article` on Crossref, `tags=story` on Hacker News,
-  `entity=song` on iTunes - and prefer an index whose records are that kind
-  (OpenAlex for papers: `api.openalex.org/works?search=`, authors under
-  `authorships[].author.display_name`, the journal under
-  `primary_location.source.display_name`, `publication_year`).
+- **Ask the service for the kind the person named** when it can be asked - a
+  type filter, a tag, an entity parameter - and prefer an index whose records
+  are that kind over one that mixes them.
 - **Drop a row that is missing a column the person asked for**, and ask for
   more rows than you show so the ten on screen are ten real ones. A cell
   reading "Not listed" in every row is this rule skipped, and a person reads
@@ -261,7 +243,7 @@ selector, so that stores every record under the literal string `"id"`: each add
 lands on the same record and replaces the one before it. The person sees only
 the last thing they saved, a reload does not bring the others back, and nothing
 in the flow or the robot's log looks wrong - the robot did exactly what it was
-told. This has already destroyed a real app's data once.
+told.
 
 When you do need a key - a DELETE is the case where it is the whole point -
 it comes from the caller, and **the caller's fields arrive under `msg.params`**:
@@ -282,15 +264,15 @@ amber, and offers to start this app rather than a Reload that cannot help.
 
 From `Robomotion.Apps` **0.1.7** a call the robot refuses for the wrong
 parameters says which ones: *the screen sent the wrong details for
-"recordPayment": missing required property "pledge". It sent: id, person, ...*
-If you ever see a bare "invalid parameters" on a screen, the app is pinned to
+"<action>": missing required property "<field>". It sent: <the fields that
+arrived>*. If you ever see a bare "invalid parameters" on a screen, the app is pinned to
 an older version.
 
 The key you send has to be the collection's **`key` field**, the same value the
 record was stored under. From `Robomotion.Apps` 0.1.5 a delete whose key is not
 one the collection holds **fails**, saying so:
 
-    "jobs" has no record with the key "row-3", so nothing was deleted
+    "<collection>" has no record with the key "<key>", so nothing was deleted
 
 That error is not a platform failure and there is nothing to retry. It means
 the screen is sending a different value than the one the collection is keyed
@@ -305,33 +287,30 @@ screen and no layer said a word; a loud error is the fix, not the fault.
 merge. So a button that changes one field of an existing row has to send
 **every field that row has**, or the fields it left out are gone.
 
-A build shipped exactly this. `app.json` declared `setPaid` with six params
-(id, vehicle, work, date, cost, paid), the flow rebuilt the whole record from
-them correctly, and the screen sent two:
+So when `app.json` declares an action with every field of the record and the
+screen sends two of them, the fields it left out are written as nothing:
 
 ```tsx
-params: (row: Job) => ({ id: row.id, paid: true }),    // NO - four fields die
-params: (row: Job) => ({ ...row, paid: true }),        // yes - the whole row
+params: (row: Item) => ({ id: row.id, done: true }),   // NO - the other fields die
+params: (row: Item) => ({ ...row, done: true }),       // yes - the whole row
 ```
 
-One press turned `Blue Van | Tyres | 2026-09-10 | 480.00` into
-`- | - | - | 0.00`, and the totals line above it into "Unknown 0.00". It
-survives a reload, because the robot did exactly what it was told. Nothing
-failed: the action returned ok, no node errored, no log line looks wrong.
+One press turns a full row into dashes and zeros, it survives a reload, and
+nothing fails: the action returns ok, no node errors, no log line looks wrong,
+because the robot did exactly what it was told.
 
 **So: a row action that toggles or edits a field spreads the row.** And when
 you change what an action takes, change all three halves in the same breath -
-`app.json`, the flow's record-building step, and every screen that calls it.
-The one that was forgotten here was the screen, and it was forgotten in the
-same turn the other two were deliberately changed to carry the whole row.
-`validate_app` reports a call site that passes fewer fields than `app.json`
-declares; do not wave that through.
+`app.json`, the flow's record-building step, and every screen that calls it;
+the screen is the half most easily forgotten. `validate_app` reports a call
+site that passes fewer fields than `app.json` declares (`action-params`); do
+not wave that through.
 
 `Message('id')` reads `msg.id`, which nothing has set, so the node deletes
-nothing - and answers as if it had. One build shipped exactly that: the
-person pressed Returned, every node in the path ran, the app said it was
-done, and the row was still there after a reload. Nothing in the flow or the
-robot's log looks wrong, because the robot did what it was told.
+nothing - and, before `Robomotion.Apps` 0.1.5, answered as if it had: every
+node in the path runs, the app says it is done, and the row is still there
+after a reload. Nothing in the flow or the robot's log looks wrong, because
+the robot did what it was told.
 `validate_app` fails a literal `inKey` that names the collection's key field,
 and `read_app_data` shows what each record is actually stored under - use it the
 moment someone says an app is losing or not showing saved data, before touching
@@ -342,32 +321,30 @@ Note what the example does **not** have: an ending. No `Core.Flow.Stop`, no
 screens (hard rule 5) - the last node on every path is its `App Respond` or
 `App Respond Error`. This is the single easiest way to ship an app that works
 exactly once, so check for it before you save.
-6. **`start_app_session`.** Creates a draft instance and starts the flow on the LOCAL robot; the preview's buttons now hit a real robot. Delete each `SAMPLE_*` const as its backend action comes alive. The buttons need no change, because step 3a wired them to the real action from the start; if changing one is what makes it work, the app was a mockup until now and you have just found that out later than the person would have.
+6. **`start_app_session`.** On a brand-new app, **ask before you call it**: `create_app` has already told you the app has no robot of its own, and calling `start_app_session` only to be refused puts a failed step on the person's screen one row above the question that follows it. Ask first (6a), then call `start_app_session` after the yes. An app that already has its robot needs no question - call it straight away. It creates a draft instance and starts the flow on the LOCAL robot; the preview's buttons now hit a real robot. Delete each `SAMPLE_*` const as its backend action comes alive. The buttons need no change, because step 3a wired them to the real action from the start; if changing one is what makes it work, the app was a mockup until now and you have just found that out later than the person would have.
 
-6a. **If it says the app has no robot of its own, the question is a CARD, not a
-   sentence.** This is the last question of the build, it arrives at the end of
-   a long summary, and **five builds out of six have asked it in prose** -
-   which leaves the person with a paragraph ending in a question mark and
-   nothing to press. Call `ask_user_question`. Exactly this shape:
+6a. **When the app has no robot of its own yet - a brand-new app never does,
+   and `start_app_session` says so if you call it anyway - the question is a
+   CARD, not a sentence.** This is the last question of the build and it
+   arrives at the end of a long summary, where a sentence ending in a question
+   mark leaves the person nothing to press. Call `ask_user_question`. Exactly
+   this shape:
 
        ask_user_question
          header:    "Robot"
          question:  "Your app needs a robot to run on. Shall I set one up?"
          options:   "Yes, set it up"  /  "Not now"
 
-   The **header** is a word the person reads too, and it is the one that got
-   away: three builds asked with a card and one titled its card "App robot".
-   The word is "Robot". Not "App robot", not "App-robot", not "Robot slot".
+   The **header** is a word the person reads too. It is "Robot". Not "App
+   robot", not "App-robot", not "Robot slot".
 
    Writing the same words into your reply instead is not a different spelling
    of the same thing, it is the fault. And the word is **"robot"** - never
    "app-robot", never "one of your app-robot slots", never "application_lc".
-   The person owns robots; slots and types are our bookkeeping, and naming
-   them here is the exact vocabulary that had to be removed from the run
-   dialog. **The same holds in your closing summary**, which is where it came
-   back: one build ended "it has its own robot now (2 of your 4 robot slots in
-   use)". Nobody asked what it cost. Say what it costs only if they ask, and
-   then say "robots", not "slots".
+   The person owns robots; slots and types are our bookkeeping. **The same
+   holds in your closing summary**: nobody asked what it cost, so do not
+   volunteer "2 of your 4 robot slots in use". Say what it costs only if they
+   ask, and then say "robots", not "slots".
 7. **`validate_app`.** Fix until clean. It compiles both projects against the contract, checks the schema, and checks the dependency allowlist.
 8. **Offer to publish.** Never publish unasked. When the person says yes, `publish_app`.
 
@@ -400,35 +377,22 @@ and `<apps>/<appId>/flow`. Work only in those.
   open `credentials.yaml` or any other secret. To prove an action end to end,
   ask them to press it and watch with `poll_logs` on the `studio_id` that
   `start_app_session` returned - a Debug or Log step in the flow arrives there
-  as a `debug` event, with the value in it. One observed build spent four
-  minutes disassembling the runtime bundle to fake a call it was never going
-  to be allowed to make.
+  as a `debug` event, with the value in it.
 - **When something fails, read the robot's error BEFORE explaining it.**
   `poll_logs` on the app session's `studio_id` carries the node that failed
   and why, in the robot's own words. Diagnosing from the shape of the symptom
-  instead produces confident fiction. Observed, in full: a person said "I
-  added a product but the table just says Loading and nothing happens", and
-  the reply was
-
-  > The connection between the app and the robot had dropped - when we
-  > stopped the stuck task, the app's link went down with it, so your "add
-  > product" press never reached the robot.
-
-  The press had reached the robot. `Add Product`, `Build New Product` and
-  `Save Product` had all run, and `Save Product` failed on `no such table:
-  products`. The session was restarted, the person was asked to try again,
-  and they hit the identical wall - now believing it had been fixed once
-  already. A wrong explanation is worse than none: it spends their trust and
-  sends them back into the same failure. If the logs say nothing, say that,
-  and say what you are going to try next.
+  instead produces confident fiction - "your press never reached the robot"
+  about a press that reached it and failed three steps in, on a reason the
+  robot's log had stated in one line. A wrong explanation is worse than none:
+  it spends their trust and sends them back into the same failure, now
+  believing it was fixed once already. If the logs say nothing, say that, and
+  say what you are going to try next.
 
   **Read the logs BEFORE restarting anything.** `start_app_session` mints a
   NEW `studio_id`, and the failure the person is describing happened under
   the old one - restart first and you are polling a clean, empty log, which
-  reads exactly like "the press never arrived". That is how the same wrong
-  answer gets given three times in a row while the robot's own log has said
-  `no such table: products` since the first attempt. Poll the session that
-  was live when it broke; restart afterwards, if at all. `node_error` is a
+  reads exactly like "the press never arrived". Poll the session that was
+  live when it broke; restart afterwards, if at all. `node_error` is a
   `poll_logs` event like any other - the failing node and its message are
   there for the asking.
 - **Never show identifiers.** App ids, flow ids, commit shas, contract hashes,
@@ -445,50 +409,36 @@ Each rule carries its reason. The reason is why you don't route around the rule 
 2. **Actions only through the generated typed stubs.** `src/generated/actions.gen.ts` exports one hook per action, `use<Action>()` (for `greet`: `const greet = useGreet()`), plus `<Action>Params` / `<Action>Result` types; `greet.data` is typed and `<Form action={greet}>` / `<Button action={greet}>` link the control. Use those. Never write `useAction("name")` yourself - untyped, its `data` is `{}` and `tsc` fails on the first field you read. Collections and events use `useCollection` / `useEvent` with the generated types. Never hand-write transport, never invent a message format, never call `app.call` from screen code. Reason: the old app system died because clients hand-invented protocols over a raw channel and drift was discovered by users in production; the stubs make a contract change break `tsc` instead of a person.
 3. **One component per file, flat directories, no barrel files.** `src/pages/Review.tsx`, `src/components/InvoiceCard.tsx` - that's the whole depth. Reason: "make that button green" must resolve to exactly one file from the route context; barrels and deep nesting break targeted edits and make hot reload touch more than it should.
 4. **Never hand-edit generated files.** Anything under `src/generated/` is regenerated from `app.json`; edit `app.json` and regenerate. Reason: the next regeneration silently erases your edit, and an edited file no longer matches `contract_hash`, which blocks the app from connecting at all.
-5. **An app flow never ends. It is the backend, not a script.** It comes up with the app session and stays up for as long as the app lives, serving every press of every button by every person. So no path may end it: **never `Core.Flow.Stop`, never `Core.Flow.End`**, and never a "finish", "cleanup" or "done" step that reaches one. Every path finishes at its `App Respond` or `App Respond Error` and goes no further; anything that has to happen after answering (closing a browser, deleting a temp file) belongs before that node, not after a stop. Reason: a flow that stops once it has answered leaves an app that looks perfect and is dead on the second press. The first person to try it gets their results; everyone after that is told "The robot for this app is not connected", which blames the robot for something the flow did to itself, and the screen keeps the previous results under the new question so the failure even reads as a success. This is not hypothetical: a search app returned ten real results, stopped itself, and refused every search after that.
+5. **An app flow never ends. It is the backend, not a script.** It comes up with the app session and stays up for as long as the app lives, serving every press of every button by every person. So no path may end it: **never `Core.Flow.Stop`, never `Core.Flow.End`**, and never a "finish", "cleanup" or "done" step that reaches one. Every path finishes at its `App Respond` or `App Respond Error` and goes no further; anything that has to happen after answering (closing a browser, deleting a temp file) belongs before that node, not after a stop. Reason: a flow that stops once it has answered leaves an app that looks perfect and is dead on the second press. The first person to try it gets their results; everyone after that is told "The robot for this app is not connected", which blames the robot for something the flow did to itself, and the screen keeps the previous results under the new question so the failure even reads as a success.
 
    **An unhandled error ends the flow just as surely as a `Stop` node, so
    every app backend needs `Core.Trigger.Catch` wired to an `App Respond
    Error`.** Without it the first node that throws takes the whole app down -
-   not that action, the app. A price-watch backend died on its very first
-   press because one node hit `no such table: products`; every node in the
-   flow then closed, the caller was never answered, and the screen sat on
-   `Loading` for ever. One typo in one query, and an app that had just been
-   built was permanently dead with nothing on screen to say so. Catch turns
-   that into a message on the one action that failed, with the app still
-   serving every other button.
+   not that action, the app: every node closes, the caller is never answered,
+   and the screen sits on its loading state for ever with nothing to say why.
+   One typo in one query, and an app that has just been built is permanently
+   dead. Catch turns that into a message on the one action that failed, with
+   the app still serving every other button.
 
-6. **If the flow stores anything, it creates its own storage first.** The same
-   price-watch backend wrote products into a SQLite file that had no
-   `products` table, because nothing had made one. Whatever holds the data -
-   a table, a file, a folder - is created on a path that runs before the
-   first write and is safe to run again (`CREATE TABLE IF NOT EXISTS`, a
-   directory check). An app whose first save is its first crash never gets a
-   second chance from the person who just built it.
+6. **If the flow stores anything, it creates its own storage first.** Whatever
+   holds the data - a table, a file, a folder - is created on a path that runs
+   before the first write and is safe to run again (`CREATE TABLE IF NOT
+   EXISTS`, a directory check). An app whose first save is its first crash
+   never gets a second chance from the person who just built it.
 
-   **On every path that touches it, not one of them.** Told to fix exactly
-   this, one build added `CREATE TABLE IF NOT EXISTS products` - and wired it
-   into the "check prices" path only, while the failure was on "add product".
-   The very next press failed identically. A person adds their first item
-   before they ever run a check, so the path they reach first is the one that
-   has to be ready. Either put the setup at the start of every path that
-   reads or writes, or run it once where the flow comes up, before any
-   trigger can be served.
+   **On every path that touches it, not one of them.** A person adds their
+   first item before they ever run a report, so the path they reach first is
+   the one that has to be ready - a setup step wired into the read path alone
+   leaves the write path failing exactly as before. Either put the setup at
+   the start of every path that reads or writes, or run it once where the
+   flow comes up, before any trigger can be served.
 
    **And when a first save does nothing, read the flow before you read the
-   session.** Asked twice more to fix that same app - once with the person
-   saying in as many words "this is the very first thing I have done in this
-   app; I have never pressed Check prices now" - the assistant spent both
-   turns on sessions and restarts (32 shell calls, five log polls, zero reads
-   of its own flow) and told them "nothing had ever successfully run, so the
-   table had nothing to show". The robot's log had said
-   `no such table: products` since the first press.
-
-   A button that answers nothing on a brand-new app is a setup question until
-   proved otherwise. Open the flow, follow the path that button runs, and
-   check the storage it writes to is created on THAT path. That costs one
-   read. Restarting the session costs the person another round trip and tells
-   you nothing you did not already know.
+   session.** A button that answers nothing on a brand-new app is a setup
+   question until proved otherwise. Open the flow, follow the path that
+   button runs, and check the storage it writes to is created on THAT path.
+   That costs one read. Restarting the session costs the person another
+   round trip and tells you nothing you did not already know.
 
 7. **Saving is `save_flow` and `save_app`. Never git by hand.** `git add`,
    `git commit`, `git push`, `git reset` and the rest are refused inside the
@@ -496,10 +446,8 @@ Each rule carries its reason. The reason is why you don't route around the rule 
    the save tools commit the right files, write the message, and write the
    trailers that pair the app with the flow it was built against - which is
    what every check downstream reads. A commit made by hand writes none of
-   that, so the checks then disagree about what was saved. Three of them once
-   called a backend saved that git had never seen, and the next sync deleted
-   it. Ten bash failures across three observed builds were this exact reach
-   around the product.
+   that, so the checks then disagree about what was saved - and a checkout the
+   checks call saved can be deleted by the next sync.
 
 ## The preview loop
 
@@ -542,16 +490,14 @@ Right: "One moment, I'm updating your app to match the change."
 to the person: no "Let me check the pspec", no weighing of options, no quoting
 your own rules back at them ("that satisfies 'renders fully before any backend
 exists'"), and no plan items read out as narration. That reasoning belongs in
-your thinking, which they never see. Every one of those lines was on screen in
-a real build, in front of somebody who had asked for a bill splitter, and a
-line they cannot act on reads as something having gone wrong.
+your thinking, which they never see. A line they cannot act on reads as
+something having gone wrong.
 
 **One answer on screen at a time.** When an action fails, the previous result
 goes; when it succeeds, the previous error goes. The hooks do this for you -
 `data` and `error` from an action hook are mutually exclusive - so render
 whichever is set and never keep your own copy of the last result beside them.
-A wrong answer sitting under a red error card is worse than no answer, and one
-has been seen surviving a whole session.
+A wrong answer sitting under a red error card is worse than no answer.
 
 ## Ask vs decide
 
@@ -586,12 +532,12 @@ so the app adopts it instead of scaffolding a second one.
 | Runtime error in the preview (`rm-app-error`) | Same fix-and-recheck. The Designer already auto-retries at most twice per user message - work within that, don't loop forever. |
 | An action times out | The call ALWAYS terminates (robot-side watchdog), so a hung button means a wrong `timeout_ms` or a path that never reaches `App Respond`. Long robot work (browser, PDF): raise `timeout_ms` in `app.json` and set `progress: true`, then send `App Progress` from the flow so the wait is visible. |
 | Robot is offline (`robot_offline` state or error) | It's retryable and the kit's `ConnectionBanner` already shows it. Tell the person plainly: "Your robot is offline - start it and the buttons will work again." Do NOT rebuild or edit anything. |
-| **The app's OWN robot shows as offline in `list_robots`** | **This is never the reason a button did nothing, so never give it as one.** Every app owns a robot of type `application_lc`, named after the app. Nothing ever connects as it - it is a quota row, and it is offline by design, permanently. The preview runs on the robot already connected to this computer. It is also the first thing anybody looking for a fault will find, which is why it has been given as a confident wrong answer three times in observed builds. Look at what actually failed instead: `poll_logs` on the app's session, and the robot's own log. |
+| **The app's OWN robot shows as offline in `list_robots`** | **This is never the reason a button did nothing, so never give it as one.** Every app owns a robot of type `application_lc`, named after the app. Nothing ever connects as it - it is a quota row, and it is offline by design, permanently. The preview runs on the robot already connected to this computer. It is also the first thing anybody looking for a fault will find, which is why it is so easy to give as a confident wrong answer. Look at what actually failed instead: `poll_logs` on the app's session, and the robot's own log. |
 | The buttons do nothing and the app says "The robot for this app is not connected" - about a robot that IS connected and running the flow | The chat path and the app path are different transports, and this message comes from the app one. Do not rebuild anything and do not blame the robot. The two causes seen live: the flow stopped itself (see rule 5 - an app flow never ends), or the robot's app connection was churning while the page's key exchange was in flight, in which case the robot's log says `dropping <type> for unknown conn ... (no key exchange yet)` and a reload of the app gets a fresh key. Say what you found; if it is the second, say the connection dropped and ask them to reload the preview. |
-| `start_app_session` says the app has no robot of its own | Expected on a brand-new app: a draft does not get a robot until somebody asks to run it. **Ask with `ask_user_question`, then act** - question "Your app needs a robot to run on. Shall I set one up?", replies "Yes, set it up" / "Not now". **Prose is not an acceptable spelling of this question** (step 6a): asking it in a sentence at the end of your summary leaves the person nothing to press, and it is what five builds of six did. The word is "robot" - not "app-robot", not "app-robot slots". On yes: `create_app_robot` and then `start_app_session` **in the same turn** - the preview runs on the robot that is already on this computer, so there is nothing for them to start and nothing to wait for. Never end the turn on "now start that robot": one build did, and the person was sent looking in a tray for a robot that does not appear there and does not need to. On no: stop there and say the preview still shows the screens with sample data. Never call `create_app_robot` without the yes: it spends one of a small number of slots in their workspace. |
+| `start_app_session` says the app has no robot of its own | Expected on a brand-new app: a draft does not get a robot until somebody asks to run it. **Ask with `ask_user_question`, then act** - question "Your app needs a robot to run on. Shall I set one up?", replies "Yes, set it up" / "Not now". **Prose is not an acceptable spelling of this question** (step 6a): asking it in a sentence at the end of your summary leaves the person nothing to press. The word is "robot" - not "app-robot", not "app-robot slots". On yes: `create_app_robot` and then `start_app_session` **in the same turn** - the preview runs on the robot that is already on this computer, so there is nothing for them to start and nothing to wait for. Never end the turn on "now start that robot": no such robot appears in their tray, and nothing needs starting. On no: stop there and say the preview still shows the screens with sample data. Never call `create_app_robot` without the yes: it spends one of a small number of slots in their workspace. |
 | `create_app_robot` says the workspace is full | Give them the numbers it returns and the one way out - deleting an app robot they no longer use frees a slot, from Manage robots. Do not delete anything yourself and do not retry. |
 | `start_app_session` says the robot is busy | Another app's DRAFT preview is freed for you automatically, so if you still see this, what holds the robot is something else - a published app, a schedule, or a run the person started. Name it if the result does, ask whether to stop it, and stop it only if they say yes. |
-| `start_app_session` did not start (robot not connected, or it did not take the run) | Say it in one sentence and **end your turn**: "Your robot isn't running - start it and tell me, and I'll connect the app." Do NOT retry, do NOT call `stop_flow`, do NOT inspect packages, the package server or the network: the tool result already says what happened, and one observed build spent six minutes and three retries proving the same thing. When the person says the robot is up, call `start_app_session` once more. |
+| `start_app_session` did not start (robot not connected, or it did not take the run) | Say it in one sentence and **end your turn**: "Your robot isn't running - start it and tell me, and I'll connect the app." Do NOT retry, do NOT call `stop_flow`, do NOT inspect packages, the package server or the network: the tool result already says what happened, and retrying proves nothing it did not. When the person says the robot is up, call `start_app_session` once more. |
 | `queue_full` / `concurrency_rejected` | Backpressure, both retryable. If it recurs, the action's `concurrency` is wrong for how it's used - see `./docs/contract.md`. |
 | `validate_app` fails with type errors naming generated types | You changed `app.json` without regenerating, or a generated file was hand-edited. Regenerate; never patch the generated file. |
 | `validate_app` fails on a dependency | Something outside the allowlist crept into `package.json`. Remove it and compose from the kit instead. |
