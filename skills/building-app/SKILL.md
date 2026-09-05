@@ -75,6 +75,21 @@ Narrate progress through `todo_write`, with items phrased in the user's language
    sample data." at the top of the app, and an action that cannot reach a
    robot fails honestly and says so. A wired button on a draft app is correct;
    an unwired one is a mockup you will tell somebody is an app.
+
+   **And the sample answer goes the moment the robot is connected.** The
+   banner that explained it goes with the connection, so a sample result
+   left on a connected app reads as a real answer to a form nobody has
+   filled in: two builds showed "9 panels, 10 posts, 452.50" and ten
+   invented stories under an empty form, with the robot live. Gate the
+   fallback on the connection, which `useConnection()` reports:
+
+   ```tsx
+   const { state } = useConnection();
+   const rows = search.data?.matches ?? (state === "ready" ? [] : SAMPLE_MATCHES);
+   ```
+
+   Connected and no answer yet is the EMPTY state ("Type a topic and press
+   Search"), never the sample one.
 3b. **Every view that waits on the robot renders THREE states, always: loading,
    empty, and failed.** Not two. A price-watch app built without the third one
    showed `Loading` under its table for ever after the backend stopped
