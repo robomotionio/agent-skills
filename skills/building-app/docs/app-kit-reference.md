@@ -212,6 +212,20 @@ const submit = useSubmitExpense();
 </Form>
 ```
 
+**One place for a failure.** A `Form` given an `action` shows that action's
+failure under its fields by itself. If the screen also renders
+`<ErrorState error={action.error} />` for the same action, the person reads
+the same sentence twice, one above the other - pass `hideError` to the `Form`
+when the screen shows the failure elsewhere, and otherwise render nothing of
+your own for it.
+
+**The form spaces itself.** Its direct children - each `Field`, the submit
+`Button`, a row of fields - sit one gap apart, so write them as siblings and
+add no margins of your own: a button wrapped in a `div` with `mt-1`, or a
+field with `mb-0`, breaks the rhythm every other form in the app keeps. Two
+fields on one row are ONE child: wrap those two in
+`<div className="grid grid-cols-2 gap-4">`.
+
 **`Select` options are `{ value, label }` objects, and `value` is always a
 string** - a bare array of strings does not compile. So a picker feeding a
 numeric parameter needs the number made somewhere: either declare that

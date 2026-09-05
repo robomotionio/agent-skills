@@ -3572,10 +3572,24 @@ import {
 // src/components/error-state.tsx
 import { AppError } from "@robomotion/apps-runtime";
 import { jsx as jsx9, jsxs as jsxs9 } from "react/jsx-runtime";
+function plainMessage(raw) {
+  let s = raw.replace(/\r/g, "");
+  s = s.replace(/^\s*at\s+.*$/gm, "");
+  s = s.split(/\s+/).filter(Boolean).join(" ");
+  for (; ; ) {
+    const trimmed = s.replace(/\s+at\s+\S+\s*\([^)]*\)\s*$/, "");
+    if (trimmed === s) break;
+    s = trimmed;
+  }
+  const label = /^([A-Za-z]*Error):\s+/.exec(s);
+  if (label && label[0].length < 40) s = s.slice(label[0].length);
+  s = s.trim();
+  return s || "Something went wrong.";
+}
 function messageOf(error) {
-  if (error instanceof AppError) return error.message;
-  if (error instanceof Error) return error.message;
-  if (typeof error === "string") return error;
+  if (error instanceof AppError) return plainMessage(error.message);
+  if (error instanceof Error) return plainMessage(error.message);
+  if (typeof error === "string") return plainMessage(error);
   return "Something went wrong.";
 }
 function defaultTitle(error) {
@@ -3733,7 +3747,7 @@ function Form({
     {
       ref: formRef,
       noValidate: true,
-      className: cn("text-left", className),
+      className: cn("flex flex-col gap-4 text-left", className),
       onSubmit: (e) => {
         e.preventDefault();
         const nextErrors = validateAgainstSchema(schema, values);
