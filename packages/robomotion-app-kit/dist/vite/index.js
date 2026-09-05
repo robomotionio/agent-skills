@@ -83,25 +83,47 @@ function bridgeScript(screens) {
     };
     post("rm-app-error", payload);
     reportToDevServer(payload);
+    // Something failed, so start watching for it to stop failing.
+    if (typeof watchForRecovery === "function") watchForRecovery();
   };
   var screens = ${JSON.stringify(screens)};
   var ready = function () { post("rm-app-ready", { screens: screens, loadId: loadId }); };
   if (document.readyState === "complete" || document.readyState === "interactive") ready();
   else document.addEventListener("DOMContentLoaded", ready);
 
-  // A hot update that lands cleanly is the app coming back, and it is the
-  // only "came back" signal there is: HMR patches modules in place, so no
-  // second page load ever happens. Wait a beat first - if the update itself
-  // threw, the error arrives under the CURRENT load id and greeting the host
-  // would clear an error that is still true.
-  window.addEventListener("vite:afterUpdate", function () {
+  // The app came back. Say so, however it came back.
+  //
+  // A greeting under a NEW load id is the only thing that clears the host's
+  // "Something in the app needs fixing" banner (issue 41), and for a long
+  // time the only thing that produced one was a hot update landing cleanly.
+  // That is not the only way an app recovers: Vite falls back to a full
+  // reload for a change it cannot patch, the dev server gets bounced, a
+  // render that threw on one pass succeeds on the next. On 2026-09-06 an app
+  // was fixed, rendered correctly, and kept "CardBody is not defined" pinned
+  // under it for the rest of the session - the panel's own logic was right
+  // and no signal ever reached it.
+  //
+  // So recovery is observed rather than inferred from one event: once
+  // anything has been reported, a page that has gone quiet for a moment AND
+  // has something on screen is a page that is working again. Re-armed by
+  // every error, so a broken app never announces itself well.
+  var recoveryTimer = 0;
+  var announceRecovery = function () {
+    loadId = "L" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    ready();
+  };
+  var watchForRecovery = function () {
+    if (recoveryTimer) clearTimeout(recoveryTimer);
     var seen = errorCount;
-    setTimeout(function () {
-      if (errorCount !== seen) return;
-      loadId = "L" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-      ready();
-    }, 300);
-  });
+    recoveryTimer = setTimeout(function () {
+      recoveryTimer = 0;
+      if (errorCount !== seen) return;           // still failing; stay quiet
+      var root = document.getElementById("root");
+      if (!root || root.children.length === 0) return;  // nothing rendered yet
+      announceRecovery();
+    }, 1500);
+  };
+  window.addEventListener("vite:afterUpdate", watchForRecovery);
 
   // Vite's own compile/transform failures, which reach the page as an overlay
   // event rather than as a thrown error.

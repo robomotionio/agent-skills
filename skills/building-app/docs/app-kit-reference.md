@@ -2,7 +2,24 @@
 
 The complete catalogue. Compose screens from these and Tailwind layout classes; there is nothing else, and nothing else is allowed. Every component is themed from `app.json`'s `theme.accent`, dark-mode aware, and accessible by default - you never write colors, focus rings, or ARIA by hand.
 
-The knobs named here are the normative surface. For exact prop spellings beyond them, the authority is the package's own types in `node_modules/@robomotion/app-kit` - when `tsc` disagrees with a snippet here, trust `tsc`.
+This file is COMPLETE for everything it names. Do not open the packages' own
+`.d.ts` files to check it. On 2026-09-06 a build spent eight shell calls and
+about ninety seconds walking
+`node_modules/@robomotion/apps-runtime/dist/**` to find out one thing this
+page already says - and the person watching got six identical "Checked how to
+build it" rows for it. `tsc` is the check, not a `grep`: write the screen,
+run the typecheck, and read what it says. Only if `tsc` disagrees with a
+snippet here does the package's own type win, and then it is `tsc` telling
+you, not a file you went looking for.
+
+Two facts that page-walk was after, so nobody goes after them again:
+
+- `useConnection()` returns `{ state, robotOnline }`, and `state` is a plain
+  **string union**, not an enum: `state === "ready"` is how you compare it.
+  The type is `ConnectionState`, exported from `@robomotion/apps-runtime` -
+  but a screen almost never needs to name it.
+- The runtime's hooks come from `@robomotion/apps-runtime/react` (that exact
+  specifier - it is a package export, not a folder to go and find).
 
 A screen imports from **two** packages, and which name lives in which is not
 guessable. Everything visual comes from the kit; everything that talks to the
