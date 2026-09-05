@@ -215,6 +215,8 @@ function sharedResolvePlugin() {
 function robomotionAppKit(options = {}) {
   return [sharedResolvePlugin(), bridgePlugin(options)];
 }
+var ROOT_DIV = '<div id="root"></div>';
+var ROOT_DIV_WITH_PLACEHOLDER = `<div id="root"><div style="display:flex;align-items:center;justify-content:center;min-height:60vh;padding:24px;font:14px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:#8a8a8a;text-align:center">Getting your app ready\u2026</div></div>`;
 function bridgePlugin(options = {}) {
   let root = process.cwd();
   let base = "/";
@@ -223,6 +225,29 @@ function bridgePlugin(options = {}) {
     // Dev server only. Production builds never load this plugin, which is
     // exactly the "no-op in production" contract.
     apply: "serve",
+    /**
+     * Vite's crash overlay is off, because the person watching this frame is
+     * not the one who can fix it.
+     *
+     * The preview now comes up on the first write to the app's screens
+     * (issue 119) - which is, by definition, a moment when `screens.tsx`
+     * names a page file the assistant has not written yet. So the first
+     * pixel of the first app of the twenty-third pass was Vite's red
+     * overlay, full-frame, reading `[plugin:vite:import-analysis] Failed to
+     * resolve import "./pages/CalculatorPage"`, a stack of absolute paths,
+     * and the advice to set `server.hmr.overlay` to false in
+     * `vite.config.ts`. To somebody who has never seen a file path, ninety
+     * seconds after asking for an app about parcels.
+     *
+     * Nothing is lost by turning it off. The bridge above listens for
+     * `vite:error` itself and posts every compile failure to `__rm/errors`,
+     * which is what `get_preview_errors` reads and what the assistant acts
+     * on; and the Build panel shows its own plain banner over the frame.
+     * The overlay was the only part of that chain written for a developer.
+     */
+    config() {
+      return { server: { hmr: { overlay: false } } };
+    },
     configResolved(config) {
       root = config.root;
       base = config.base || "/";
@@ -318,7 +343,7 @@ function bridgePlugin(options = {}) {
       if (!/<base\s/i.test(html)) {
         tags.push({ tag: "base", attrs: { href: base }, injectTo: "head-prepend" });
       }
-      return tags;
+      return { html: html.replace(ROOT_DIV, ROOT_DIV_WITH_PLACEHOLDER), tags };
     }
   };
 }
