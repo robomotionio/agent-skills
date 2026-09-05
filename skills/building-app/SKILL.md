@@ -131,6 +131,27 @@ The caller's arguments arrive as **`msg.params.<field>`**; the answer is whateve
 sits on **`msg.result`** when `App Respond` runs. Both shapes are already typed
 for you in `flow/src/generated/actions.gen.ts`.
 
+**And the catch-all, in the same file, every time.** An unhandled error ends
+the flow and the app with it (hard rule 5), so every backend has a
+`Core.Trigger.Catch` wired to an `App Respond Error`. This is the whole of it -
+there is nothing to look up in `creating-flow` for it:
+
+```ts
+  f.node('d5e061', 'Core.Trigger.Catch', 'Say What Went Wrong', {
+    optNodes: { all: true, ids: [], type: 'catch' },
+  })
+    .then('e7f2a8', 'Robomotion.Apps.RespondError', 'Tell Them The Problem', {
+      optRetryable: true,
+      inMessage: Message('error.message'),
+    });
+```
+
+`Catch` is a second trigger beside your `App Action` nodes (a separate
+`f.node(...)` chain, never `.then()`ed after anything), `optNodes` as written
+catches every node, and `msg.error.message` is the thrown error's own text.
+Two builds in a row spent three doc reads each finding this shape; it is here
+so the third does not.
+
 `App Action` is a trigger, so it has no input port and the validator reports it
 as an unreachable node. `App Respond` and `App Respond Error` end a path, so it
 reports them as dead ends. Both warnings are expected on every app. Never
