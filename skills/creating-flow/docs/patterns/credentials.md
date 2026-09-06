@@ -30,7 +30,7 @@ not "just this once so I can store it securely".
 Asked to build an app that signs in to a bank, the assistant asked
 
     Bank password
-    Enter the password for hiroshi.tanaka@globex.example
+    Enter the password for jane.doe@example.com
 
 as an ordinary text question. That renders a plain box in the chat: the
 password was on screen as it was typed, in the transcript for the rest of the
