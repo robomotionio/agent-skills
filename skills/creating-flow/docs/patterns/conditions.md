@@ -28,7 +28,16 @@ The function receives `msg` and must return it:
 | `return null;` | Stop flow (no output) |
 | `return [msg, null];` | Send to port 0 only |
 | `return [null, msg];` | Send to port 1 only |
-| `return [msg, msg];` | Send to BOTH ports simultaneously |
+| `return [msg, msg];` | Send to BOTH ports simultaneously — see the warning below |
+
+**One return, one port.** In a branch, every return must leave the other ports empty:
+`return [msg, null]` or `return [null, msg]`, never `return [msg, msg]`. Filling both
+ports runs both branches at once, on the same message, racing each other — the loop
+body and the finish path both go, and whatever the finish path writes is written while
+the body is still working. `null`, `undefined` and `''` are the holes. `validate_flow`
+reports a multi-output Function whose *every* return fills every port
+(`function_fires_every_port`); if two paths really are meant to run together, wire them
+both to port 0 and declare one output.
 
 ### Example: Binary Condition (if/else)
 
