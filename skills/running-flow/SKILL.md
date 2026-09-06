@@ -120,11 +120,48 @@ Target autonomous iteration (bounded retries; stop on user request):
 2. **Submit**: `robomotion run <flow-dir> --robot <id>` — capture the `Session` / `Studio ID`.
 3. **Stream**: `run` tails the agent log automatically until `agent_mode:end`.
 4. **Classify**:
-   - `flow_end status=success` (CLI exit 0) → report and stop.
+   - `flow_end status=success` (CLI exit 0) → report, **offer to open what it produced** (below), and stop.
    - `node_error` or `flow_error` (CLI exit 1) → inspect `error` + `node`, fix `main.ts`, **back to step 1**. Max 3 retries without user confirmation.
    - Timeout (CLI exit 2) → flow may still be running on the robot; report and ask.
    - Log unreachable (CLI exit 3) → robot is remote; watch progress in the Flow Designer instead.
 5. Between retries, keep mock/test fixtures stable so a passing run actually proves the fix.
+
+### After a successful run: offer to open what it produced
+
+A run that writes a file has not finished for the person until they have seen
+it. Naming the file and leaving them to go and find it is a step short: they
+asked for a spreadsheet, they watched it being made, and the obvious next thing
+is to look at it.
+
+So when a successful run wrote something (a spreadsheet, a CSV, a PDF, a
+downloaded document), say where it is **and offer to open it**:
+
+> Created `web_table.xlsx` in your Downloads folder with all 6 rows. Want me to
+> open it?
+
+If they say yes, open it on their computer. Robomotion runs on Linux, macOS and
+Windows, so pick the opener by platform rather than assuming one:
+
+```bash
+# Linux
+xdg-open "<path>"
+# macOS
+open "<path>"
+# Windows
+start "" "<path>"        # cmd;  PowerShell: Start-Process "<path>"
+```
+
+Rules:
+
+- **Offer, never open by yourself.** A file appearing on someone's screen
+  because a step finished is a surprise, not a result. It is one question.
+- **Only what this run actually produced**, and only when you know the path -
+  the flow wrote it, so you do. Never guess a path or open a folder instead.
+- **Only in a conversation.** A run somebody is watching earns the offer; a
+  scheduled or headless run has nobody there and must not open anything.
+- **A failure to open is not a failure of the run.** If the opener is missing or
+  the desktop is not available (a server, an SSH session), say the run worked
+  and give the full path. Never let it turn a green run red.
 
 ### Common `node_error` patterns
 
