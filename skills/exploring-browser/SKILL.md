@@ -41,7 +41,7 @@ While you explore, the site is the person's live system. Read it; do not change 
 - Never click a button that changes data: **Merge, Approve, Deny, Delete, Remove, Pay, Send, Publish, Archive, Transfer, Confirm**. Count those buttons, read their labels and the row next to them, and stop there.
 - A dialog is fine to open only if you close it with its Cancel button before doing anything else. If a click both opens and commits, do not click.
 - The change itself belongs in the flow: build the step, and let the robot do it when the person runs the flow. That is what they asked for - the robot to do the clicking, not you.
-- If you need to see what happens after such a button (a confirmation page, a next state), ask the person with `AskUserQuestion` before clicking it, and say plainly that it will change their data. `browser_eval` refuses such a script once; when the person has said yes, call it again with `confirmSideEffect: true`.
+- If you need to see what happens after such a button (a confirmation page, a next state), ask the person with `AskUserQuestion` before clicking it, and say plainly that it will change their data. `browser_eval` refuses such a script once, and `browser_click` refuses a snapshot ref whose element is named for one of those actions; when the person has said yes, call it again with `confirmSideEffect: true`.
 - If you did change something by accident, tell the person what changed, in the same turn, before anything else.
 
 ## Key Concepts
