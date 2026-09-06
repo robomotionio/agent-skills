@@ -579,8 +579,31 @@ var ConnectionInfo = class {
     });
   }
 };
+var ViewerInfo = class {
+  _current = null;
+  cbs = /* @__PURE__ */ new Set();
+  get current() {
+    return this._current;
+  }
+  onChange(cb) {
+    this.cbs.add(cb);
+    return () => this.cbs.delete(cb);
+  }
+  /** @internal */
+  set(v) {
+    this._current = v;
+    for (const cb of this.cbs) {
+      try {
+        cb(v);
+      } catch {
+      }
+    }
+  }
+};
 var AppClient = class {
   connection = new ConnectionInfo();
+  /** Who the proxy says this page is, per connection (protocol.md section 2). */
+  viewer = new ViewerInfo();
   files;
   contractHash;
   opts;
@@ -638,11 +661,12 @@ var AppClient = class {
     }));
   }
   /**
-   * Who this page is for. An explicit option wins; otherwise the served
-   * config (window.env in production, the kit's /__rm/config.json in the
-   * preview) names the person the serving tier vouched for; otherwise the
-   * page is an anonymous visitor and registers as one. The session id falls
-   * back to the per-browser client id so a registration is never nameless.
+   * What this page SAYS about who it is for: an explicit option, else the
+   * served config's hint. It rides on the registration for the record and
+   * decides nothing - the proxy takes the person from the session cookie on
+   * the socket and answers with app_identity (see `viewer`). The session id
+   * names the assistant conversation and falls back to the per-browser
+   * client id so a registration is never nameless.
    */
   identity() {
     const cfg = this.opts.config;
@@ -839,6 +863,9 @@ var AppClient = class {
       case "robot_status":
         await this.handleRobotStatus(data);
         return;
+      case "app_identity":
+        this.handleAppIdentity(data);
+        return;
       case "registration":
       case "pong":
         return;
@@ -880,6 +907,16 @@ var AppClient = class {
       default:
         return false;
     }
+  }
+  /** The proxy's answer to who this connection is (protocol.md section 2). */
+  handleAppIdentity(data) {
+    const id = data.identity ?? {};
+    const userId = typeof id.user_id === "string" ? id.user_id : "";
+    this.viewer.set({
+      userId,
+      workspaceId: typeof id.workspace_id === "string" ? id.workspace_id : "",
+      isPublic: Boolean(id.is_public) || userId === ""
+    });
   }
   async handleRobotStatus(data) {
     const status = String(data.robot_status ?? "");
@@ -1561,6 +1598,7 @@ export {
   Collection,
   ConnectionInfo,
   FilesApi,
+  ViewerInfo,
   aesGcmDecrypt,
   aesGcmEncrypt,
   arrayBufferToBase64,

@@ -178,13 +178,25 @@ interface AppRuntimeConfig {
     api_url: string;
     is_public: boolean;
     /**
-     * Who the serving tier says is looking at the page, when it knows: the
-     * builder behind a preview, a signed-in member behind a served app. The
-     * runtime registers with these, so the robot's identity block names the
-     * person instead of an anonymous visitor. Absent for a public visitor.
+     * A hint about who is looking at the page, and a name for their
+     * conversation with the assistant. Neither decides anything: the chat
+     * proxy takes the person from the workspace session cookie on the socket
+     * and ignores what a page says about itself (protocol.md section 2). The
+     * proxy's answer arrives as app_identity and is what `app.viewer` holds.
      */
     user_id?: string;
     session_id?: string;
+}
+/**
+ * Who the proxy holds this connection to be (protocol.md section 2). Sent
+ * once as app_identity right after registration, the same answer stamped on
+ * every envelope the robot sees. An anonymous visitor has an empty userId
+ * and isPublic true; a member of another workspace is a visitor here too.
+ */
+interface Viewer {
+    userId: string;
+    workspaceId: string;
+    isPublic: boolean;
 }
 /** The instance an app URL resolves to (GET /v1/apps.instance.get). */
 interface ResolvedInstance {
@@ -266,4 +278,4 @@ interface FileUploadOptions {
     isPublic?: boolean;
 }
 
-export type { AppContract as A, CallOptions as C, FileRef as F, HelloAck as H, ResolvedInstance as R, StorageLike as S, WebSocketLike as W, AppRuntimeConfig as a, ActionProgress as b, AppErrorCode as c, CollectionOp as d, ConnectionState as e, ContractAction as f, ContractCollection as g, ContractEvent as h, ContractSchema as i, ContractScreen as j, CreateAppOptions as k, FileUploadOptions as l, WireEnvelope as m, WireIdentity as n };
+export type { AppContract as A, CallOptions as C, FileRef as F, HelloAck as H, ResolvedInstance as R, StorageLike as S, Viewer as V, WebSocketLike as W, AppRuntimeConfig as a, ActionProgress as b, AppErrorCode as c, CollectionOp as d, ConnectionState as e, ContractAction as f, ContractCollection as g, ContractEvent as h, ContractSchema as i, ContractScreen as j, CreateAppOptions as k, FileUploadOptions as l, WireEnvelope as m, WireIdentity as n };

@@ -161,6 +161,15 @@ function useConnection() {
   }, [app]);
   return { state, robotOnline: state === "ready" };
 }
+function useViewer() {
+  const app = useAppClient();
+  const [viewer, setViewer] = useState(app.viewer.current);
+  useEffect(() => {
+    setViewer(app.viewer.current);
+    return app.viewer.onChange(setViewer);
+  }, [app]);
+  return viewer;
+}
 function useFileUpload() {
   const app = useAppClient();
   const [uploading, setUploading] = useState(false);
@@ -260,6 +269,7 @@ export {
   useConnection,
   useEvent,
   useFileUpload,
-  useMaybeAppClient
+  useMaybeAppClient,
+  useViewer
 };
 //# sourceMappingURL=index.js.map

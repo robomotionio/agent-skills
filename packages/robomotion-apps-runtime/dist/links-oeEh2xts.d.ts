@@ -1,4 +1,4 @@
-import { d as CollectionOp, l as FileUploadOptions, F as FileRef, e as ConnectionState, k as CreateAppOptions, C as CallOptions, c as AppErrorCode } from './types-C2XfxZIO.js';
+import { d as CollectionOp, l as FileUploadOptions, F as FileRef, e as ConnectionState, V as Viewer, k as CreateAppOptions, C as CallOptions, c as AppErrorCode } from './types-yhl7P3Mb.js';
 
 /**
  * A live view over one server-side collection (sdk.md "Collections",
@@ -161,6 +161,18 @@ declare class ConnectionInfo {
     private announce;
 }
 /**
+ * The proxy's answer to who this page is, once it has one. `current` is null
+ * until the proxy has spoken; a page must not read "anonymous" into that.
+ */
+declare class ViewerInfo {
+    private _current;
+    private cbs;
+    get current(): Viewer | null;
+    onChange(cb: (v: Viewer | null) => void): () => void;
+    /** @internal */
+    set(v: Viewer | null): void;
+}
+/**
  * The core app client (docs/apps/sdk.md, docs/apps/protocol.md).
  *
  * Lifecycle: resolve instance from the base58 URL path, open the WebSocket,
@@ -169,6 +181,8 @@ declare class ConnectionInfo {
  */
 declare class AppClient {
     readonly connection: ConnectionInfo;
+    /** Who the proxy says this page is, per connection (protocol.md section 2). */
+    readonly viewer: ViewerInfo;
     readonly files: FilesApi;
     readonly contractHash: string;
     private readonly opts;
@@ -203,11 +217,12 @@ declare class AppClient {
     private collections;
     constructor(options: CreateAppOptions);
     /**
-     * Who this page is for. An explicit option wins; otherwise the served
-     * config (window.env in production, the kit's /__rm/config.json in the
-     * preview) names the person the serving tier vouched for; otherwise the
-     * page is an anonymous visitor and registers as one. The session id falls
-     * back to the per-browser client id so a registration is never nameless.
+     * What this page SAYS about who it is for: an explicit option, else the
+     * served config's hint. It rides on the registration for the record and
+     * decides nothing - the proxy takes the person from the session cookie on
+     * the socket and answers with app_identity (see `viewer`). The session id
+     * names the assistant conversation and falls back to the per-browser
+     * client id so a registration is never nameless.
      */
     private identity;
     get appId(): string;
@@ -230,6 +245,8 @@ declare class AppClient {
     private ensureClientId;
     private handleMessage;
     private isAppType;
+    /** The proxy's answer to who this connection is (protocol.md section 2). */
+    private handleAppIdentity;
     private handleRobotStatus;
     /**
      * Re-resolve the instance when the proxy says no robot is attached, and
@@ -419,4 +436,4 @@ declare function markGesture(el: Element | null | undefined): void;
  */
 declare function installLinks(options?: InstallLinksOptions): LinksHandle;
 
-export { AppClient as A, Collection as C, FilesApi as F, type InstallLinksOptions as I, type LinkHandler as L, AppError as a, type ArtifactAddress as b, type AssistantTurnHandle as c, type AssistantTurnHandlers as d, ConnectionInfo as e, type LinkKind as f, type LinkMode as g, type LinkNamespace as h, type LinkSite as i, type LinkState as j, type LinksHandle as k, bindAction as l, bindCollection as m, createApp as n, currentCause as o, decodeArtifactId as p, encodeArtifactId as q, installLinks as r, isAppError as s, linkKey as t, lookupTag as u, markGesture as v, splitLinkKey as w, tagAction as x, tagCollection as y };
+export { AppClient as A, Collection as C, FilesApi as F, type InstallLinksOptions as I, type LinkHandler as L, ViewerInfo as V, AppError as a, type ArtifactAddress as b, type AssistantTurnHandle as c, type AssistantTurnHandlers as d, ConnectionInfo as e, type LinkKind as f, type LinkMode as g, type LinkNamespace as h, type LinkSite as i, type LinkState as j, type LinksHandle as k, bindAction as l, bindCollection as m, createApp as n, currentCause as o, decodeArtifactId as p, encodeArtifactId as q, installLinks as r, isAppError as s, linkKey as t, lookupTag as u, markGesture as v, splitLinkKey as w, tagAction as x, tagCollection as y };

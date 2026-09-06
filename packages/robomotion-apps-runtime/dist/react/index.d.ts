@@ -1,8 +1,8 @@
 import * as react from 'react';
 import { ReactNode } from 'react';
-import { A as AppClient, a as AppError } from '../links-BwOuoLyA.js';
-export { l as bindAction, m as bindCollection, v as markGesture } from '../links-BwOuoLyA.js';
-import { b as ActionProgress, e as ConnectionState, l as FileUploadOptions, F as FileRef } from '../types-C2XfxZIO.js';
+import { A as AppClient, a as AppError } from '../links-oeEh2xts.js';
+export { l as bindAction, m as bindCollection, v as markGesture } from '../links-oeEh2xts.js';
+import { b as ActionProgress, e as ConnectionState, l as FileUploadOptions, F as FileRef, V as Viewer } from '../types-yhl7P3Mb.js';
 
 interface AppProviderProps {
     app: AppClient;
@@ -67,6 +67,11 @@ interface UseConnectionResult {
 }
 /** Observe the connection state. */
 declare function useConnection(): UseConnectionResult;
+/**
+ * Who the proxy says this page is: null until it has said, then a Viewer
+ * whose userId is empty for an anonymous visitor (protocol.md section 2).
+ */
+declare function useViewer(): Viewer | null;
 interface UseFileUploadResult {
     upload: (file: File, opts?: FileUploadOptions) => Promise<FileRef | undefined>;
     uploading: boolean;
@@ -102,4 +107,4 @@ interface UseAssistantResult {
  */
 declare function useAssistant(): UseAssistantResult;
 
-export { AppProvider, type AppProviderProps, type AssistantMessage, type UseActionResult, type UseAssistantResult, type UseCollectionResult, type UseConnectionResult, type UseFileUploadResult, shouldRetryOnReconnect, useAction, useAppClient, useAssistant, useCollection, useConnection, useEvent, useFileUpload, useMaybeAppClient };
+export { AppProvider, type AppProviderProps, type AssistantMessage, type UseActionResult, type UseAssistantResult, type UseCollectionResult, type UseConnectionResult, type UseFileUploadResult, shouldRetryOnReconnect, useAction, useAppClient, useAssistant, useCollection, useConnection, useEvent, useFileUpload, useMaybeAppClient, useViewer };
