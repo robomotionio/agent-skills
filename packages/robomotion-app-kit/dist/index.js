@@ -3734,9 +3734,12 @@ function Form({
       target.setAttribute("data-rm-action", [...current, action.name].join(" "));
     }
   });
+  const latest = useRef2(values);
+  latest.current = values;
   const setValue = useCallback(
     (name, value) => {
-      const next = { ...values, [name]: value };
+      const next = { ...latest.current, [name]: value };
+      latest.current = next;
       if (controlledValues === void 0) setOwnValues(next);
       onChange?.(next);
       setErrors((prev) => {
@@ -3746,7 +3749,7 @@ function Form({
         return rest;
       });
     },
-    [values, controlledValues, onChange]
+    [controlledValues, onChange]
   );
   const ctx = useMemo2(
     () => ({ values, errors, disabled, setValue }),
@@ -3907,7 +3910,14 @@ function Select({
   ...props
 }) {
   const c = useControl(id);
-  const current = value ?? c.read() ?? "";
+  const bound = c.read();
+  const firstEnabled = placeholder === void 0 ? options.find((o) => !o.disabled)?.value : void 0;
+  const seed = bound === void 0 ? value !== void 0 && value !== "" ? value : firstEnabled : void 0;
+  const current = value ?? bound ?? firstEnabled ?? "";
+  const write = c.write;
+  useEffect5(() => {
+    if (seed !== void 0) write(seed);
+  }, [seed]);
   return /* @__PURE__ */ jsxs10(
     "select",
     {
