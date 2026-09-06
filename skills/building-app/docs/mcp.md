@@ -36,6 +36,8 @@ contract, the part an agent reads before it touches a tool.
 
 ## Rules
 
+- **The first line is `"schema": "robomotion/mcp/v1"`.** It names the format; leave it out and
+  the file still loads as v1, write anything else and the whole file is ignored.
 - **Presentation only.** No params, no result schemas, no types. `app.json` owns the contract
   and typegen; `mcp.json` changes nothing on the wire and nothing in the contract hash.
   A tool named here that `app.json` does not declare is ignored.
