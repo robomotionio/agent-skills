@@ -150,6 +150,9 @@ interface HelloAck {
             progress?: boolean;
             cancellable?: boolean;
         }>;
+        /** The app has an assistant behind its chat widget (mcp.md section 6). */
+        assistant?: boolean;
+        assistant_greeting?: string;
         [k: string]: unknown;
     };
     server_time?: string | number;

@@ -1,8 +1,8 @@
 import * as react from 'react';
 import { ReactNode } from 'react';
-import { A as AppClient, a as AppError } from '../links-_-nKGB9M.js';
-export { j as bindAction, k as bindCollection, t as markGesture } from '../links-_-nKGB9M.js';
-import { b as ActionProgress, e as ConnectionState, l as FileUploadOptions, F as FileRef } from '../types-CeiFtloU.js';
+import { A as AppClient, a as AppError } from '../links-DTIRDv8D.js';
+export { l as bindAction, m as bindCollection, v as markGesture } from '../links-DTIRDv8D.js';
+import { b as ActionProgress, e as ConnectionState, l as FileUploadOptions, F as FileRef } from '../types-BihSoD0Y.js';
 
 interface AppProviderProps {
     app: AppClient;
@@ -75,5 +75,31 @@ interface UseFileUploadResult {
 }
 /** Upload files over /v1/artifacts.* and get FileRefs back. */
 declare function useFileUpload(): UseFileUploadResult;
+interface AssistantMessage {
+    id: string;
+    role: "user" | "assistant";
+    text: string;
+    /** Names of the app actions the assistant ran for this reply. */
+    tools?: string[];
+    error?: string;
+    /** True while the reply is still streaming. */
+    streaming?: boolean;
+}
+interface UseAssistantResult {
+    /** False until hello_ack says the app has an assistant. */
+    available: boolean;
+    greeting: string;
+    messages: AssistantMessage[];
+    busy: boolean;
+    send: (text: string) => void;
+    clear: () => void;
+}
+/**
+ * The app's assistant as React state: the transcript of this page, whether
+ * a reply is streaming, and a send. The transcript is per page load; the
+ * conversation itself lives with the agent, keyed per browser, so a reload
+ * keeps the assistant's memory even though the list here starts empty.
+ */
+declare function useAssistant(): UseAssistantResult;
 
-export { AppProvider, type AppProviderProps, type UseActionResult, type UseCollectionResult, type UseConnectionResult, type UseFileUploadResult, shouldRetryOnReconnect, useAction, useAppClient, useCollection, useConnection, useEvent, useFileUpload, useMaybeAppClient };
+export { AppProvider, type AppProviderProps, type AssistantMessage, type UseActionResult, type UseAssistantResult, type UseCollectionResult, type UseConnectionResult, type UseFileUploadResult, shouldRetryOnReconnect, useAction, useAppClient, useAssistant, useCollection, useConnection, useEvent, useFileUpload, useMaybeAppClient };

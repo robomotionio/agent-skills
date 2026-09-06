@@ -610,6 +610,7 @@ var AppClient = class {
   sendChain = Promise.resolve();
   recvChain = Promise.resolve();
   pending = /* @__PURE__ */ new Map();
+  assistantTurns = /* @__PURE__ */ new Map();
   eventHandlers = /* @__PURE__ */ new Map();
   collections = /* @__PURE__ */ new Map();
   constructor(options) {
@@ -859,6 +860,7 @@ var AppClient = class {
       case "data_change":
       case "data_snapshot":
       case "contract_mismatch":
+      case "assistant_event":
         return true;
       default:
         return false;
@@ -1136,6 +1138,24 @@ var AppClient = class {
         }
         return;
       }
+      case "assistant_event": {
+        const turnId = String(body.turn_id ?? "");
+        const turn = this.assistantTurns.get(turnId);
+        if (!turn) return;
+        const kind = String(body.type ?? "");
+        if (kind === "delta") {
+          turn.onDelta?.(String(body.text ?? ""));
+        } else if (kind === "tool") {
+          turn.onTool?.(String(body.tool ?? ""));
+        } else if (kind === "done") {
+          this.assistantTurns.delete(turnId);
+          turn.onDone?.();
+        } else if (kind === "error") {
+          this.assistantTurns.delete(turnId);
+          turn.onError?.(String(body.error ?? "Something went wrong."));
+        }
+        return;
+      }
       case "action_progress": {
         const callId = String(body.call_id ?? data.call_id ?? "");
         const p = this.pending.get(callId);
@@ -1235,6 +1255,57 @@ var AppClient = class {
     const next = this.sendChain.then(task, task);
     this.sendChain = next.catch(() => void 0);
     return next;
+  }
+  // -------------------------------------------------------------------------
+  // Assistant (protocol.md section 4.4)
+  // -------------------------------------------------------------------------
+  /**
+   * Whether the app has an assistant behind its chat widget. Known after
+   * hello_ack: the robot answers from its mcp.json and whether an agent is
+   * beside it. False until then, and false forever for an app whose robot
+   * runs where no agent does.
+   */
+  assistantAvailable() {
+    return this.manifestSummary?.assistant === true;
+  }
+  /** The widget's opening line, from the app's mcp.json. */
+  assistantGreeting() {
+    const g = this.manifestSummary?.assistant_greeting;
+    return typeof g === "string" ? g : "";
+  }
+  /**
+   * Send one message to the assistant. Replies stream back through the
+   * handlers; the returned handle identifies the turn and lets the caller
+   * stop listening. The conversation is keyed per browser (session_key), so
+   * the same person continues where they were after a reload.
+   */
+  sendAssistantPrompt(text, handlers) {
+    const turnId = uuid4();
+    this.assistantTurns.set(turnId, handlers);
+    void this.sendEnvelope("assistant_prompt", {
+      turn_id: turnId,
+      session_key: this.assistantSessionKey(),
+      text
+    });
+    return {
+      turnId,
+      stop: () => {
+        this.assistantTurns.delete(turnId);
+      }
+    };
+  }
+  assistantSessionKey() {
+    const appId = this.instance?.appId ?? "app";
+    const key = `rm.app.${appId}.assistant_session`;
+    try {
+      const existing = this.storage.getItem(key);
+      if (existing) return existing;
+      const fresh = `as-${uuid4()}`;
+      this.storage.setItem(key, fresh);
+      return fresh;
+    } catch {
+      return `as-${this.clientId || uuid4()}`;
+    }
   }
   // -------------------------------------------------------------------------
   // Actions

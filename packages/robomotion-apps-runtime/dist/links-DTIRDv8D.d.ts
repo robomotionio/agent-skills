@@ -1,4 +1,4 @@
-import { d as CollectionOp, l as FileUploadOptions, F as FileRef, e as ConnectionState, k as CreateAppOptions, C as CallOptions, c as AppErrorCode } from './types-CeiFtloU.js';
+import { d as CollectionOp, l as FileUploadOptions, F as FileRef, e as ConnectionState, k as CreateAppOptions, C as CallOptions, c as AppErrorCode } from './types-BihSoD0Y.js';
 
 /**
  * A live view over one server-side collection (sdk.md "Collections",
@@ -103,6 +103,18 @@ declare class FilesApi {
 }
 
 /** Observable connection state (sdk.md "Connection"). */
+/** What a caller listens to on one assistant turn. */
+interface AssistantTurnHandlers {
+    onDelta?: (text: string) => void;
+    onTool?: (tool: string) => void;
+    onDone?: () => void;
+    onError?: (message: string) => void;
+}
+interface AssistantTurnHandle {
+    turnId: string;
+    /** Stop listening. The robot and agent finish the turn on their own. */
+    stop: () => void;
+}
 declare class ConnectionInfo {
     private _state;
     /**
@@ -186,6 +198,7 @@ declare class AppClient {
     private sendChain;
     private recvChain;
     private pending;
+    private assistantTurns;
     private eventHandlers;
     private collections;
     constructor(options: CreateAppOptions);
@@ -262,6 +275,23 @@ declare class AppClient {
      * two calls' envelopes.
      */
     private sendEnvelope;
+    /**
+     * Whether the app has an assistant behind its chat widget. Known after
+     * hello_ack: the robot answers from its mcp.json and whether an agent is
+     * beside it. False until then, and false forever for an app whose robot
+     * runs where no agent does.
+     */
+    assistantAvailable(): boolean;
+    /** The widget's opening line, from the app's mcp.json. */
+    assistantGreeting(): string;
+    /**
+     * Send one message to the assistant. Replies stream back through the
+     * handlers; the returned handle identifies the turn and lets the caller
+     * stop listening. The conversation is keyed per browser (session_key), so
+     * the same person continues where they were after a reload.
+     */
+    sendAssistantPrompt(text: string, handlers: AssistantTurnHandlers): AssistantTurnHandle;
+    private assistantSessionKey;
     /**
      * Resolve with the first connection state that is not "connecting", or
      * with "connecting" itself once `ms` have passed without one.
@@ -381,4 +411,4 @@ declare function markGesture(el: Element | null | undefined): void;
  */
 declare function installLinks(options?: InstallLinksOptions): LinksHandle;
 
-export { AppClient as A, Collection as C, FilesApi as F, type InstallLinksOptions as I, type LinkHandler as L, AppError as a, type ArtifactAddress as b, ConnectionInfo as c, type LinkKind as d, type LinkMode as e, type LinkNamespace as f, type LinkSite as g, type LinkState as h, type LinksHandle as i, bindAction as j, bindCollection as k, createApp as l, currentCause as m, decodeArtifactId as n, encodeArtifactId as o, installLinks as p, isAppError as q, linkKey as r, lookupTag as s, markGesture as t, splitLinkKey as u, tagAction as v, tagCollection as w };
+export { AppClient as A, Collection as C, FilesApi as F, type InstallLinksOptions as I, type LinkHandler as L, AppError as a, type ArtifactAddress as b, type AssistantTurnHandle as c, type AssistantTurnHandlers as d, ConnectionInfo as e, type LinkKind as f, type LinkMode as g, type LinkNamespace as h, type LinkSite as i, type LinkState as j, type LinksHandle as k, bindAction as l, bindCollection as m, createApp as n, currentCause as o, decodeArtifactId as p, encodeArtifactId as q, installLinks as r, isAppError as s, linkKey as t, lookupTag as u, markGesture as v, splitLinkKey as w, tagAction as x, tagCollection as y };

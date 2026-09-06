@@ -4338,8 +4338,152 @@ function Grid({ className, gap = 4, cols = 1, mdCols, lgCols, ...props }) {
     }
   );
 }
+
+// src/components/assistant-widget.tsx
+import { useEffect as useEffect7, useRef as useRef4, useState as useState6 } from "react";
+import { useAssistant, useMaybeAppClient as useMaybeAppClient2 } from "@robomotion/apps-runtime/react";
+import { jsx as jsx15, jsxs as jsxs14 } from "react/jsx-runtime";
+var STORAGE_OPEN = "rm.app.assistant.open";
+function AssistantWidget({ title = "Assistant", placeholder = "Ask the app to do something\u2026", className }) {
+  const app = useMaybeAppClient2();
+  if (!app) return null;
+  return /* @__PURE__ */ jsx15(AssistantWidgetInner, { title, placeholder, className });
+}
+function AssistantWidgetInner({ title, placeholder, className }) {
+  const { available, greeting, messages, busy, send } = useAssistant();
+  const [open, setOpen] = useState6(() => {
+    try {
+      return sessionStorage.getItem(STORAGE_OPEN) === "1";
+    } catch {
+      return false;
+    }
+  });
+  const [draft, setDraft] = useState6("");
+  const listRef = useRef4(null);
+  const inputRef = useRef4(null);
+  useEffect7(() => {
+    try {
+      sessionStorage.setItem(STORAGE_OPEN, open ? "1" : "0");
+    } catch {
+    }
+    if (open) inputRef.current?.focus();
+  }, [open]);
+  useEffect7(() => {
+    const el = listRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [messages]);
+  if (!available) return null;
+  const submit = (e) => {
+    e?.preventDefault();
+    if (!draft.trim() || busy) return;
+    send(draft);
+    setDraft("");
+  };
+  const onKey = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      submit();
+    }
+  };
+  return /* @__PURE__ */ jsxs14("div", { className: cn("fixed bottom-4 right-4 z-40 flex flex-col items-end gap-3", className), "data-rm-assistant": "", children: [
+    open && /* @__PURE__ */ jsxs14(
+      "div",
+      {
+        role: "dialog",
+        "aria-label": title,
+        className: "flex h-[min(32rem,calc(100vh-6rem))] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-black/10 bg-white text-left shadow-2xl dark:border-white/10 dark:bg-neutral-900",
+        children: [
+          /* @__PURE__ */ jsxs14("header", { className: "flex items-center justify-between border-b border-black/5 px-4 py-3 dark:border-white/10", children: [
+            /* @__PURE__ */ jsxs14("div", { className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ jsx15("span", { className: "inline-block h-2.5 w-2.5 rounded-full bg-[color:var(--rm-accent)]", "aria-hidden": "true" }),
+              /* @__PURE__ */ jsx15("span", { className: "text-sm font-semibold", children: title })
+            ] }),
+            /* @__PURE__ */ jsx15(
+              "button",
+              {
+                type: "button",
+                onClick: () => setOpen(false),
+                className: cn("rounded-md px-2 py-1 text-xs text-neutral-500 hover:bg-black/5 dark:hover:bg-white/10", focusRing),
+                "aria-label": "Close assistant",
+                children: "Close"
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsxs14("div", { ref: listRef, className: "flex-1 space-y-3 overflow-y-auto px-4 py-3 text-sm", children: [
+            messages.length === 0 && /* @__PURE__ */ jsx15("p", { className: "text-neutral-500", children: greeting || "Tell me what you want done in this app and I will do it." }),
+            messages.map((m) => /* @__PURE__ */ jsx15("div", { className: cn("flex", m.role === "user" ? "justify-end" : "justify-start"), children: /* @__PURE__ */ jsxs14(
+              "div",
+              {
+                className: cn(
+                  "max-w-[85%] whitespace-pre-wrap rounded-2xl px-3 py-2",
+                  m.role === "user" ? "rounded-br-md bg-[color:var(--rm-accent)] text-white" : "rounded-bl-md bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100"
+                ),
+                children: [
+                  m.text || (m.streaming ? /* @__PURE__ */ jsx15("span", { className: "animate-pulse", children: "\u2026" }) : null),
+                  m.tools && m.tools.length > 0 && /* @__PURE__ */ jsxs14("div", { className: "mt-1 text-[11px] opacity-70", children: [
+                    "Did: ",
+                    m.tools.join(", ")
+                  ] }),
+                  m.error && /* @__PURE__ */ jsx15("div", { className: "mt-1 text-[12px] text-red-600 dark:text-red-400", children: m.error })
+                ]
+              }
+            ) }, m.id))
+          ] }),
+          /* @__PURE__ */ jsx15("form", { onSubmit: submit, className: "border-t border-black/5 p-3 dark:border-white/10", children: /* @__PURE__ */ jsxs14("div", { className: "flex items-end gap-2", children: [
+            /* @__PURE__ */ jsx15(
+              "textarea",
+              {
+                ref: inputRef,
+                value: draft,
+                onChange: (e) => setDraft(e.target.value),
+                onKeyDown: onKey,
+                rows: 1,
+                placeholder,
+                className: cn(
+                  "max-h-32 min-h-[2.5rem] flex-1 resize-none rounded-xl border border-black/10 bg-transparent px-3 py-2 text-sm outline-none dark:border-white/10",
+                  focusRing
+                ),
+                "aria-label": "Message the assistant"
+              }
+            ),
+            /* @__PURE__ */ jsx15(
+              "button",
+              {
+                type: "submit",
+                disabled: busy || !draft.trim(),
+                className: cn(
+                  "rounded-xl bg-[color:var(--rm-accent)] px-3 py-2 text-sm font-medium text-white disabled:opacity-50",
+                  focusRing
+                ),
+                children: busy ? "\u2026" : "Send"
+              }
+            )
+          ] }) })
+        ]
+      }
+    ),
+    /* @__PURE__ */ jsxs14(
+      "button",
+      {
+        type: "button",
+        onClick: () => setOpen((v) => !v),
+        "aria-expanded": open,
+        "aria-label": open ? `Hide ${title}` : `Open ${title}`,
+        className: cn(
+          "flex h-12 items-center gap-2 rounded-full bg-[color:var(--rm-accent)] px-4 text-sm font-semibold text-white shadow-lg hover:brightness-95",
+          focusRing
+        ),
+        children: [
+          /* @__PURE__ */ jsx15("span", { "aria-hidden": "true", children: "\u2726" }),
+          title
+        ]
+      }
+    )
+  ] });
+}
 export {
   AppShell,
+  AssistantWidget,
   Button,
   Card,
   CardBody,

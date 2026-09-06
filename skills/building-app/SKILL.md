@@ -42,6 +42,8 @@ Narrate progress through `todo_write`, with items phrased in the user's language
     grep -rl "generated/actions.gen" src/
 
     Anything it lists that you did not write is debris from the demo: delete it. `src/screens.tsx` tells you which screens the app actually mounts, so anything unreachable from there goes too, whether or not it still compiles.
+2c. **Write `mcp.json` beside `app.json`** - read `./docs/mcp.md`. Every app is also an MCP server (its actions are tools, at `https://mcp.robomotion.io/<b58>`) and every app has an assistant in its corner; `mcp.json` is how both understand the app. It is presentation only: a server name, an `instructions` paragraph that says what the app is for and who uses it, a sentence per tool on when to reach for it, and the `destructive` / `idempotent` hints. Keep any action an agent must never run out of it with `"enabled": false`. Never put schemas in it - `app.json` owns those. Write it in the same pass as `app.json` and update it when an action changes meaning.
+
 3. **Generate the screens from the archetype, with sample data baked in.** The
    app's name belongs to the shell's title and nowhere else on a screen: a
    screen's title is what that screen does, a card's title is what the card
@@ -591,6 +593,8 @@ so the app adopts it instead of scaffolding a second one.
 | Preview shows the "app was updated, reload" state | The SPA and the robot hold different contract builds. Regenerate both sides from the current `app.json`, push, and bounce the session; the reload notice is the mismatch protection working, not a bug. |
 
 ## Docs
+
+- `./docs/mcp.md` - `mcp.json`: the app as an MCP server and the assistant in its corner.
 
 | Topic | Doc |
 |---|---|

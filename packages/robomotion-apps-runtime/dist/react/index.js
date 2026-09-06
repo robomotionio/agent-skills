@@ -201,6 +201,52 @@ function useFileUpload() {
   );
   return { upload, uploading, progress, error };
 }
+function useAssistant() {
+  const app = useAppClient();
+  const { state } = useConnection();
+  const [messages, setMessages] = useState([]);
+  const [busy, setBusy] = useState(false);
+  const handleRef = useRef(null);
+  const available = state === "ready" && app.assistantAvailable();
+  const greeting = app.assistantGreeting();
+  useEffect(() => () => handleRef.current?.stop(), []);
+  const send = useCallback(
+    (text) => {
+      const trimmed = text.trim();
+      if (!trimmed || busy) return;
+      const replyId = `a-${Date.now()}`;
+      setMessages((list) => [
+        ...list,
+        { id: `u-${Date.now()}`, role: "user", text: trimmed },
+        { id: replyId, role: "assistant", text: "", streaming: true }
+      ]);
+      setBusy(true);
+      const patch = (fn) => setMessages((list) => list.map((m) => m.id === replyId ? fn(m) : m));
+      handleRef.current = app.sendAssistantPrompt(trimmed, {
+        onDelta: (delta) => patch((m) => ({ ...m, text: m.text + delta })),
+        onTool: (tool) => patch((m) => ({ ...m, tools: [...m.tools ?? [], tool] })),
+        onDone: () => {
+          patch((m) => ({ ...m, streaming: false }));
+          setBusy(false);
+        },
+        onError: (message) => {
+          patch((m) => ({ ...m, streaming: false, error: message }));
+          setBusy(false);
+        }
+      });
+    },
+    [app, busy]
+  );
+  const clear = useCallback(() => {
+    handleRef.current?.stop();
+    setMessages([]);
+    setBusy(false);
+  }, []);
+  return useMemo(
+    () => ({ available, greeting, messages, busy, send, clear }),
+    [available, greeting, messages, busy, send, clear]
+  );
+}
 export {
   AppProvider,
   bindAction,
@@ -209,6 +255,7 @@ export {
   shouldRetryOnReconnect,
   useAction,
   useAppClient,
+  useAssistant,
   useCollection,
   useConnection,
   useEvent,
