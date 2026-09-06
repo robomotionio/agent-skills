@@ -348,6 +348,10 @@ function bridgePlugin(options = {}) {
           api_url: pick("api_url", ""),
           is_public: isPublicRaw !== null ? isPublicRaw === "true" || isPublicRaw === "1" : typeof session?.is_public === "boolean" ? session.is_public : Boolean(options.config?.is_public)
         };
+        for (const key of ["user_id", "session_id"]) {
+          const v = session?.[key];
+          if (typeof v === "string" && v !== "") config[key] = v;
+        }
         res.setHeader("Content-Type", "application/json");
         res.setHeader("Cache-Control", "no-store");
         res.end(JSON.stringify(config));

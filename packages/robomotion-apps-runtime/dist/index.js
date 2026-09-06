@@ -632,10 +632,24 @@ var AppClient = class {
       apiUrl: this.apiUrl,
       appId: this.instance?.appId ?? "",
       instanceId: this.instance?.id ?? "",
-      userId: this.opts.identity?.userId ?? "",
-      sessionId: this.opts.identity?.sessionId ?? this.clientId,
+      userId: this.identity().userId,
+      sessionId: this.identity().sessionId,
       fetchFn: this.fetchFn
     }));
+  }
+  /**
+   * Who this page is for. An explicit option wins; otherwise the served
+   * config (window.env in production, the kit's /__rm/config.json in the
+   * preview) names the person the serving tier vouched for; otherwise the
+   * page is an anonymous visitor and registers as one. The session id falls
+   * back to the per-browser client id so a registration is never nameless.
+   */
+  identity() {
+    const cfg = this.opts.config;
+    return {
+      userId: this.opts.identity?.userId ?? cfg?.user_id ?? "",
+      sessionId: this.opts.identity?.sessionId ?? cfg?.session_id ?? this.clientId
+    };
   }
   get appId() {
     return this.instance?.appId ?? "";
@@ -705,7 +719,8 @@ var AppClient = class {
       this.sendRaw({
         type: "client",
         mode: "app",
-        user_id: "",
+        user_id: this.identity().userId,
+        session_id: this.identity().sessionId,
         guid: this.connId,
         instance_id: this.instance.id,
         robot_id: this.instance.robotId,
@@ -1034,7 +1049,7 @@ var AppClient = class {
       encrypted_key: arrayBufferToBase64(encrypted),
       guid: this.connId,
       instance_id: this.instance.id,
-      user_id: "",
+      user_id: this.identity().userId,
       additional: {
         client_id: this.clientId,
         app_id: this.instance.appId,
@@ -1535,7 +1550,9 @@ function normalize(input) {
     app_id: typeof input.app_id === "string" ? input.app_id : "",
     ws_url: typeof input.ws_url === "string" ? input.ws_url : "",
     api_url: typeof input.api_url === "string" ? input.api_url : "",
-    is_public: Boolean(input.is_public)
+    is_public: Boolean(input.is_public),
+    ...typeof input.user_id === "string" && input.user_id !== "" ? { user_id: input.user_id } : {},
+    ...typeof input.session_id === "string" && input.session_id !== "" ? { session_id: input.session_id } : {}
   };
 }
 export {

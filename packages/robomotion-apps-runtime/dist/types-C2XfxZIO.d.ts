@@ -177,6 +177,14 @@ interface AppRuntimeConfig {
     ws_url: string;
     api_url: string;
     is_public: boolean;
+    /**
+     * Who the serving tier says is looking at the page, when it knows: the
+     * builder behind a preview, a signed-in member behind a served app. The
+     * runtime registers with these, so the robot's identity block names the
+     * person instead of an anonymous visitor. Absent for a public visitor.
+     */
+    user_id?: string;
+    session_id?: string;
 }
 /** The instance an app URL resolves to (GET /v1/apps.instance.get). */
 interface ResolvedInstance {

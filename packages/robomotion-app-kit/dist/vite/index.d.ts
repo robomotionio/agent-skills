@@ -7,6 +7,9 @@ interface AppRuntimeConfig {
     ws_url: string;
     api_url: string;
     is_public: boolean;
+    /** The builder behind a preview, as start_app_session wrote it. */
+    user_id?: string;
+    session_id?: string;
 }
 interface RobomotionAppKitOptions {
     /** Path to app.json, relative to the Vite root. Default "app.json", falling back to "../app.json". */

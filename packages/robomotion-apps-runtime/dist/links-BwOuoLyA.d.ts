@@ -1,4 +1,4 @@
-import { d as CollectionOp, l as FileUploadOptions, F as FileRef, e as ConnectionState, k as CreateAppOptions, C as CallOptions, c as AppErrorCode } from './types-BihSoD0Y.js';
+import { d as CollectionOp, l as FileUploadOptions, F as FileRef, e as ConnectionState, k as CreateAppOptions, C as CallOptions, c as AppErrorCode } from './types-C2XfxZIO.js';
 
 /**
  * A live view over one server-side collection (sdk.md "Collections",
@@ -202,6 +202,14 @@ declare class AppClient {
     private eventHandlers;
     private collections;
     constructor(options: CreateAppOptions);
+    /**
+     * Who this page is for. An explicit option wins; otherwise the served
+     * config (window.env in production, the kit's /__rm/config.json in the
+     * preview) names the person the serving tier vouched for; otherwise the
+     * page is an anonymous visitor and registers as one. The session id falls
+     * back to the per-browser client id so a registration is never nameless.
+     */
+    private identity;
     get appId(): string;
     get instanceId(): string;
     /**
