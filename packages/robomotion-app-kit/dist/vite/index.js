@@ -1,3 +1,5 @@
+import "../chunk-G3PMV62Z.js";
+
 // src/vite/index.ts
 import { createRequire } from "module";
 import { readFileSync } from "fs";
