@@ -398,7 +398,9 @@ The action is called with, and must answer with, exactly this - so declare both 
 
 `filter` is whatever is in the filter box (`""` when it is empty), `sort.key` is a column's `key`, and `total` is how many rows there are **altogether**, not how many are in this page - that is what the pager counts. The flow does the filtering and the ordering; a flow that ignores `offset` and returns everything every time has a table that looks right and gets slower with every row.
 
-The table refetches on its own when the person filters, sorts or turns a page, and when that same action finishes a run somebody else started - so a row added by another button appears without a reload. To re-ask by hand, keep a `tableRef`:
+The table refetches on its own when the person filters, sorts or turns a page, and when that same action finishes a run somebody else started - so a row added by another button appears without a reload.
+
+It also refetches after a write **it ran itself** - a `bulkActions` entry, or a `rowActions` entry carrying an `action` - and a bulk action unticks afterwards, because the rows it referred to have just changed. The table rendered that button and made that call, so asking again is its job and **not something to wire in the screen**. A row action that only navigates (`onSelect`) writes nothing and costs no fetch. Only a control the SCREEN wrote needs a `tableRef`:
 
 ```tsx
 const table = useRef<DataTableApi | null>(null);
