@@ -1,17 +1,8 @@
-// node_modules/clsx/dist/clsx.mjs
-function r(e) {
-  var t, f, n = "";
-  if ("string" == typeof e || "number" == typeof e) n += e;
-  else if ("object" == typeof e) if (Array.isArray(e)) {
-    var o = e.length;
-    for (t = 0; t < o; t++) e[t] && (f = r(e[t])) && (n && (n += " "), n += f);
-  } else for (f in e) e[f] && (n && (n += " "), n += f);
-  return n;
-}
-function clsx() {
-  for (var e, t, f = 0, n = "", o = arguments.length; f < o; f++) (e = arguments[f]) && (t = r(e)) && (n && (n += " "), n += t);
-  return n;
-}
+import {
+  Xa,
+  clsx
+} from "./chunk-VYJ4JBQ5.js";
+import "./chunk-G3PMV62Z.js";
 
 // node_modules/tailwind-merge/dist/bundle-mjs.mjs
 var CLASS_PART_SEPARATOR = "-";
@@ -4344,6 +4335,16 @@ import { useEffect as useEffect7, useRef as useRef4, useState as useState6 } fro
 import { useAssistant, useMaybeAppClient as useMaybeAppClient2 } from "@robomotion/apps-runtime/react";
 import { jsx as jsx15, jsxs as jsxs14 } from "react/jsx-runtime";
 var STORAGE_OPEN = "rm.app.assistant.open";
+var assistantProse = cn(
+  "[&_p]:my-1 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0",
+  "[&_ul]:my-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-0.5",
+  "[&_h1]:text-base [&_h2]:text-base [&_h3]:text-sm [&_h1]:font-semibold [&_h2]:font-semibold [&_h3]:font-semibold [&_h1]:my-1 [&_h2]:my-1 [&_h3]:my-1",
+  "[&_strong]:font-semibold [&_a]:underline [&_hr]:my-2",
+  "[&_code]:rounded [&_code]:bg-black/5 [&_code]:px-1 [&_code]:text-[0.9em] dark:[&_code]:bg-white/10",
+  "[&_pre]:my-1 [&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:bg-black/5 [&_pre]:p-2 dark:[&_pre]:bg-white/10 [&_pre_code]:bg-transparent [&_pre_code]:p-0",
+  "[&_table]:my-1 [&_table]:text-xs [&_th]:px-1 [&_th]:py-0.5 [&_th]:text-left [&_td]:px-1 [&_td]:py-0.5 [&_th]:border-b [&_th]:border-black/10 dark:[&_th]:border-white/10",
+  "[&_blockquote]:border-l-2 [&_blockquote]:border-black/10 [&_blockquote]:pl-2 [&_blockquote]:opacity-80 dark:[&_blockquote]:border-white/20"
+);
 function AssistantWidget({ title = "Assistant", placeholder = "Ask the app to do something\u2026", className }) {
   const app = useMaybeAppClient2();
   if (!app) return null;
@@ -4415,11 +4416,11 @@ function AssistantWidgetInner({ title, placeholder, className }) {
               "div",
               {
                 className: cn(
-                  "max-w-[85%] whitespace-pre-wrap rounded-2xl px-3 py-2",
-                  m.role === "user" ? "rounded-br-md bg-[color:var(--rm-accent)] text-white" : "rounded-bl-md bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100"
+                  "max-w-[85%] rounded-2xl px-3 py-2",
+                  m.role === "user" ? "whitespace-pre-wrap rounded-br-md bg-[color:var(--rm-accent)] text-white" : cn("rounded-bl-md bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100", assistantProse)
                 ),
                 children: [
-                  m.text || (m.streaming ? /* @__PURE__ */ jsx15("span", { className: "animate-pulse", children: "\u2026" }) : null),
+                  m.role === "user" ? m.text : m.text ? /* @__PURE__ */ jsx15(Xa, { mode: "streaming", isAnimating: !!m.streaming, children: m.text }) : m.streaming ? /* @__PURE__ */ jsx15("span", { className: "animate-pulse", children: "\u2026" }) : null,
                   m.tools && m.tools.length > 0 && /* @__PURE__ */ jsxs14("div", { className: "mt-1 text-[11px] opacity-70", children: [
                     "Did: ",
                     m.tools.join(", ")
