@@ -16,27 +16,25 @@
   "types": { … },
   "actions": { … },
   "events": { … },
-  "collections": { … },
   "screens": { … }
 }
 ```
 
 ## Naming
 
-- Actions, events, collections, screens: camelCase starting lowercase (`approveInvoice`, `queue`). Types: PascalCase (`Invoice`). The schema rejects anything else.
+- Actions, events, screens: camelCase starting lowercase (`approveInvoice`, `queue`). Types: PascalCase (`Invoice`). The schema rejects anything else.
 - Name actions as **the user's verb**: `approveInvoice`, `submitExpense`, `extractDocument`. Not `doApproval`, not `postDecision`, not `handleSubmit`. The name becomes a typed function the screens call and a line in the Designer; both read best as a verb phrase.
 - Events are **past tense**: `invoiceApproved`, `expenseSubmitted`. An event announces something that already happened.
-- Collections are the **noun the user says**: `queue`, `expenses`, `documents`.
+- An action that hands a screen its rows is named for the noun the user says: `listQueue`, `listExpenses`, `listDocuments`.
 
-## Action vs collection vs event
+## Action vs event
 
-Choosing wrong here is the most expensive contract mistake, so decide deliberately:
+There are only these two, and choosing wrong is the most expensive contract mistake, so decide deliberately:
 
-- **Collection**: state that screens WATCH. Keyed records, live-updating, one snapshot ≤ 2000 records. "The invoices waiting", "this month's expenses". The robot maintains it with `App Update Data`; every subscribed screen sees the change without asking.
-- **Action**: something the robot DOES once, on request. "Approve this one", "extract that PDF", "fetch page 3 of the archive". Anything bigger or more parameterized than a 2000-record snapshot is an action with paging params, not a collection.
-- **Event**: a nudge that someone should REACT now, when a collection change alone doesn't say it. "An invoice over 10k arrived." If the screens would only use it to refetch data that a collection already delivers, you don't need the event.
+- **Action**: something the robot DOES on request - including "give me the rows I should be showing". "Approve this one", "extract that PDF", "the invoices waiting, page 3". Everything a screen displays arrives as some action's result; there is no other door in.
+- **Event**: a nudge that someone should REACT now, aimed at a screen that is not going to ask again by itself. "An invoice over 10k arrived", "your export is ready". If the only thing a screen would do with it is refetch what its own table re-asks for anyway after that action runs, you don't need the event.
 
-`collections.<name>.key` must be a field that is genuinely unique per record (`number`, `id`). `scope`: `shared` is one dataset for everyone; `user` is one per identity ("my submissions"). Default to `shared`; use `user` only when two people must NOT see each other's records.
+**State the app has to remember is not a third kind of entry.** It lives in a database the FLOW owns - `Robomotion.SQLite` for something local to the robot, one of the database packages (Postgres, MySQL, MongoDB, Google Sheets and the rest) for something bigger or shared - and it reaches the screens through an ordinary action, like every other thing the robot can reach. So a list is an action that answers a page of it: `DataTable`'s `source` calls that action with `{filter, sort, offset, limit}` and reads `{rows, total}` back (the kit reference has the exact shape), which puts the filtering and the ordering in the query rather than in the browser. Who is allowed to see which rows is part of that query too, decided by the flow from something it can trust - never by a value the screen sends.
 
 ## Event audience
 
@@ -61,7 +59,7 @@ Default is `{mode: "parallel", limit: 4}`. Choose `{mode: "queue", limit: 1}` fo
 
 ## Descriptions are UI copy
 
-Every `description` (app, action, event, collection, screen) is **one plain-language line shown to end users in the Designer**. The schema hard-rejects implementation words in them, and the platform bans "node", "trigger", "flow", "endpoint" outright. Write the line for the person who will click it:
+Every `description` (app, action, event, screen) is **one plain-language line shown to end users in the Designer**. The schema hard-rejects implementation words in them, and the platform bans "node", "trigger", "flow", "endpoint" outright. Write the line for the person who will click it:
 
 - Good: `"Read a supplier invoice PDF and pull out the key fields."`
 - Bad: `"Triggers the extraction flow via the OCR endpoint."`

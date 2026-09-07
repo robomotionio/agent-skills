@@ -44,8 +44,8 @@ import {
 // Everything that reaches the robot. NONE of these are in the kit.
 import {
   AppProvider, useAppClient, useMaybeAppClient,
-  useAction, useCollection, useEvent, useConnection, useFileUpload,
-  bindAction, bindCollection, markGesture,
+  useAction, useEvent, useConnection, useFileUpload,
+  bindAction, markGesture,
 } from "@robomotion/apps-runtime/react";
 ```
 
@@ -271,10 +271,10 @@ Columns, rows, sort, filter, empty state, row actions, pagination - all built in
 
 There are two ways to feed it, and picking the wrong one is the difference between a table that works and a table that stalls on the tenth thousand row.
 
-**Everything is already here.** Give it the collection's records directly (or a filtered or sorted copy; never a mapped one) and it knows which collection it shows. It filters, sorts and pages in the browser.
+**Everything is already here.** Rows the screen already holds go straight into `rows` - an action's result, or a filtered or sorted copy of it; never a mapped one, which loses the link back to the step that produced them. The table filters, sorts and pages them in the browser. Right for the page of results the flow has just answered with; wrong for anything that keeps growing.
 
 ```tsx
-const { records, loading } = useCollection("queue");
+const queue = useListQueue();
 const approve = useApproveInvoice();
 <DataTable
   columns={[
@@ -282,17 +282,17 @@ const approve = useApproveInvoice();
     { key: "supplier", header: "Supplier" },
     { key: "amount", header: "Amount" },
   ]}
-  rows={records}
+  rows={queue.data?.rows ?? []}
   rowActions={[
     { label: "Review", onSelect: (row) => navigate(`/review?id=${row.number}`) },
     { label: "Approve", action: approve, params: (row) => ({ number: row.number }) },
   ]}
-  loading={loading}
+  loading={queue.loading}
   emptyState={<EmptyState title="No invoices waiting" />}
 />
 ```
 
-**The robot has it and there is too much of it.** `source={{ action }}` turns the same table into a paged one: it asks the flow for one page at a time, and the filter box and the sortable headers go with the question instead of running in the browser. Reach for this whenever the rows live in a system the flow queries - a database, a spreadsheet, an API with paging - rather than in a collection.
+**The robot has it and there is too much of it.** `source={{ action }}` turns the same table into a paged one: it asks the flow for one page at a time, and the filter box and the sortable headers go with the question instead of running in the browser. Reach for this whenever the rows live in a system the flow queries - a database, a spreadsheet, an API with paging - which is where everything an app remembers between visits lives.
 
 ```tsx
 const listOrders = useListOrders();
@@ -523,18 +523,18 @@ Layout without hand-rolled flex classes. `Stack` for vertical, `Row` for horizon
 
 ## Action links
 
-The Build view shows a small badge on every widget that leads somewhere in the flow and jumps from it to the step that runs (and back). You get that for free by using `action` on `Button`, `FileUpload` and `Form`, and by handing tables the records straight from `useCollection` or an action hook's `.data`. Three helpers cover anything custom; the generated action hooks and `useCollection` results carry `name`, which is what they read. Never write `data-rm-*` attributes by hand.
+The Build view shows a small badge on every widget that leads somewhere in the flow and jumps from it to the step that runs (and back). You get that for free by using `action` on `Button`, `FileUpload` and `Form`, and by handing tables their rows straight from an action hook's `.data`. Two helpers cover anything custom; the generated action hooks carry `name`, which is what they read. Never write `data-rm-*` attributes by hand.
+
+When the rows handed to `DataTable` were sorted or mapped into a new array, pass the hook result as `source={invoices}` so the table still links to the steps that fill it; an empty derived array carries no identity.
 
 ```tsx
-import { bindAction, bindCollection, markGesture } from "@robomotion/apps-runtime/react";
-
-When the rows handed to `DataTable` were sorted or mapped into a new array, pass the hook result as `source={invoices}` so the table still links to the nodes that fill it; an empty derived array carries no identity.
+import { bindAction, markGesture } from "@robomotion/apps-runtime/react";
 
 // a custom widget that runs an action (a hand-made drop zone, a card, a link)
 <div {...bindAction(upload)} onDrop={onDrop}>Drop an invoice PDF here</div>
 
-// a hand-rolled list of a collection's records (mapping them loses the link)
-<ul {...bindCollection(invoices)}>{invoices.records.map(…)}</ul>
+// a hand-rolled list of the rows an action answered with (mapping them loses the link)
+<ul {...bindAction(invoices)}>{invoices.data?.rows.map(…)}</ul>
 
 // custom async code that finishes a person's click later: re-mark the widget
 // right before calling the action, so the call still belongs to it
@@ -548,15 +548,14 @@ Screens talk to the robot ONLY through these. Never `app.call` in a screen, neve
 
 ```tsx
 import {
-  AppProvider, useAction, useCollection, useEvent, useConnection, useFileUpload,
-  bindAction, bindCollection, markGesture,
+  AppProvider, useAction, useEvent, useConnection, useFileUpload,
+  bindAction, markGesture,
 } from "@robomotion/apps-runtime/react";
 ```
 
 | Hook | Returns | Use for |
 |---|---|---|
 | `use<Action>()` (generated) | `{ run, data, error, loading, progress, cancel, name }`, typed from the contract | every button that makes the robot do something; pass the whole object to `Button`'s `action`. Import it from `@/generated/actions.gen`, never write `useAction("name")` yourself |
-| `useCollection(name)` | `{ records, loading, error, name }` | every table or list backed by a collection; live-updates itself |
 | `useEvent(name, cb)` | subscribes for the component's lifetime | toasts and refreshes when the robot announces something |
 | `useConnection()` | `{ state, robotOnline }` | anything that must react to `"connecting" \| "ready" \| "offline" \| "robot_offline" \| "contract_mismatch"` |
 | `useFileUpload()` | `{ upload, uploading, progress, error }` | getting a `FileRef` to pass into an action |

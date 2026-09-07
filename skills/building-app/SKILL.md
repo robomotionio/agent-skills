@@ -17,7 +17,7 @@ Two things decide whether this conversation goes well: **how fast the person see
 
 ## The contract is the spine
 
-`app.json` at the repo root is the **single source of truth** for actions, events, collections, types, and screens. Typegen ripples every change into both projects:
+`app.json` at the repo root is the **single source of truth** for actions, events, types, and screens. Typegen ripples every change into both projects:
 
 ```
 app/src/generated/actions.gen.ts     ← SPA: typed client + CONTRACT_HASH
@@ -144,7 +144,7 @@ Narrate progress through `todo_write`, with items phrased in the user's language
 
 ### The flow side, exactly
 
-The general node grammar belongs to `creating-flow`, but these eight types ship
+The general node grammar belongs to `creating-flow`, but these seven types ship
 only in this package, and hunting for them costs a search round every build.
 `f.node` takes the **type**, never the display name:
 
@@ -155,7 +155,6 @@ only in this package, and hunting for them costs a search round every build.
 | `Robomotion.Apps.RespondError` | App Respond Error | `optCode`, `optRetryable`, **`inMessage`** - the sentence the person reads, see below |
 | `Robomotion.Apps.Progress` | App Progress | `optPercent` |
 | `Robomotion.Apps.EmitEvent` | App Emit Event | `optEventName`, `optAudience` |
-| `Robomotion.Apps.UpdateData` | App Update Data | `optCollection`, `optOperation`, `inRecord` - **never `inKey`**, see below |
 | `Robomotion.Apps.GetFile` | App Get File | `optDownloadDir` |
 | `Robomotion.Apps.SaveFile` | App Save File | nothing |
 
@@ -270,37 +269,41 @@ not the kind the person named. Two things, both every time:
   reading "Not listed" in every row is this rule skipped, and a person reads
   a table whose first rows are blanks as a search that does not work.
 
-### Writing to a collection: leave `inKey` out
+### Remembering something: the flow owns the storage
 
-`App Update Data` with `optOperation: 'upsert'` takes the record's key **from
-the record**, using the `key` field the collection declares in `app.json`. That
-is the whole design - the node reads it for you.
+An app that has to remember - a list somebody adds to, a queue that survives a
+reload, last month's numbers - keeps that data in a database its own FLOW owns.
+`Robomotion.SQLite` is the default when the data belongs to this app and this
+robot; when it is bigger, or shared with something else, or already lives
+somewhere, it is one of the database packages (Postgres, MySQL, MongoDB, Google
+Sheets and the rest) and `searching-packages` is what finds it - the same step
+0c you ran before writing `app.json`. An app is bounded by exactly two lists of
+what it may use - `@robomotion/app-kit` on the screens, the Robomotion package
+library behind them - and storage is not a third one: it is one more package the
+flow calls, like every other system the flow reaches.
 
-```ts
-.then('b1c2d3', 'Robomotion.Apps.UpdateData', 'Add To List', {
-  optCollection: 'items',
-  optOperation: 'upsert',
-  inRecord: Message('result'),        // and nothing else
-})
-```
+So there is no storage half of the contract. **A screen reads stored data the
+way it reads anything else: by calling an ACTION**, and the flow answers it
+out of the database. Reason: the flow is the side that holds the credentials,
+writes the query and can be corrected when the person changes their mind about
+what "waiting" means. A screen that could reach the store on its own would be a
+second place where those rules live, and the two would disagree inside a week.
 
-**Never write `inKey: Custom('id')`.** `Custom(x)` is a fixed value, not a field
-selector, so that stores every record under the literal string `"id"`: each add
-lands on the same record and replaces the one before it. The person sees only
-the last thing they saved, a reload does not bring the others back, and nothing
-in the flow or the robot's log looks wrong - the robot did exactly what it was
-told.
+**A table of stored rows is a paged action.** `DataTable`'s
+`source={{ action: listThings, pageSize: 25 }}` calls the action with
+`{filter, sort, offset, limit}` and reads `{rows, total}` back, so the filtering
+and the ordering happen in the query, where the rows already are, and the screen
+never holds more than a page. The exact shape both sides must keep is in
+`./docs/app-kit-reference.md`; do not invent a different one.
 
-When you do need a key - a DELETE is the case where it is the whole point -
-it comes from the caller, and **the caller's fields arrive under `msg.params`**:
+**When a change has to reach a screen that is not asking, emit an event.**
+`App Emit Event` plus `useEvent` on the screen: a decision somebody else made, a
+long job finishing, a number crossing its limit. A table re-asks by itself after
+a run of its own action, so the event is for the screens that would otherwise sit
+there showing yesterday.
 
-```ts
-.then('d4e9f0', 'Robomotion.Apps.UpdateData', 'Remove From List', {
-  optCollection: 'items',
-  optOperation: 'delete',
-  inKey: Message('params.id'),      // NOT Message('id') - that reads nothing
-})
-```
+And hard rule 6 applies hardest here: the flow creates its table before the
+first write, on every path that reads or writes it.
 
 From `Robomotion.Apps` **0.1.8** a page whose contract does not match is told
 WHICH kind of mismatch it is. One local robot runs one app session at a time,
@@ -314,24 +317,12 @@ parameters says which ones: *the screen sent the wrong details for
 arrived>*. If you ever see a bare "invalid parameters" on a screen, the app is pinned to
 an older version.
 
-The key you send has to be the collection's **`key` field**, the same value the
-record was stored under. From `Robomotion.Apps` 0.1.5 a delete whose key is not
-one the collection holds **fails**, saying so:
+### A write REPLACES the row. Half a row destroys it.
 
-    "<collection>" has no record with the key "<key>", so nothing was deleted
-
-That error is not a platform failure and there is nothing to retry. It means
-the screen is sending a different value than the one the collection is keyed
-by - the row's array index instead of its id, or a field the record does not
-have. Fix the key at the screen, or fix the `key` field in `app.json`. Before
-0.1.5 that same mistake removed nothing and answered ok, so the row stayed on
-screen and no layer said a word; a loud error is the fix, not the fault.
-
-### An upsert REPLACES the record. Half a record destroys it.
-
-`optOperation: 'upsert'` writes the record it is given, whole. It does not
-merge. So a button that changes one field of an existing row has to send
-**every field that row has**, or the fields it left out are gone.
+A flow that stores a record normally writes it whole - an insert-or-replace, a
+rewritten spreadsheet row, a document put back. It does not merge. So a button
+that changes one field of an existing row has to send **every field that row
+has**, or the fields it left out are gone.
 
 So when `app.json` declares an action with every field of the record and the
 screen sends two of them, the fields it left out are written as nothing:
@@ -347,20 +338,19 @@ because the robot did exactly what it was told.
 
 **So: a row action that toggles or edits a field spreads the row.** And when
 you change what an action takes, change all three halves in the same breath -
-`app.json`, the flow's record-building step, and every screen that calls it;
-the screen is the half most easily forgotten. `validate_app` reports a call
-site that passes fewer fields than `app.json` declares (`action-params`); do
-not wave that through.
+`app.json`, the flow's write step, and every screen that calls it; the screen is
+the half most easily forgotten. `validate_app` reports a call site that passes
+fewer fields than `app.json` declares (`action-params`); do not wave that
+through.
 
-`Message('id')` reads `msg.id`, which nothing has set, so the node deletes
-nothing - and, before `Robomotion.Apps` 0.1.5, answered as if it had: every
-node in the path runs, the app says it is done, and the row is still there
-after a reload. Nothing in the flow or the robot's log looks wrong, because
-the robot did what it was told.
-`validate_app` fails a literal `inKey` that names the collection's key field,
-and `read_app_data` shows what each record is actually stored under - use it the
-moment someone says an app is losing or not showing saved data, before touching
-the screens.
+The other way out is a write that only touches the columns it was handed (an
+`UPDATE ... SET` of those fields alone), which is right when the action is
+honestly a one-field change - `setStatus`, not `saveItem`. What is never right
+is an action that declares the whole record and is called with half of it.
+
+When somebody says their app is losing what they saved, look at the write step
+and the call site before you touch anything else: a whole-row write handed half
+a row is the usual answer, and both halves are one read away.
 
 Note what the example does **not** have: an ending. No `Core.Flow.Stop`, no
 `Core.Flow.End`. The flow is the app's backend and stays up forever behind the
@@ -462,7 +452,7 @@ Each rule carries its reason. The reason is why you don't route around the rule 
 0. **The harness installs the packages.** `create_app` and `sync_app` place `@robomotion/app-kit` and `@robomotion/apps-runtime` beside the app and run the install; their result carries a `packages_warning` if that did not work. Never symlink, copy or `bun install` packages by hand, and never borrow them from another app's checkout - if something looks missing, run `sync_app` and read its warning.
 1. **Every control that runs an action declares it.** A button, upload zone or form that makes the robot do something takes the action through the kit's `action` prop (`<Button action={greet} params={{ name }}>`), or spreads `bindAction(greet)` when it must keep its own handler. Never write `onClick={() => greet.run(...)}` on its own: the Build view then cannot link the control to its step, the connections map reports the action as unlinked, and the person is told the button they can see does not exist. See `./docs/app-kit-reference.md`.
 1. **Kit-only.** Compose `@robomotion/app-kit` components plus Tailwind classes for layout. Never write a new UI primitive, never add an npm dependency, never edit `vite.config.ts` or the dependency list. The allowlist is exactly: `react`, `react-dom`, `@robomotion/app-kit`, `@robomotion/apps-runtime`, and the dev toolchain - `validate_app` fails on anything else. Reason: a prompt-built app that can pull arbitrary packages becomes a codebase nobody can review; the kit is also what keeps every screen themed, dark-mode aware, and accessible without you doing anything.
-2. **Actions only through the generated typed stubs.** `src/generated/actions.gen.ts` exports one hook per action, `use<Action>()` (for `greet`: `const greet = useGreet()`), plus `<Action>Params` / `<Action>Result` types; `greet.data` is typed and `<Form action={greet}>` / `<Button action={greet}>` link the control. Use those. Never write `useAction("name")` yourself - untyped, its `data` is `{}` and `tsc` fails on the first field you read. Collections and events use `useCollection` / `useEvent` with the generated types. Never hand-write transport, never invent a message format, never call `app.call` from screen code. Reason: the old app system died because clients hand-invented protocols over a raw channel and drift was discovered by users in production; the stubs make a contract change break `tsc` instead of a person.
+2. **Actions only through the generated typed stubs.** `src/generated/actions.gen.ts` exports one hook per action, `use<Action>()` (for `greet`: `const greet = useGreet()`), plus `<Action>Params` / `<Action>Result` types; `greet.data` is typed and `<Form action={greet}>` / `<Button action={greet}>` link the control. Use those. Never write `useAction("name")` yourself - untyped, its `data` is `{}` and `tsc` fails on the first field you read. Events use `useEvent` with the generated payload types. Never hand-write transport, never invent a message format, never call `app.call` from screen code. Reason: the old app system died because clients hand-invented protocols over a raw channel and drift was discovered by users in production; the stubs make a contract change break `tsc` instead of a person.
 3. **One component per file, flat directories, no barrel files.** `src/pages/Review.tsx`, `src/components/InvoiceCard.tsx` - that's the whole depth. Reason: "make that button green" must resolve to exactly one file from the route context; barrels and deep nesting break targeted edits and make hot reload touch more than it should.
 4. **Never hand-edit generated files.** Anything under `src/generated/` is regenerated from `app.json`; edit `app.json` and regenerate. Reason: the next regeneration silently erases your edit, and an edited file no longer matches `contract_hash`, which blocks the app from connecting at all.
 5. **An app flow never ends. It is the backend, not a script.** It comes up with the app session and stays up for as long as the app lives, serving every press of every button by every person. So no path may end it: **never `Core.Flow.Stop`, never `Core.Flow.End`**, and never a "finish", "cleanup" or "done" step that reaches one. Every path finishes at its `App Respond` or `App Respond Error` and goes no further; anything that has to happen after answering (closing a browser, deleting a temp file) belongs before that node, not after a stop. Reason: a flow that stops once it has answered leaves an app that looks perfect and is dead on the second press. The first person to try it gets their results; everyone after that is told "The robot for this app is not connected", which blames the robot for something the flow did to itself, and the screen keeps the previous results under the new question so the failure even reads as a success.
@@ -496,10 +486,11 @@ Each rule carries its reason. The reason is why you don't route around the rule 
    That costs one read. Restarting the session costs the person another
    round trip and tells you nothing you did not already know.
 
-   **Where records live, so you do not go looking.** The app's own
-   collections come first: declare the collection in `app.json`, write with
-   `Robomotion.Apps.UpdateData`, read with `useCollection` - nothing to
-   create, nothing to check. When the person asks for a file, the nodes are
+   **Where records live, so you do not go looking.** A database the flow
+   owns is the default: `Robomotion.SQLite` for something local to this app
+   and this robot, or whichever database package already holds the person's
+   data - `searching-packages` names it, and the screens read it back through
+   an ordinary action. When the person asks for a file, the nodes are
    `Core.FileSystem.PathExists` (ask first), `Core.FileSystem.Create`,
    `Core.FileSystem.ReadFile` and `Core.FileSystem.WriteFile` for a JSON
    file, and `Core.CSV.ReadCSV` / `Core.CSV.WriteCSV` / `Core.CSV.AppendCSV`
@@ -542,7 +533,7 @@ Jargon leaking into narration is the single most common quality failure on this 
 | headless | "in the background" |
 | frontend, backend, SPA | "your app" / "the robot" |
 | repo, commit, push | "saved" |
-| collection, schema, contract | "your list of X", "the plan of your app" (or say nothing) |
+| database, table, query, schema, contract | "where your app remembers things", "your list of X", "the plan of your app" (or say nothing) |
 | mock data | "sample data" |
 | deploy | "make it live", "publish" |
 | scaffold, template, demo files | "what the app started with" (or say nothing) |
@@ -632,7 +623,7 @@ so the app adopts it instead of scaffolding a second one.
 | Topic | Doc |
 |---|---|
 | Composing screens: every kit component with a usage example | `./docs/app-kit-reference.md` |
-| Authoring `app.json`: naming, action vs collection, timeouts, concurrency, descriptions | `./docs/contract.md` |
+| Authoring `app.json`: naming, action vs event, timeouts, concurrency, descriptions | `./docs/contract.md` |
 | The preview loop in detail: dev server, route context, self-check, draft backend | `./docs/preview-loop.md` |
 | Dashboard archetype | `./docs/archetypes/dashboard.md` |
 | Approval-queue archetype | `./docs/archetypes/approval-queue.md` |

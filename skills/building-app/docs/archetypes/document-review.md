@@ -6,7 +6,7 @@ A DOCUMENT goes in, the ROBOT reads it, a PERSON checks and fixes the result: "u
 
 ## Screens
 
-- **inbox** (`/`): a `FileUpload` drop zone on top, a `DataTable` of processed documents below with a `StatusBadge` (`pending` while extracting, `warn` when ready to check, `ok` when confirmed). Uploading immediately calls the extract action; show `Progress` fed by the action's progress while the robot reads.
+- **inbox** (`/`): a `FileUpload` drop zone on top, a `DataTable` of processed documents below fed by `source={{ action: listDocuments }}`, with a `StatusBadge` (`pending` while extracting, `warn` when ready to check, `ok` when confirmed). Uploading immediately calls the extract action; show `Progress` fed by the action's progress while the robot reads.
 - **review** (`/review`): the extracted fields as an editable `Form` (`Field` per extracted value, low-confidence ones visually flagged) next to the document's name, and one primary Confirm `Button` that calls the save action with the corrected values.
 
 Sample data: a `SAMPLE_DOCUMENTS` const with a few rows in mixed statuses, so both screens render before any backend exists.
@@ -15,7 +15,7 @@ Sample data: a `SAMPLE_DOCUMENTS` const with a few rows in mixed statuses, so bo
 
 - Extract is THE long action: `progress: true` (the robot narrates "reading page 2 of 5"), `cancellable: true` (people re-upload the wrong file constantly), a generous timeout, and `queue`/1 because one extraction engine or browser does the reading. The file travels as a `FileRef`; the flow fetches the bytes with `App Get File`.
 - Save is a quick second action that writes the human-corrected fields to the system of record and flips the document's status.
-- One shared collection holds the documents with their extraction state; the robot updates it as it works, so the inbox updates live for everyone.
+- The documents and how far along each one is live in a database the flow owns (`Robomotion.SQLite` unless they belong in a system of record); the robot writes each one's state as it works. `listDocuments` hands the inbox one page at a time, and `documentReady` is what makes an inbox nobody is touching ask again.
 
 ## `app.json` fragment
 
@@ -43,6 +43,12 @@ Sample data: a `SAMPLE_DOCUMENTS` const with a few rows in mixed statuses, so bo
     }
   },
   "actions": {
+    "listDocuments": {
+      "description": "See the documents that have been dropped in and how far along each one is.",
+      "params": { "type": "object" },
+      "result": { "type": "object" },
+      "timeout_ms": 30000
+    },
     "extractDocument": {
       "description": "Read an uploaded document and pull out the key details for checking.",
       "params": {
@@ -82,14 +88,6 @@ Sample data: a `SAMPLE_DOCUMENTS` const with a few rows in mixed statuses, so bo
         "properties": { "id": { "type": "string" } }
       },
       "audience": "broadcast"
-    }
-  },
-  "collections": {
-    "documents": {
-      "description": "Uploaded documents and how far along each one is.",
-      "record": { "$ref": "#/types/ReviewDoc" },
-      "key": "id",
-      "scope": "shared"
     }
   },
   "screens": {

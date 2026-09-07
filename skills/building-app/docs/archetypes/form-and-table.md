@@ -8,15 +8,15 @@ People ENTER records and SEE them accumulate: "submit expenses", "log support re
 
 - **submit** (`/`): one `Form` built from the action's params - `Field`s with `Select` / `NumberInput` / `TextArea` / `DatePicker`, an optional `FileUpload` for a receipt or attachment, and one primary submit `Button`. On success: `useToast` confirmation and a cleared form.
   - When the fields are **not fixed** - the person says the shape changes every time, or it varies by category - declare the action's `params` as the open shape (`{ "type": "object" }`) and give the form a `JsonInput` instead of inventing a field list that will be wrong. A form with three known fields and one free-form bag gets three real inputs and one `JsonInput`, not one `JsonInput` for the lot.
-- **records** (`/records`): a `DataTable` of what's been submitted, newest first, `StatusBadge` per row if records have a lifecycle.
+- **records** (`/records`): a `DataTable` of what's been submitted, fed by `source={{ action: listExpenses }}` and ordered newest first by the query, `StatusBadge` per row if records have a lifecycle.
 
 Sample data: a `SAMPLE_RECORDS` const of 6-10 rows spanning the categories.
 
 ## Backend shape
 
 - One action: the submit. The robot validates nothing the form didn't already catch, does the real write, and responds with the stored record so the UI can show it instantly.
-- One collection holds the records the table shows, keyed by an id the ROBOT mints (the browser must never invent record ids). `scope: "shared"` when the office sees one table; `scope: "user"` when each person should only see their own - ask the user only if the request truly doesn't say.
-- One broadcast event on submit is optional; the collection delta already updates every open table. Add it only when someone should be actively nudged.
+- The records live in a database the flow owns - `Robomotion.SQLite` by default, or the system they belong in (a spreadsheet, an ERP) when they belong somewhere - with the id minted by the ROBOT (the browser must never invent record ids). A second action, `listExpenses`, gives the table one page at a time. Whether the office sees one table or each person sees only their own is a condition in that query, decided by the flow from something it can trust and never from a value the screen sends; ask the user only if the request truly doesn't say.
+- One broadcast event on submit is optional. The submitter's own table is refreshed by the submit button (`tableRef.refresh()`, in the kit reference), so the event is for everybody ELSE's screen. Add it when a colleague should see the new row without reloading.
 
 ## `app.json` fragment
 
@@ -38,6 +38,12 @@ Sample data: a `SAMPLE_RECORDS` const of 6-10 rows spanning the categories.
     }
   },
   "actions": {
+    "listExpenses": {
+      "description": "See the expenses that have been sent in, newest first.",
+      "params": { "type": "object" },
+      "result": { "type": "object" },
+      "timeout_ms": 30000
+    },
     "submitExpense": {
       "description": "Send in one expense with its receipt.",
       "params": {
@@ -56,14 +62,6 @@ Sample data: a `SAMPLE_RECORDS` const of 6-10 rows spanning the categories.
     }
   },
   "events": {},
-  "collections": {
-    "expenses": {
-      "description": "Every expense that has been sent in, newest first.",
-      "record": { "$ref": "#/types/Expense" },
-      "key": "id",
-      "scope": "shared"
-    }
-  },
   "screens": {
     "submit":  { "description": "Fill in and send one expense.", "route": "/" },
     "records": { "description": "See everything that has been sent in.", "route": "/records" }
