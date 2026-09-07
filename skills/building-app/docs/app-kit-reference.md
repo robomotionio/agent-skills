@@ -398,14 +398,48 @@ The action is called with, and must answer with, exactly this - so declare both 
 
 `filter` is whatever is in the filter box (`""` when it is empty), `sort.key` is a column's `key`, and `total` is how many rows there are **altogether**, not how many are in this page - that is what the pager counts. The flow does the filtering and the ordering; a flow that ignores `offset` and returns everything every time has a table that looks right and gets slower with every row.
 
+**Never wrap the table in the action's own `loading` or `error`.** A `source`-driven `DataTable` owns both: it shows its own busy state, its own empty state and its own error with a Try again. Gating it unmounts the table while its own fetch is in flight, and since a fresh mount always fetches, the screen never stops:
+
+```tsx
+// WRONG - an endless loop. mount -> fetch -> loading true -> the skeleton
+// replaces the table -> the call lands -> loading false -> the table mounts
+// again -> fetch. Every turn is a real run on the robot.
+{list.loading ? <Skeleton /> : <DataTable source={{ action: list }} columns={cols} />}
+
+// RIGHT - the table handles loading, empty and error itself.
+<DataTable source={{ action: list }} columns={cols}
+  emptyState={<EmptyState title="Nothing here yet" />} />
+```
+
+The same applies to any key or prop that changes on every render: a remounted table is a refetching table. The kit stops a list that asks the same question more than twenty times in two seconds and says so on the screen, but that is a brake on a screen that is already wrong, not a licence to write one.
+
 The table refetches on its own when the person filters, sorts or turns a page, and when that same action finishes a run somebody else started - so a row added by another button appears without a reload.
 
-It also refetches after a write **it ran itself** - a `bulkActions` entry, or a `rowActions` entry carrying an `action` - and a bulk action unticks afterwards, because the rows it referred to have just changed. The table rendered that button and made that call, so asking again is its job and **not something to wire in the screen**. A row action that only navigates (`onSelect`) writes nothing and costs no fetch. Only a control the SCREEN wrote needs a `tableRef`:
+It also refetches after a write **it ran itself** - a `bulkActions` entry, or a `rowActions` entry carrying an `action` - and a bulk action unticks afterwards, because the rows it referred to have just changed. A row action that only navigates (`onSelect`) writes nothing and costs no fetch.
+
+And it refetches after a write run by **any other kit widget on the screen**: a `Form` carrying an `action`, a `ConfirmDialog`, a `Button`, a `Menu` item, a `FileUpload`. Adding a supplier from a dialog and removing one from a confirm are different actions from the one the table reads with, and every widget that runs an action announces it when the call **settles**, so the list asks again at the right moment.
+
+**So do not wire refreshing into the screen.** In particular, never hang a refresh off `onClick`, `onSubmit` or `onConfirm`:
+
+```tsx
+// WRONG - onClick, onSubmit and onConfirm all run BEFORE the action does,
+// so this re-reads the OLD rows and the new one never appears.
+<Button action={addOrder} params={draft} onClick={() => setTimeout(() => table.current?.refresh(), 0)}>Add</Button>
+
+// RIGHT - the kit already knows the write happened.
+<Button action={addOrder} params={draft}>Add</Button>
+```
+
+A `tableRef` is only for a write the SCREEN made itself, by calling `action.run` in its own handler - then nothing rendered it, so nothing can announce it:
 
 ```tsx
 const table = useRef<DataTableApi | null>(null);
 <DataTable columns={cols} source={{ action: listOrders }} tableRef={table} />
-<Button action={addOrder} params={draft} onClick={() => setTimeout(() => table.current?.refresh(), 0)}>Add</Button>
+// await, THEN refresh - the order is the whole point.
+async function importRows() {
+  await addOrder.run(draft);
+  table.current?.refresh();
+}
 ```
 
 **Ticking a run of rows and doing one thing to all of them.** `selectable` puts a tick box on every row, and `rowKey` becomes required when you use it - the selection belongs to RECORDS, not to row positions, and without a key turning the page silently reassigns the ticks to different rows. `bulkActions` are the buttons that appear above the table once something is ticked. **Never build a checkbox column and an array of ticked ids by hand**: that is where the page-turning bugs live.
