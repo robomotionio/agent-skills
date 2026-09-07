@@ -398,6 +398,21 @@ The action is called with, and must answer with, exactly this - so declare both 
 
 `filter` is whatever is in the filter box (`""` when it is empty), `sort.key` is a column's `key`, and `total` is how many rows there are **altogether**, not how many are in this page - that is what the pager counts. The flow does the filtering and the ordering; a flow that ignores `offset` and returns everything every time has a table that looks right and gets slower with every row.
 
+**Never wrap the table in the action's own `loading` or `error`.** A `source`-driven `DataTable` owns both: it shows its own busy state, its own empty state and its own error with a Try again. Gating it unmounts the table while its own fetch is in flight, and since a fresh mount always fetches, the screen never stops:
+
+```tsx
+// WRONG - an endless loop. mount -> fetch -> loading true -> the skeleton
+// replaces the table -> the call lands -> loading false -> the table mounts
+// again -> fetch. Every turn is a real run on the robot.
+{list.loading ? <Skeleton /> : <DataTable source={{ action: list }} columns={cols} />}
+
+// RIGHT - the table handles loading, empty and error itself.
+<DataTable source={{ action: list }} columns={cols}
+  emptyState={<EmptyState title="Nothing here yet" />} />
+```
+
+The same applies to any key or prop that changes on every render: a remounted table is a refetching table. The kit stops a list that asks the same question more than twenty times in two seconds and says so on the screen, but that is a brake on a screen that is already wrong, not a licence to write one.
+
 The table refetches on its own when the person filters, sorts or turns a page, and when that same action finishes a run somebody else started - so a row added by another button appears without a reload.
 
 It also refetches after a write **it ran itself** - a `bulkActions` entry, or a `rowActions` entry carrying an `action` - and a bulk action unticks afterwards, because the rows it referred to have just changed. A row action that only navigates (`onSelect`) writes nothing and costs no fetch.

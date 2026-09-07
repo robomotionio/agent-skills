@@ -5480,6 +5480,11 @@ function DataTable(props) {
       offset: clampedPage * (effPageSize || 0),
       limit: effPageSize
     };
+    if (noteSourceFetch(action.name)) {
+      setRemoteError(new Error(RUNAWAY_MESSAGE));
+      setRemoteLoading(false);
+      return;
+    }
     const mine = ++seq.current;
     ownFetch.current = true;
     setRemoteLoading(true);
@@ -5520,7 +5525,12 @@ function DataTable(props) {
       setReloadTick((t) => t + 1);
     });
   }, [paged]);
-  const refresh = useCallback3(() => setReloadTick((t) => t + 1), []);
+  const refresh = useCallback3(() => {
+    const name = actionRef.current?.name;
+    if (name) clearSourceFetches(name);
+    setRemoteError(null);
+    setReloadTick((t) => t + 1);
+  }, []);
   const filtered = useMemo2(() => {
     if (paged) return NO_ROWS;
     const needle = filter.trim().toLowerCase();
@@ -5949,6 +5959,19 @@ function rowMenuItems(row, actions, onWrite) {
     params: isLinkedAction(a) ? a.params(row) : void 0,
     onSelect: isLinkedAction(a) ? void 0 : () => a.onSelect(row)
   }));
+}
+var RUNAWAY_MESSAGE = "This list asked the robot the same question over and over, so it stopped. The screen is most likely rebuilding the list while it is still loading.";
+var RUNAWAY_WINDOW_MS = 2e3;
+var RUNAWAY_LIMIT = 20;
+var recentFetches = /* @__PURE__ */ new Map();
+function noteSourceFetch(name, now = Date.now()) {
+  const hits = (recentFetches.get(name) ?? []).filter((t) => now - t < RUNAWAY_WINDOW_MS);
+  hits.push(now);
+  recentFetches.set(name, hits);
+  return hits.length > RUNAWAY_LIMIT;
+}
+function clearSourceFetches(name) {
+  recentFetches.delete(name);
 }
 function toCsv(columns, rows) {
   const cell = (v) => {
