@@ -1,7 +1,7 @@
 {
   "name": "Building App",
   "namespace": "Robomotion.Skill.BuildingApp",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "categories": [
     "Artificial Intelligence"
   ],

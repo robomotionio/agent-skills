@@ -22,7 +22,7 @@ When the records are worked in batches rather than read one at a time, the recor
 
 - One action: the submit. The robot validates nothing the form didn't already catch, does the real write, and responds with the stored record so the UI can show it instantly.
 - The records live in a database the flow owns - `Robomotion.SQLite` by default, or the system they belong in (a spreadsheet, an ERP) when they belong somewhere - with the id minted by the ROBOT (the browser must never invent record ids). A second action, `listExpenses`, gives the table one page at a time. Whether the office sees one table or each person sees only their own is a condition in that query, decided by the flow from something it can trust and never from a value the screen sends; ask the user only if the request truly doesn't say.
-- One broadcast event on submit is optional. The submitter's own table is refreshed by the submit button (`tableRef.refresh()`, in the kit reference), so the event is for everybody ELSE's screen. Add it when a colleague should see the new row without reloading.
+- One broadcast event on submit is optional. The submitter's own table refreshes itself, because the kit ran the write and says so when it lands, so the event is for everybody ELSE's screen. Add it when a colleague should see the new row without reloading.
 
 ## `app.json` fragment
 

@@ -2591,6 +2591,33 @@ function joinNames(names) {
   }
   return out.length ? out.join(" ") : void 0;
 }
+var actionDoneListeners = /* @__PURE__ */ new Set();
+function announceActionDone(name) {
+  for (const listen of [...actionDoneListeners]) {
+    try {
+      listen(name);
+    } catch {
+    }
+  }
+}
+function onActionDone(listen) {
+  actionDoneListeners.add(listen);
+  return () => {
+    actionDoneListeners.delete(listen);
+  };
+}
+function runAction(action, params) {
+  return Promise.resolve(action.run(params)).then(
+    (value) => {
+      announceActionDone(action.name);
+      return value;
+    },
+    (err) => {
+      announceActionDone(action.name);
+      throw err;
+    }
+  );
+}
 
 // src/components/button.tsx
 import { jsx, jsxs } from "react/jsx-runtime";
@@ -2624,7 +2651,7 @@ var Button = forwardRef(function Button2({ className, variant, size, loading, di
   const busy = loading ?? action?.loading ?? false;
   const handleClick = action ? (e) => {
     onClick?.(e);
-    void Promise.resolve(action.run(resolveParams(params, e))).catch(() => void 0);
+    void runAction(action, resolveParams(params, e)).catch(() => void 0);
   } : onClick;
   return /* @__PURE__ */ jsxs(
     "button",
@@ -3212,7 +3239,7 @@ function ConfirmDialog({
       return;
     }
     setBusy(true);
-    void Promise.resolve(action.run(resolveParams(params, void 0))).catch(() => void 0).finally(() => {
+    void runAction(action, resolveParams(params, void 0)).catch(() => void 0).finally(() => {
       setBusy(false);
       onClose();
     });
@@ -3553,7 +3580,7 @@ var MenuItem = forwardRef2(function MenuItem2({ danger, action, params, onSelect
         menu?.close(false);
         onSelect?.();
         if (action) {
-          void Promise.resolve(action.run(resolveParams(params, e))).catch(() => void 0);
+          void runAction(action, resolveParams(params, e)).catch(() => void 0);
         }
       },
       className: cn(
@@ -5190,7 +5217,7 @@ function Composer({
     setText("");
     onSend?.(body);
     if (action) {
-      void Promise.resolve(action.run(params ? params(body) : { text: body })).catch(() => void 0);
+      void runAction(action, params ? params(body) : { text: body }).catch(() => void 0);
     }
   };
   const onKeyDown = (e) => {
@@ -5486,6 +5513,13 @@ function DataTable(props) {
     }
     wasLoading.current = busy2;
   });
+  useEffect8(() => {
+    if (!paged) return;
+    return onActionDone((name) => {
+      if (name && name === actionRef.current?.name) return;
+      setReloadTick((t) => t + 1);
+    });
+  }, [paged]);
   const refresh = useCallback3(() => setReloadTick((t) => t + 1), []);
   const filtered = useMemo2(() => {
     if (paged) return NO_ROWS;
@@ -5600,7 +5634,7 @@ function DataTable(props) {
   const runBulk = (a) => {
     const sel = selectionRef.current;
     if (isLinkedBulk(a)) {
-      void Promise.resolve(a.action.run(a.params ? a.params(sel) : sel)).then(() => afterOwnWrite()).catch(() => void 0);
+      void runAction(a.action, a.params ? a.params(sel) : sel).then(() => afterOwnWrite()).catch(() => void 0);
       return;
     }
     a.onSelect(sel);
@@ -6013,7 +6047,7 @@ function Kanban({ onMove, action, className, children }) {
     if (!key || !to || from === to) return;
     const m = { key, from, to };
     onMove?.(m);
-    if (action) void Promise.resolve(action.run(m)).catch(() => void 0);
+    if (action) void runAction(action, m).catch(() => void 0);
   };
   const startDrag = (key, from, at) => {
     origin.current = at;
@@ -6619,7 +6653,10 @@ function Form({
           if (action && originalRun) {
             action.run = ((params) => {
               ranInSubmit = true;
-              return originalRun.call(action, params);
+              return runAction(
+                { ...action, run: (p) => originalRun.call(action, p) },
+                params
+              );
             });
           }
           try {
@@ -6627,7 +6664,7 @@ function Form({
           } finally {
             if (action && originalRun) action.run = originalRun;
           }
-          if (action && !ranInSubmit) void Promise.resolve(action.run(values)).catch(() => void 0);
+          if (action && !ranInSubmit) void runAction(action, values).catch(() => void 0);
         }
       },
       ...props,
@@ -7952,7 +7989,7 @@ function FileUpload({
       onUpload?.(ref);
       if (action) {
         const extra = typeof params === "function" ? params() : params;
-        void Promise.resolve(action.run({ file: ref, ...extra ?? {} })).catch(() => void 0);
+        void runAction(action, { file: ref, ...extra ?? {} }).catch(() => void 0);
       }
     }
   };
