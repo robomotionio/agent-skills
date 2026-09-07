@@ -5591,10 +5591,16 @@ function DataTable(props) {
     }
     setKeys(sorted.map((row, i) => rowKey ? rowKey(row) : String(i)));
   };
+  const afterOwnWrite = useCallback3(() => {
+    if (paged) setReloadTick((t) => t + 1);
+    setAllMatching(false);
+    if (selectedKeys === void 0) setOwnKeys([]);
+    onSelectionChange?.([], []);
+  }, [paged, selectedKeys, onSelectionChange]);
   const runBulk = (a) => {
     const sel = selectionRef.current;
     if (isLinkedBulk(a)) {
-      void Promise.resolve(a.action.run(a.params ? a.params(sel) : sel)).catch(() => void 0);
+      void Promise.resolve(a.action.run(a.params ? a.params(sel) : sel)).then(() => afterOwnWrite()).catch(() => void 0);
       return;
     }
     a.onSelect(sel);
@@ -5805,7 +5811,7 @@ function DataTable(props) {
                   },
                   col.key
                 )),
-                rowActions && rowActions.length > 0 && /* @__PURE__ */ jsx28("td", { className: "px-2 py-1.5 text-right", onClick: (e) => e.stopPropagation(), children: /* @__PURE__ */ jsx28(Menu, { items: rowMenuItems(row, rowActions) }) })
+                rowActions && rowActions.length > 0 && /* @__PURE__ */ jsx28("td", { className: "px-2 py-1.5 text-right", onClick: (e) => e.stopPropagation(), children: /* @__PURE__ */ jsx28(Menu, { items: rowMenuItems(row, rowActions, afterOwnWrite) }) })
               ]
             },
             key
@@ -5892,12 +5898,20 @@ function TickBox({
     }
   );
 }
-function rowMenuItems(row, actions) {
+function rowMenuItems(row, actions, onWrite) {
   return actions.map((a) => ({
     label: a.label,
     danger: a.danger,
     disabled: a.disabled?.(row) ?? false,
-    action: isLinkedAction(a) ? a.action : void 0,
+    action: isLinkedAction(a) ? {
+      name: a.action.name,
+      loading: a.action.loading,
+      error: a.action.error,
+      run: (params) => Promise.resolve(a.action.run(params)).then((r) => {
+        onWrite();
+        return r;
+      })
+    } : void 0,
     params: isLinkedAction(a) ? a.params(row) : void 0,
     onSelect: isLinkedAction(a) ? void 0 : () => a.onSelect(row)
   }));
