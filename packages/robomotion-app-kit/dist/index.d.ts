@@ -1,6 +1,6 @@
 import { ClassValue } from 'clsx';
 import * as react from 'react';
-import { CSSProperties, HTMLAttributes, ReactNode, ButtonHTMLAttributes, MouseEvent, InputHTMLAttributes, FormHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
+import { CSSProperties, HTMLAttributes, ReactNode, ButtonHTMLAttributes, MouseEvent, MutableRefObject, InputHTMLAttributes, FormHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
 import { ConnectionState, ContractSchema, FileRef, AppError } from '@robomotion/apps-runtime';
 import * as class_variance_authority_types from 'class-variance-authority/types';
 import { VariantProps } from 'class-variance-authority';
@@ -18,6 +18,8 @@ declare const DEFAULT_ACCENT = "#FF4F00";
 declare function accentStyle(accent?: string): CSSProperties;
 /** Shared focus ring, visible in both themes, driven by the accent. */
 declare const focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--rm-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-neutral-950";
+/** Base classes shared by all text-like inputs. */
+declare const inputBase: string;
 
 /** The two themes an app paints in. */
 type AppTheme = "light" | "dark";
@@ -63,6 +65,40 @@ interface ActionLike<P = unknown> {
 }
 /** Params for an action-bound widget: a value, or a function of the triggering event. */
 type ParamsOf<P, E = unknown> = P | ((event: E) => P);
+
+/** Rows the widget fetches for itself, one page per call. */
+interface ActionDataSource {
+    /** The action to call (the object from useAction). */
+    action: ActionLike;
+    /** Rows per page; falls back to the widget's own pageSize. */
+    pageSize?: number;
+}
+/** An identity tag for rows the screen already holds. */
+interface RecordsDataSource {
+    name: string;
+    records?: unknown;
+}
+type AnyDataSource = ActionDataSource | RecordsDataSource;
+/** What a paged action is called with. */
+interface PageRequest {
+    /** The text in the filter box, "" when empty. */
+    filter: string;
+    /** The column the person sorted by, absent when nothing is sorted. */
+    sort?: {
+        key: string;
+        dir: "asc" | "desc";
+    };
+    /** Rows to skip. */
+    offset: number;
+    /** Rows to return. 0 means "no paging: all of them". */
+    limit: number;
+}
+/** What it must answer with. */
+interface PageReply<T> {
+    rows: T[];
+    /** Rows there are in total, across every page. */
+    total: number;
+}
 
 interface AppShellNavItem {
     label: string;
@@ -123,6 +159,46 @@ declare function Spinner({ className }: {
     className?: string;
 }): react.JSX.Element;
 
+interface MenuItemDef {
+    label: ReactNode;
+    /** Red styling, for an item that removes something. */
+    danger?: boolean;
+    disabled?: boolean;
+    /** A plain callback: navigate, open a dialog, set some state. */
+    onSelect?: () => void;
+    /** The action this item runs (the object from useAction). */
+    action?: ActionLike;
+    /** Params for `action`. */
+    params?: unknown;
+}
+interface MenuProps {
+    /** Declared items. Omit to write <MenuItem> children instead. */
+    items?: MenuItemDef[];
+    children?: ReactNode;
+    /** Trigger content. Defaults to the three-dot glyph. */
+    trigger?: ReactNode;
+    /** Accessible name of the trigger. Default "More". */
+    label?: string;
+    /** Which edge the panel hangs from. Default "end" (right). */
+    align?: "start" | "end";
+    /** Accessible name of the menu itself. Default "Actions". */
+    menuLabel?: string;
+    disabled?: boolean;
+    className?: string;
+}
+declare function Menu({ items, children, trigger, label, align, menuLabel, disabled, className, }: MenuProps): react.JSX.Element;
+interface MenuItemProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "type" | "onSelect"> {
+    danger?: boolean;
+    /** The action this item runs (the object from useAction). */
+    action?: ActionLike;
+    /** Params for `action`: a value, or a function of the click event. */
+    params?: ParamsOf<unknown, MouseEvent<HTMLButtonElement>>;
+    /** A plain callback, for an item that does not run an action. */
+    onSelect?: () => void;
+    children?: ReactNode;
+}
+declare const MenuItem: react.ForwardRefExoticComponent<MenuItemProps & react.RefAttributes<HTMLButtonElement>>;
+
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
     children?: ReactNode;
 }
@@ -136,8 +212,109 @@ declare function CardHeader({ className, title, description, children, ...props 
 declare function CardBody({ className, ...props }: HTMLAttributes<HTMLDivElement>): react.JSX.Element;
 declare function CardFooter({ className, ...props }: HTMLAttributes<HTMLDivElement>): react.JSX.Element;
 
+interface DialogProps {
+    open: boolean;
+    /** Called on Escape, on the backdrop, and on the close button. */
+    onClose: () => void;
+    title?: ReactNode;
+    description?: ReactNode;
+    /** Buttons along the bottom. */
+    footer?: ReactNode;
+    size?: "sm" | "md" | "lg";
+    /** Hide the × in the corner (the dialog still closes on Escape). */
+    hideClose?: boolean;
+    /** Ignore clicks on the backdrop, for a dialog that must be answered. */
+    static?: boolean;
+    className?: string;
+    children?: ReactNode;
+}
+declare function Dialog({ open, onClose, title, description, footer, size, hideClose, static: isStatic, className, children, }: DialogProps): react.JSX.Element | null;
+interface ConfirmDialogProps {
+    open: boolean;
+    onClose: () => void;
+    title: ReactNode;
+    /** What will happen, in the person's own words. */
+    description?: ReactNode;
+    confirmLabel?: string;
+    cancelLabel?: string;
+    /** Red confirm button, for something that removes or overwrites. */
+    danger?: boolean;
+    /**
+     * The action confirming runs (the object from useAction). The confirm
+     * button carries its link, so the Build view can draw the line from this
+     * dialog to the step behind it, and the dialog stays up with a spinner
+     * until the call settles rather than closing over a robot still working.
+     */
+    action?: ActionLike;
+    /** Params for `action`: a value, or a function called at confirm time. */
+    params?: ParamsOf<unknown, undefined>;
+    /** Runs before the action, for a confirm that changes local state too. */
+    onConfirm?: () => void;
+    children?: ReactNode;
+}
+/**
+ * "Are you sure?" as one component, because a destructive button without one
+ * is a support ticket. The confirm button is the only way out apart from
+ * cancelling, and it declares the action it runs.
+ */
+declare function ConfirmDialog({ open, onClose, title, description, confirmLabel, cancelLabel, danger, action, params, onConfirm, children, }: ConfirmDialogProps): react.JSX.Element;
+
+interface DrawerProps {
+    open: boolean;
+    onClose: () => void;
+    title?: ReactNode;
+    description?: ReactNode;
+    /** Which edge it slides from. Default "right". */
+    side?: "left" | "right";
+    size?: "sm" | "md" | "lg";
+    footer?: ReactNode;
+    hideClose?: boolean;
+    className?: string;
+    children?: ReactNode;
+}
+declare function Drawer({ open, onClose, title, description, side, size, footer, hideClose, className, children, }: DrawerProps): react.JSX.Element | null;
+
+interface TabsProps {
+    /** Controlled selection. */
+    value?: string;
+    /** Uncontrolled starting selection; defaults to the first Tab. */
+    defaultValue?: string;
+    onChange?: (value: string) => void;
+    /** Accessible name for the strip. */
+    label?: string;
+    className?: string;
+    children?: ReactNode;
+}
+declare function Tabs({ value, defaultValue, onChange, label, className, children }: TabsProps): react.JSX.Element;
+interface TabProps {
+    value: string;
+    disabled?: boolean;
+    /** A count or dot to the right of the label. */
+    badge?: ReactNode;
+    className?: string;
+    children?: ReactNode;
+}
+declare function Tab({ value, disabled, badge, className, children }: TabProps): react.JSX.Element;
+interface TabPanelProps {
+    value: string;
+    className?: string;
+    children?: ReactNode;
+}
+declare function TabPanel({ value, className, children }: TabPanelProps): react.JSX.Element | null;
+
+interface TooltipProps {
+    /** The text shown. */
+    content: ReactNode;
+    /** Which side it sits on. Default "top". */
+    side?: "top" | "bottom" | "left" | "right";
+    className?: string;
+    /** Exactly one element: the control the hint describes. */
+    children: ReactNode;
+}
+declare function Tooltip({ content, side, className, children }: TooltipProps): react.JSX.Element;
+
 interface DataTableColumn<T> {
-    /** Property key on the row; also the default sort/filter accessor. */
+    /** Property key on the row; also the default sort/filter accessor, and the `sort.key` a paged action is asked for. */
     key: string;
     header: ReactNode;
     sortable?: boolean;
@@ -165,17 +342,21 @@ interface DataTableRowLinkedAction<T> extends DataTableRowActionBase<T> {
 }
 type DataTableRowAction<T> = DataTableRowCallbackAction<T> | DataTableRowLinkedAction<T>;
 /**
- * Where the rows came from, for rows that were sorted or mapped into a new
- * array: the useCollection() or useAction() result itself. Identity tags do
- * not survive that, and an empty derived array has nothing to tag at all.
+ * Where the rows come from. Either an identity tag for rows the screen
+ * already holds - the useCollection() or useAction() result itself, for rows
+ * that were sorted or mapped into a new array and lost their tag - or an
+ * action the table calls for one page at a time.
  */
-interface DataTableSource {
-    name: string;
-    records?: unknown;
+type DataTableSource = AnyDataSource;
+/** What `tableRef` hands back, for a screen that must re-ask by hand. */
+interface DataTableApi {
+    /** Ask the paged action for the current page again. */
+    refresh: () => void;
 }
 interface DataTableProps<T> {
     columns: DataTableColumn<T>[];
-    rows: T[];
+    /** The rows to show. Omit when `source` is a paged action: the table fetches them. */
+    rows?: T[];
     /** Stable row identity; falls back to the row index. */
     rowKey?: (row: T) => string;
     /** Show a text filter box above the table. */
@@ -193,10 +374,127 @@ interface DataTableProps<T> {
     emptyState?: ReactNode;
     loading?: boolean;
     className?: string;
-    /** The hook result the rows came from, when they were sorted or mapped into a new array. */
+    /** Where the rows came from: an identity tag, or a paged action. */
     source?: DataTableSource;
+    /** Receives `{ refresh }` for a paged table. */
+    tableRef?: MutableRefObject<DataTableApi | null>;
 }
-declare function DataTable<T>({ columns, rows, rowKey, source, filterable, filterPlaceholder, pageSize, rowActions, onRowClick, caption, emptyTitle, emptyDescription, emptyState, loading, className, }: DataTableProps<T>): react.JSX.Element;
+declare function DataTable<T>({ columns, rows, rowKey, source, filterable, filterPlaceholder, pageSize, rowActions, onRowClick, caption, emptyTitle, emptyDescription, emptyState, loading, className, tableRef, }: DataTableProps<T>): react.JSX.Element;
+
+interface ChartDatum {
+    label: string;
+    value: number;
+}
+interface ChartProps {
+    kind: "bar" | "line" | "pie";
+    data: ChartDatum[];
+    /** What the chart shows, for the accessible name. */
+    title?: string;
+    /** A longer sentence for a screen reader. */
+    description?: string;
+    /** Drawing height in pixels. Default 220. */
+    height?: number;
+    /** Format a value for the labels; defaults to the locale's own number format. */
+    formatValue?: (value: number) => string;
+    /** Shown instead of the chart when there is no data. */
+    emptyState?: ReactNode;
+    /** Where the numbers came from, so the Build view can link the chart to its step. */
+    source?: AnyDataSource;
+    className?: string;
+}
+declare function Chart({ kind, data, title, description, height, formatValue, emptyState, source, className, }: ChartProps): react.JSX.Element;
+
+interface KanbanMove {
+    /** The moved card's id. */
+    key: string;
+    /** The column it came from. */
+    from: string;
+    /** The column it was dropped on. */
+    to: string;
+}
+interface KanbanProps {
+    /** Called with every move the person makes. */
+    onMove?: (move: KanbanMove) => void;
+    /** The action a move runs (the object from useAction), called with the move. */
+    action?: ActionLike;
+    className?: string;
+    /** <KanbanColumn> children. */
+    children?: ReactNode;
+}
+declare function Kanban({ onMove, action, className, children }: KanbanProps): react.JSX.Element;
+interface KanbanColumnProps {
+    /** Column id; a move reports it as `from` or `to`. */
+    id: string;
+    title: ReactNode;
+    /** A count or a badge beside the title. */
+    meta?: ReactNode;
+    /** Shown when the column has no cards. */
+    emptyState?: ReactNode;
+    className?: string;
+    /** <KanbanCard> children. */
+    children?: ReactNode;
+}
+declare function KanbanColumn({ id, title, meta, emptyState, className, children }: KanbanColumnProps): react.JSX.Element;
+interface KanbanCardProps {
+    /** Card id; a move reports it as `key`. */
+    id: string;
+    /** The column this card is in. Omit inside a KanbanColumn: it is taken from there. */
+    column?: string;
+    disabled?: boolean;
+    className?: string;
+    children?: ReactNode;
+}
+declare function KanbanCard({ id, column, disabled, className, children }: KanbanCardProps): react.JSX.Element;
+
+interface CalendarEvent {
+    /** ISO date, "yyyy-mm-dd". */
+    date: string;
+    label: ReactNode;
+    /** Anything the screen wants back in onSelect. */
+    [key: string]: unknown;
+}
+interface CalendarProps {
+    /** Controlled month, "yyyy-mm". */
+    month?: string;
+    /** Uncontrolled starting month; defaults to the month of today. */
+    defaultMonth?: string;
+    onMonthChange?: (month: string) => void;
+    events?: CalendarEvent[];
+    /** The highlighted day, "yyyy-mm-dd". */
+    selected?: string;
+    /** Clicking a day; without it the days are not buttons. */
+    onSelect?: (date: string, events: CalendarEvent[]) => void;
+    /** Monday first (the default) or Sunday first. */
+    weekStartsOn?: "monday" | "sunday";
+    /** Events shown per day before "+n more". Default 2. */
+    maxPerDay?: number;
+    className?: string;
+}
+declare function Calendar({ month, defaultMonth, onMonthChange, events, selected, onSelect, weekStartsOn, maxPerDay, className, }: CalendarProps): react.JSX.Element;
+
+interface MarkdownProps {
+    /** The markdown source. */
+    children?: string;
+    /** True while the text is still arriving, so a half-written line stays readable. */
+    streaming?: boolean;
+    className?: string;
+}
+declare function Markdown({ children, streaming, className }: MarkdownProps): react.JSX.Element;
+
+interface JsonViewProps {
+    /** Whatever the action answered. */
+    value: unknown;
+    /** How many levels start open. Default 2. */
+    maxDepth?: number;
+    /** Show the copy button. Default true. */
+    copyable?: boolean;
+    /** Shown when there is nothing to show. */
+    emptyState?: ReactNode;
+    /** Accessible name for the tree. */
+    label?: string;
+    className?: string;
+}
+declare function JsonView({ value, maxDepth, copyable, emptyState, label, className, }: JsonViewProps): react.JSX.Element;
 
 type FormValues = Record<string, unknown>;
 interface FormProps extends Omit<FormHTMLAttributes<HTMLFormElement>, "onSubmit" | "onChange" | "action"> {
@@ -297,6 +595,17 @@ interface DatePickerProps extends NativeInputProps {
 /** Native date input: keyboard operable and localized by the browser. */
 declare function DatePicker({ value, onChange, className, id, disabled, ...props }: DatePickerProps): react.JSX.Element;
 
+interface JsonInputProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, "value" | "onChange"> {
+    /** Controlled value. Inside a Field the form's own value is used instead. */
+    value?: Record<string, unknown>;
+    onChange?: (value: Record<string, unknown> | undefined) => void;
+    /** Pretty-print the text on blur once it parses. Default true. */
+    formatOnBlur?: boolean;
+    /** Message under the field when the text is not JSON. */
+    invalidMessage?: string;
+}
+declare function JsonInput({ value, onChange, formatOnBlur, invalidMessage, className, id, disabled, rows, placeholder, ...props }: JsonInputProps): react.JSX.Element;
+
 interface FileUploadProps {
     /** Called with the FileRef once the upload lands. */
     onUpload?: (ref: FileRef) => void;
@@ -338,6 +647,18 @@ interface ProgressProps extends HTMLAttributes<HTMLDivElement> {
  * Tailwind config additions.
  */
 declare function Progress({ value, label, showValue, className, ...props }: ProgressProps): react.JSX.Element;
+
+interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
+    /** "text" is a line of type; "rect" a block; "circle" an avatar. Default "text". */
+    variant?: "text" | "rect" | "circle";
+    /** Lines to draw, for variant "text". Default 1. */
+    lines?: number;
+    /** Any CSS width ("12rem", "60%"). Defaults to the full width of the parent. */
+    width?: string | number;
+    /** Any CSS height. Defaults to the variant's own. */
+    height?: string | number;
+}
+declare function Skeleton({ variant, lines, width, height, className, style, ...props }: SkeletonProps): react.JSX.Element;
 
 type StatusBadgeStatus = "ok" | "warn" | "error" | "pending";
 interface StatusBadgeProps extends HTMLAttributes<HTMLSpanElement> {
@@ -447,4 +768,4 @@ interface AssistantWidgetProps {
 }
 declare function AssistantWidget({ title, placeholder, className }: AssistantWidgetProps): react.JSX.Element | null;
 
-export { type ActionLike, AppShell, type AppShellNavItem, type AppShellProps, type AppTheme, AssistantWidget, type AssistantWidgetProps, Button, type ButtonProps, Card, CardBody, CardFooter, CardHeader, type CardHeaderProps, type CardProps, Checkbox, type CheckboxProps, ConnectionBanner, type ConnectionBannerProps, DEFAULT_ACCENT, DataTable, type DataTableColumn, type DataTableProps, type DataTableRowAction, type DataTableRowCallbackAction, type DataTableRowLinkedAction, type DataTableSource, DatePicker, type DatePickerProps, EmptyState, type EmptyStateProps, ErrorState, type ErrorStateProps, Field, type FieldProps, FileUpload, type FileUploadProps, Form, type FormProps, type FormValues, Grid, type GridProps, NumberInput, type NumberInputProps, type ParamsOf, Progress, type ProgressProps, RadioGroup, type RadioGroupProps, Row, type RowProps, Screen, type ScreenProps, Select, type SelectOption, type SelectProps, Spinner, Stack, type StackProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, TextArea, type TextAreaProps, TextInput, type TextInputProps, Toast, type ToastOptions, type ToastProps, type UseToastResult, accentStyle, applyTheme, cn, dismissToast, focusRing, toast, useFormValues, useThemeBridge, useToast };
+export { type ActionDataSource, type ActionLike, type AnyDataSource, AppShell, type AppShellNavItem, type AppShellProps, type AppTheme, AssistantWidget, type AssistantWidgetProps, Button, type ButtonProps, Calendar, type CalendarEvent, type CalendarProps, Card, CardBody, CardFooter, CardHeader, type CardHeaderProps, type CardProps, Chart, type ChartDatum, type ChartProps, Checkbox, type CheckboxProps, ConfirmDialog, type ConfirmDialogProps, ConnectionBanner, type ConnectionBannerProps, DEFAULT_ACCENT, DataTable, type DataTableApi, type DataTableColumn, type DataTableProps, type DataTableRowAction, type DataTableRowCallbackAction, type DataTableRowLinkedAction, type DataTableSource, DatePicker, type DatePickerProps, Dialog, type DialogProps, Drawer, type DrawerProps, EmptyState, type EmptyStateProps, ErrorState, type ErrorStateProps, Field, type FieldProps, FileUpload, type FileUploadProps, Form, type FormProps, type FormValues, Grid, type GridProps, JsonInput, type JsonInputProps, JsonView, type JsonViewProps, Kanban, KanbanCard, type KanbanCardProps, KanbanColumn, type KanbanColumnProps, type KanbanMove, type KanbanProps, Markdown, type MarkdownProps, Menu, MenuItem, type MenuItemDef, type MenuItemProps, type MenuProps, NumberInput, type NumberInputProps, type PageReply, type PageRequest, type ParamsOf, Progress, type ProgressProps, RadioGroup, type RadioGroupProps, type RecordsDataSource, Row, type RowProps, Screen, type ScreenProps, Select, type SelectOption, type SelectProps, Skeleton, type SkeletonProps, Spinner, Stack, type StackProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, Tab, TabPanel, type TabPanelProps, type TabProps, Tabs, type TabsProps, TextArea, type TextAreaProps, TextInput, type TextInputProps, Toast, type ToastOptions, type ToastProps, Tooltip, type TooltipProps, type UseToastResult, accentStyle, applyTheme, cn, dismissToast, focusRing, inputBase, toast, useFormValues, useThemeBridge, useToast };

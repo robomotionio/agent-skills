@@ -74,6 +74,25 @@ If you can't describe an action in one plain line, the action is probably two ac
 - `FileRef` is predefined and always available: `{artifact_id, name, size, mime}`. Files travel as `FileRef` in params/results; bytes go over REST via `useFileUpload` / `app.files`, never through an action payload.
 - Only the schema subset exists: `object` / `array` / `string` / `number` / `integer` / `boolean` / `enum` / `$ref` / `required` / `format`. No `oneOf`, no `patternProperties`, no conditionals. If a shape seems to need them, flatten it: a status `enum` plus optional fields beats a union.
 
+## Open shapes
+
+`params` and `result` do not have to spell out fields. Two spellings are legal, and both generate a type a screen can use:
+
+| Written as | Means | Typed as |
+|---|---|---|
+| `{ "type": "object" }` | any object | `Record<string, unknown>` |
+| `{}` | any value at all | `unknown` |
+
+Reach for one when the payload really is open, and not before:
+
+- **Pass-through payloads** - the screen assembles something and the flow hands it straight on, to a webhook, a spreadsheet row, another system's API. Naming fields nobody reads only makes the contract lie.
+- **Dynamic forms** - the fields are not known when you write the app. The kit's `JsonInput` parses what the person typed and hands the form a real object, so `<Form action={run}>` sends it as the params.
+- **A result the flow decides** - a report, a lookup against a system whose response shape is not yours. The kit's `JsonView` renders it without the screen knowing its shape.
+
+Still write the `description`: it is all the person, the Designer and an MCP client have to go on. The call site is unchecked, so `run({ ...payload })` compiles - that is the point, and also the cost. **Type what you know, open what you don't**: an action with three known fields and one free-form bag declares the three and puts the bag in a property, rather than opening the whole thing.
+
+`additionalProperties` is **not** in the subset and is not needed. The open object is exactly `{ "type": "object" }`; `validate_app` rejects any key outside the list above plus `description` and `default`.
+
 ## Auth and theme
 
 - `auth`: `workspace` (Robomotion session required - the default, and the right choice unless told otherwise) · `link` (anyone with the tokenized URL) · `public` (anyone at all). Never set `public` without the user explicitly choosing it after you've said in plain words what it means ("anyone with the address can open it").

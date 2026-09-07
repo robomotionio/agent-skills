@@ -6,10 +6,12 @@ The person wants to WATCH something: "see how the shop is doing", "keep an eye o
 
 ## Screens
 
-- **overview** (`/`): a `Grid` of `Card` stat tiles on top (the 3-6 numbers that matter), a `DataTable` of the most recent records below, a Refresh `Button`, and a "last updated" line. That one screen is usually the whole app.
+- **overview** (`/`): a `Grid` of `Card` stat tiles on top (the 3-6 numbers that matter), a `Chart` when one of those numbers is really a shape - takings by month, tickets by day, the split across categories - a `DataTable` of the most recent records below, a Refresh `Button`, and a "last updated" line. That one screen is usually the whole app.
 - Optional **detail** (`/detail`) only if the person asks to click into a row.
 
-Sample data: a `SAMPLE_METRICS` and `SAMPLE_RECENT` const per screen with realistic numbers, deleted when the collections go live.
+Sample data: a `SAMPLE_METRICS` and `SAMPLE_RECENT` const per screen with realistic numbers, and a `SAMPLE_SERIES` for the chart, kept as the fallback the screen shows before the first answer arrives.
+
+`Chart` takes `{label, value}[]` and draws it in the app's own accent. It is the only way to draw one: writing SVG by hand or adding a charting library both break the kit-only rule.
 
 ## Backend shape
 
