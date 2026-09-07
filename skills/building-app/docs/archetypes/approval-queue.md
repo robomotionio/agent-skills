@@ -7,7 +7,9 @@ Things WAIT for a person's DECISION: "approve invoices", "sign off requests", "r
 ## Screens
 
 - **queue** (`/`): a `DataTable` fed by `source={{ action: listQueue }}` so the flow filters and pages, with a `StatusBadge` per row and a row action opening the review screen. `EmptyState`: "Nothing waiting for you" - for this archetype the empty state is the GOAL state, make it feel like one.
-- **review** (`/review`): one item in a `Card` - all fields, the document if there is one, and two buttons: Approve (`variant="primary"`) and Reject (`variant="danger"`, with a reason `TextArea`).
+  - **A pile is worked in batches.** Give the table `selectable` with a `rowKey` and a `bulkActions` entry per decision that can be made without reading the item ("Approve", "Reject"), so somebody who can see eighty routine ones clears them in one press instead of eighty. The action is handed either the ticked keys or `{allMatching, filter}` when the person chose "select all N" over a paged source; declare its params open and read whichever half arrived. `exportable` gives them the pile as a spreadsheet when somebody upstream asks what is waiting.
+  - Never build a checkbox column and an array of ticked ids by hand: keyed selection is what keeps the ticks on the right records when the page turns.
+- **review** (`/review`): one item in a `Card` - all fields, the document if there is one, and two buttons: Approve (`variant="primary"`) and Reject (`variant="danger"`, with a reason `TextArea`). A `Timeline` of what has already happened to the item earns its place here whenever the flow knows: who sent it, what the robot checked, why it was flagged.
 
 Sample data: a `SAMPLE_QUEUE` const of 5-8 realistic waiting items.
 
@@ -64,6 +66,24 @@ Sample data: a `SAMPLE_QUEUE` const of 5-8 realistic waiting items.
         "properties": { "ok": { "type": "boolean" } }
       },
       "timeout_ms": 60000,
+      "concurrency": { "mode": "queue", "limit": 1 }
+    },
+    "approveMany": {
+      "description": "Approve everything that was ticked, or everything a filter matches.",
+      "params": {
+        "type": "object",
+        "properties": {
+          "ids":          { "type": "array", "items": { "type": "string" } },
+          "all_matching": { "type": "boolean" },
+          "filter":       { "type": "string" }
+        }
+      },
+      "result": {
+        "type": "object",
+        "properties": { "approved": { "type": "integer" } },
+        "required": ["approved"]
+      },
+      "timeout_ms": 120000,
       "concurrency": { "mode": "queue", "limit": 1 }
     },
     "rejectInvoice": {

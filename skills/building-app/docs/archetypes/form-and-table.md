@@ -7,10 +7,16 @@ People ENTER records and SEE them accumulate: "submit expenses", "log support re
 ## Screens
 
 - **submit** (`/`): one `Form` built from the action's params - `Field`s with `Select` / `NumberInput` / `TextArea` / `DatePicker`, an optional `FileUpload` for a receipt or attachment, and one primary submit `Button`. On success: `useToast` confirmation and a cleared form.
+  - **A picker over more than about twenty things is a `Combobox`, not a `Select`.** Customers, suppliers, countries, staff: a native select cannot be searched and stops being usable long before the list stops growing. `loadOptions` asks the flow as the person types, for a list too big to hand over at all.
+  - **A record with a variable number of somethings is a `FieldArray`**: an expense with several lines, a booking with several guests, an order with several items. The form's value at that name is a real array and the contract declares it `{"type": "array", "items": {…}}`, so the flow loops over it. Never keep the rows in the screen's own `useState` beside the form.
+  - Short free words that repeat (labels, tags, recipients) are a `TagInput`, which writes a string array - never a `TextInput` split on commas in the flow.
+  - A form long enough that somebody would give up is a `Stepper`: two or three steps, the submit `Button` in the last one.
   - When the fields are **not fixed** - the person says the shape changes every time, or it varies by category - declare the action's `params` as the open shape (`{ "type": "object" }`) and give the form a `JsonInput` instead of inventing a field list that will be wrong. A form with three known fields and one free-form bag gets three real inputs and one `JsonInput`, not one `JsonInput` for the lot.
 - **records** (`/records`): a `DataTable` of what's been submitted, fed by `source={{ action: listExpenses }}` and ordered newest first by the query, `StatusBadge` per row if records have a lifecycle.
 
 Sample data: a `SAMPLE_RECORDS` const of 6-10 rows spanning the categories.
+
+When the records are worked in batches rather than read one at a time, the records table takes `selectable` + `bulkActions` and `exportable`, the same as the approval-queue's.
 
 ## Backend shape
 

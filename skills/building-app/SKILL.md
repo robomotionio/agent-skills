@@ -296,6 +296,15 @@ and the ordering happen in the query, where the rows already are, and the screen
 never holds more than a page. The exact shape both sides must keep is in
 `./docs/app-kit-reference.md`; do not invent a different one.
 
+The same table does the other two things people ask of stored rows, and neither
+needs a new contract shape. **Working them in batches** is `selectable` plus
+`bulkActions`: one more action, whose params take either the ticked ids or
+`{all_matching, filter}` when the person chose "select all N" - so a job over
+forty thousand rows is the flow's job and not the browser's. **Taking them
+away** is `exportable`, which asks the SAME paged action with `limit: 0`
+("no paging: all of them"), so an export costs no second action at all. Never
+hand-roll a checkbox column, a ticked-ids array or a CSV string in a screen.
+
 **When a change has to reach a screen that is not asking, emit an event.**
 `App Emit Event` plus `useEvent` on the screen: a decision somebody else made, a
 long job finishing, a number crossing its limit. A table re-asks by itself after
