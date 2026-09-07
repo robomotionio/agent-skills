@@ -49,12 +49,6 @@ interface CallOptions {
     /** Defaults to the manifest value for the action, else 30000. */
     timeoutMs?: number;
 }
-/** One op inside a `data_change` delta (protocol.md section 4.2). */
-interface CollectionOp<T = unknown> {
-    op: string;
-    key: string;
-    record?: T;
-}
 /** The JSON Schema subset app.json is allowed to use (draft 2020-12 subset). */
 interface ContractSchema {
     type?: "object" | "array" | "string" | "number" | "integer" | "boolean" | "null";
@@ -84,13 +78,6 @@ interface ContractEvent {
     payload: ContractSchema;
     audience?: "connection" | "client" | "user" | "broadcast";
 }
-interface ContractCollection {
-    description: string;
-    record: ContractSchema;
-    key: string;
-    scope?: "shared" | "user";
-    max_records?: number;
-}
 interface ContractScreen {
     description?: string;
     route?: string;
@@ -110,7 +97,6 @@ interface AppContract {
     types?: Record<string, ContractSchema>;
     actions: Record<string, ContractAction>;
     events?: Record<string, ContractEvent>;
-    collections?: Record<string, ContractCollection>;
     screens?: Record<string, ContractScreen>;
 }
 /** Identity block, stamped by the proxy on robot-bound envelopes (protocol.md section 2). */
@@ -278,4 +264,4 @@ interface FileUploadOptions {
     isPublic?: boolean;
 }
 
-export type { AppContract as A, CallOptions as C, FileRef as F, HelloAck as H, ResolvedInstance as R, StorageLike as S, Viewer as V, WebSocketLike as W, AppRuntimeConfig as a, ActionProgress as b, AppErrorCode as c, CollectionOp as d, ConnectionState as e, ContractAction as f, ContractCollection as g, ContractEvent as h, ContractSchema as i, ContractScreen as j, CreateAppOptions as k, FileUploadOptions as l, WireEnvelope as m, WireIdentity as n };
+export type { AppContract as A, CallOptions as C, FileRef as F, HelloAck as H, ResolvedInstance as R, StorageLike as S, Viewer as V, WebSocketLike as W, AppRuntimeConfig as a, ActionProgress as b, AppErrorCode as c, ConnectionState as d, ContractAction as e, ContractEvent as f, ContractSchema as g, ContractScreen as h, CreateAppOptions as i, FileUploadOptions as j, WireEnvelope as k, WireIdentity as l };

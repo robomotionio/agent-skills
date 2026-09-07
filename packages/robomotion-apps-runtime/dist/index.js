@@ -1,7 +1,6 @@
 import {
   AppError,
   bindAction,
-  bindCollection,
   currentCause,
   installInspector,
   installLinks,
@@ -11,131 +10,8 @@ import {
   markGesture,
   setCause,
   splitLinkKey,
-  tagAction,
-  tagCollection
-} from "./chunk-DWK5FP3E.js";
-
-// src/collection.ts
-var Collection = class {
-  name;
-  /** The current record array. Treat as read-only. */
-  records = [];
-  /** True until the first snapshot lands. */
-  loading = true;
-  /** Highest seq applied so far; 0 before the first snapshot. */
-  lastSeq = 0;
-  /** Wire subscription bookkeeping, driven by the client. */
-  desired = 0;
-  wireSubscribed = false;
-  keys = [];
-  index = /* @__PURE__ */ new Map();
-  changeCbs = /* @__PURE__ */ new Set();
-  requestSubscribe;
-  requestUnsubscribe;
-  constructor(name, requestSubscribe, requestUnsubscribe) {
-    this.name = name;
-    this.requestSubscribe = requestSubscribe;
-    this.requestUnsubscribe = requestUnsubscribe;
-    tagCollection(this.records, name);
-  }
-  /**
-   * Stamp the array and every record with the collection's identity, so a
-   * table fed these objects (or a filtered subset of them) can say which
-   * collection it shows without the author writing anything.
-   */
-  tagRecords() {
-    tagCollection(this.records, this.name);
-    for (const r of this.records) tagCollection(r, this.name);
-  }
-  /**
-   * Declare interest. Returns an unsubscribe function; the wire subscription
-   * is reference counted, so several screens can share one collection.
-   */
-  subscribe() {
-    this.desired++;
-    this.requestSubscribe(this, this.lastSeq);
-    let done = false;
-    return () => {
-      if (done) return;
-      done = true;
-      this.desired = Math.max(0, this.desired - 1);
-      if (this.desired === 0) {
-        this.requestUnsubscribe(this);
-      }
-    };
-  }
-  /** Drop every subscription and tell the robot to stop sending. */
-  unsubscribe() {
-    this.desired = 0;
-    this.requestUnsubscribe(this);
-  }
-  /** Fires after every applied snapshot or delta. Returns an off function. */
-  onChange(cb) {
-    this.changeCbs.add(cb);
-    return () => this.changeCbs.delete(cb);
-  }
-  // -- Applied by the client from wire messages ----------------------------
-  applySnapshot(seq, records, keyOf) {
-    this.records = records.slice();
-    this.keys = this.records.map(keyOf);
-    this.index = /* @__PURE__ */ new Map();
-    for (let i = 0; i < this.keys.length; i++) {
-      this.index.set(this.keys[i], i);
-    }
-    this.lastSeq = seq;
-    this.loading = false;
-    this.tagRecords();
-    this.emit();
-  }
-  /**
-   * Apply one data_change. Returns:
-   *  - "applied": in-order, records updated
-   *  - "stale":   duplicate (seq <= lastSeq), dropped
-   *  - "gap":     out of order (seq > lastSeq + 1), caller must resubscribe
-   */
-  applyChange(seq, ops) {
-    if (seq <= this.lastSeq) return "stale";
-    if (seq !== this.lastSeq + 1) return "gap";
-    for (const op of ops) {
-      const kind = String(op.op || "").toLowerCase();
-      if (kind === "delete" || kind === "remove") {
-        const at = this.index.get(op.key);
-        if (at !== void 0) {
-          this.records.splice(at, 1);
-          this.keys.splice(at, 1);
-          this.index.delete(op.key);
-          for (let i = at; i < this.keys.length; i++) {
-            this.index.set(this.keys[i], i);
-          }
-        }
-      } else {
-        if (op.record === void 0) continue;
-        const at = this.index.get(op.key);
-        if (at !== void 0) {
-          this.records[at] = op.record;
-        } else {
-          this.index.set(op.key, this.records.length);
-          this.keys.push(op.key);
-          this.records.push(op.record);
-        }
-      }
-    }
-    this.records = this.records.slice();
-    this.lastSeq = seq;
-    this.loading = false;
-    this.tagRecords();
-    this.emit();
-    return "applied";
-  }
-  emit() {
-    for (const cb of this.changeCbs) {
-      try {
-        cb();
-      } catch {
-      }
-    }
-  }
-};
+  tagAction
+} from "./chunk-NQW7S5BP.js";
 
 // src/files.ts
 function encodeArtifactId(addr) {
@@ -636,7 +512,6 @@ var AppClient = class {
   pending = /* @__PURE__ */ new Map();
   assistantTurns = /* @__PURE__ */ new Map();
   eventHandlers = /* @__PURE__ */ new Map();
-  collections = /* @__PURE__ */ new Map();
   constructor(options) {
     this.opts = options;
     this.contractHash = options.contractHash;
@@ -906,8 +781,6 @@ var AppClient = class {
       case "action_error":
       case "action_progress":
       case "event":
-      case "data_change":
-      case "data_snapshot":
       case "contract_mismatch":
       case "assistant_event":
         return true;
@@ -1105,25 +978,16 @@ var AppClient = class {
   }
   /** First connection sends hello; every reconnect sends resume (protocol.md section 8). */
   async sendHelloOrResume() {
-    const collections = {};
-    for (const col of this.collections.values()) {
-      if (col.desired > 0) {
-        collections[col.name] = col.lastSeq;
-        col.wireSubscribed = true;
-      }
-    }
     if (!this.helloSentOnce) {
       this.helloSentOnce = true;
       await this.sendEnvelope("hello", {
         client_id: this.clientId,
-        contract_hash: this.contractHash,
-        collections
+        contract_hash: this.contractHash
       });
     } else {
       await this.sendEnvelope("resume", {
         client_id: this.clientId,
-        pending_calls: [...this.pending.keys()],
-        collections
+        pending_calls: [...this.pending.keys()]
       });
     }
   }
@@ -1150,15 +1014,6 @@ var AppClient = class {
           return;
         }
         this.connection.set("ready");
-        for (const col of this.collections.values()) {
-          if (col.desired > 0 && !col.wireSubscribed) {
-            col.wireSubscribed = true;
-            void this.sendEnvelope("collection_subscribe", {
-              collection: col.name,
-              since_seq: col.lastSeq
-            });
-          }
-        }
         return;
       }
       case "contract_mismatch": {
@@ -1237,38 +1092,6 @@ var AppClient = class {
             } catch {
             }
           }
-        }
-        return;
-      }
-      case "data_snapshot": {
-        const name = String(body.collection ?? "");
-        const col = this.collections.get(name);
-        if (!col) return;
-        const seq = Number(body.seq ?? 0);
-        const records = Array.isArray(body.records) ? body.records : [];
-        const keyField = this.opts.contract?.collections?.[name]?.key;
-        col.applySnapshot(seq, records, (r) => {
-          const rec = r;
-          if (keyField && rec && rec[keyField] !== void 0) return String(rec[keyField]);
-          for (const k of ["key", "id"]) {
-            if (rec && rec[k] !== void 0) return String(rec[k]);
-          }
-          return JSON.stringify(rec);
-        });
-        return;
-      }
-      case "data_change": {
-        const name = String(body.collection ?? "");
-        const col = this.collections.get(name);
-        if (!col) return;
-        const seq = Number(body.seq ?? 0);
-        const ops = Array.isArray(body.ops) ? body.ops : [];
-        const outcome = col.applyChange(seq, ops);
-        if (outcome === "gap") {
-          void this.sendEnvelope("collection_subscribe", {
-            collection: col.name,
-            since_seq: col.lastSeq
-          });
         }
         return;
       }
@@ -1497,37 +1320,6 @@ var AppClient = class {
       if (set.size === 0) this.eventHandlers.delete(event);
     };
   }
-  // -------------------------------------------------------------------------
-  // Collections
-  // -------------------------------------------------------------------------
-  /** Get (or create) the shared handle for one collection. */
-  collection(name) {
-    let col = this.collections.get(name);
-    if (!col) {
-      col = new Collection(
-        name,
-        (c, sinceSeq) => {
-          if (this.connection.state === "ready" && !c.wireSubscribed) {
-            c.wireSubscribed = true;
-            void this.sendEnvelope("collection_subscribe", {
-              collection: c.name,
-              since_seq: sinceSeq
-            });
-          }
-        },
-        (c) => {
-          if (c.wireSubscribed) {
-            c.wireSubscribed = false;
-            if (this.connection.state === "ready") {
-              void this.sendEnvelope("collection_unsubscribe", { collection: c.name });
-            }
-          }
-        }
-      );
-      this.collections.set(name, col);
-    }
-    return col;
-  }
 };
 function createApp(options) {
   const client = new AppClient(options);
@@ -1602,7 +1394,6 @@ function normalize(input) {
 export {
   AppClient,
   AppError,
-  Collection,
   ConnectionInfo,
   FilesApi,
   ViewerInfo,
@@ -1613,7 +1404,6 @@ export {
   base64ToArrayBuffer,
   base64ToUtf8,
   bindAction,
-  bindCollection,
   createApp,
   currentCause,
   decodeArtifactId,
@@ -1632,7 +1422,6 @@ export {
   sealBody,
   splitLinkKey,
   tagAction,
-  tagCollection,
   utf8ToBase64,
   uuidToBase58
 };

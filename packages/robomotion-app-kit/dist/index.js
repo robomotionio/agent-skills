@@ -3731,12 +3731,8 @@ function readPageReply(reply, req) {
   return { rows, total: maybeMore ? seen + 1 : seen };
 }
 function sourceLinkAttrs(source) {
-  if (isActionSource(source)) {
-    return source.action.name ? { "data-rm-action": source.action.name } : {};
-  }
-  if (!source.name) return {};
-  const ns = "records" in source ? "collection" : "action";
-  return { [`data-rm-${ns}`]: source.name };
+  const name = isActionSource(source) ? source.action.name : source.name;
+  return name ? { "data-rm-action": name } : {};
 }
 function rowsLinkAttrs(rows) {
   if (!rows || rows.length === 0) {
@@ -3936,7 +3932,7 @@ function DataTable({
   }, [filter, paged]);
   const paging = effPageSize > 0;
   const inMemoryTotal = useRef4(0);
-  const total = paged ? remote?.total ?? 0 : inMemoryTotal.current;
+  const total = paged ? remote?.total ?? rows.length : inMemoryTotal.current;
   const pageCount = paging ? Math.max(1, Math.ceil(total / effPageSize)) : 1;
   const clampedPage = Math.min(page, pageCount - 1);
   const fetchPage = useCallback2(async () => {
@@ -4015,7 +4011,7 @@ function DataTable({
     });
   }, [paged, filtered, columns, sortKey, sortDir]);
   inMemoryTotal.current = sorted.length;
-  const pageRows = paged ? remote?.rows ?? NO_ROWS : paging ? sorted.slice(clampedPage * effPageSize, clampedPage * effPageSize + effPageSize) : sorted;
+  const pageRows = paged ? remote?.rows ?? rows : paging ? sorted.slice(clampedPage * effPageSize, clampedPage * effPageSize + effPageSize) : sorted;
   useEffect6(() => {
     if (page > pageCount - 1) setPage(pageCount - 1);
   }, [page, pageCount]);

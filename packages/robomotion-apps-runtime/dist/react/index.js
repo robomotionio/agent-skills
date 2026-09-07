@@ -1,12 +1,11 @@
 import {
   AppError,
   bindAction,
-  bindCollection,
   linkKey,
   markGesture,
   noteHookUse,
   tagAction
-} from "../chunk-DWK5FP3E.js";
+} from "../chunk-NQW7S5BP.js";
 
 // src/react/index.ts
 import {
@@ -117,32 +116,6 @@ function useAction(name) {
 }
 function shouldRetryOnReconnect(error, state) {
   return state === "ready" && !!error && error.code === "robot_offline";
-}
-function useCollection(name) {
-  const app = useAppClient();
-  const col = useMemo(() => app.collection(name), [app, name]);
-  useEffect(() => {
-    const key = linkKey("collection", name);
-    noteHookUse(key, 1);
-    return () => noteHookUse(key, -1);
-  }, [name]);
-  const [records, setRecords] = useState(col.records);
-  const [loading, setLoading] = useState(col.loading);
-  const [error] = useState(void 0);
-  useEffect(() => {
-    setRecords(col.records);
-    setLoading(col.loading);
-    const offChange = col.onChange(() => {
-      setRecords(col.records);
-      setLoading(col.loading);
-    });
-    const off = col.subscribe();
-    return () => {
-      offChange();
-      off();
-    };
-  }, [col]);
-  return { records, loading, error, name };
 }
 function useEvent(name, cb) {
   const app = useAppClient();
@@ -259,13 +232,11 @@ function useAssistant() {
 export {
   AppProvider,
   bindAction,
-  bindCollection,
   markGesture,
   shouldRetryOnReconnect,
   useAction,
   useAppClient,
   useAssistant,
-  useCollection,
   useConnection,
   useEvent,
   useFileUpload,
