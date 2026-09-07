@@ -3,7 +3,7 @@ import {
   El,
   S,
   co
-} from "./chunk-MAGV6XDF.js";
+} from "./chunk-JWSPEJ2V.js";
 
 // node_modules/streamdown/dist/highlighted-body-KPVGNVTW.js
 import { useContext, useState, useEffect } from "react";
@@ -24,4 +24,4 @@ var x = ({ code: s, language: e, maxHeight: h, raw: t, className: m, startLine: 
 export {
   x as HighlightedCodeBlockBody
 };
-//# sourceMappingURL=highlighted-body-KPVGNVTW-NUJGR42L.js.map
+//# sourceMappingURL=highlighted-body-KPVGNVTW-RC655SIN.js.map

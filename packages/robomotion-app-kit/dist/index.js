@@ -1,7 +1,7 @@
 import {
   Xa,
   clsx
-} from "./chunk-MAGV6XDF.js";
+} from "./chunk-JWSPEJ2V.js";
 
 // node_modules/tailwind-merge/dist/bundle-mjs.mjs
 var CLASS_PART_SEPARATOR = "-";
@@ -415,7 +415,7 @@ var getDefaultConfig = () => {
   const opacity = fromTheme("opacity");
   const padding = fromTheme("padding");
   const saturate = fromTheme("saturate");
-  const scale2 = fromTheme("scale");
+  const scale = fromTheme("scale");
   const sepia = fromTheme("sepia");
   const skew = fromTheme("skew");
   const space = fromTheme("space");
@@ -2070,21 +2070,21 @@ var getDefaultConfig = () => {
        * @see https://tailwindcss.com/docs/scale
        */
       scale: [{
-        scale: [scale2]
+        scale: [scale]
       }],
       /**
        * Scale X
        * @see https://tailwindcss.com/docs/scale
        */
       "scale-x": [{
-        "scale-x": [scale2]
+        "scale-x": [scale]
       }],
       /**
        * Scale Y
        * @see https://tailwindcss.com/docs/scale
        */
       "scale-y": [{
-        "scale-y": [scale2]
+        "scale-y": [scale]
       }],
       /**
        * Rotate
@@ -3046,235 +3046,16 @@ function Screen({ title, description, actions, children, className, ...props }) 
   ] });
 }
 
-// src/components/menu.tsx
-import {
-  Children,
-  createContext,
-  forwardRef as forwardRef2,
-  useContext,
-  useEffect as useEffect4,
-  useRef,
-  useState as useState3
-} from "react";
-import { jsx as jsx6, jsxs as jsxs6 } from "react/jsx-runtime";
-var MenuContext = createContext(null);
-function Menu({
-  items: items2,
-  children,
-  trigger,
-  label = "More",
-  align = "end",
-  menuLabel = "Actions",
-  disabled = false,
-  className
-}) {
-  const [open, setOpen] = useState3(false);
-  const buttonRef = useRef(null);
-  const rootRef = useRef(null);
-  const panelRef = useRef(null);
-  useEffect4(() => {
-    if (!open) return;
-    const onDocClick = (e) => {
-      if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
-    };
-    document.addEventListener("mousedown", onDocClick);
-    enabledItems(panelRef.current)[0]?.focus();
-    return () => document.removeEventListener("mousedown", onDocClick);
-  }, [open]);
-  const close = (refocus = true) => {
-    setOpen(false);
-    if (refocus) buttonRef.current?.focus();
-  };
-  const moveFocus = (delta) => {
-    const enabled = enabledItems(panelRef.current);
-    if (enabled.length === 0) return;
-    const current = enabled.findIndex((el) => el === document.activeElement);
-    const next = (current + delta + enabled.length) % enabled.length;
-    enabled[next].focus();
-  };
-  const onMenuKeyDown = (e) => {
-    switch (e.key) {
-      case "ArrowDown":
-        e.preventDefault();
-        moveFocus(1);
-        break;
-      case "ArrowUp":
-        e.preventDefault();
-        moveFocus(-1);
-        break;
-      case "Home": {
-        e.preventDefault();
-        enabledItems(panelRef.current)[0]?.focus();
-        break;
-      }
-      case "End": {
-        e.preventDefault();
-        const enabled = enabledItems(panelRef.current);
-        enabled[enabled.length - 1]?.focus();
-        break;
-      }
-      case "Escape":
-        e.preventDefault();
-        close();
-        break;
-      case "Tab":
-        close(false);
-        break;
-    }
-  };
-  const linkedNames = joinNames((items2 ?? []).map((i) => i.action?.name));
-  return /* @__PURE__ */ jsxs6("div", { ref: rootRef, className: cn("relative inline-block", className), children: [
-    /* @__PURE__ */ jsx6(
-      "button",
-      {
-        ref: buttonRef,
-        type: "button",
-        "aria-haspopup": "menu",
-        "aria-expanded": open,
-        "aria-label": label,
-        disabled,
-        "data-rm-action": linkedNames,
-        onClick: () => setOpen((v) => !v),
-        onKeyDown: (e) => {
-          if (e.key === "ArrowDown" && !open) {
-            e.preventDefault();
-            setOpen(true);
-          }
-        },
-        className: cn(
-          "rounded-md p-1.5 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-50 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100",
-          focusRing
-        ),
-        children: trigger ?? /* @__PURE__ */ jsx6(MoreIcon, {})
-      }
-    ),
-    open && /* @__PURE__ */ jsx6(MenuContext.Provider, { value: { close }, children: /* @__PURE__ */ jsx6(
-      "div",
-      {
-        ref: panelRef,
-        role: "menu",
-        "aria-label": menuLabel,
-        onKeyDown: onMenuKeyDown,
-        className: cn(
-          "absolute z-20 mt-1 w-44 overflow-hidden rounded-md border border-neutral-200 bg-white py-1 text-left shadow-lg dark:border-neutral-700 dark:bg-neutral-900",
-          align === "end" ? "right-0" : "left-0"
-        ),
-        children: items2 ? items2.map((item, i) => /* @__PURE__ */ jsx6(
-          MenuItem,
-          {
-            danger: item.danger,
-            disabled: item.disabled,
-            action: item.action,
-            params: item.params,
-            onSelect: item.onSelect,
-            children: item.label
-          },
-          typeof item.label === "string" ? item.label : i
-        )) : Children.toArray(children)
-      }
-    ) })
-  ] });
-}
-var MenuItem = forwardRef2(function MenuItem2({ danger, action, params, onSelect, children, className, disabled, onClick, ...props }, ref) {
-  const menu = useContext(MenuContext);
-  return /* @__PURE__ */ jsx6(
-    "button",
-    {
-      ref,
-      type: "button",
-      role: "menuitem",
-      tabIndex: -1,
-      disabled,
-      "data-rm-action": action?.name,
-      onClick: (e) => {
-        onClick?.(e);
-        menu?.close(false);
-        onSelect?.();
-        if (action) {
-          void Promise.resolve(action.run(resolveParams(params, e))).catch(() => void 0);
-        }
-      },
-      className: cn(
-        "block w-full px-3 py-1.5 text-left text-sm transition-colors focus:outline-none disabled:cursor-not-allowed disabled:opacity-50",
-        danger ? "text-red-600 hover:bg-red-50 focus:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10 dark:focus:bg-red-500/10" : "text-neutral-700 hover:bg-neutral-100 focus:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800",
-        className
-      ),
-      ...props,
-      children
-    }
-  );
-});
-function enabledItems(panel) {
-  if (!panel) return [];
-  return Array.from(panel.querySelectorAll('[role="menuitem"]')).filter(
-    (el) => !el.disabled
-  );
-}
-function MoreIcon() {
-  return /* @__PURE__ */ jsxs6("svg", { "aria-hidden": "true", className: "h-4 w-4", viewBox: "0 0 24 24", fill: "currentColor", children: [
-    /* @__PURE__ */ jsx6("circle", { cx: "12", cy: "5", r: "1.75" }),
-    /* @__PURE__ */ jsx6("circle", { cx: "12", cy: "12", r: "1.75" }),
-    /* @__PURE__ */ jsx6("circle", { cx: "12", cy: "19", r: "1.75" })
-  ] });
-}
-
-// src/components/card.tsx
-import { jsx as jsx7, jsxs as jsxs7 } from "react/jsx-runtime";
-function Card({ className, ...props }) {
-  return /* @__PURE__ */ jsx7(
-    "div",
-    {
-      className: cn(
-        "rounded-lg border border-neutral-200 bg-white text-left shadow-sm dark:border-neutral-800 dark:bg-neutral-900",
-        className
-      ),
-      ...props
-    }
-  );
-}
-function CardHeader({ className, title, description, children, ...props }) {
-  return /* @__PURE__ */ jsxs7(
-    "div",
-    {
-      className: cn(
-        "border-b border-neutral-200 px-4 py-3 dark:border-neutral-800",
-        className
-      ),
-      ...props,
-      children: [
-        title !== void 0 && /* @__PURE__ */ jsx7("h3", { className: "text-sm font-semibold text-neutral-900 dark:text-neutral-100", children: title }),
-        description !== void 0 && /* @__PURE__ */ jsx7("p", { className: "mt-0.5 text-sm text-neutral-500 dark:text-neutral-400", children: description }),
-        children
-      ]
-    }
-  );
-}
-function CardBody({ className, ...props }) {
-  return /* @__PURE__ */ jsx7("div", { className: cn("px-4 py-4", className), ...props });
-}
-function CardFooter({ className, ...props }) {
-  return /* @__PURE__ */ jsx7(
-    "div",
-    {
-      className: cn(
-        "flex items-center justify-end gap-2 rounded-b-lg border-t border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900/60",
-        className
-      ),
-      ...props
-    }
-  );
-}
-
 // src/components/dialog.tsx
 import {
   useCallback,
-  useEffect as useEffect5,
+  useEffect as useEffect4,
   useId as useId2,
-  useRef as useRef2,
-  useState as useState4
+  useRef,
+  useState as useState3
 } from "react";
 import { createPortal } from "react-dom";
-import { Fragment, jsx as jsx8, jsxs as jsxs8 } from "react/jsx-runtime";
+import { Fragment, jsx as jsx6, jsxs as jsxs6 } from "react/jsx-runtime";
 var FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
 function focusableIn(root) {
   if (!root) return [];
@@ -3284,9 +3065,9 @@ function focusableIn(root) {
 }
 var scrollLocks = 0;
 function useOverlay(open, onClose) {
-  const panelRef = useRef2(null);
-  const openerRef = useRef2(null);
-  useEffect5(() => {
+  const panelRef = useRef(null);
+  const openerRef = useRef(null);
+  useEffect4(() => {
     if (!open) return;
     openerRef.current = document.activeElement ?? null;
     const first = focusableIn(panelRef.current)[0] ?? panelRef.current;
@@ -3353,9 +3134,9 @@ function Dialog({
   const { panelRef, onKeyDown } = useOverlay(open, onClose);
   const id = useId2();
   if (!open) return null;
-  return /* @__PURE__ */ jsxs8(OverlayPortal, { children: [
-    /* @__PURE__ */ jsx8("div", { className: overlayBackdrop, onClick: isStatic ? void 0 : onClose }),
-    /* @__PURE__ */ jsx8("div", { className: "fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4", children: /* @__PURE__ */ jsxs8(
+  return /* @__PURE__ */ jsxs6(OverlayPortal, { children: [
+    /* @__PURE__ */ jsx6("div", { className: overlayBackdrop, onClick: isStatic ? void 0 : onClose }),
+    /* @__PURE__ */ jsx6("div", { className: "fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4", children: /* @__PURE__ */ jsxs6(
       "div",
       {
         ref: panelRef,
@@ -3371,9 +3152,9 @@ function Dialog({
           className
         ),
         children: [
-          (title !== void 0 || !hideClose) && /* @__PURE__ */ jsxs8("div", { className: "flex items-start gap-3 border-b border-neutral-200 px-5 py-4 dark:border-neutral-800", children: [
-            /* @__PURE__ */ jsxs8("div", { className: "min-w-0 flex-1", children: [
-              title !== void 0 && /* @__PURE__ */ jsx8(
+          (title !== void 0 || !hideClose) && /* @__PURE__ */ jsxs6("div", { className: "flex items-start gap-3 border-b border-neutral-200 px-5 py-4 dark:border-neutral-800", children: [
+            /* @__PURE__ */ jsxs6("div", { className: "min-w-0 flex-1", children: [
+              title !== void 0 && /* @__PURE__ */ jsx6(
                 "h2",
                 {
                   id: `${id}-title`,
@@ -3381,19 +3162,19 @@ function Dialog({
                   children: title
                 }
               ),
-              description !== void 0 && /* @__PURE__ */ jsx8("p", { id: `${id}-desc`, className: "mt-1 text-sm text-neutral-500 dark:text-neutral-400", children: description })
+              description !== void 0 && /* @__PURE__ */ jsx6("p", { id: `${id}-desc`, className: "mt-1 text-sm text-neutral-500 dark:text-neutral-400", children: description })
             ] }),
-            !hideClose && /* @__PURE__ */ jsx8(CloseButton, { onClick: onClose })
+            !hideClose && /* @__PURE__ */ jsx6(CloseButton, { onClick: onClose })
           ] }),
-          children !== void 0 && /* @__PURE__ */ jsx8("div", { className: "px-5 py-4 text-sm text-neutral-800 dark:text-neutral-200", children }),
-          footer !== void 0 && /* @__PURE__ */ jsx8("div", { className: "flex items-center justify-end gap-2 rounded-b-lg border-t border-neutral-200 bg-neutral-50 px-5 py-3 dark:border-neutral-800 dark:bg-neutral-900/60", children: footer })
+          children !== void 0 && /* @__PURE__ */ jsx6("div", { className: "px-5 py-4 text-sm text-neutral-800 dark:text-neutral-200", children }),
+          footer !== void 0 && /* @__PURE__ */ jsx6("div", { className: "flex items-center justify-end gap-2 rounded-b-lg border-t border-neutral-200 bg-neutral-50 px-5 py-3 dark:border-neutral-800 dark:bg-neutral-900/60", children: footer })
         ]
       }
     ) })
   ] });
 }
 function CloseButton({ onClick, label = "Close" }) {
-  return /* @__PURE__ */ jsx8(
+  return /* @__PURE__ */ jsx6(
     "button",
     {
       type: "button",
@@ -3403,7 +3184,7 @@ function CloseButton({ onClick, label = "Close" }) {
         "-mr-1 shrink-0 rounded-md p-1 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200",
         focusRing
       ),
-      children: /* @__PURE__ */ jsx8("svg", { "aria-hidden": "true", className: "h-4 w-4", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: /* @__PURE__ */ jsx8("path", { strokeLinecap: "round", d: "M6 6l12 12M18 6L6 18" }) })
+      children: /* @__PURE__ */ jsx6("svg", { "aria-hidden": "true", className: "h-4 w-4", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: /* @__PURE__ */ jsx6("path", { strokeLinecap: "round", d: "M6 6l12 12M18 6L6 18" }) })
     }
   );
 }
@@ -3420,8 +3201,8 @@ function ConfirmDialog({
   onConfirm,
   children
 }) {
-  const [busy, setBusy] = useState4(false);
-  useEffect5(() => {
+  const [busy, setBusy] = useState3(false);
+  useEffect4(() => {
     if (!open) setBusy(false);
   }, [open]);
   const confirm = () => {
@@ -3436,7 +3217,7 @@ function ConfirmDialog({
       onClose();
     });
   };
-  return /* @__PURE__ */ jsx8(
+  return /* @__PURE__ */ jsx6(
     Dialog,
     {
       open,
@@ -3446,9 +3227,9 @@ function ConfirmDialog({
       size: "sm",
       title,
       description,
-      footer: /* @__PURE__ */ jsxs8(Fragment, { children: [
-        /* @__PURE__ */ jsx8(Button, { variant: "secondary", onClick: onClose, disabled: busy, children: cancelLabel }),
-        /* @__PURE__ */ jsx8(
+      footer: /* @__PURE__ */ jsxs6(Fragment, { children: [
+        /* @__PURE__ */ jsx6(Button, { variant: "secondary", onClick: onClose, disabled: busy, children: cancelLabel }),
+        /* @__PURE__ */ jsx6(
           Button,
           {
             variant: danger ? "danger" : "primary",
@@ -3464,9 +3245,391 @@ function ConfirmDialog({
   );
 }
 
+// src/components/alert.tsx
+import { jsx as jsx7, jsxs as jsxs7 } from "react/jsx-runtime";
+var VARIANTS = {
+  info: {
+    box: "border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-200",
+    icon: "text-blue-500 dark:text-blue-400",
+    label: "Information"
+  },
+  success: {
+    box: "border-green-200 bg-green-50 text-green-900 dark:border-green-500/30 dark:bg-green-500/10 dark:text-green-200",
+    icon: "text-green-500 dark:text-green-400",
+    label: "Success"
+  },
+  warning: {
+    box: "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200",
+    icon: "text-amber-500 dark:text-amber-400",
+    label: "Warning"
+  },
+  error: {
+    box: "border-red-200 bg-red-50 text-red-900 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200",
+    icon: "text-red-500 dark:text-red-400",
+    label: "Error"
+  }
+};
+var ICON_PATHS = {
+  info: "M12 9h.01M11 12h1v4h1M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z",
+  success: "m9 12 2 2 4-4M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z",
+  warning: "M12 9v4m0 3h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z",
+  error: "M12 9v4m0 3h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+};
+function Alert({
+  variant = "info",
+  title,
+  onDismiss,
+  action,
+  children,
+  className,
+  ...props
+}) {
+  const v = VARIANTS[variant];
+  return /* @__PURE__ */ jsxs7(
+    "div",
+    {
+      role: variant === "error" || variant === "warning" ? "alert" : "status",
+      className: cn("flex items-start gap-3 rounded-lg border p-3 text-left text-sm", v.box, className),
+      ...props,
+      children: [
+        /* @__PURE__ */ jsx7(
+          "svg",
+          {
+            "aria-hidden": "true",
+            className: cn("mt-0.5 h-4 w-4 shrink-0", v.icon),
+            viewBox: "0 0 24 24",
+            fill: "none",
+            stroke: "currentColor",
+            strokeWidth: "2",
+            children: /* @__PURE__ */ jsx7("path", { strokeLinecap: "round", strokeLinejoin: "round", d: ICON_PATHS[variant] })
+          }
+        ),
+        /* @__PURE__ */ jsxs7("div", { className: "min-w-0 flex-1", children: [
+          title !== void 0 && /* @__PURE__ */ jsx7("div", { className: "font-medium", children: title }),
+          children !== void 0 && /* @__PURE__ */ jsx7("div", { className: cn(title !== void 0 && "mt-0.5", "opacity-90"), children }),
+          action !== void 0 && /* @__PURE__ */ jsx7("div", { className: "mt-2", children: action })
+        ] }),
+        onDismiss && /* @__PURE__ */ jsx7(CloseButton, { onClick: onDismiss, label: `Dismiss this ${v.label.toLowerCase()}` })
+      ]
+    }
+  );
+}
+
+// src/components/copy-button.tsx
+import { useState as useState4 } from "react";
+import { jsx as jsx8, jsxs as jsxs8 } from "react/jsx-runtime";
+function CopyButton({
+  value,
+  children,
+  label = "Copy",
+  toastTitle = "Copied",
+  size = "sm",
+  disabled,
+  className
+}) {
+  const [copied, setCopied] = useState4(false);
+  const copy = async () => {
+    const ok = await writeClipboard(value);
+    setCopied(ok);
+    if (ok) setTimeout(() => setCopied(false), 1600);
+    if (toastTitle !== void 0) {
+      toast(
+        ok ? { title: toastTitle, variant: "success", durationMs: 2e3 } : { title: "Could not copy", description: "Select the text and copy it by hand.", variant: "error" }
+      );
+    }
+  };
+  return /* @__PURE__ */ jsxs8(
+    "button",
+    {
+      type: "button",
+      "aria-label": children === void 0 ? label : void 0,
+      disabled,
+      onClick: () => void copy(),
+      className: cn(
+        "inline-flex items-center gap-1.5 rounded-md border border-neutral-300 bg-white font-medium text-neutral-700 transition-colors hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800",
+        size === "sm" ? "h-8 px-2.5 text-xs" : "h-9 px-3 text-sm",
+        focusRing,
+        className
+      ),
+      children: [
+        copied ? /* @__PURE__ */ jsx8(TickIcon, {}) : /* @__PURE__ */ jsx8(CopyIcon, {}),
+        children
+      ]
+    }
+  );
+}
+async function writeClipboard(text) {
+  try {
+    if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+  }
+  if (typeof document === "undefined") return false;
+  try {
+    const area = document.createElement("textarea");
+    area.value = text;
+    area.setAttribute("readonly", "");
+    area.style.position = "fixed";
+    area.style.top = "-1000px";
+    area.style.opacity = "0";
+    document.body.appendChild(area);
+    area.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(area);
+    return ok;
+  } catch {
+    return false;
+  }
+}
+function CopyIcon() {
+  return /* @__PURE__ */ jsx8("svg", { "aria-hidden": "true", className: "h-3.5 w-3.5", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: /* @__PURE__ */ jsx8(
+    "path",
+    {
+      strokeLinecap: "round",
+      strokeLinejoin: "round",
+      d: "M8 8V5a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-3M5 8h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"
+    }
+  ) });
+}
+function TickIcon() {
+  return /* @__PURE__ */ jsx8(
+    "svg",
+    {
+      "aria-hidden": "true",
+      className: "h-3.5 w-3.5 text-green-600 dark:text-green-400",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2.5",
+      children: /* @__PURE__ */ jsx8("path", { strokeLinecap: "round", strokeLinejoin: "round", d: "m5 13 4 4L19 7" })
+    }
+  );
+}
+
+// src/components/menu.tsx
+import {
+  Children,
+  createContext,
+  forwardRef as forwardRef2,
+  useContext,
+  useEffect as useEffect5,
+  useRef as useRef2,
+  useState as useState5
+} from "react";
+import { jsx as jsx9, jsxs as jsxs9 } from "react/jsx-runtime";
+var MenuContext = createContext(null);
+function Menu({
+  items: items2,
+  children,
+  trigger,
+  label = "More",
+  align = "end",
+  menuLabel = "Actions",
+  disabled = false,
+  className
+}) {
+  const [open, setOpen] = useState5(false);
+  const buttonRef = useRef2(null);
+  const rootRef = useRef2(null);
+  const panelRef = useRef2(null);
+  useEffect5(() => {
+    if (!open) return;
+    const onDocClick = (e) => {
+      if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDocClick);
+    enabledItems(panelRef.current)[0]?.focus();
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [open]);
+  const close = (refocus = true) => {
+    setOpen(false);
+    if (refocus) buttonRef.current?.focus();
+  };
+  const moveFocus = (delta) => {
+    const enabled = enabledItems(panelRef.current);
+    if (enabled.length === 0) return;
+    const current = enabled.findIndex((el) => el === document.activeElement);
+    const next = (current + delta + enabled.length) % enabled.length;
+    enabled[next].focus();
+  };
+  const onMenuKeyDown = (e) => {
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        moveFocus(1);
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        moveFocus(-1);
+        break;
+      case "Home": {
+        e.preventDefault();
+        enabledItems(panelRef.current)[0]?.focus();
+        break;
+      }
+      case "End": {
+        e.preventDefault();
+        const enabled = enabledItems(panelRef.current);
+        enabled[enabled.length - 1]?.focus();
+        break;
+      }
+      case "Escape":
+        e.preventDefault();
+        close();
+        break;
+      case "Tab":
+        close(false);
+        break;
+    }
+  };
+  const linkedNames = joinNames((items2 ?? []).map((i) => i.action?.name));
+  return /* @__PURE__ */ jsxs9("div", { ref: rootRef, className: cn("relative inline-block", className), children: [
+    /* @__PURE__ */ jsx9(
+      "button",
+      {
+        ref: buttonRef,
+        type: "button",
+        "aria-haspopup": "menu",
+        "aria-expanded": open,
+        "aria-label": label,
+        disabled,
+        "data-rm-action": linkedNames,
+        onClick: () => setOpen((v) => !v),
+        onKeyDown: (e) => {
+          if (e.key === "ArrowDown" && !open) {
+            e.preventDefault();
+            setOpen(true);
+          }
+        },
+        className: cn(
+          "rounded-md p-1.5 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-50 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100",
+          focusRing
+        ),
+        children: trigger ?? /* @__PURE__ */ jsx9(MoreIcon, {})
+      }
+    ),
+    open && /* @__PURE__ */ jsx9(MenuContext.Provider, { value: { close }, children: /* @__PURE__ */ jsx9(
+      "div",
+      {
+        ref: panelRef,
+        role: "menu",
+        "aria-label": menuLabel,
+        onKeyDown: onMenuKeyDown,
+        className: cn(
+          "absolute z-20 mt-1 w-44 overflow-hidden rounded-md border border-neutral-200 bg-white py-1 text-left shadow-lg dark:border-neutral-700 dark:bg-neutral-900",
+          align === "end" ? "right-0" : "left-0"
+        ),
+        children: items2 ? items2.map((item, i) => /* @__PURE__ */ jsx9(
+          MenuItem,
+          {
+            danger: item.danger,
+            disabled: item.disabled,
+            action: item.action,
+            params: item.params,
+            onSelect: item.onSelect,
+            children: item.label
+          },
+          typeof item.label === "string" ? item.label : i
+        )) : Children.toArray(children)
+      }
+    ) })
+  ] });
+}
+var MenuItem = forwardRef2(function MenuItem2({ danger, action, params, onSelect, children, className, disabled, onClick, ...props }, ref) {
+  const menu = useContext(MenuContext);
+  return /* @__PURE__ */ jsx9(
+    "button",
+    {
+      ref,
+      type: "button",
+      role: "menuitem",
+      tabIndex: -1,
+      disabled,
+      "data-rm-action": action?.name,
+      onClick: (e) => {
+        onClick?.(e);
+        menu?.close(false);
+        onSelect?.();
+        if (action) {
+          void Promise.resolve(action.run(resolveParams(params, e))).catch(() => void 0);
+        }
+      },
+      className: cn(
+        "block w-full px-3 py-1.5 text-left text-sm transition-colors focus:outline-none disabled:cursor-not-allowed disabled:opacity-50",
+        danger ? "text-red-600 hover:bg-red-50 focus:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10 dark:focus:bg-red-500/10" : "text-neutral-700 hover:bg-neutral-100 focus:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800",
+        className
+      ),
+      ...props,
+      children
+    }
+  );
+});
+function enabledItems(panel) {
+  if (!panel) return [];
+  return Array.from(panel.querySelectorAll('[role="menuitem"]')).filter(
+    (el) => !el.disabled
+  );
+}
+function MoreIcon() {
+  return /* @__PURE__ */ jsxs9("svg", { "aria-hidden": "true", className: "h-4 w-4", viewBox: "0 0 24 24", fill: "currentColor", children: [
+    /* @__PURE__ */ jsx9("circle", { cx: "12", cy: "5", r: "1.75" }),
+    /* @__PURE__ */ jsx9("circle", { cx: "12", cy: "12", r: "1.75" }),
+    /* @__PURE__ */ jsx9("circle", { cx: "12", cy: "19", r: "1.75" })
+  ] });
+}
+
+// src/components/card.tsx
+import { jsx as jsx10, jsxs as jsxs10 } from "react/jsx-runtime";
+function Card({ className, ...props }) {
+  return /* @__PURE__ */ jsx10(
+    "div",
+    {
+      className: cn(
+        "rounded-lg border border-neutral-200 bg-white text-left shadow-sm dark:border-neutral-800 dark:bg-neutral-900",
+        className
+      ),
+      ...props
+    }
+  );
+}
+function CardHeader({ className, title, description, children, ...props }) {
+  return /* @__PURE__ */ jsxs10(
+    "div",
+    {
+      className: cn(
+        "border-b border-neutral-200 px-4 py-3 dark:border-neutral-800",
+        className
+      ),
+      ...props,
+      children: [
+        title !== void 0 && /* @__PURE__ */ jsx10("h3", { className: "text-sm font-semibold text-neutral-900 dark:text-neutral-100", children: title }),
+        description !== void 0 && /* @__PURE__ */ jsx10("p", { className: "mt-0.5 text-sm text-neutral-500 dark:text-neutral-400", children: description }),
+        children
+      ]
+    }
+  );
+}
+function CardBody({ className, ...props }) {
+  return /* @__PURE__ */ jsx10("div", { className: cn("px-4 py-4", className), ...props });
+}
+function CardFooter({ className, ...props }) {
+  return /* @__PURE__ */ jsx10(
+    "div",
+    {
+      className: cn(
+        "flex items-center justify-end gap-2 rounded-b-lg border-t border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900/60",
+        className
+      ),
+      ...props
+    }
+  );
+}
+
 // src/components/drawer.tsx
 import { useId as useId3 } from "react";
-import { jsx as jsx9, jsxs as jsxs9 } from "react/jsx-runtime";
+import { jsx as jsx11, jsxs as jsxs11 } from "react/jsx-runtime";
 var WIDTHS = {
   sm: "max-w-sm",
   md: "max-w-md",
@@ -3487,9 +3650,9 @@ function Drawer({
   const { panelRef, onKeyDown } = useOverlay(open, onClose);
   const id = useId3();
   if (!open) return null;
-  return /* @__PURE__ */ jsxs9(OverlayPortal, { children: [
-    /* @__PURE__ */ jsx9("div", { className: overlayBackdrop, onClick: onClose }),
-    /* @__PURE__ */ jsx9(
+  return /* @__PURE__ */ jsxs11(OverlayPortal, { children: [
+    /* @__PURE__ */ jsx11("div", { className: overlayBackdrop, onClick: onClose }),
+    /* @__PURE__ */ jsx11(
       "div",
       {
         className: cn(
@@ -3497,7 +3660,7 @@ function Drawer({
           side === "right" ? "right-0 justify-end" : "left-0 justify-start",
           WIDTHS[size]
         ),
-        children: /* @__PURE__ */ jsxs9(
+        children: /* @__PURE__ */ jsxs11(
           "div",
           {
             ref: panelRef,
@@ -3513,9 +3676,9 @@ function Drawer({
               className
             ),
             children: [
-              (title !== void 0 || !hideClose) && /* @__PURE__ */ jsxs9("div", { className: "flex items-start gap-3 border-b border-neutral-200 px-5 py-4 dark:border-neutral-800", children: [
-                /* @__PURE__ */ jsxs9("div", { className: "min-w-0 flex-1", children: [
-                  title !== void 0 && /* @__PURE__ */ jsx9(
+              (title !== void 0 || !hideClose) && /* @__PURE__ */ jsxs11("div", { className: "flex items-start gap-3 border-b border-neutral-200 px-5 py-4 dark:border-neutral-800", children: [
+                /* @__PURE__ */ jsxs11("div", { className: "min-w-0 flex-1", children: [
+                  title !== void 0 && /* @__PURE__ */ jsx11(
                     "h2",
                     {
                       id: `${id}-title`,
@@ -3523,12 +3686,12 @@ function Drawer({
                       children: title
                     }
                   ),
-                  description !== void 0 && /* @__PURE__ */ jsx9("p", { id: `${id}-desc`, className: "mt-1 text-sm text-neutral-500 dark:text-neutral-400", children: description })
+                  description !== void 0 && /* @__PURE__ */ jsx11("p", { id: `${id}-desc`, className: "mt-1 text-sm text-neutral-500 dark:text-neutral-400", children: description })
                 ] }),
-                !hideClose && /* @__PURE__ */ jsx9(CloseButton, { onClick: onClose })
+                !hideClose && /* @__PURE__ */ jsx11(CloseButton, { onClick: onClose })
               ] }),
-              /* @__PURE__ */ jsx9("div", { className: "flex-1 overflow-y-auto px-5 py-4 text-sm text-neutral-800 dark:text-neutral-200", children }),
-              footer !== void 0 && /* @__PURE__ */ jsx9("div", { className: "flex items-center justify-end gap-2 border-t border-neutral-200 bg-neutral-50 px-5 py-3 dark:border-neutral-800 dark:bg-neutral-900/60", children: footer })
+              /* @__PURE__ */ jsx11("div", { className: "flex-1 overflow-y-auto px-5 py-4 text-sm text-neutral-800 dark:text-neutral-200", children }),
+              footer !== void 0 && /* @__PURE__ */ jsx11("div", { className: "flex items-center justify-end gap-2 border-t border-neutral-200 bg-neutral-50 px-5 py-3 dark:border-neutral-800 dark:bg-neutral-900/60", children: footer })
             ]
           }
         )
@@ -3545,9 +3708,9 @@ import {
   useContext as useContext2,
   useId as useId4,
   useRef as useRef3,
-  useState as useState5
+  useState as useState6
 } from "react";
-import { jsx as jsx10, jsxs as jsxs10 } from "react/jsx-runtime";
+import { jsx as jsx12, jsxs as jsxs12 } from "react/jsx-runtime";
 var TabsContext = createContext2(null);
 function Tabs({ value, defaultValue: defaultValue2, onChange, label = "Sections", className, children }) {
   const baseId = useId4();
@@ -3559,7 +3722,7 @@ function Tabs({ value, defaultValue: defaultValue2, onChange, label = "Sections"
     const first = tabs[0];
     return isValidElement(first) ? first.props.value : "";
   })();
-  const [ownValue, setOwnValue] = useState5(defaultValue2 ?? firstValue);
+  const [ownValue, setOwnValue] = useState6(defaultValue2 ?? firstValue);
   const selected = value ?? ownValue;
   const select = (next) => {
     if (value === void 0) setOwnValue(next);
@@ -3588,8 +3751,8 @@ function Tabs({ value, defaultValue: defaultValue2, onChange, label = "Sections"
     tabId: (v) => `${baseId}-tab-${v}`,
     panelId: (v) => `${baseId}-panel-${v}`
   };
-  return /* @__PURE__ */ jsx10(TabsContext.Provider, { value: ctx, children: /* @__PURE__ */ jsxs10("div", { className: cn("text-left", className), children: [
-    /* @__PURE__ */ jsx10(
+  return /* @__PURE__ */ jsx12(TabsContext.Provider, { value: ctx, children: /* @__PURE__ */ jsxs12("div", { className: cn("text-left", className), children: [
+    /* @__PURE__ */ jsx12(
       "div",
       {
         ref: listRef,
@@ -3606,7 +3769,7 @@ function Tabs({ value, defaultValue: defaultValue2, onChange, label = "Sections"
 function Tab({ value, disabled = false, badge, className, children }) {
   const ctx = useContext2(TabsContext);
   const active = ctx?.value === value;
-  return /* @__PURE__ */ jsxs10(
+  return /* @__PURE__ */ jsxs12(
     "button",
     {
       type: "button",
@@ -3625,7 +3788,7 @@ function Tab({ value, disabled = false, badge, className, children }) {
       ),
       children: [
         children,
-        badge !== void 0 && /* @__PURE__ */ jsx10("span", { className: "rounded-full bg-neutral-100 px-1.5 text-xs font-normal text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300", children: badge })
+        badge !== void 0 && /* @__PURE__ */ jsx12("span", { className: "rounded-full bg-neutral-100 px-1.5 text-xs font-normal text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300", children: badge })
       ]
     }
   );
@@ -3634,7 +3797,7 @@ function TabPanel({ value, className, children }) {
   const ctx = useContext2(TabsContext);
   const active = ctx?.value === value;
   if (!active) return null;
-  return /* @__PURE__ */ jsx10(
+  return /* @__PURE__ */ jsx12(
     "div",
     {
       role: "tabpanel",
@@ -3647,15 +3810,133 @@ function TabPanel({ value, className, children }) {
   );
 }
 
+// src/components/popover.tsx
+import { useCallback as useCallback2, useEffect as useEffect6, useId as useId5, useRef as useRef4, useState as useState7 } from "react";
+import { Fragment as Fragment2, jsx as jsx13, jsxs as jsxs13 } from "react/jsx-runtime";
+var GAP = 8;
+function Popover({
+  trigger,
+  title,
+  side = "bottom",
+  align = "start",
+  open: controlledOpen,
+  onOpenChange,
+  label,
+  width = 288,
+  triggerClassName,
+  className,
+  children
+}) {
+  const [ownOpen, setOwnOpen] = useState7(false);
+  const open = controlledOpen ?? ownOpen;
+  const id = useId5();
+  const triggerRef = useRef4(null);
+  const [box, setBox] = useState7(null);
+  const setOpen = useCallback2(
+    (next) => {
+      if (controlledOpen === void 0) setOwnOpen(next);
+      onOpenChange?.(next);
+    },
+    [controlledOpen, onOpenChange]
+  );
+  const close = useCallback2(() => setOpen(false), [setOpen]);
+  const { panelRef, onKeyDown } = useOverlay(open, close);
+  useEffect6(() => {
+    if (!open) return;
+    const place = () => {
+      const t = triggerRef.current?.getBoundingClientRect();
+      const p = panelRef.current?.getBoundingClientRect();
+      if (!t) return;
+      const w = p?.width ?? width;
+      const h = p?.height ?? 0;
+      let top = t.bottom + GAP;
+      let left = t.left;
+      if (side === "top") top = t.top - h - GAP;
+      else if (side === "left") {
+        top = t.top;
+        left = t.left - w - GAP;
+      } else if (side === "right") {
+        top = t.top;
+        left = t.right + GAP;
+      }
+      if (side === "top" || side === "bottom") {
+        if (align === "center") left = t.left + t.width / 2 - w / 2;
+        else if (align === "end") left = t.right - w;
+      } else if (align === "center") top = t.top + t.height / 2 - h / 2;
+      else if (align === "end") top = t.bottom - h;
+      const maxLeft = (typeof window === "undefined" ? w : window.innerWidth) - w - 8;
+      const maxTop = (typeof window === "undefined" ? h : window.innerHeight) - h - 8;
+      setBox({ top: Math.max(8, Math.min(top, Math.max(8, maxTop))), left: Math.max(8, Math.min(left, Math.max(8, maxLeft))) });
+    };
+    place();
+    const raf = typeof requestAnimationFrame === "function" ? requestAnimationFrame(place) : null;
+    window.addEventListener("resize", place);
+    return () => {
+      if (raf !== null) cancelAnimationFrame(raf);
+      window.removeEventListener("resize", place);
+    };
+  }, [open, side, align, width, panelRef]);
+  useEffect6(() => {
+    if (!open) return;
+    const onDocClick = (e) => {
+      const target = e.target;
+      if (panelRef.current?.contains(target)) return;
+      if (triggerRef.current?.contains(target)) return;
+      close();
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [open, close, panelRef]);
+  return /* @__PURE__ */ jsxs13(Fragment2, { children: [
+    /* @__PURE__ */ jsx13(
+      "button",
+      {
+        ref: triggerRef,
+        type: "button",
+        "aria-haspopup": "dialog",
+        "aria-expanded": open,
+        "aria-controls": open ? `${id}-panel` : void 0,
+        onClick: () => setOpen(!open),
+        className: cn(
+          "inline-flex items-center gap-2 rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800",
+          focusRing,
+          triggerClassName
+        ),
+        children: trigger
+      }
+    ),
+    open && /* @__PURE__ */ jsx13(OverlayPortal, { children: /* @__PURE__ */ jsxs13(
+      "div",
+      {
+        ref: panelRef,
+        id: `${id}-panel`,
+        role: "dialog",
+        "aria-label": label ?? (typeof title === "string" ? title : "Options"),
+        tabIndex: -1,
+        onKeyDown,
+        style: { top: box?.top ?? -9999, left: box?.left ?? -9999, width },
+        className: cn(
+          "fixed z-50 max-w-[calc(100vw-1rem)] rounded-lg border border-neutral-200 bg-white p-3 text-left text-sm shadow-lg outline-none dark:border-neutral-700 dark:bg-neutral-900",
+          className
+        ),
+        children: [
+          title !== void 0 && /* @__PURE__ */ jsx13("div", { className: "mb-2 text-sm font-semibold text-neutral-900 dark:text-neutral-100", children: title }),
+          children
+        ]
+      }
+    ) })
+  ] });
+}
+
 // src/components/tooltip.tsx
 import {
   Children as Children3,
   cloneElement,
   isValidElement as isValidElement2,
-  useId as useId5,
-  useState as useState6
+  useId as useId6,
+  useState as useState8
 } from "react";
-import { jsx as jsx11, jsxs as jsxs11 } from "react/jsx-runtime";
+import { jsx as jsx14, jsxs as jsxs14 } from "react/jsx-runtime";
 var SIDES = {
   top: "bottom-full left-1/2 mb-1.5 -translate-x-1/2",
   bottom: "top-full left-1/2 mt-1.5 -translate-x-1/2",
@@ -3663,13 +3944,13 @@ var SIDES = {
   right: "left-full top-1/2 ml-1.5 -translate-y-1/2"
 };
 function Tooltip({ content, side = "top", className, children }) {
-  const [open, setOpen] = useState6(false);
-  const id = useId5();
+  const [open, setOpen] = useState8(false);
+  const id = useId6();
   const child = Children3.only(children);
   const described = isValidElement2(child) ? cloneElement(child, {
     "aria-describedby": open ? id : void 0
   }) : child;
-  return /* @__PURE__ */ jsxs11(
+  return /* @__PURE__ */ jsxs14(
     "span",
     {
       className: "relative inline-flex",
@@ -3682,7 +3963,7 @@ function Tooltip({ content, side = "top", className, children }) {
       },
       children: [
         described,
-        /* @__PURE__ */ jsx11(
+        /* @__PURE__ */ jsx14(
           "span",
           {
             role: "tooltip",
@@ -3701,14 +3982,48 @@ function Tooltip({ content, side = "top", className, children }) {
   );
 }
 
-// src/components/data-table.tsx
-import {
-  useCallback as useCallback2,
-  useEffect as useEffect6,
-  useMemo,
-  useRef as useRef4,
-  useState as useState7
-} from "react";
+// src/components/skeleton.tsx
+import { jsx as jsx15 } from "react/jsx-runtime";
+var base = "animate-pulse bg-neutral-200 dark:bg-neutral-800";
+function Skeleton({
+  variant = "text",
+  lines = 1,
+  width,
+  height,
+  className,
+  style,
+  ...props
+}) {
+  if (variant === "text" && lines > 1) {
+    return /* @__PURE__ */ jsx15("div", { className: cn("flex flex-col gap-2", className), "aria-hidden": "true", style, ...props, children: Array.from({ length: lines }, (_, i) => /* @__PURE__ */ jsx15(
+      "div",
+      {
+        className: cn(base, "h-4 rounded"),
+        style: { width: i === lines - 1 ? "60%" : width ?? "100%" }
+      },
+      i
+    )) });
+  }
+  return /* @__PURE__ */ jsx15(
+    "div",
+    {
+      "aria-hidden": "true",
+      className: cn(
+        base,
+        variant === "circle" ? "rounded-full" : "rounded",
+        variant === "text" && "h-4",
+        variant === "circle" && !height && "h-10 w-10",
+        variant === "rect" && !height && "h-24",
+        className
+      ),
+      style: { width, height, ...style },
+      ...props
+    }
+  );
+}
+
+// src/components/chart.tsx
+import { useId as useId7, useMemo, useState as useState9 } from "react";
 
 // src/source.ts
 import { lookupTag, splitLinkKey as splitLinkKey2 } from "@robomotion/apps-runtime";
@@ -3747,10 +4062,1193 @@ function rowsLinkAttrs(rows) {
   return { [`data-rm-${ns}`]: name };
 }
 
+// src/components/chart.tsx
+import { Fragment as Fragment3, jsx as jsx16, jsxs as jsxs15 } from "react/jsx-runtime";
+var WIDTH = 480;
+function seriesOpacity(i, n, floor = 0.3) {
+  if (n <= 1) return 1;
+  const step = (1 - floor) / Math.max(1, n - 1);
+  return Number((1 - i * step).toFixed(3));
+}
+function sparklinePath(values, width, height) {
+  const clean = values.filter((v) => Number.isFinite(v));
+  if (clean.length === 0) return "";
+  const max = Math.max(...clean);
+  const min = Math.min(...clean);
+  const span = max - min || 1;
+  const x = (i) => clean.length === 1 ? width / 2 : i * width / (clean.length - 1);
+  const y = (v) => height - (v - min) / span * height;
+  return clean.map((v, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(2)},${y(v).toFixed(2)}`).join(" ");
+}
+function asTime(x) {
+  if (typeof x === "number") return Number.isFinite(x) ? x : null;
+  const ms = Date.parse(x);
+  return Number.isNaN(ms) ? null : ms;
+}
+function buildPlot(data, series, xKind, fallbackName) {
+  const list = series && series.length > 0 ? series : data && data.length > 0 ? [{ name: fallbackName, points: data.map((d) => ({ x: d.label, y: d.value })) }] : [];
+  const categories = [];
+  for (const s of list) {
+    for (const p of s.points) {
+      if (!categories.some((c) => String(c) === String(p.x))) categories.push(p.x);
+    }
+  }
+  const parsed = categories.map(asTime);
+  const isTime = xKind === "time" || xKind === void 0 && categories.length > 0 && parsed.every((t) => t !== null);
+  if (isTime) {
+    const order2 = categories.map((c, i) => i).sort((a, b) => (parsed[a] ?? 0) - (parsed[b] ?? 0));
+    const sortedCats = order2.map((i) => categories[i]);
+    const sortedTimes = order2.map((i) => parsed[i] ?? 0);
+    categories.length = 0;
+    categories.push(...sortedCats);
+    return { series: list, categories, times: sortedTimes, grid: gridOf(list, categories) };
+  }
+  return { series: list, categories, times: null, grid: gridOf(list, categories) };
+}
+function gridOf(list, categories) {
+  return list.map((s) => {
+    const byX = /* @__PURE__ */ new Map();
+    for (const p of s.points) if (Number.isFinite(p.y)) byX.set(String(p.x), p.y);
+    return categories.map((c) => byX.get(String(c)));
+  });
+}
+function Chart({
+  kind,
+  data,
+  series,
+  xKind,
+  legend,
+  stacked = false,
+  title,
+  description,
+  height = 220,
+  formatValue,
+  formatX,
+  emptyState,
+  source,
+  className
+}) {
+  const id = useId7();
+  const fmt = formatValue ?? ((v) => v.toLocaleString());
+  const linkAttrs = source ? sourceLinkAttrs(source) : {};
+  const plot = useMemo(
+    () => buildPlot(data, series, xKind, title ?? "Value"),
+    [data, series, xKind, title]
+  );
+  const [hover, setHover] = useState9(null);
+  const n = plot.series.length;
+  const showLegend = legend ?? (kind === "pie" || n > 1);
+  const fmtX = useMemo(() => {
+    if (formatX) return formatX;
+    if (!plot.times) return (x) => String(x);
+    return (x) => {
+      const t = asTime(x);
+      if (t === null) return String(x);
+      const iso2 = typeof x === "string" ? x : "";
+      const opts = /^\d{4}-\d{2}$/.test(iso2) ? { year: "2-digit", month: "short" } : { month: "short", day: "numeric" };
+      return new Date(t).toLocaleDateString(void 0, opts);
+    };
+  }, [formatX, plot.times]);
+  const empty = plot.categories.length === 0 || plot.series.every((s) => s.points.length === 0);
+  if (empty) {
+    return /* @__PURE__ */ jsx16(
+      "div",
+      {
+        className: cn(
+          "rounded-lg border border-dashed border-neutral-300 px-6 py-10 text-center text-sm text-neutral-500 dark:border-neutral-700 dark:text-neutral-400",
+          className
+        ),
+        ...linkAttrs,
+        children: emptyState ?? "Nothing to chart yet."
+      }
+    );
+  }
+  const desc = description ?? describe(kind, plot, fmt, fmtX);
+  const geo = geometry(plot, kind, stacked, height, n > 1);
+  return /* @__PURE__ */ jsx16("div", { className: cn("text-left", className), ...linkAttrs, children: /* @__PURE__ */ jsxs15("div", { className: kind === "pie" ? "flex flex-wrap items-center gap-6" : "relative", children: [
+    /* @__PURE__ */ jsxs15(
+      "svg",
+      {
+        role: "img",
+        "aria-labelledby": `${id}-t ${id}-d`,
+        viewBox: `0 0 ${WIDTH} ${height}`,
+        className: cn("h-auto", kind === "pie" ? "w-48 max-w-full" : "w-full"),
+        onMouseLeave: () => setHover(null),
+        children: [
+          /* @__PURE__ */ jsx16("title", { id: `${id}-t`, children: title ?? "Chart" }),
+          /* @__PURE__ */ jsx16("desc", { id: `${id}-d`, children: desc }),
+          kind === "pie" ? /* @__PURE__ */ jsx16(Pie, { plot, height }) : /* @__PURE__ */ jsxs15(Fragment3, { children: [
+            /* @__PURE__ */ jsx16(Axes, { geo, plot, height, fmt, fmtX }),
+            kind === "bar" ? /* @__PURE__ */ jsx16(Bars, { plot, geo, height, fmt, stacked }) : /* @__PURE__ */ jsx16(Lines, { plot, geo, kind, fmt }),
+            /* @__PURE__ */ jsx16(HoverBands, { geo, height, count: plot.categories.length, onHover: setHover })
+          ] })
+        ]
+      }
+    ),
+    kind !== "pie" && hover !== null && /* @__PURE__ */ jsx16(Tooltip2, { plot, at: hover, geo, fmt, fmtX }),
+    showLegend && /* @__PURE__ */ jsx16(Legend, { plot, kind, fmt, className: kind === "pie" ? "min-w-0 flex-1" : "mt-2" })
+  ] }) });
+}
+var PAD = { top: 14, right: 8, bottom: 26 };
+var PAD_LEFT_BARE = 8;
+var PAD_LEFT_AXIS = 38;
+function geometry(plot, kind, stacked, height, showAxis) {
+  const padLeft = showAxis ? PAD_LEFT_AXIS : PAD_LEFT_BARE;
+  const plotW = WIDTH - padLeft - PAD.right;
+  const plotH = height - PAD.top - PAD.bottom;
+  const count = plot.categories.length;
+  const values = [];
+  if (kind === "bar" && stacked) {
+    for (let i = 0; i < count; i++) {
+      let sum = 0;
+      for (const row of plot.grid) sum += row[i] ?? 0;
+      values.push(sum);
+    }
+  } else {
+    for (const row of plot.grid) for (const v of row) if (v !== void 0) values.push(v);
+  }
+  const max = Math.max(...values, 0);
+  const min = Math.min(...values, 0);
+  const span = max - min || 1;
+  const y = (v) => PAD.top + plotH - (v - min) / span * plotH;
+  const slot = count > 0 ? plotW / count : plotW;
+  const slotX = (i) => padLeft + (i + 0.5) * slot;
+  const times = plot.times;
+  const tMin = times ? Math.min(...times) : 0;
+  const tSpan = times ? Math.max(...times) - tMin || 1 : 1;
+  const pointX = times && count > 1 ? (i) => padLeft + (times[i] - tMin) / tSpan * plotW : (i) => count === 1 ? padLeft + plotW / 2 : padLeft + i * plotW / (count - 1);
+  const ticks = showAxis ? [min, min + span / 2, max] : [];
+  return { padLeft, plotW, plotH, min, max, y, slotX, pointX, slot, ticks, showAxis };
+}
+var axisLine = "stroke-neutral-200 dark:stroke-neutral-800";
+var axisText = "fill-neutral-500 dark:fill-neutral-400";
+function Axes({
+  geo,
+  plot,
+  height,
+  fmt,
+  fmtX
+}) {
+  const count = plot.categories.length;
+  const every = Math.max(1, Math.ceil(count / 6));
+  return /* @__PURE__ */ jsxs15(Fragment3, { children: [
+    geo.ticks.map((t, i) => /* @__PURE__ */ jsxs15("g", { children: [
+      /* @__PURE__ */ jsx16(
+        "line",
+        {
+          x1: geo.padLeft,
+          y1: geo.y(t),
+          x2: WIDTH - PAD.right,
+          y2: geo.y(t),
+          className: axisLine,
+          strokeWidth: 1
+        }
+      ),
+      /* @__PURE__ */ jsx16("text", { x: geo.padLeft - 6, y: geo.y(t) + 3, textAnchor: "end", fontSize: 9, className: axisText, children: fmt(t) })
+    ] }, `tick-${i}`)),
+    !geo.showAxis && /* @__PURE__ */ jsx16(
+      "line",
+      {
+        x1: geo.padLeft,
+        y1: geo.y(Math.max(0, geo.min)),
+        x2: WIDTH - PAD.right,
+        y2: geo.y(Math.max(0, geo.min)),
+        className: axisLine,
+        strokeWidth: 1
+      }
+    ),
+    plot.categories.map(
+      (c, i) => i % every === 0 ? /* @__PURE__ */ jsx16(
+        "text",
+        {
+          x: geo.slotX(i),
+          y: height - 8,
+          textAnchor: "middle",
+          fontSize: 10,
+          className: axisText,
+          children: clip(fmtX(c), Math.max(4, Math.floor(geo.slot * every / 6)))
+        },
+        `x-${i}`
+      ) : null
+    )
+  ] });
+}
+function Bars({
+  plot,
+  geo,
+  height,
+  fmt,
+  stacked
+}) {
+  const n = plot.series.length;
+  const base2 = geo.y(Math.max(0, geo.min));
+  const groupW = Math.max(4, Math.min(48 * (stacked || n === 1 ? 1 : n), geo.slot * 0.7));
+  const barW = stacked || n === 1 ? groupW : groupW / n;
+  return /* @__PURE__ */ jsxs15(Fragment3, { children: [
+    plot.categories.map((c, i) => {
+      const cx2 = geo.slotX(i);
+      let stackTop = base2;
+      return /* @__PURE__ */ jsxs15("g", { children: [
+        plot.series.map((s, si) => {
+          const v = plot.grid[si][i];
+          if (v === void 0) return null;
+          const top = geo.y(v);
+          if (stacked) {
+            const h = Math.abs(base2 - top);
+            const yTop = stackTop - h;
+            stackTop = yTop;
+            return /* @__PURE__ */ jsx16(
+              "rect",
+              {
+                x: cx2 - groupW / 2,
+                y: yTop,
+                width: groupW,
+                height: Math.max(h, v === 0 ? 0 : 1),
+                rx: 2,
+                fill: s.color ?? "var(--rm-accent)",
+                fillOpacity: s.color ? 1 : seriesOpacity(si, n)
+              },
+              si
+            );
+          }
+          const x = n === 1 ? cx2 - barW / 2 : cx2 - groupW / 2 + si * barW;
+          return /* @__PURE__ */ jsx16(
+            "rect",
+            {
+              x,
+              y: Math.min(top, base2),
+              width: Math.max(2, barW - (n > 1 ? 1 : 0)),
+              height: Math.max(Math.abs(base2 - top), v === 0 ? 0 : 1),
+              rx: 2,
+              fill: s.color ?? "var(--rm-accent)",
+              fillOpacity: s.color ? 1 : n === 1 ? seriesOpacity(i, plot.categories.length) : seriesOpacity(si, n)
+            },
+            si
+          );
+        }),
+        n === 1 && plot.grid[0][i] !== void 0 && /* @__PURE__ */ jsx16(
+          "text",
+          {
+            x: cx2,
+            y: Math.min(geo.y(plot.grid[0][i]), base2) - 4,
+            textAnchor: "middle",
+            fontSize: 10,
+            className: axisText,
+            children: fmt(plot.grid[0][i])
+          }
+        )
+      ] }, `g-${i}`);
+    }),
+    /* @__PURE__ */ jsx16("line", { x1: geo.padLeft, y1: base2, x2: WIDTH - PAD.right, y2: base2, className: axisLine, strokeWidth: 1 })
+  ] });
+}
+function Lines({
+  plot,
+  geo,
+  kind,
+  fmt
+}) {
+  const n = plot.series.length;
+  return /* @__PURE__ */ jsx16(Fragment3, { children: plot.series.map((s, si) => {
+    const pts = [];
+    plot.grid[si].forEach((v, i) => {
+      if (v !== void 0) pts.push({ x: geo.pointX(i), y: geo.y(v), v });
+    });
+    if (pts.length === 0) return null;
+    const stroke = s.color ?? "var(--rm-accent)";
+    const opacity = s.color ? 1 : seriesOpacity(si, n, 0.45);
+    const line = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x},${p.y}`).join(" ");
+    const floor = geo.y(geo.min);
+    return /* @__PURE__ */ jsxs15("g", { children: [
+      kind === "area" && /* @__PURE__ */ jsx16(
+        "path",
+        {
+          d: `${line} L ${pts[pts.length - 1].x},${floor} L ${pts[0].x},${floor} Z`,
+          fill: stroke,
+          fillOpacity: 0.12 * opacity + 0.04
+        }
+      ),
+      /* @__PURE__ */ jsx16(
+        "path",
+        {
+          d: line,
+          fill: "none",
+          stroke,
+          strokeOpacity: opacity,
+          strokeWidth: 2,
+          strokeLinecap: "round",
+          strokeLinejoin: "round"
+        }
+      ),
+      pts.map((p, i) => /* @__PURE__ */ jsx16("circle", { cx: p.x, cy: p.y, r: 2.5, fill: stroke, fillOpacity: opacity }, i)),
+      n === 1 && pts.map(
+        (p, i) => i % Math.max(1, Math.ceil(pts.length / 6)) === 0 ? /* @__PURE__ */ jsx16("text", { x: p.x, y: p.y - 7, textAnchor: "middle", fontSize: 10, className: axisText, children: fmt(p.v) }, `v-${i}`) : null
+      )
+    ] }, si);
+  }) });
+}
+function Pie({ plot, height }) {
+  const row = plot.grid[0] ?? [];
+  const values = plot.categories.map((_, i) => Math.max(0, row[i] ?? 0));
+  const total = values.reduce((a, b) => a + b, 0);
+  const r = Math.max(10, Math.min(WIDTH, height) / 2 - 8);
+  const cx2 = WIDTH / 2;
+  const cy = height / 2;
+  if (total <= 0) {
+    return /* @__PURE__ */ jsx16("circle", { cx: cx2, cy, r, fill: "var(--rm-accent)", fillOpacity: 0.15 });
+  }
+  let angle = -Math.PI / 2;
+  return /* @__PURE__ */ jsx16(Fragment3, { children: values.map((v, i) => {
+    const share = v / total;
+    const start = angle;
+    angle += share * Math.PI * 2;
+    if (share >= 0.9999) {
+      return /* @__PURE__ */ jsx16("circle", { cx: cx2, cy, r, fill: "var(--rm-accent)", fillOpacity: 1 }, i);
+    }
+    if (share <= 0) return null;
+    const x1 = cx2 + r * Math.cos(start);
+    const y1 = cy + r * Math.sin(start);
+    const x2 = cx2 + r * Math.cos(angle);
+    const y2 = cy + r * Math.sin(angle);
+    const large = share * Math.PI * 2 > Math.PI ? 1 : 0;
+    return /* @__PURE__ */ jsx16(
+      "path",
+      {
+        d: `M ${cx2},${cy} L ${x1},${y1} A ${r},${r} 0 ${large} 1 ${x2},${y2} Z`,
+        fill: "var(--rm-accent)",
+        fillOpacity: seriesOpacity(i, values.length)
+      },
+      i
+    );
+  }) });
+}
+function HoverBands({
+  geo,
+  height,
+  count,
+  onHover
+}) {
+  return /* @__PURE__ */ jsx16(Fragment3, { children: Array.from({ length: count }, (_, i) => /* @__PURE__ */ jsx16(
+    "rect",
+    {
+      x: geo.padLeft + i * geo.slot,
+      y: PAD.top,
+      width: geo.slot,
+      height: height - PAD.top - PAD.bottom,
+      fill: "transparent",
+      onMouseEnter: () => onHover(i),
+      onFocus: () => onHover(i)
+    },
+    i
+  )) });
+}
+function Tooltip2({
+  plot,
+  at,
+  geo,
+  fmt,
+  fmtX
+}) {
+  const rows = plot.series.map((s, si) => ({ name: s.name, color: s.color, i: si, v: plot.grid[si][at] })).filter((r) => r.v !== void 0);
+  if (rows.length === 0) return null;
+  const left = geo.slotX(at) / WIDTH * 100;
+  return /* @__PURE__ */ jsxs15(
+    "div",
+    {
+      role: "presentation",
+      style: { left: `${left}%` },
+      className: "pointer-events-none absolute top-1 z-10 -translate-x-1/2 rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-xs shadow-lg dark:border-neutral-700 dark:bg-neutral-900",
+      children: [
+        /* @__PURE__ */ jsx16("div", { className: "font-medium text-neutral-900 dark:text-neutral-100", children: fmtX(plot.categories[at]) }),
+        rows.map((r) => /* @__PURE__ */ jsxs15("div", { className: "mt-0.5 flex items-center gap-1.5 whitespace-nowrap", children: [
+          /* @__PURE__ */ jsx16(
+            "span",
+            {
+              "aria-hidden": "true",
+              className: "h-2 w-2 shrink-0 rounded-sm bg-[color:var(--rm-accent)]",
+              style: r.color ? { background: r.color } : { opacity: seriesOpacity(r.i, plot.series.length, 0.45) }
+            }
+          ),
+          /* @__PURE__ */ jsx16("span", { className: "text-neutral-600 dark:text-neutral-400", children: r.name }),
+          /* @__PURE__ */ jsx16("span", { className: "ml-auto tabular-nums text-neutral-900 dark:text-neutral-100", children: fmt(r.v) })
+        ] }, r.i))
+      ]
+    }
+  );
+}
+function Legend({
+  plot,
+  kind,
+  fmt,
+  className
+}) {
+  const entries = kind === "pie" ? plot.categories.map((c, i) => ({
+    key: `${String(c)}-${i}`,
+    label: String(c),
+    value: plot.grid[0]?.[i],
+    opacity: seriesOpacity(i, plot.categories.length),
+    color: void 0
+  })) : plot.series.map((s, i) => ({
+    key: `${s.name}-${i}`,
+    label: s.name,
+    value: void 0,
+    opacity: seriesOpacity(i, plot.series.length, 0.45),
+    color: s.color
+  }));
+  return /* @__PURE__ */ jsx16("ul", { className: cn("space-y-1 text-sm", className), children: entries.map((e) => /* @__PURE__ */ jsxs15("li", { className: "flex items-center gap-2", children: [
+    /* @__PURE__ */ jsx16(
+      "span",
+      {
+        "aria-hidden": "true",
+        className: "h-3 w-3 shrink-0 rounded-sm bg-[color:var(--rm-accent)]",
+        style: e.color ? { background: e.color } : { opacity: e.opacity }
+      }
+    ),
+    /* @__PURE__ */ jsx16("span", { className: "min-w-0 flex-1 truncate text-neutral-700 dark:text-neutral-300", children: e.label }),
+    e.value !== void 0 && /* @__PURE__ */ jsx16("span", { className: "tabular-nums text-neutral-500 dark:text-neutral-400", children: fmt(e.value) })
+  ] }, e.key)) });
+}
+function describe(kind, plot, fmt, fmtX) {
+  if (plot.series.length > 1) {
+    const names = plot.series.map((s) => s.name).join(", ");
+    const first = fmtX(plot.categories[0]);
+    const last = fmtX(plot.categories[plot.categories.length - 1]);
+    return `${kind} chart, ${plot.series.length} series (${names}) across ${plot.categories.length} points from ${first} to ${last}`;
+  }
+  const row = plot.grid[0] ?? [];
+  const n = plot.categories.length;
+  return `${kind} chart, ${n} ${n === 1 ? "value" : "values"}: ` + plot.categories.slice(0, 8).map((c, i) => `${fmtX(c)} ${row[i] === void 0 ? "no value" : fmt(row[i])}`).join(", ") + (n > 8 ? ", and more" : "");
+}
+function clip(text, max) {
+  if (max <= 1 || text.length <= max) return text;
+  return `${text.slice(0, Math.max(1, max - 1))}\u2026`;
+}
+
+// src/components/stat.tsx
+import { jsx as jsx17, jsxs as jsxs16 } from "react/jsx-runtime";
+var wholeNumber = new Intl.NumberFormat(void 0, { maximumFractionDigits: 1 });
+function Stat({
+  label,
+  value,
+  unit,
+  delta,
+  deltaLabel = "vs the previous period",
+  upIsGood = true,
+  trend,
+  icon,
+  loading = false,
+  card = true,
+  className
+}) {
+  const good = delta !== void 0 && delta !== 0 && delta > 0 === upIsGood;
+  const flat = delta === void 0 || delta === 0;
+  const deltaClass = flat ? "text-neutral-500 dark:text-neutral-400" : good ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400";
+  const body = /* @__PURE__ */ jsxs16("div", { className: cn("min-w-0 text-left", card ? "px-4 py-3.5" : void 0, !card && className), children: [
+    /* @__PURE__ */ jsxs16("div", { className: "flex items-start gap-2", children: [
+      /* @__PURE__ */ jsxs16("div", { className: "min-w-0 flex-1", children: [
+        /* @__PURE__ */ jsx17("div", { className: "truncate text-sm text-neutral-500 dark:text-neutral-400", children: label }),
+        loading ? /* @__PURE__ */ jsx17(Skeleton, { variant: "text", lines: 1, width: "60%", className: "mt-2" }) : /* @__PURE__ */ jsxs16("div", { className: "mt-1 text-2xl font-semibold text-neutral-900 dark:text-neutral-100", children: [
+          value,
+          unit !== void 0 && /* @__PURE__ */ jsx17("span", { className: "ml-1 text-base font-normal text-neutral-500 dark:text-neutral-400", children: unit })
+        ] })
+      ] }),
+      icon !== void 0 && /* @__PURE__ */ jsx17("div", { "aria-hidden": "true", className: "shrink-0 text-neutral-300 dark:text-neutral-600", children: icon })
+    ] }),
+    delta !== void 0 && !loading && /* @__PURE__ */ jsxs16("div", { className: "mt-1 flex items-center gap-1 text-sm", children: [
+      /* @__PURE__ */ jsx17(ArrowIcon, { delta, className: deltaClass }),
+      /* @__PURE__ */ jsxs16("span", { className: cn("font-medium tabular-nums", deltaClass), children: [
+        delta > 0 ? "+" : "",
+        wholeNumber.format(delta),
+        "%"
+      ] }),
+      /* @__PURE__ */ jsx17("span", { className: "truncate text-neutral-500 dark:text-neutral-400", children: deltaLabel })
+    ] }),
+    trend && trend.length > 1 && !loading && /* @__PURE__ */ jsx17(
+      "svg",
+      {
+        "aria-hidden": "true",
+        viewBox: "0 0 120 28",
+        preserveAspectRatio: "none",
+        className: "mt-2 h-7 w-full",
+        children: /* @__PURE__ */ jsx17(
+          "path",
+          {
+            d: sparklinePath(trend, 120, 26),
+            fill: "none",
+            stroke: "var(--rm-accent)",
+            strokeWidth: 1.5,
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            vectorEffect: "non-scaling-stroke"
+          }
+        )
+      }
+    )
+  ] });
+  return card ? /* @__PURE__ */ jsx17(Card, { className, children: body }) : body;
+}
+function ArrowIcon({ delta, className }) {
+  if (delta === 0) {
+    return /* @__PURE__ */ jsx17("svg", { "aria-hidden": "true", className: cn("h-3.5 w-3.5", className), viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", children: /* @__PURE__ */ jsx17("path", { strokeLinecap: "round", d: "M5 12h14" }) });
+  }
+  return /* @__PURE__ */ jsx17("svg", { "aria-hidden": "true", className: cn("h-3.5 w-3.5", className), viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", children: /* @__PURE__ */ jsx17(
+    "path",
+    {
+      strokeLinecap: "round",
+      strokeLinejoin: "round",
+      d: delta > 0 ? "M12 19V5m0 0-6 6m6-6 6 6" : "M12 5v14m0 0 6-6m-6 6-6-6"
+    }
+  ) });
+}
+
+// src/components/stepper.tsx
+import {
+  Children as Children4,
+  isValidElement as isValidElement3,
+  useState as useState10
+} from "react";
+import { jsx as jsx18, jsxs as jsxs17 } from "react/jsx-runtime";
+function Stepper({
+  value,
+  defaultValue: defaultValue2 = 0,
+  onChange,
+  label = "Steps",
+  controls = true,
+  backLabel = "Back",
+  nextLabel = "Next",
+  nextDisabled = false,
+  nonLinear = false,
+  className,
+  children
+}) {
+  const items2 = Children4.toArray(children);
+  const steps = items2.filter((c) => isValidElement3(c) && c.type === Step);
+  const rest = items2.filter((c) => !(isValidElement3(c) && c.type === Step));
+  const [ownValue, setOwnValue] = useState10(defaultValue2);
+  const current = Math.max(0, Math.min(value ?? ownValue, Math.max(0, steps.length - 1)));
+  const [furthest, setFurthest] = useState10(current);
+  if (current > furthest) setFurthest(current);
+  const go = (next) => {
+    const clamped = Math.max(0, Math.min(next, steps.length - 1));
+    if (value === void 0) setOwnValue(clamped);
+    if (clamped > furthest) setFurthest(clamped);
+    onChange?.(clamped);
+  };
+  const last = current >= steps.length - 1;
+  return /* @__PURE__ */ jsxs17("div", { className: cn("text-left", className), children: [
+    /* @__PURE__ */ jsx18("ol", { "aria-label": label, className: "flex flex-wrap items-center gap-x-2 gap-y-2", children: steps.map((child, i) => {
+      const props = isValidElement3(child) ? child.props : { title: "" };
+      const state = i < current ? "done" : i === current ? "current" : "todo";
+      const reachable = nonLinear || i <= furthest;
+      return /* @__PURE__ */ jsxs17("li", { className: "flex items-center gap-2", children: [
+        /* @__PURE__ */ jsxs17(
+          "button",
+          {
+            type: "button",
+            "aria-current": state === "current" ? "step" : void 0,
+            disabled: !reachable || props.disabled,
+            onClick: () => go(i),
+            className: cn(
+              "flex items-center gap-2 rounded-md px-1.5 py-1 text-left transition-colors disabled:cursor-not-allowed",
+              focusRing
+            ),
+            children: [
+              /* @__PURE__ */ jsx18(
+                "span",
+                {
+                  "aria-hidden": "true",
+                  className: cn(
+                    "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold",
+                    state === "todo" ? "bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400" : "bg-[color:var(--rm-accent)] text-white"
+                  ),
+                  children: state === "done" ? /* @__PURE__ */ jsx18(TickIcon2, {}) : i + 1
+                }
+              ),
+              /* @__PURE__ */ jsxs17("span", { className: "min-w-0", children: [
+                /* @__PURE__ */ jsxs17(
+                  "span",
+                  {
+                    className: cn(
+                      "block text-sm font-medium",
+                      state === "current" ? "text-neutral-900 dark:text-neutral-100" : "text-neutral-500 dark:text-neutral-400"
+                    ),
+                    children: [
+                      props.title,
+                      props.optional && /* @__PURE__ */ jsx18("span", { className: "ml-1 text-xs font-normal text-neutral-400", children: "(optional)" })
+                    ]
+                  }
+                ),
+                props.description !== void 0 && /* @__PURE__ */ jsx18("span", { className: "block text-xs text-neutral-500 dark:text-neutral-400", children: props.description })
+              ] })
+            ]
+          }
+        ),
+        i < steps.length - 1 && /* @__PURE__ */ jsx18(
+          "span",
+          {
+            "aria-hidden": "true",
+            className: "hidden h-px w-8 bg-neutral-200 dark:bg-neutral-700 sm:block"
+          }
+        )
+      ] }, i);
+    }) }),
+    /* @__PURE__ */ jsx18("div", { className: "mt-4", children: steps[current] }),
+    controls && steps.length > 1 && /* @__PURE__ */ jsxs17("div", { className: "mt-5 flex items-center gap-2", children: [
+      /* @__PURE__ */ jsx18(Button, { variant: "secondary", disabled: current === 0, onClick: () => go(current - 1), children: backLabel }),
+      !last && /* @__PURE__ */ jsx18(Button, { disabled: nextDisabled, onClick: () => go(current + 1), children: nextLabel })
+    ] }),
+    rest
+  ] });
+}
+function Step({ className, children }) {
+  return /* @__PURE__ */ jsx18("div", { className: cn("text-left", className), children });
+}
+function TickIcon2() {
+  return /* @__PURE__ */ jsx18("svg", { className: "h-3.5 w-3.5", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "3", children: /* @__PURE__ */ jsx18("path", { strokeLinecap: "round", strokeLinejoin: "round", d: "m5 13 4 4L19 7" }) });
+}
+
+// src/components/accordion.tsx
+import {
+  createContext as createContext3,
+  useContext as useContext3,
+  useId as useId8,
+  useRef as useRef5,
+  useState as useState11
+} from "react";
+import { jsx as jsx19, jsxs as jsxs18 } from "react/jsx-runtime";
+var AccordionContext = createContext3(null);
+function Accordion({
+  type = "multiple",
+  value,
+  defaultValue: defaultValue2,
+  onChange,
+  className,
+  children
+}) {
+  const baseId = useId8();
+  const [ownValue, setOwnValue] = useState11(defaultValue2 ?? []);
+  const open = value ?? ownValue;
+  const rootRef = useRef5(null);
+  const set = (next) => {
+    if (value === void 0) setOwnValue(next);
+    onChange?.(next);
+  };
+  const ctx = {
+    baseId,
+    isOpen: (v) => open.includes(v),
+    toggle: (v) => {
+      if (open.includes(v)) set(open.filter((x) => x !== v));
+      else set(type === "single" ? [v] : [...open, v]);
+    }
+  };
+  const onKeyDown = (e) => {
+    const keys = ["ArrowDown", "ArrowUp", "Home", "End"];
+    if (!keys.includes(e.key)) return;
+    const headers = Array.from(
+      rootRef.current?.querySelectorAll("button[data-rm-accordion-header]:not([disabled])") ?? []
+    );
+    const current = headers.findIndex((b) => b === document.activeElement);
+    if (current === -1) return;
+    e.preventDefault();
+    let next = current;
+    if (e.key === "ArrowDown") next = (current + 1) % headers.length;
+    else if (e.key === "ArrowUp") next = (current - 1 + headers.length) % headers.length;
+    else if (e.key === "Home") next = 0;
+    else next = headers.length - 1;
+    headers[next]?.focus();
+  };
+  return /* @__PURE__ */ jsx19(AccordionContext.Provider, { value: ctx, children: /* @__PURE__ */ jsx19(
+    "div",
+    {
+      ref: rootRef,
+      onKeyDown,
+      className: cn(
+        "divide-y divide-neutral-200 rounded-lg border border-neutral-200 text-left dark:divide-neutral-800 dark:border-neutral-800",
+        className
+      ),
+      children
+    }
+  ) });
+}
+function AccordionItem({
+  value,
+  title,
+  description,
+  meta,
+  disabled = false,
+  className,
+  children
+}) {
+  const ctx = useContext3(AccordionContext);
+  const open = ctx?.isOpen(value) ?? false;
+  const headerId = `${ctx?.baseId ?? "acc"}-h-${value}`;
+  const panelId = `${ctx?.baseId ?? "acc"}-p-${value}`;
+  return /* @__PURE__ */ jsxs18("div", { className, children: [
+    /* @__PURE__ */ jsx19("h3", { className: "m-0", children: /* @__PURE__ */ jsxs18(
+      "button",
+      {
+        type: "button",
+        id: headerId,
+        "data-rm-accordion-header": "",
+        "aria-expanded": open,
+        "aria-controls": panelId,
+        disabled,
+        onClick: () => ctx?.toggle(value),
+        className: cn(
+          "flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-neutral-800/60",
+          focusRing
+        ),
+        children: [
+          /* @__PURE__ */ jsx19(ChevronIcon, { open }),
+          /* @__PURE__ */ jsxs18("span", { className: "min-w-0 flex-1", children: [
+            /* @__PURE__ */ jsx19("span", { className: "block text-sm font-medium text-neutral-900 dark:text-neutral-100", children: title }),
+            description !== void 0 && /* @__PURE__ */ jsx19("span", { className: "mt-0.5 block text-xs text-neutral-500 dark:text-neutral-400", children: description })
+          ] }),
+          meta !== void 0 && /* @__PURE__ */ jsx19("span", { className: "shrink-0 text-xs", children: meta })
+        ]
+      }
+    ) }),
+    open && /* @__PURE__ */ jsx19(
+      "div",
+      {
+        id: panelId,
+        role: "region",
+        "aria-labelledby": headerId,
+        className: "px-4 pb-4 pt-1 text-sm text-neutral-700 dark:text-neutral-300",
+        children
+      }
+    )
+  ] });
+}
+function ChevronIcon({ open }) {
+  return /* @__PURE__ */ jsx19(
+    "svg",
+    {
+      "aria-hidden": "true",
+      className: cn(
+        "h-4 w-4 shrink-0 text-neutral-400 transition-transform dark:text-neutral-500",
+        open && "rotate-90"
+      ),
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      children: /* @__PURE__ */ jsx19("path", { strokeLinecap: "round", strokeLinejoin: "round", d: "m9 6 6 6-6 6" })
+    }
+  );
+}
+
+// src/components/timeline.tsx
+import { Children as Children5 } from "react";
+
+// src/components/status-badge.tsx
+import { jsx as jsx20, jsxs as jsxs19 } from "react/jsx-runtime";
+var STYLES = {
+  ok: {
+    pill: "bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-500/10 dark:text-green-400 dark:ring-green-500/30",
+    dot: "bg-green-500",
+    label: "OK"
+  },
+  warn: {
+    pill: "bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-400 dark:ring-amber-500/30",
+    dot: "bg-amber-500",
+    label: "Warning"
+  },
+  error: {
+    pill: "bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-500/10 dark:text-red-400 dark:ring-red-500/30",
+    dot: "bg-red-500",
+    label: "Error"
+  },
+  pending: {
+    pill: "bg-neutral-100 text-neutral-600 ring-neutral-500/20 dark:bg-neutral-500/10 dark:text-neutral-300 dark:ring-neutral-400/30",
+    dot: "bg-neutral-400",
+    label: "Pending"
+  }
+};
+function statusDotClass(status) {
+  return STYLES[status].dot;
+}
+function StatusBadge({ status, children, className, ...props }) {
+  const s = STYLES[status];
+  return /* @__PURE__ */ jsxs19(
+    "span",
+    {
+      className: cn(
+        "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset",
+        s.pill,
+        className
+      ),
+      ...props,
+      children: [
+        /* @__PURE__ */ jsx20("span", { "aria-hidden": "true", className: cn("h-1.5 w-1.5 rounded-full", s.dot) }),
+        children ?? s.label
+      ]
+    }
+  );
+}
+
+// src/components/timeline.tsx
+import { jsx as jsx21, jsxs as jsxs20 } from "react/jsx-runtime";
+function Timeline({ children, className, ...props }) {
+  const items2 = Children5.toArray(children);
+  return /* @__PURE__ */ jsx21("ol", { className: cn("relative text-left", className), ...props, children: items2.map((child, i) => /* @__PURE__ */ jsxs20("li", { className: "relative pb-5 pl-6 last:pb-0", children: [
+    i < items2.length - 1 && /* @__PURE__ */ jsx21(
+      "span",
+      {
+        "aria-hidden": "true",
+        className: "absolute left-[5px] top-3 h-full w-px bg-neutral-200 dark:bg-neutral-700"
+      }
+    ),
+    child
+  ] }, i)) });
+}
+function TimelineItem({ at, title, body, status = "pending", by, className, children }) {
+  return /* @__PURE__ */ jsxs20("div", { className: cn("min-w-0", className), children: [
+    /* @__PURE__ */ jsx21(
+      "span",
+      {
+        "aria-hidden": "true",
+        className: cn(
+          "absolute left-0 top-1.5 h-2.5 w-2.5 rounded-full ring-4 ring-white dark:ring-neutral-900",
+          statusDotClass(status)
+        )
+      }
+    ),
+    /* @__PURE__ */ jsxs20("div", { className: "flex flex-wrap items-baseline gap-x-2 gap-y-0.5", children: [
+      /* @__PURE__ */ jsx21("span", { className: "text-sm font-medium text-neutral-900 dark:text-neutral-100", children: title }),
+      at !== void 0 && /* @__PURE__ */ jsx21("span", { className: "text-xs text-neutral-500 dark:text-neutral-400", children: formatAt(at) })
+    ] }),
+    body !== void 0 && /* @__PURE__ */ jsx21("div", { className: "mt-0.5 text-sm text-neutral-600 dark:text-neutral-400", children: body }),
+    by !== void 0 && /* @__PURE__ */ jsx21("div", { className: "mt-1.5 flex items-center gap-2 text-xs", children: by }),
+    children !== void 0 && /* @__PURE__ */ jsx21("div", { className: "mt-2", children })
+  ] });
+}
+function formatAt(at) {
+  if (typeof at !== "string") return at;
+  const ms = Date.parse(at);
+  if (Number.isNaN(ms) || !/^\d{4}-\d{2}-\d{2}/.test(at)) return at;
+  return new Date(ms).toLocaleString(void 0, {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+// src/components/avatar.tsx
+import { Children as Children6 } from "react";
+import { Fragment as Fragment4, jsx as jsx22, jsxs as jsxs21 } from "react/jsx-runtime";
+var SIZES2 = {
+  xs: "h-6 w-6 text-[10px]",
+  sm: "h-8 w-8 text-xs",
+  md: "h-10 w-10 text-sm",
+  lg: "h-14 w-14 text-lg"
+};
+var RING = {
+  xs: "-ml-1.5 ring-2",
+  sm: "-ml-2 ring-2",
+  md: "-ml-2.5 ring-2",
+  lg: "-ml-3 ring-2"
+};
+function Avatar({ name, src, size = "md", fallback, className, ...props }) {
+  const label = name?.trim() || "Unknown person";
+  return /* @__PURE__ */ jsx22(
+    "span",
+    {
+      title: name || void 0,
+      className: cn(
+        "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-neutral-200 font-medium text-neutral-700 dark:bg-neutral-700 dark:text-neutral-200",
+        SIZES2[size],
+        className
+      ),
+      ...props,
+      children: src ? (
+        // A picture that 404s must leave the initials showing rather than the
+        // browser's broken-image glyph, so the initials are painted behind it
+        // and the <img> simply hides itself when it cannot load.
+        /* @__PURE__ */ jsxs21(Fragment4, { children: [
+          /* @__PURE__ */ jsx22("span", { "aria-hidden": "true", className: "absolute inset-0 flex items-center justify-center", children: fallback ?? initials(label) }),
+          /* @__PURE__ */ jsx22(
+            "img",
+            {
+              src,
+              alt: label,
+              className: "relative h-full w-full object-cover",
+              onError: (e) => {
+                e.currentTarget.style.display = "none";
+              }
+            }
+          )
+        ] })
+      ) : /* @__PURE__ */ jsx22("span", { "aria-label": label, role: "img", children: fallback ?? initials(label) })
+    }
+  );
+}
+function AvatarGroup({ max = 4, size = "sm", children, className, ...props }) {
+  const all = Children6.toArray(children);
+  const shown = all.slice(0, max);
+  const extra = all.length - shown.length;
+  return /* @__PURE__ */ jsxs21("div", { className: cn("flex items-center", className), ...props, children: [
+    shown.map((child, i) => /* @__PURE__ */ jsx22(
+      "span",
+      {
+        className: cn(
+          "rounded-full ring-white dark:ring-neutral-900",
+          i === 0 ? "ml-0 ring-2" : RING[size]
+        ),
+        children: child
+      },
+      i
+    )),
+    extra > 0 && /* @__PURE__ */ jsxs21(
+      "span",
+      {
+        className: cn(
+          "inline-flex items-center justify-center rounded-full bg-neutral-100 font-medium text-neutral-600 ring-2 ring-white dark:bg-neutral-800 dark:text-neutral-300 dark:ring-neutral-900",
+          SIZES2[size],
+          RING[size]
+        ),
+        children: [
+          "+",
+          extra
+        ]
+      }
+    )
+  ] });
+}
+function initials(name) {
+  const parts = name.split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+// src/components/breadcrumbs.tsx
+import { Fragment as Fragment5 } from "react";
+import { jsx as jsx23, jsxs as jsxs22 } from "react/jsx-runtime";
+function Breadcrumbs({
+  items: items2,
+  onNavigate,
+  label = "Breadcrumb",
+  className,
+  ...props
+}) {
+  return /* @__PURE__ */ jsx23("nav", { "aria-label": label, className: cn("text-left text-sm", className), ...props, children: /* @__PURE__ */ jsx23("ol", { className: "flex flex-wrap items-center gap-1.5 text-neutral-500 dark:text-neutral-400", children: items2.map((item, i) => {
+    const last = i === items2.length - 1;
+    const linkClasses = cn(
+      "rounded px-0.5 transition-colors hover:text-neutral-900 dark:hover:text-neutral-100",
+      focusRing
+    );
+    return /* @__PURE__ */ jsxs22(Fragment5, { children: [
+      /* @__PURE__ */ jsx23("li", { children: last || !item.path ? /* @__PURE__ */ jsx23(
+        "span",
+        {
+          "aria-current": last ? "page" : void 0,
+          className: cn(last && "font-medium text-neutral-900 dark:text-neutral-100"),
+          children: item.label
+        }
+      ) : onNavigate ? /* @__PURE__ */ jsx23(
+        "button",
+        {
+          type: "button",
+          onClick: () => onNavigate(item.path),
+          className: linkClasses,
+          children: item.label
+        }
+      ) : /* @__PURE__ */ jsx23("a", { href: item.path, className: linkClasses, children: item.label }) }),
+      !last && /* @__PURE__ */ jsx23("li", { "aria-hidden": "true", className: "select-none text-neutral-300 dark:text-neutral-600", children: "/" })
+    ] }, i);
+  }) }) });
+}
+
+// src/components/thread.tsx
+import {
+  useEffect as useEffect7,
+  useRef as useRef6,
+  useState as useState12
+} from "react";
+
+// src/components/markdown.tsx
+import { jsx as jsx24 } from "react/jsx-runtime";
+var prose = cn(
+  "text-sm leading-relaxed text-neutral-800 dark:text-neutral-200",
+  "[&_h1]:mb-2 [&_h1]:mt-4 [&_h1]:text-lg [&_h1]:font-semibold [&_h1:first-child]:mt-0",
+  "[&_h2]:mb-2 [&_h2]:mt-4 [&_h2]:text-base [&_h2]:font-semibold [&_h2:first-child]:mt-0",
+  "[&_h3]:mb-1 [&_h3]:mt-3 [&_h3]:text-sm [&_h3]:font-semibold [&_h3:first-child]:mt-0",
+  "[&_p]:my-2 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0",
+  "[&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1",
+  "[&_a]:text-[color:var(--rm-accent)] [&_a]:underline [&_a]:underline-offset-2",
+  "[&_strong]:font-semibold [&_em]:italic",
+  "[&_blockquote]:my-2 [&_blockquote]:border-l-2 [&_blockquote]:border-neutral-300 [&_blockquote]:pl-3 [&_blockquote]:text-neutral-600 dark:[&_blockquote]:border-neutral-700 dark:[&_blockquote]:text-neutral-400",
+  "[&_code]:rounded [&_code]:bg-neutral-100 [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-[0.85em] dark:[&_code]:bg-neutral-800",
+  "[&_pre]:my-2 [&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:bg-neutral-100 [&_pre]:p-3 dark:[&_pre]:bg-neutral-800",
+  "[&_pre_code]:bg-transparent [&_pre_code]:p-0",
+  "[&_table]:my-2 [&_table]:w-full [&_table]:border-collapse [&_table]:text-left",
+  "[&_th]:border-b [&_th]:border-neutral-200 [&_th]:px-2 [&_th]:py-1 [&_th]:font-semibold dark:[&_th]:border-neutral-700",
+  "[&_td]:border-b [&_td]:border-neutral-100 [&_td]:px-2 [&_td]:py-1 dark:[&_td]:border-neutral-800",
+  "[&_hr]:my-4 [&_hr]:border-neutral-200 dark:[&_hr]:border-neutral-800"
+);
+function Markdown({ children, streaming = false, className }) {
+  return /* @__PURE__ */ jsx24("div", { className: cn(prose, "text-left", className), children: /* @__PURE__ */ jsx24(Xa, { mode: "streaming", isAnimating: streaming, children: children ?? "" }) });
+}
+
+// src/components/thread.tsx
+import { jsx as jsx25, jsxs as jsxs23 } from "react/jsx-runtime";
+function Thread({
+  messages,
+  onSend,
+  action,
+  params,
+  placeholder,
+  busy,
+  emptyState = "Nothing here yet.",
+  height = 360,
+  readOnly = false,
+  sendLabel,
+  className
+}) {
+  const listRef = useRef6(null);
+  const count = messages.length;
+  const lastBody = messages[count - 1]?.body;
+  useEffect7(() => {
+    const el = listRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [count, lastBody]);
+  return /* @__PURE__ */ jsxs23("div", { className: cn("flex flex-col text-left", className), children: [
+    /* @__PURE__ */ jsx25(
+      "div",
+      {
+        ref: listRef,
+        role: "log",
+        "aria-live": "polite",
+        "aria-label": "Conversation",
+        style: { maxHeight: height },
+        className: "flex-1 space-y-3 overflow-y-auto pr-1",
+        children: count === 0 ? /* @__PURE__ */ jsx25("p", { className: "py-8 text-center text-sm text-neutral-500 dark:text-neutral-400", children: emptyState }) : messages.map((m, i) => /* @__PURE__ */ jsx25(Message, { message: m }, m.id ?? i))
+      }
+    ),
+    !readOnly && /* @__PURE__ */ jsx25(
+      Composer,
+      {
+        className: "mt-3",
+        onSend,
+        action,
+        params,
+        placeholder,
+        busy,
+        sendLabel
+      }
+    )
+  ] });
+}
+function Message({ message, className }) {
+  const { author, avatarUrl, at, body, own, streaming } = message;
+  return /* @__PURE__ */ jsxs23("div", { className: cn("flex items-start gap-2.5", own && "flex-row-reverse", className), children: [
+    /* @__PURE__ */ jsx25(Avatar, { size: "sm", name: author, src: avatarUrl, className: "mt-0.5" }),
+    /* @__PURE__ */ jsxs23("div", { className: cn("min-w-0 max-w-[85%]", own && "text-right"), children: [
+      /* @__PURE__ */ jsxs23(
+        "div",
+        {
+          className: cn(
+            "flex items-baseline gap-2 text-xs text-neutral-500 dark:text-neutral-400",
+            own && "flex-row-reverse"
+          ),
+          children: [
+            /* @__PURE__ */ jsx25("span", { className: "font-medium text-neutral-700 dark:text-neutral-300", children: author ?? "The robot" }),
+            at !== void 0 && /* @__PURE__ */ jsx25("span", { children: formatAt2(at) })
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsx25(
+        "div",
+        {
+          className: cn(
+            "mt-1 inline-block rounded-lg px-3 py-2 text-left",
+            own ? "bg-[color:var(--rm-accent)] text-white" : "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200"
+          ),
+          children: /* @__PURE__ */ jsx25(Markdown, { streaming, className: own ? "text-white" : void 0, children: body })
+        }
+      )
+    ] })
+  ] });
+}
+function Composer({
+  onSend,
+  action,
+  params,
+  placeholder = "Write a message",
+  busy,
+  disabled,
+  sendLabel = "Send",
+  className
+}) {
+  const [text, setText] = useState12("");
+  const working = busy ?? action?.loading ?? false;
+  const send = () => {
+    const body = text.trim();
+    if (!body || working || disabled) return;
+    setText("");
+    onSend?.(body);
+    if (action) {
+      void Promise.resolve(action.run(params ? params(body) : { text: body })).catch(() => void 0);
+    }
+  };
+  const onKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      send();
+    }
+  };
+  return /* @__PURE__ */ jsxs23("div", { className: cn("flex items-end gap-2", className), children: [
+    /* @__PURE__ */ jsx25(
+      "textarea",
+      {
+        rows: 1,
+        value: text,
+        placeholder,
+        disabled,
+        onChange: (e) => setText(e.target.value),
+        onKeyDown,
+        "aria-label": placeholder,
+        className: cn(inputBase, "max-h-40 min-h-[38px] resize-y py-2", focusRing)
+      }
+    ),
+    /* @__PURE__ */ jsx25(
+      Button,
+      {
+        onClick: send,
+        loading: working,
+        disabled: disabled || text.trim() === "",
+        "data-rm-action": action?.name,
+        children: sendLabel
+      }
+    )
+  ] });
+}
+function formatAt2(at) {
+  const ms = Date.parse(at);
+  if (Number.isNaN(ms) || !/^\d{4}-\d{2}-\d{2}/.test(at)) return at;
+  return new Date(ms).toLocaleString(void 0, {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+// src/components/data-table.tsx
+import {
+  useCallback as useCallback3,
+  useEffect as useEffect8,
+  useMemo as useMemo2,
+  useRef as useRef7,
+  useState as useState13
+} from "react";
+
 // src/components/empty-state.tsx
-import { jsx as jsx12, jsxs as jsxs12 } from "react/jsx-runtime";
+import { jsx as jsx26, jsxs as jsxs24 } from "react/jsx-runtime";
 function EmptyState({ icon, title, description, action, className, ...props }) {
-  return /* @__PURE__ */ jsxs12(
+  return /* @__PURE__ */ jsxs24(
     "div",
     {
       className: cn(
@@ -3759,7 +5257,7 @@ function EmptyState({ icon, title, description, action, className, ...props }) {
       ),
       ...props,
       children: [
-        icon !== void 0 ? /* @__PURE__ */ jsx12("div", { "aria-hidden": "true", className: "mb-1 text-neutral-400 dark:text-neutral-500", children: icon }) : /* @__PURE__ */ jsx12(
+        icon !== void 0 ? /* @__PURE__ */ jsx26("div", { "aria-hidden": "true", className: "mb-1 text-neutral-400 dark:text-neutral-500", children: icon }) : /* @__PURE__ */ jsx26(
           "svg",
           {
             "aria-hidden": "true",
@@ -3768,7 +5266,7 @@ function EmptyState({ icon, title, description, action, className, ...props }) {
             fill: "none",
             stroke: "currentColor",
             strokeWidth: "1.5",
-            children: /* @__PURE__ */ jsx12(
+            children: /* @__PURE__ */ jsx26(
               "path",
               {
                 strokeLinecap: "round",
@@ -3778,9 +5276,9 @@ function EmptyState({ icon, title, description, action, className, ...props }) {
             )
           }
         ),
-        /* @__PURE__ */ jsx12("h3", { className: "text-sm font-semibold text-neutral-900 dark:text-neutral-100", children: title }),
-        description !== void 0 && /* @__PURE__ */ jsx12("p", { className: "max-w-sm text-sm text-neutral-500 dark:text-neutral-400", children: description }),
-        action !== void 0 && /* @__PURE__ */ jsx12("div", { className: "mt-3", children: action })
+        /* @__PURE__ */ jsx26("h3", { className: "text-sm font-semibold text-neutral-900 dark:text-neutral-100", children: title }),
+        description !== void 0 && /* @__PURE__ */ jsx26("p", { className: "max-w-sm text-sm text-neutral-500 dark:text-neutral-400", children: description }),
+        action !== void 0 && /* @__PURE__ */ jsx26("div", { className: "mt-3", children: action })
       ]
     }
   );
@@ -3788,7 +5286,7 @@ function EmptyState({ icon, title, description, action, className, ...props }) {
 
 // src/components/error-state.tsx
 import { AppError } from "@robomotion/apps-runtime";
-import { jsx as jsx13, jsxs as jsxs13 } from "react/jsx-runtime";
+import { jsx as jsx27, jsxs as jsxs25 } from "react/jsx-runtime";
 function plainMessage(raw) {
   let s = raw.replace(/\r/g, "");
   s = s.replace(/^[^\S\n]*at\s[^\n]*$/gm, "");
@@ -3837,7 +5335,7 @@ function ErrorState({
 }) {
   const retryable = error instanceof AppError ? error.retryable : true;
   const heading = title ?? defaultTitle(error);
-  return /* @__PURE__ */ jsxs13(
+  return /* @__PURE__ */ jsxs25(
     "div",
     {
       role: "alert",
@@ -3847,8 +5345,8 @@ function ErrorState({
       ),
       ...props,
       children: [
-        /* @__PURE__ */ jsxs13("div", { className: "flex items-center gap-2", children: [
-          /* @__PURE__ */ jsx13(
+        /* @__PURE__ */ jsxs25("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ jsx27(
             "svg",
             {
               "aria-hidden": "true",
@@ -3857,7 +5355,7 @@ function ErrorState({
               fill: "none",
               stroke: "currentColor",
               strokeWidth: "1.75",
-              children: /* @__PURE__ */ jsx13(
+              children: /* @__PURE__ */ jsx27(
                 "path",
                 {
                   strokeLinecap: "round",
@@ -3867,18 +5365,21 @@ function ErrorState({
               )
             }
           ),
-          /* @__PURE__ */ jsx13("h3", { className: "text-sm font-semibold text-red-800 dark:text-red-300", children: heading })
+          /* @__PURE__ */ jsx27("h3", { className: "text-sm font-semibold text-red-800 dark:text-red-300", children: heading })
         ] }),
-        /* @__PURE__ */ jsx13("p", { className: "text-sm text-red-700 dark:text-red-300/90", children: messageOf(error) }),
-        onRetry && retryable && /* @__PURE__ */ jsx13(Button, { variant: "secondary", size: "sm", className: "mt-1", onClick: onRetry, children: retryLabel })
+        /* @__PURE__ */ jsx27("p", { className: "text-sm text-red-700 dark:text-red-300/90", children: messageOf(error) }),
+        onRetry && retryable && /* @__PURE__ */ jsx27(Button, { variant: "secondary", size: "sm", className: "mt-1", onClick: onRetry, children: retryLabel })
       ]
     }
   );
 }
 
 // src/components/data-table.tsx
-import { jsx as jsx14, jsxs as jsxs14 } from "react/jsx-runtime";
+import { jsx as jsx28, jsxs as jsxs26 } from "react/jsx-runtime";
 function isLinkedAction(a) {
+  return "action" in a && !!a.action;
+}
+function isLinkedBulk(a) {
   return "action" in a && !!a.action;
 }
 var NO_ROWS = [];
@@ -3890,52 +5391,60 @@ function defaultValue(row, col) {
   if (typeof v === "boolean") return v ? 1 : 0;
   return String(v);
 }
-function DataTable({
-  columns,
-  rows = NO_ROWS,
-  rowKey,
-  source,
-  filterable = false,
-  filterPlaceholder = "Filter rows",
-  pageSize = 10,
-  rowActions,
-  onRowClick,
-  caption,
-  emptyTitle = "Nothing here yet",
-  emptyDescription,
-  emptyState,
-  loading = false,
-  className,
-  tableRef
-}) {
-  const [filter, setFilter] = useState7("");
-  const [sortKey, setSortKey] = useState7(null);
-  const [sortDir, setSortDir] = useState7("asc");
-  const [page, setPage] = useState7(0);
+function DataTable(props) {
+  const {
+    columns,
+    rows = NO_ROWS,
+    rowKey,
+    source,
+    filterable = false,
+    filterPlaceholder = "Filter rows",
+    pageSize = 10,
+    rowActions,
+    onRowClick,
+    caption,
+    emptyTitle = "Nothing here yet",
+    emptyDescription,
+    emptyState,
+    loading = false,
+    className,
+    tableRef,
+    selectable = false,
+    selectedKeys,
+    defaultSelectedKeys,
+    onSelectionChange,
+    bulkActions,
+    exportable = false,
+    exportFilename = "export.csv"
+  } = props;
+  const [filter, setFilter] = useState13("");
+  const [sortKey, setSortKey] = useState13(null);
+  const [sortDir, setSortDir] = useState13("asc");
+  const [page, setPage] = useState13(0);
   const paged = !!source && isActionSource(source);
   const pagedAction = paged ? source.action : null;
   const actionName = pagedAction?.name ?? "";
-  const actionRef = useRef4(pagedAction);
+  const actionRef = useRef7(pagedAction);
   actionRef.current = pagedAction;
   const effPageSize = paged ? source.pageSize ?? pageSize : pageSize;
-  const [remote, setRemote] = useState7(null);
-  const [remoteLoading, setRemoteLoading] = useState7(false);
-  const [remoteError, setRemoteError] = useState7(null);
-  const [reloadTick, setReloadTick] = useState7(0);
-  const seq = useRef4(0);
-  const ownFetch = useRef4(false);
-  const [askedFilter, setAskedFilter] = useState7("");
-  useEffect6(() => {
+  const [remote, setRemote] = useState13(null);
+  const [remoteLoading, setRemoteLoading] = useState13(false);
+  const [remoteError, setRemoteError] = useState13(null);
+  const [reloadTick, setReloadTick] = useState13(0);
+  const seq = useRef7(0);
+  const ownFetch = useRef7(false);
+  const [askedFilter, setAskedFilter] = useState13("");
+  useEffect8(() => {
     if (!paged) return;
     const t = setTimeout(() => setAskedFilter(filter), 250);
     return () => clearTimeout(t);
   }, [filter, paged]);
   const paging = effPageSize > 0;
-  const inMemoryTotal = useRef4(0);
+  const inMemoryTotal = useRef7(0);
   const total = paged ? remote?.total ?? rows.length : inMemoryTotal.current;
   const pageCount = paging ? Math.max(1, Math.ceil(total / effPageSize)) : 1;
   const clampedPage = Math.min(page, pageCount - 1);
-  const fetchPage = useCallback2(async () => {
+  const fetchPage = useCallback3(async () => {
     const action = actionRef.current;
     if (!action) return;
     const req = {
@@ -3960,12 +5469,12 @@ function DataTable({
       if (mine === seq.current) setRemoteLoading(false);
     }
   }, [askedFilter, sortKey, sortDir, clampedPage, effPageSize]);
-  useEffect6(() => {
+  useEffect8(() => {
     if (!paged || !actionName) return;
     void fetchPage();
   }, [paged, actionName, fetchPage, reloadTick]);
-  const wasLoading = useRef4(false);
-  useEffect6(() => {
+  const wasLoading = useRef7(false);
+  useEffect8(() => {
     if (!paged) {
       wasLoading.current = false;
       return;
@@ -3977,15 +5486,8 @@ function DataTable({
     }
     wasLoading.current = busy2;
   });
-  const refresh = useCallback2(() => setReloadTick((t) => t + 1), []);
-  useEffect6(() => {
-    if (!tableRef) return;
-    tableRef.current = { refresh };
-    return () => {
-      tableRef.current = null;
-    };
-  }, [tableRef, refresh]);
-  const filtered = useMemo(() => {
+  const refresh = useCallback3(() => setReloadTick((t) => t + 1), []);
+  const filtered = useMemo2(() => {
     if (paged) return NO_ROWS;
     const needle = filter.trim().toLowerCase();
     if (!needle) return rows;
@@ -3996,7 +5498,7 @@ function DataTable({
       })
     );
   }, [paged, rows, columns, filter]);
-  const sorted = useMemo(() => {
+  const sorted = useMemo2(() => {
     if (paged || !sortKey) return filtered;
     const col = columns.find((c) => c.key === sortKey);
     if (!col) return filtered;
@@ -4012,9 +5514,116 @@ function DataTable({
   }, [paged, filtered, columns, sortKey, sortDir]);
   inMemoryTotal.current = sorted.length;
   const pageRows = paged ? remote?.rows ?? rows : paging ? sorted.slice(clampedPage * effPageSize, clampedPage * effPageSize + effPageSize) : sorted;
-  useEffect6(() => {
+  useEffect8(() => {
     if (page > pageCount - 1) setPage(pageCount - 1);
   }, [page, pageCount]);
+  const keyOf = useCallback3(
+    (row, index) => rowKey ? rowKey(row) : String(clampedPage * effPageSize + index),
+    [rowKey, clampedPage, effPageSize]
+  );
+  const [ownKeys, setOwnKeys] = useState13(defaultSelectedKeys ?? []);
+  const [allMatching, setAllMatching] = useState13(false);
+  const keys = selectedKeys ?? ownKeys;
+  const keySet = useMemo2(() => new Set(keys), [keys]);
+  const seen = useRef7(/* @__PURE__ */ new Map());
+  pageRows.forEach((row, i) => {
+    if (selectable) seen.current.set(keyOf(row, i), row);
+  });
+  const rowsFor = useCallback3(
+    (list) => list.map((k) => seen.current.get(k)).filter((r) => r !== void 0),
+    []
+  );
+  const setKeys = useCallback3(
+    (next) => {
+      if (selectedKeys === void 0) setOwnKeys(next);
+      onSelectionChange?.(next, next.map((k) => seen.current.get(k)).filter((r) => r !== void 0));
+    },
+    [selectedKeys, onSelectionChange]
+  );
+  const selectionCount = allMatching ? total : keys.length;
+  const selection = useMemo2(
+    () => allMatching ? { allMatching: true, filter, count: total } : { keys, rows: rowsFor(keys), filter, count: keys.length },
+    [allMatching, keys, filter, total, rowsFor]
+  );
+  const clearSelection = useCallback3(() => {
+    setAllMatching(false);
+    if (selectedKeys === void 0) setOwnKeys([]);
+    onSelectionChange?.([], []);
+  }, [selectedKeys, onSelectionChange]);
+  useEffect8(() => {
+    setAllMatching(false);
+  }, [askedFilter, filter]);
+  const selectionRef = useRef7(selection);
+  selectionRef.current = selection;
+  useEffect8(() => {
+    if (!tableRef) return;
+    tableRef.current = {
+      refresh,
+      // The row type is the caller's to name; the table only ever holds T.
+      selection: () => selectionRef.current,
+      clearSelection
+    };
+    return () => {
+      tableRef.current = null;
+    };
+  }, [tableRef, refresh, clearSelection]);
+  const pageKeys = useMemo2(
+    () => selectable ? pageRows.map((row, i) => keyOf(row, i)) : [],
+    // pageRows is a fresh array every render; its contents are what matter.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [selectable, pageRows, keyOf]
+  );
+  const pageAllSelected = pageKeys.length > 0 && pageKeys.every((k) => keySet.has(k));
+  const pageSomeSelected = !pageAllSelected && pageKeys.some((k) => keySet.has(k));
+  const togglePage = () => {
+    setAllMatching(false);
+    if (pageAllSelected) setKeys(keys.filter((k) => !pageKeys.includes(k)));
+    else setKeys([...keys, ...pageKeys.filter((k) => !keySet.has(k))]);
+  };
+  const toggleRow = (key) => {
+    setAllMatching(false);
+    setKeys(keySet.has(key) ? keys.filter((k) => k !== key) : [...keys, key]);
+  };
+  const selectAllMatching = () => {
+    if (paged) {
+      setAllMatching(true);
+      return;
+    }
+    setKeys(sorted.map((row, i) => rowKey ? rowKey(row) : String(i)));
+  };
+  const runBulk = (a) => {
+    const sel = selectionRef.current;
+    if (isLinkedBulk(a)) {
+      void Promise.resolve(a.action.run(a.params ? a.params(sel) : sel)).catch(() => void 0);
+      return;
+    }
+    a.onSelect(sel);
+  };
+  const bulkNames = joinNames((bulkActions ?? []).map((a) => isLinkedBulk(a) ? a.action.name : void 0));
+  const [exporting, setExporting] = useState13(false);
+  const exportColumns = useMemo2(() => columns.filter((c) => !c.noExport), [columns]);
+  const exportCsv = async () => {
+    setExporting(true);
+    try {
+      let out;
+      if (paged && actionRef.current) {
+        const req = {
+          filter: askedFilter,
+          sort: sortKey ? { key: sortKey, dir: sortDir } : void 0,
+          offset: 0,
+          limit: 0
+        };
+        const reply = await actionRef.current.run(req);
+        out = readPageReply(reply, req).rows;
+      } else {
+        out = sorted;
+      }
+      downloadCsv(exportFilename, toCsv(exportColumns, out));
+    } catch {
+    } finally {
+      setExporting(false);
+    }
+  };
   const toggleSort = (col) => {
     if (!col.sortable) return;
     setPage(0);
@@ -4030,32 +5639,98 @@ function DataTable({
   const alignClass = (align) => align === "right" ? "text-right" : align === "center" ? "text-center" : "text-left";
   const busy = loading || remoteLoading;
   const showEmpty = !busy && pageRows.length === 0;
-  const linkAttrs = useMemo(
+  const linkAttrs = useMemo2(
     () => source ? sourceLinkAttrs(source) : rowsLinkAttrs(rows),
     [rows, source]
   );
-  const columnCount = columns.length + (rowActions?.length ? 1 : 0);
-  return /* @__PURE__ */ jsxs14("div", { className: cn("text-left", className), ...linkAttrs, children: [
-    filterable && /* @__PURE__ */ jsx14("div", { className: "mb-3 max-w-xs", children: /* @__PURE__ */ jsx14(
-      "input",
-      {
-        type: "search",
-        "aria-label": filterPlaceholder,
-        className: cn(inputBase, "h-9"),
-        placeholder: filterPlaceholder,
-        value: filter,
-        onChange: (e) => {
-          setFilter(e.target.value);
-          setPage(0);
+  const columnCount = columns.length + (rowActions?.length ? 1 : 0) + (selectable ? 1 : 0);
+  const offerAllMatching = selectable && pageAllSelected && !allMatching && total > pageKeys.length && paging;
+  return /* @__PURE__ */ jsxs26("div", { className: cn("text-left", className), ...linkAttrs, children: [
+    (filterable || exportable) && /* @__PURE__ */ jsxs26("div", { className: "mb-3 flex flex-wrap items-center gap-2", children: [
+      filterable && /* @__PURE__ */ jsx28("div", { className: "max-w-xs flex-1", children: /* @__PURE__ */ jsx28(
+        "input",
+        {
+          type: "search",
+          "aria-label": filterPlaceholder,
+          className: cn(inputBase, "h-9"),
+          placeholder: filterPlaceholder,
+          value: filter,
+          onChange: (e) => {
+            setFilter(e.target.value);
+            setPage(0);
+          }
         }
+      ) }),
+      exportable && /* @__PURE__ */ jsx28(
+        Button,
+        {
+          variant: "secondary",
+          size: "sm",
+          className: "ml-auto",
+          loading: exporting,
+          onClick: () => void exportCsv(),
+          children: "Export CSV"
+        }
+      )
+    ] }),
+    selectable && selectionCount > 0 && /* @__PURE__ */ jsxs26(
+      "div",
+      {
+        role: "region",
+        "aria-label": "Selected rows",
+        "data-rm-action": bulkNames,
+        className: "mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 dark:border-neutral-800 dark:bg-neutral-900/60",
+        children: [
+          /* @__PURE__ */ jsx28("span", { className: "text-sm font-medium text-neutral-700 dark:text-neutral-200", children: allMatching ? `All ${total} selected` : `${selectionCount} selected` }),
+          offerAllMatching && /* @__PURE__ */ jsxs26(
+            "button",
+            {
+              type: "button",
+              onClick: selectAllMatching,
+              className: cn(
+                "rounded text-sm font-medium text-[color:var(--rm-accent)] underline underline-offset-2",
+                focusRing
+              ),
+              children: [
+                "Select all ",
+                total
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxs26("div", { className: "ml-auto flex flex-wrap items-center gap-2", children: [
+            (bulkActions ?? []).map((a) => /* @__PURE__ */ jsx28(
+              Button,
+              {
+                size: "sm",
+                variant: a.danger ? "danger" : "secondary",
+                disabled: a.disabled?.(selection) ?? false,
+                "data-rm-action": isLinkedBulk(a) ? a.action.name : void 0,
+                loading: isLinkedBulk(a) ? a.action.loading : void 0,
+                onClick: () => runBulk(a),
+                children: a.label
+              },
+              a.label
+            )),
+            /* @__PURE__ */ jsx28(Button, { size: "sm", variant: "ghost", onClick: clearSelection, children: "Clear" })
+          ] })
+        ]
       }
-    ) }),
-    /* @__PURE__ */ jsx14("div", { className: "overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800", children: /* @__PURE__ */ jsxs14("table", { className: "w-full border-collapse bg-white text-sm dark:bg-neutral-900", children: [
-      caption && /* @__PURE__ */ jsx14("caption", { className: "sr-only", children: caption }),
-      /* @__PURE__ */ jsx14("thead", { children: /* @__PURE__ */ jsxs14("tr", { className: "border-b border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900/60", children: [
+    ),
+    /* @__PURE__ */ jsx28("div", { className: "overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800", children: /* @__PURE__ */ jsxs26("table", { className: "w-full border-collapse bg-white text-sm dark:bg-neutral-900", children: [
+      caption && /* @__PURE__ */ jsx28("caption", { className: "sr-only", children: caption }),
+      /* @__PURE__ */ jsx28("thead", { children: /* @__PURE__ */ jsxs26("tr", { className: "border-b border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900/60", children: [
+        selectable && /* @__PURE__ */ jsx28("th", { scope: "col", className: "w-10 px-3 py-2.5", children: /* @__PURE__ */ jsx28(
+          TickBox,
+          {
+            label: "Select every row on this page",
+            checked: pageAllSelected,
+            indeterminate: pageSomeSelected,
+            onChange: togglePage
+          }
+        ) }),
         columns.map((col) => {
           const active = sortKey === col.key;
-          return /* @__PURE__ */ jsx14(
+          return /* @__PURE__ */ jsx28(
             "th",
             {
               scope: "col",
@@ -4065,7 +5740,7 @@ function DataTable({
                 alignClass(col.align),
                 col.className
               ),
-              children: col.sortable ? /* @__PURE__ */ jsxs14(
+              children: col.sortable ? /* @__PURE__ */ jsxs26(
                 "button",
                 {
                   type: "button",
@@ -4077,7 +5752,7 @@ function DataTable({
                   ),
                   children: [
                     col.header,
-                    /* @__PURE__ */ jsx14(SortIcon, { active, dir: sortDir })
+                    /* @__PURE__ */ jsx28(SortIcon, { active, dir: sortDir })
                   ]
                 }
               ) : col.header
@@ -4085,10 +5760,10 @@ function DataTable({
             col.key
           );
         }),
-        rowActions && rowActions.length > 0 && /* @__PURE__ */ jsx14("th", { scope: "col", className: "w-12 px-3 py-2.5", children: /* @__PURE__ */ jsx14("span", { className: "sr-only", children: "Actions" }) })
+        rowActions && rowActions.length > 0 && /* @__PURE__ */ jsx28("th", { scope: "col", className: "w-12 px-3 py-2.5", children: /* @__PURE__ */ jsx28("span", { className: "sr-only", children: "Actions" }) })
       ] }) }),
-      /* @__PURE__ */ jsxs14("tbody", { children: [
-        busy && /* @__PURE__ */ jsx14("tr", { children: /* @__PURE__ */ jsx14(
+      /* @__PURE__ */ jsxs26("tbody", { children: [
+        busy && /* @__PURE__ */ jsx28("tr", { children: /* @__PURE__ */ jsx28(
           "td",
           {
             colSpan: columnCount,
@@ -4097,17 +5772,28 @@ function DataTable({
           }
         ) }),
         !busy && pageRows.map((row, i) => {
-          const key = rowKey ? rowKey(row) : String(clampedPage * effPageSize + i);
-          return /* @__PURE__ */ jsxs14(
+          const key = keyOf(row, i);
+          const ticked = allMatching || keySet.has(key);
+          return /* @__PURE__ */ jsxs26(
             "tr",
             {
               onClick: onRowClick ? () => onRowClick(row) : void 0,
+              "aria-selected": selectable ? ticked : void 0,
               className: cn(
                 "border-b border-neutral-100 last:border-b-0 dark:border-neutral-800",
-                onRowClick && "cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/60"
+                onRowClick && "cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/60",
+                ticked && "bg-neutral-50 dark:bg-neutral-800/40"
               ),
               children: [
-                columns.map((col) => /* @__PURE__ */ jsx14(
+                selectable && /* @__PURE__ */ jsx28("td", { className: "px-3 py-2.5", onClick: (e) => e.stopPropagation(), children: /* @__PURE__ */ jsx28(
+                  TickBox,
+                  {
+                    label: `Select row ${i + 1}`,
+                    checked: ticked,
+                    onChange: () => toggleRow(key)
+                  }
+                ) }),
+                columns.map((col) => /* @__PURE__ */ jsx28(
                   "td",
                   {
                     className: cn(
@@ -4119,13 +5805,13 @@ function DataTable({
                   },
                   col.key
                 )),
-                rowActions && rowActions.length > 0 && /* @__PURE__ */ jsx14("td", { className: "px-2 py-1.5 text-right", onClick: (e) => e.stopPropagation(), children: /* @__PURE__ */ jsx14(Menu, { items: rowMenuItems(row, rowActions) }) })
+                rowActions && rowActions.length > 0 && /* @__PURE__ */ jsx28("td", { className: "px-2 py-1.5 text-right", onClick: (e) => e.stopPropagation(), children: /* @__PURE__ */ jsx28(Menu, { items: rowMenuItems(row, rowActions) }) })
               ]
             },
             key
           );
         }),
-        showEmpty && /* @__PURE__ */ jsx14("tr", { children: /* @__PURE__ */ jsx14("td", { colSpan: columnCount, className: "p-0", children: remoteError ? /* @__PURE__ */ jsx14(ErrorState, { className: "m-3", error: remoteError, onRetry: refresh }) : emptyState ?? /* @__PURE__ */ jsx14(
+        showEmpty && /* @__PURE__ */ jsx28("tr", { children: /* @__PURE__ */ jsx28("td", { colSpan: columnCount, className: "p-0", children: remoteError ? /* @__PURE__ */ jsx28(ErrorState, { className: "m-3", error: remoteError, onRetry: refresh }) : emptyState ?? /* @__PURE__ */ jsx28(
           EmptyState,
           {
             className: "rounded-none border-0",
@@ -4135,13 +5821,13 @@ function DataTable({
         ) }) })
       ] })
     ] }) }),
-    paging && total > effPageSize && /* @__PURE__ */ jsxs14(
+    paging && total > effPageSize && /* @__PURE__ */ jsxs26(
       "nav",
       {
         "aria-label": "Table pagination",
         className: "mt-3 flex items-center justify-between gap-3 text-sm text-neutral-600 dark:text-neutral-400",
         children: [
-          /* @__PURE__ */ jsxs14("span", { children: [
+          /* @__PURE__ */ jsxs26("span", { children: [
             "Showing ",
             clampedPage * effPageSize + 1,
             " to",
@@ -4150,8 +5836,8 @@ function DataTable({
             " of ",
             total
           ] }),
-          /* @__PURE__ */ jsxs14("div", { className: "flex items-center gap-2", children: [
-            /* @__PURE__ */ jsx14(
+          /* @__PURE__ */ jsxs26("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ jsx28(
               PagerButton,
               {
                 label: "Previous page",
@@ -4160,12 +5846,12 @@ function DataTable({
                 children: "Previous"
               }
             ),
-            /* @__PURE__ */ jsxs14("span", { "aria-current": "page", className: "tabular-nums", children: [
+            /* @__PURE__ */ jsxs26("span", { "aria-current": "page", className: "tabular-nums", children: [
               clampedPage + 1,
               " / ",
               pageCount
             ] }),
-            /* @__PURE__ */ jsx14(
+            /* @__PURE__ */ jsx28(
               PagerButton,
               {
                 label: "Next page",
@@ -4177,8 +5863,34 @@ function DataTable({
           ] })
         ]
       }
-    )
+    ),
+    exporting && /* @__PURE__ */ jsx28("span", { className: "sr-only", role: "status", children: "Preparing the export" })
   ] });
+}
+function TickBox({
+  label,
+  checked,
+  indeterminate = false,
+  onChange
+}) {
+  const ref = useRef7(null);
+  useEffect8(() => {
+    if (ref.current) ref.current.indeterminate = indeterminate && !checked;
+  }, [indeterminate, checked]);
+  return /* @__PURE__ */ jsx28(
+    "input",
+    {
+      ref,
+      type: "checkbox",
+      "aria-label": label,
+      checked,
+      onChange,
+      className: cn(
+        "h-4 w-4 cursor-pointer rounded border-neutral-300 text-[color:var(--rm-accent)] accent-[var(--rm-accent)] dark:border-neutral-600",
+        focusRing
+      )
+    }
+  );
 }
 function rowMenuItems(row, actions) {
   return actions.map((a) => ({
@@ -4190,14 +5902,37 @@ function rowMenuItems(row, actions) {
     onSelect: isLinkedAction(a) ? void 0 : () => a.onSelect(row)
   }));
 }
+function toCsv(columns, rows) {
+  const cell = (v) => {
+    if (v === null || v === void 0) return "";
+    const s = String(v);
+    return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const header = columns.map((c) => cell(typeof c.header === "string" ? c.header : c.key));
+  const body = rows.map((row) => columns.map((c) => cell(defaultValue(row, c))));
+  return [header, ...body].map((r) => r.join(",")).join("\r\n");
+}
+function downloadCsv(filename, csv) {
+  if (typeof document === "undefined" || typeof URL.createObjectURL !== "function") return;
+  const blob = new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}
 function cellText(v) {
   if (v === null || v === void 0 || v === "") {
-    return /* @__PURE__ */ jsx14("span", { className: "text-neutral-400 dark:text-neutral-600", children: "-" });
+    return /* @__PURE__ */ jsx28("span", { className: "text-neutral-400 dark:text-neutral-600", children: "-" });
   }
   return String(v);
 }
 function SortIcon({ active, dir }) {
-  return /* @__PURE__ */ jsx14(
+  return /* @__PURE__ */ jsx28(
     "svg",
     {
       "aria-hidden": "true",
@@ -4206,7 +5941,7 @@ function SortIcon({ active, dir }) {
       fill: "none",
       stroke: "currentColor",
       strokeWidth: "2.5",
-      children: !active || dir === "asc" ? /* @__PURE__ */ jsx14("path", { strokeLinecap: "round", strokeLinejoin: "round", d: "m6 14 6-6 6 6" }) : /* @__PURE__ */ jsx14("path", { strokeLinecap: "round", strokeLinejoin: "round", d: "m6 10 6 6 6-6" })
+      children: !active || dir === "asc" ? /* @__PURE__ */ jsx28("path", { strokeLinecap: "round", strokeLinejoin: "round", d: "m6 14 6-6 6 6" }) : /* @__PURE__ */ jsx28("path", { strokeLinecap: "round", strokeLinejoin: "round", d: "m6 10 6 6 6-6" })
     }
   );
 }
@@ -4216,7 +5951,7 @@ function PagerButton({
   onClick,
   children
 }) {
-  return /* @__PURE__ */ jsx14(
+  return /* @__PURE__ */ jsx28(
     "button",
     {
       type: "button",
@@ -4232,220 +5967,30 @@ function PagerButton({
   );
 }
 
-// src/components/chart.tsx
-import { useId as useId6 } from "react";
-import { Fragment as Fragment2, jsx as jsx15, jsxs as jsxs15 } from "react/jsx-runtime";
-var WIDTH = 480;
-function seriesOpacity(i, n) {
-  if (n <= 1) return 1;
-  const step = 0.7 / Math.max(1, n - 1);
-  return Number((1 - i * step).toFixed(3));
-}
-function Chart({
-  kind,
-  data,
-  title,
-  description,
-  height = 220,
-  formatValue,
-  emptyState,
-  source,
-  className
-}) {
-  const id = useId6();
-  const fmt = formatValue ?? ((v) => v.toLocaleString());
-  const linkAttrs = source ? sourceLinkAttrs(source) : {};
-  if (!data || data.length === 0) {
-    return /* @__PURE__ */ jsx15(
-      "div",
-      {
-        className: cn(
-          "rounded-lg border border-dashed border-neutral-300 px-6 py-10 text-center text-sm text-neutral-500 dark:border-neutral-700 dark:text-neutral-400",
-          className
-        ),
-        ...linkAttrs,
-        children: emptyState ?? "Nothing to chart yet."
-      }
-    );
-  }
-  const total = data.reduce((sum, d) => sum + (Number.isFinite(d.value) ? d.value : 0), 0);
-  const desc = description ?? `${kind} chart, ${data.length} ${data.length === 1 ? "value" : "values"}: ` + data.slice(0, 8).map((d) => `${d.label} ${fmt(d.value)}`).join(", ") + (data.length > 8 ? ", and more" : "");
-  return /* @__PURE__ */ jsx15("div", { className: cn("text-left", className), ...linkAttrs, children: /* @__PURE__ */ jsxs15("div", { className: kind === "pie" ? "flex flex-wrap items-center gap-6" : void 0, children: [
-    /* @__PURE__ */ jsxs15(
-      "svg",
-      {
-        role: "img",
-        "aria-labelledby": `${id}-t ${id}-d`,
-        viewBox: `0 0 ${WIDTH} ${height}`,
-        className: cn("h-auto", kind === "pie" ? "w-48 max-w-full" : "w-full"),
-        children: [
-          /* @__PURE__ */ jsx15("title", { id: `${id}-t`, children: title ?? "Chart" }),
-          /* @__PURE__ */ jsx15("desc", { id: `${id}-d`, children: desc }),
-          kind === "bar" && /* @__PURE__ */ jsx15(Bars, { data, height, fmt }),
-          kind === "line" && /* @__PURE__ */ jsx15(Line, { data, height, fmt }),
-          kind === "pie" && /* @__PURE__ */ jsx15(Pie, { data, height, total })
-        ]
-      }
-    ),
-    kind === "pie" && /* @__PURE__ */ jsx15("ul", { className: "min-w-0 flex-1 space-y-1 text-sm", children: data.map((d, i) => /* @__PURE__ */ jsxs15("li", { className: "flex items-center gap-2", children: [
-      /* @__PURE__ */ jsx15(
-        "span",
-        {
-          "aria-hidden": "true",
-          className: "h-3 w-3 shrink-0 rounded-sm bg-[color:var(--rm-accent)]",
-          style: { opacity: seriesOpacity(i, data.length) }
-        }
-      ),
-      /* @__PURE__ */ jsx15("span", { className: "min-w-0 flex-1 truncate text-neutral-700 dark:text-neutral-300", children: d.label }),
-      /* @__PURE__ */ jsx15("span", { className: "tabular-nums text-neutral-500 dark:text-neutral-400", children: fmt(d.value) })
-    ] }, `${d.label}-${i}`)) })
-  ] }) });
-}
-var PAD = { top: 14, right: 8, bottom: 26, left: 8 };
-function scale(data, height) {
-  const plotW = WIDTH - PAD.left - PAD.right;
-  const plotH = height - PAD.top - PAD.bottom;
-  const values = data.map((d) => Number.isFinite(d.value) ? d.value : 0);
-  const max = Math.max(...values, 0);
-  const min = Math.min(...values, 0);
-  const span = max - min || 1;
-  const y = (v) => PAD.top + plotH - (v - min) / span * plotH;
-  return { plotW, plotH, max, min, y, values };
-}
-var axisLine = "stroke-neutral-200 dark:stroke-neutral-800";
-var axisText = "fill-neutral-500 dark:fill-neutral-400";
-function Bars({ data, height, fmt }) {
-  const { plotW, y, values } = scale(data, height);
-  const slot = plotW / data.length;
-  const barW = Math.max(4, Math.min(48, slot * 0.62));
-  const base2 = y(0);
-  return /* @__PURE__ */ jsxs15(Fragment2, { children: [
-    /* @__PURE__ */ jsx15("line", { x1: PAD.left, y1: base2, x2: WIDTH - PAD.right, y2: base2, className: axisLine, strokeWidth: 1 }),
-    data.map((d, i) => {
-      const v = values[i];
-      const cx2 = PAD.left + (i + 0.5) * slot;
-      const top = y(v);
-      const h = Math.abs(base2 - top);
-      return /* @__PURE__ */ jsxs15("g", { children: [
-        /* @__PURE__ */ jsx15(
-          "rect",
-          {
-            x: cx2 - barW / 2,
-            y: Math.min(top, base2),
-            width: barW,
-            height: Math.max(h, v === 0 ? 0 : 1),
-            rx: 2,
-            fill: "var(--rm-accent)",
-            fillOpacity: seriesOpacity(i, data.length)
-          }
-        ),
-        /* @__PURE__ */ jsx15("text", { x: cx2, y: Math.min(top, base2) - 4, textAnchor: "middle", fontSize: 10, className: axisText, children: fmt(v) }),
-        /* @__PURE__ */ jsx15("text", { x: cx2, y: height - 8, textAnchor: "middle", fontSize: 10, className: axisText, children: clip(d.label, Math.floor(slot / 6)) })
-      ] }, `${d.label}-${i}`);
-    })
-  ] });
-}
-function Line({ data, height, fmt }) {
-  const { plotW, y, values, min } = scale(data, height);
-  const x = (i) => PAD.left + (data.length === 1 ? plotW / 2 : i * plotW / (data.length - 1));
-  const points = values.map((v, i) => `${x(i)},${y(v)}`).join(" ");
-  const area = `M ${x(0)},${y(min)} L ${points.split(" ").join(" L ")} L ${x(values.length - 1)},${y(min)} Z`;
-  const every = Math.max(1, Math.ceil(data.length / 6));
-  return /* @__PURE__ */ jsxs15(Fragment2, { children: [
-    /* @__PURE__ */ jsx15(
-      "line",
-      {
-        x1: PAD.left,
-        y1: height - PAD.bottom,
-        x2: WIDTH - PAD.right,
-        y2: height - PAD.bottom,
-        className: axisLine,
-        strokeWidth: 1
-      }
-    ),
-    /* @__PURE__ */ jsx15("path", { d: area, fill: "var(--rm-accent)", fillOpacity: 0.12 }),
-    /* @__PURE__ */ jsx15(
-      "polyline",
-      {
-        points,
-        fill: "none",
-        stroke: "var(--rm-accent)",
-        strokeWidth: 2,
-        strokeLinecap: "round",
-        strokeLinejoin: "round"
-      }
-    ),
-    values.map((v, i) => /* @__PURE__ */ jsxs15("g", { children: [
-      /* @__PURE__ */ jsx15("circle", { cx: x(i), cy: y(v), r: 2.5, fill: "var(--rm-accent)" }),
-      i % every === 0 && /* @__PURE__ */ jsxs15(Fragment2, { children: [
-        /* @__PURE__ */ jsx15("text", { x: x(i), y: y(v) - 7, textAnchor: "middle", fontSize: 10, className: axisText, children: fmt(v) }),
-        /* @__PURE__ */ jsx15("text", { x: x(i), y: height - 8, textAnchor: "middle", fontSize: 10, className: axisText, children: clip(data[i].label, 10) })
-      ] })
-    ] }, `${data[i].label}-${i}`))
-  ] });
-}
-function Pie({ data, height, total }) {
-  const r = Math.max(10, Math.min(WIDTH, height) / 2 - 8);
-  const cx2 = WIDTH / 2;
-  const cy = height / 2;
-  if (total <= 0) {
-    return /* @__PURE__ */ jsx15("circle", { cx: cx2, cy, r, fill: "var(--rm-accent)", fillOpacity: 0.15 });
-  }
-  let angle = -Math.PI / 2;
-  return /* @__PURE__ */ jsx15(Fragment2, { children: data.map((d, i) => {
-    const share = Math.max(0, d.value) / total;
-    const sweep = share * Math.PI * 2;
-    const start = angle;
-    angle += sweep;
-    if (share >= 0.9999) {
-      return /* @__PURE__ */ jsx15("circle", { cx: cx2, cy, r, fill: "var(--rm-accent)", fillOpacity: 1 }, `${d.label}-${i}`);
-    }
-    if (share <= 0) return null;
-    const x1 = cx2 + r * Math.cos(start);
-    const y1 = cy + r * Math.sin(start);
-    const x2 = cx2 + r * Math.cos(angle);
-    const y2 = cy + r * Math.sin(angle);
-    const large = sweep > Math.PI ? 1 : 0;
-    return /* @__PURE__ */ jsx15(
-      "path",
-      {
-        d: `M ${cx2},${cy} L ${x1},${y1} A ${r},${r} 0 ${large} 1 ${x2},${y2} Z`,
-        fill: "var(--rm-accent)",
-        fillOpacity: seriesOpacity(i, data.length)
-      },
-      `${d.label}-${i}`
-    );
-  }) });
-}
-function clip(text, max) {
-  if (max <= 1 || text.length <= max) return text;
-  return `${text.slice(0, Math.max(1, max - 1))}\u2026`;
-}
-
 // src/components/kanban.tsx
 import {
-  Children as Children4,
-  createContext as createContext3,
-  isValidElement as isValidElement3,
-  useContext as useContext3,
-  useEffect as useEffect7,
-  useRef as useRef5,
-  useState as useState8
+  Children as Children7,
+  createContext as createContext4,
+  isValidElement as isValidElement4,
+  useContext as useContext4,
+  useEffect as useEffect9,
+  useRef as useRef8,
+  useState as useState14
 } from "react";
-import { jsx as jsx16, jsxs as jsxs16 } from "react/jsx-runtime";
-var KanbanContext = createContext3(null);
+import { jsx as jsx29, jsxs as jsxs27 } from "react/jsx-runtime";
+var KanbanContext = createContext4(null);
 function Kanban({ onMove, action, className, children }) {
-  const items2 = Children4.toArray(children);
+  const items2 = Children7.toArray(children);
   const columns = [];
   for (const c of items2) {
-    if (isValidElement3(c) && c.type === KanbanColumn) columns.push(String(c.props.id));
+    if (isValidElement4(c) && c.type === KanbanColumn) columns.push(String(c.props.id));
   }
-  const [dragKey, setDragKey] = useState8(null);
-  const [dragFrom, setDragFrom] = useState8(null);
-  const [dragOffset, setDragOffset] = useState8({ x: 0, y: 0 });
-  const [overColumn, setOverColumn] = useState8(null);
-  const origin = useRef5({ x: 0, y: 0 });
-  const latest = useRef5({
+  const [dragKey, setDragKey] = useState14(null);
+  const [dragFrom, setDragFrom] = useState14(null);
+  const [dragOffset, setDragOffset] = useState14({ x: 0, y: 0 });
+  const [overColumn, setOverColumn] = useState14(null);
+  const origin = useRef8({ x: 0, y: 0 });
+  const latest = useRef8({
     key: "",
     from: "",
     over: null
@@ -4464,7 +6009,7 @@ function Kanban({ onMove, action, className, children }) {
     setDragOffset({ x: 0, y: 0 });
     setOverColumn(null);
   };
-  useEffect7(() => {
+  useEffect9(() => {
     if (!dragKey) return;
     const onPointerMove = (e) => {
       setDragOffset({ x: e.clientX - origin.current.x, y: e.clientY - origin.current.y });
@@ -4499,7 +6044,7 @@ function Kanban({ onMove, action, className, children }) {
     startDrag,
     move
   };
-  return /* @__PURE__ */ jsx16(KanbanContext.Provider, { value: ctx, children: /* @__PURE__ */ jsx16(
+  return /* @__PURE__ */ jsx29(KanbanContext.Provider, { value: ctx, children: /* @__PURE__ */ jsx29(
     "div",
     {
       className: cn("flex gap-4 overflow-x-auto pb-2 text-left", className),
@@ -4509,10 +6054,10 @@ function Kanban({ onMove, action, className, children }) {
   ) });
 }
 function KanbanColumn({ id, title, meta, emptyState, className, children }) {
-  const ctx = useContext3(KanbanContext);
+  const ctx = useContext4(KanbanContext);
   const over = ctx?.overColumn === id && ctx?.dragFrom !== id;
-  const cards = Children4.toArray(children);
-  return /* @__PURE__ */ jsxs16(
+  const cards = Children7.toArray(children);
+  return /* @__PURE__ */ jsxs27(
     "section",
     {
       "data-rm-kanban-column": id,
@@ -4523,18 +6068,18 @@ function KanbanColumn({ id, title, meta, emptyState, className, children }) {
         className
       ),
       children: [
-        /* @__PURE__ */ jsxs16("header", { className: "flex items-center justify-between gap-2 px-3 py-2", children: [
-          /* @__PURE__ */ jsx16("h3", { className: "text-sm font-semibold text-neutral-900 dark:text-neutral-100", children: title }),
-          /* @__PURE__ */ jsx16("span", { className: "text-xs text-neutral-500 dark:text-neutral-400", children: meta ?? cards.length })
+        /* @__PURE__ */ jsxs27("header", { className: "flex items-center justify-between gap-2 px-3 py-2", children: [
+          /* @__PURE__ */ jsx29("h3", { className: "text-sm font-semibold text-neutral-900 dark:text-neutral-100", children: title }),
+          /* @__PURE__ */ jsx29("span", { className: "text-xs text-neutral-500 dark:text-neutral-400", children: meta ?? cards.length })
         ] }),
-        /* @__PURE__ */ jsx16("ul", { className: "flex min-h-[4rem] flex-1 flex-col gap-2 p-2", children: cards.length > 0 ? cards : /* @__PURE__ */ jsx16("li", { className: "rounded-md border border-dashed border-neutral-300 px-3 py-6 text-center text-xs text-neutral-500 dark:border-neutral-700 dark:text-neutral-400", children: emptyState ?? "Nothing here" }) })
+        /* @__PURE__ */ jsx29("ul", { className: "flex min-h-[4rem] flex-1 flex-col gap-2 p-2", children: cards.length > 0 ? cards : /* @__PURE__ */ jsx29("li", { className: "rounded-md border border-dashed border-neutral-300 px-3 py-6 text-center text-xs text-neutral-500 dark:border-neutral-700 dark:text-neutral-400", children: emptyState ?? "Nothing here" }) })
       ]
     }
   );
 }
 function KanbanCard({ id, column, disabled = false, className, children }) {
-  const ctx = useContext3(KanbanContext);
-  const ref = useRef5(null);
+  const ctx = useContext4(KanbanContext);
+  const ref = useRef8(null);
   const dragging = ctx?.dragKey === id;
   const onPointerDown = (e) => {
     if (disabled || e.button !== 0) return;
@@ -4553,7 +6098,7 @@ function KanbanCard({ id, column, disabled = false, className, children }) {
     e.preventDefault();
     ctx.move(id, owner, next);
   };
-  return /* @__PURE__ */ jsx16(
+  return /* @__PURE__ */ jsx29(
     "li",
     {
       ref,
@@ -4582,8 +6127,8 @@ function columnOf(el) {
 }
 
 // src/components/calendar.tsx
-import { useMemo as useMemo2, useState as useState9 } from "react";
-import { Fragment as Fragment3, jsx as jsx17, jsxs as jsxs17 } from "react/jsx-runtime";
+import { useMemo as useMemo3, useState as useState15 } from "react";
+import { Fragment as Fragment6, jsx as jsx30, jsxs as jsxs28 } from "react/jsx-runtime";
 function iso(y, m, d) {
   return `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 }
@@ -4604,7 +6149,7 @@ function Calendar({
   className
 }) {
   const today = /* @__PURE__ */ new Date();
-  const [ownMonth, setOwnMonth] = useState9(
+  const [ownMonth, setOwnMonth] = useState15(
     defaultMonth ?? `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`
   );
   const current = month ?? ownMonth;
@@ -4615,7 +6160,7 @@ function Calendar({
     if (month === void 0) setOwnMonth(next);
     onMonthChange?.(next);
   };
-  const byDate = useMemo2(() => {
+  const byDate = useMemo3(() => {
     const map = /* @__PURE__ */ new Map();
     for (const e of events) {
       const list = map.get(e.date);
@@ -4639,20 +6184,20 @@ function Calendar({
   });
   const heading = firstDay.toLocaleDateString(void 0, { month: "long", year: "numeric" });
   const todayIso = iso(today.getFullYear(), today.getMonth(), today.getDate());
-  return /* @__PURE__ */ jsxs17("div", { className: cn("text-left", className), children: [
-    /* @__PURE__ */ jsxs17("div", { className: "mb-2 flex items-center justify-between gap-2", children: [
-      /* @__PURE__ */ jsx17(NavButton, { label: "Previous month", onClick: () => goto(-1), dir: "prev" }),
-      /* @__PURE__ */ jsx17("h3", { className: "text-sm font-semibold text-neutral-900 dark:text-neutral-100", children: heading }),
-      /* @__PURE__ */ jsx17(NavButton, { label: "Next month", onClick: () => goto(1), dir: "next" })
+  return /* @__PURE__ */ jsxs28("div", { className: cn("text-left", className), children: [
+    /* @__PURE__ */ jsxs28("div", { className: "mb-2 flex items-center justify-between gap-2", children: [
+      /* @__PURE__ */ jsx30(NavButton, { label: "Previous month", onClick: () => goto(-1), dir: "prev" }),
+      /* @__PURE__ */ jsx30("h3", { className: "text-sm font-semibold text-neutral-900 dark:text-neutral-100", children: heading }),
+      /* @__PURE__ */ jsx30(NavButton, { label: "Next month", onClick: () => goto(1), dir: "next" })
     ] }),
-    /* @__PURE__ */ jsxs17(
+    /* @__PURE__ */ jsxs28(
       "div",
       {
         role: "group",
         "aria-label": heading,
         className: "overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-800",
         children: [
-          /* @__PURE__ */ jsx17("div", { "aria-hidden": "true", className: "grid grid-cols-7 border-b border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900/60", children: weekdays.map((w) => /* @__PURE__ */ jsx17(
+          /* @__PURE__ */ jsx30("div", { "aria-hidden": "true", className: "grid grid-cols-7 border-b border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900/60", children: weekdays.map((w) => /* @__PURE__ */ jsx30(
             "div",
             {
               className: "px-2 py-1.5 text-center text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400",
@@ -4660,16 +6205,16 @@ function Calendar({
             },
             w
           )) }),
-          /* @__PURE__ */ jsx17("div", { className: "grid grid-cols-7 bg-white dark:bg-neutral-900", children: cells.map((day, i) => {
+          /* @__PURE__ */ jsx30("div", { className: "grid grid-cols-7 bg-white dark:bg-neutral-900", children: cells.map((day, i) => {
             if (day === null) {
-              return /* @__PURE__ */ jsx17("div", { className: "min-h-[4.5rem] border-b border-r border-neutral-100 last:border-r-0 dark:border-neutral-800" }, `pad-${i}`);
+              return /* @__PURE__ */ jsx30("div", { className: "min-h-[4.5rem] border-b border-r border-neutral-100 last:border-r-0 dark:border-neutral-800" }, `pad-${i}`);
             }
             const date = iso(year, monthIndex, day);
             const dayEvents = byDate.get(date) ?? [];
             const isSelected = selected === date;
             const isToday = date === todayIso;
-            const body = /* @__PURE__ */ jsxs17(Fragment3, { children: [
-              /* @__PURE__ */ jsx17(
+            const body = /* @__PURE__ */ jsxs28(Fragment6, { children: [
+              /* @__PURE__ */ jsx30(
                 "span",
                 {
                   className: cn(
@@ -4681,8 +6226,8 @@ function Calendar({
                   children: day
                 }
               ),
-              /* @__PURE__ */ jsxs17("span", { className: "mt-1 flex flex-col gap-0.5", children: [
-                dayEvents.slice(0, maxPerDay).map((e, j) => /* @__PURE__ */ jsx17(
+              /* @__PURE__ */ jsxs28("span", { className: "mt-1 flex flex-col gap-0.5", children: [
+                dayEvents.slice(0, maxPerDay).map((e, j) => /* @__PURE__ */ jsx30(
                   "span",
                   {
                     className: "truncate rounded bg-[color:var(--rm-accent)]/10 px-1 py-0.5 text-[11px] text-neutral-800 dark:text-neutral-200",
@@ -4690,7 +6235,7 @@ function Calendar({
                   },
                   j
                 )),
-                dayEvents.length > maxPerDay && /* @__PURE__ */ jsxs17("span", { className: "px-1 text-[11px] text-neutral-500 dark:text-neutral-400", children: [
+                dayEvents.length > maxPerDay && /* @__PURE__ */ jsxs28("span", { className: "px-1 text-[11px] text-neutral-500 dark:text-neutral-400", children: [
                   "+",
                   dayEvents.length - maxPerDay,
                   " more"
@@ -4702,12 +6247,12 @@ function Calendar({
               isSelected && "bg-[color:var(--rm-accent)]/5"
             );
             if (!onSelect) {
-              return /* @__PURE__ */ jsx17("div", { className: cellClass, children: body }, date);
+              return /* @__PURE__ */ jsx30("div", { className: cellClass, children: body }, date);
             }
             const fullDate = new Date(year, monthIndex, day).toLocaleDateString(void 0, {
               dateStyle: "full"
             });
-            return /* @__PURE__ */ jsx17(
+            return /* @__PURE__ */ jsx30(
               "button",
               {
                 type: "button",
@@ -4730,7 +6275,7 @@ function Calendar({
   ] });
 }
 function NavButton({ label, onClick, dir }) {
-  return /* @__PURE__ */ jsx17(
+  return /* @__PURE__ */ jsx30(
     "button",
     {
       type: "button",
@@ -4740,7 +6285,7 @@ function NavButton({ label, onClick, dir }) {
         "rounded-md p-1.5 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100",
         focusRing
       ),
-      children: /* @__PURE__ */ jsx17("svg", { "aria-hidden": "true", className: "h-4 w-4", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: /* @__PURE__ */ jsx17(
+      children: /* @__PURE__ */ jsx30("svg", { "aria-hidden": "true", className: "h-4 w-4", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: /* @__PURE__ */ jsx30(
         "path",
         {
           strokeLinecap: "round",
@@ -4752,33 +6297,9 @@ function NavButton({ label, onClick, dir }) {
   );
 }
 
-// src/components/markdown.tsx
-import { jsx as jsx18 } from "react/jsx-runtime";
-var prose = cn(
-  "text-sm leading-relaxed text-neutral-800 dark:text-neutral-200",
-  "[&_h1]:mb-2 [&_h1]:mt-4 [&_h1]:text-lg [&_h1]:font-semibold [&_h1:first-child]:mt-0",
-  "[&_h2]:mb-2 [&_h2]:mt-4 [&_h2]:text-base [&_h2]:font-semibold [&_h2:first-child]:mt-0",
-  "[&_h3]:mb-1 [&_h3]:mt-3 [&_h3]:text-sm [&_h3]:font-semibold [&_h3:first-child]:mt-0",
-  "[&_p]:my-2 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0",
-  "[&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1",
-  "[&_a]:text-[color:var(--rm-accent)] [&_a]:underline [&_a]:underline-offset-2",
-  "[&_strong]:font-semibold [&_em]:italic",
-  "[&_blockquote]:my-2 [&_blockquote]:border-l-2 [&_blockquote]:border-neutral-300 [&_blockquote]:pl-3 [&_blockquote]:text-neutral-600 dark:[&_blockquote]:border-neutral-700 dark:[&_blockquote]:text-neutral-400",
-  "[&_code]:rounded [&_code]:bg-neutral-100 [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-[0.85em] dark:[&_code]:bg-neutral-800",
-  "[&_pre]:my-2 [&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:bg-neutral-100 [&_pre]:p-3 dark:[&_pre]:bg-neutral-800",
-  "[&_pre_code]:bg-transparent [&_pre_code]:p-0",
-  "[&_table]:my-2 [&_table]:w-full [&_table]:border-collapse [&_table]:text-left",
-  "[&_th]:border-b [&_th]:border-neutral-200 [&_th]:px-2 [&_th]:py-1 [&_th]:font-semibold dark:[&_th]:border-neutral-700",
-  "[&_td]:border-b [&_td]:border-neutral-100 [&_td]:px-2 [&_td]:py-1 dark:[&_td]:border-neutral-800",
-  "[&_hr]:my-4 [&_hr]:border-neutral-200 dark:[&_hr]:border-neutral-800"
-);
-function Markdown({ children, streaming = false, className }) {
-  return /* @__PURE__ */ jsx18("div", { className: cn(prose, "text-left", className), children: /* @__PURE__ */ jsx18(Xa, { mode: "streaming", isAnimating: streaming, children: children ?? "" }) });
-}
-
 // src/components/json-view.tsx
-import { useState as useState10 } from "react";
-import { jsx as jsx19, jsxs as jsxs18 } from "react/jsx-runtime";
+import { useState as useState16 } from "react";
+import { jsx as jsx31, jsxs as jsxs29 } from "react/jsx-runtime";
 function isEmpty(value) {
   if (value === void 0 || value === null) return true;
   if (Array.isArray(value)) return value.length === 0;
@@ -4793,9 +6314,9 @@ function JsonView({
   label = "Result",
   className
 }) {
-  const [copied, setCopied] = useState10(false);
+  const [copied, setCopied] = useState16(false);
   if (isEmpty(value)) {
-    return /* @__PURE__ */ jsx19(
+    return /* @__PURE__ */ jsx31(
       "div",
       {
         className: cn(
@@ -4814,7 +6335,7 @@ function JsonView({
     } catch {
     }
   };
-  return /* @__PURE__ */ jsxs18(
+  return /* @__PURE__ */ jsxs29(
     "div",
     {
       className: cn(
@@ -4822,7 +6343,7 @@ function JsonView({
         className
       ),
       children: [
-        copyable && /* @__PURE__ */ jsx19(
+        copyable && /* @__PURE__ */ jsx31(
           "button",
           {
             type: "button",
@@ -4835,7 +6356,7 @@ function JsonView({
             children: copied ? "Copied" : "Copy"
           }
         ),
-        /* @__PURE__ */ jsx19("ul", { role: "tree", "aria-label": label, className: cn("m-0 list-none p-0", copyable && "pr-14"), children: /* @__PURE__ */ jsx19(Node, { name: null, value, depth: 0, maxDepth }) })
+        /* @__PURE__ */ jsx31("ul", { role: "tree", "aria-label": label, className: cn("m-0 list-none p-0", copyable && "pr-14"), children: /* @__PURE__ */ jsx31(Node, { name: null, value, depth: 0, maxDepth }) })
       ]
     }
   );
@@ -4847,18 +6368,18 @@ function Node({
   maxDepth
 }) {
   const branch = value !== null && typeof value === "object";
-  const [open, setOpen] = useState10(depth < maxDepth);
+  const [open, setOpen] = useState16(depth < maxDepth);
   if (!branch) {
-    return /* @__PURE__ */ jsxs18("li", { role: "treeitem", className: "whitespace-pre-wrap break-words", children: [
-      name !== null && /* @__PURE__ */ jsx19(Key, { name }),
-      /* @__PURE__ */ jsx19(Leaf, { value })
+    return /* @__PURE__ */ jsxs29("li", { role: "treeitem", className: "whitespace-pre-wrap break-words", children: [
+      name !== null && /* @__PURE__ */ jsx31(Key, { name }),
+      /* @__PURE__ */ jsx31(Leaf, { value })
     ] });
   }
   const array = Array.isArray(value);
   const entries = array ? value.map((v, i) => [String(i), v]) : Object.entries(value);
   const summary = array ? `[${entries.length} ${entries.length === 1 ? "item" : "items"}]` : `{${entries.length} ${entries.length === 1 ? "field" : "fields"}}`;
-  return /* @__PURE__ */ jsxs18("li", { role: "treeitem", "aria-expanded": open, children: [
-    /* @__PURE__ */ jsxs18(
+  return /* @__PURE__ */ jsxs29("li", { role: "treeitem", "aria-expanded": open, children: [
+    /* @__PURE__ */ jsxs29(
       "button",
       {
         type: "button",
@@ -4868,88 +6389,148 @@ function Node({
           focusRing
         ),
         children: [
-          /* @__PURE__ */ jsx19("span", { "aria-hidden": "true", className: cn("transition-transform", open && "rotate-90"), children: "\u203A" }),
-          name !== null ? /* @__PURE__ */ jsx19(Key, { name }) : null,
-          /* @__PURE__ */ jsx19("span", { className: "text-neutral-400 dark:text-neutral-500", children: summary })
+          /* @__PURE__ */ jsx31("span", { "aria-hidden": "true", className: cn("transition-transform", open && "rotate-90"), children: "\u203A" }),
+          name !== null ? /* @__PURE__ */ jsx31(Key, { name }) : null,
+          /* @__PURE__ */ jsx31("span", { className: "text-neutral-400 dark:text-neutral-500", children: summary })
         ]
       }
     ),
-    open && /* @__PURE__ */ jsx19("ul", { role: "group", className: "m-0 list-none border-l border-neutral-200 pl-3 dark:border-neutral-800", children: entries.map(([key, v]) => /* @__PURE__ */ jsx19(Node, { name: key, value: v, depth: depth + 1, maxDepth }, key)) })
+    open && /* @__PURE__ */ jsx31("ul", { role: "group", className: "m-0 list-none border-l border-neutral-200 pl-3 dark:border-neutral-800", children: entries.map(([key, v]) => /* @__PURE__ */ jsx31(Node, { name: key, value: v, depth: depth + 1, maxDepth }, key)) })
   ] });
 }
 function Key({ name }) {
-  return /* @__PURE__ */ jsxs18("span", { className: "text-neutral-500 dark:text-neutral-400", children: [
+  return /* @__PURE__ */ jsxs29("span", { className: "text-neutral-500 dark:text-neutral-400", children: [
     name,
     ": "
   ] });
 }
 function Leaf({ value }) {
   if (typeof value === "string") {
-    return /* @__PURE__ */ jsxs18("span", { className: "text-emerald-700 dark:text-emerald-400", children: [
+    return /* @__PURE__ */ jsxs29("span", { className: "text-emerald-700 dark:text-emerald-400", children: [
       '"',
       value,
       '"'
     ] });
   }
   if (typeof value === "number" || typeof value === "bigint") {
-    return /* @__PURE__ */ jsx19("span", { className: "text-blue-700 dark:text-blue-400", children: String(value) });
+    return /* @__PURE__ */ jsx31("span", { className: "text-blue-700 dark:text-blue-400", children: String(value) });
   }
   if (typeof value === "boolean") {
-    return /* @__PURE__ */ jsx19("span", { className: "text-purple-700 dark:text-purple-400", children: String(value) });
+    return /* @__PURE__ */ jsx31("span", { className: "text-purple-700 dark:text-purple-400", children: String(value) });
   }
-  if (value === null) return /* @__PURE__ */ jsx19("span", { className: "text-neutral-400 dark:text-neutral-500", children: "null" });
-  if (value === void 0) return /* @__PURE__ */ jsx19("span", { className: "text-neutral-400 dark:text-neutral-500", children: "-" });
-  return /* @__PURE__ */ jsx19("span", { className: "text-neutral-700 dark:text-neutral-300", children: String(value) });
+  if (value === null) return /* @__PURE__ */ jsx31("span", { className: "text-neutral-400 dark:text-neutral-500", children: "null" });
+  if (value === void 0) return /* @__PURE__ */ jsx31("span", { className: "text-neutral-400 dark:text-neutral-500", children: "-" });
+  return /* @__PURE__ */ jsx31("span", { className: "text-neutral-700 dark:text-neutral-300", children: String(value) });
 }
 
 // src/components/form.tsx
 import {
-  createContext as createContext4,
-  useCallback as useCallback3,
-  useContext as useContext4,
-  useEffect as useEffect8,
-  useId as useId7,
-  useMemo as useMemo3,
-  useRef as useRef6,
-  useState as useState11
+  createContext as createContext5,
+  useCallback as useCallback4,
+  useContext as useContext5,
+  useEffect as useEffect10,
+  useId as useId9,
+  useMemo as useMemo4,
+  useRef as useRef9,
+  useState as useState17
 } from "react";
-import { jsx as jsx20, jsxs as jsxs19 } from "react/jsx-runtime";
-var FormContext = createContext4(null);
-var FieldContext = createContext4(null);
-function validateAgainstSchema(schema, values) {
-  const errors = {};
-  if (!schema || schema.type !== "object" || !schema.properties) return errors;
+import { Fragment as Fragment7, jsx as jsx32, jsxs as jsxs30 } from "react/jsx-runtime";
+var FormContext = createContext5(null);
+var FieldContext = createContext5(null);
+var FORMATS = {
+  email: {
+    ok: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
+    message: "Enter an email address."
+  },
+  uri: {
+    ok: (v) => /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\s]+$/.test(v),
+    message: "Enter a web address, starting with http:// or https://."
+  },
+  date: {
+    ok: (v) => /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v)),
+    message: "Enter a date."
+  },
+  "date-time": {
+    ok: (v) => !Number.isNaN(Date.parse(v)),
+    message: "Enter a date and a time."
+  },
+  time: {
+    ok: (v) => /^\d{2}:\d{2}(:\d{2})?$/.test(v),
+    message: "Enter a time."
+  }
+};
+function isEmpty2(value) {
+  if (value === void 0 || value === null) return true;
+  if (typeof value === "string") return value.trim() === "";
+  if (Array.isArray(value)) return value.length === 0;
+  return false;
+}
+function checkValue(prop, value) {
+  if (prop.enum && !prop.enum.some((v) => v === value)) return "Pick one of the allowed values.";
+  switch (prop.type) {
+    case "number":
+      if (typeof value !== "number" || Number.isNaN(value)) return "Enter a number.";
+      break;
+    case "integer":
+      if (typeof value !== "number" || !Number.isInteger(value)) return "Enter a whole number.";
+      break;
+    case "boolean":
+      if (typeof value !== "boolean") return "This must be on or off.";
+      break;
+    case "string":
+      if (typeof value !== "string") return "Enter text.";
+      break;
+    default:
+      break;
+  }
+  if (prop.format && typeof value === "string") {
+    const f = FORMATS[prop.format];
+    if (f && !f.ok(value)) return f.message;
+  }
+  return void 0;
+}
+function validateObject(schema, values, prefix, errors) {
+  if (!schema || schema.type !== "object" || !schema.properties) return;
   const required = new Set(schema.required ?? []);
   for (const [name, prop] of Object.entries(schema.properties)) {
+    const key = prefix + name;
     const value = values[name];
-    const empty = value === void 0 || value === null || typeof value === "string" && value.trim() === "";
-    if (empty) {
-      if (required.has(name)) errors[name] = "This field is required.";
+    if (isEmpty2(value)) {
+      if (required.has(name)) errors[key] = "This field is required.";
       continue;
     }
-    if (prop.enum && !prop.enum.some((v) => v === value)) {
-      errors[name] = "Pick one of the allowed values.";
-      continue;
-    }
-    switch (prop.type) {
-      case "number":
-        if (typeof value !== "number" || Number.isNaN(value)) errors[name] = "Enter a number.";
-        break;
-      case "integer":
-        if (typeof value !== "number" || !Number.isInteger(value)) {
-          errors[name] = "Enter a whole number.";
+    if (prop.type === "array") {
+      if (!Array.isArray(value)) {
+        errors[key] = "This must be a list.";
+        continue;
+      }
+      const item = prop.items;
+      if (!item) continue;
+      value.forEach((row, i) => {
+        if (item.type === "object") {
+          validateObject(item, row ?? {}, `${key}.${i}.`, errors);
+          return;
         }
-        break;
-      case "boolean":
-        if (typeof value !== "boolean") errors[name] = "This must be on or off.";
-        break;
-      case "string":
-        if (typeof value !== "string") errors[name] = "Enter text.";
-        break;
-      default:
-        break;
+        if (isEmpty2(row)) {
+          errors[`${key}.${i}`] = "This field is required.";
+          return;
+        }
+        const message2 = checkValue(item, row);
+        if (message2) errors[`${key}.${i}`] = message2;
+      });
+      continue;
     }
+    if (prop.type === "object") {
+      validateObject(prop, value ?? {}, `${key}.`, errors);
+      continue;
+    }
+    const message = checkValue(prop, value);
+    if (message) errors[key] = message;
   }
+}
+function validateAgainstSchema(schema, values) {
+  const errors = {};
+  validateObject(schema, values, "", errors);
   return errors;
 }
 function submitControlOf(form) {
@@ -4974,11 +6555,11 @@ function Form({
   className,
   ...props
 }) {
-  const [ownValues, setOwnValues] = useState11(initialValues ?? {});
-  const [errors, setErrors] = useState11({});
+  const [ownValues, setOwnValues] = useState17(initialValues ?? {});
+  const [errors, setErrors] = useState17({});
   const values = controlledValues ?? ownValues;
-  const formRef = useRef6(null);
-  useEffect8(() => {
+  const formRef = useRef9(null);
+  useEffect10(() => {
     const form = formRef.current;
     if (!form || !action) return;
     const target = submitControlOf(form) ?? form;
@@ -4987,9 +6568,9 @@ function Form({
       target.setAttribute("data-rm-action", [...current, action.name].join(" "));
     }
   });
-  const latest = useRef6(values);
+  const latest = useRef9(values);
   latest.current = values;
-  const setValue = useCallback3(
+  const setValue = useCallback4(
     (name, value) => {
       const next = { ...latest.current, [name]: value };
       latest.current = next;
@@ -5004,11 +6585,11 @@ function Form({
     },
     [controlledValues, onChange]
   );
-  const ctx = useMemo3(
+  const ctx = useMemo4(
     () => ({ values, errors, disabled, setValue }),
     [values, errors, disabled, setValue]
   );
-  return /* @__PURE__ */ jsx20(FormContext.Provider, { value: ctx, children: /* @__PURE__ */ jsxs19(
+  return /* @__PURE__ */ jsx32(FormContext.Provider, { value: ctx, children: /* @__PURE__ */ jsxs30(
     "form",
     {
       ref: formRef,
@@ -5038,39 +6619,39 @@ function Form({
       ...props,
       children: [
         children,
-        !hideError && action?.error ? /* @__PURE__ */ jsx20(ErrorState, { error: action.error, className: "mt-3" }) : null
+        !hideError && action?.error ? /* @__PURE__ */ jsx32(ErrorState, { error: action.error, className: "mt-3" }) : null
       ]
     }
   ) });
 }
 function useFormValues() {
-  return useContext4(FormContext)?.values ?? {};
+  return useContext5(FormContext)?.values ?? {};
 }
 function Field({ name, label, help, required = false, error, className, children }) {
-  const form = useContext4(FormContext);
-  const id = useId7();
+  const form = useContext5(FormContext);
+  const id = useId9();
   const helpId = `${id}-help`;
   const errorId = `${id}-error`;
   const shownError = error ?? form?.errors[name];
   const describedBy = [help !== void 0 ? helpId : null, shownError ? errorId : null].filter(Boolean).join(" ") || void 0;
-  const ctx = useMemo3(
+  const ctx = useMemo4(
     () => ({ name, id, describedBy, invalid: Boolean(shownError), required }),
     [name, id, describedBy, shownError, required]
   );
-  return /* @__PURE__ */ jsx20(FieldContext.Provider, { value: ctx, children: /* @__PURE__ */ jsxs19("div", { className: cn("flex flex-col gap-1.5", className), children: [
-    /* @__PURE__ */ jsxs19("label", { htmlFor: id, className: "text-sm font-medium text-neutral-800 dark:text-neutral-200", children: [
+  return /* @__PURE__ */ jsx32(FieldContext.Provider, { value: ctx, children: /* @__PURE__ */ jsxs30("div", { className: cn("flex flex-col gap-1.5", className), children: [
+    /* @__PURE__ */ jsxs30("label", { htmlFor: id, className: "text-sm font-medium text-neutral-800 dark:text-neutral-200", children: [
       label,
-      required && /* @__PURE__ */ jsx20("span", { "aria-hidden": "true", className: "ml-0.5 text-red-500", children: "*" })
+      required && /* @__PURE__ */ jsx32("span", { "aria-hidden": "true", className: "ml-0.5 text-red-500", children: "*" })
     ] }),
     children,
-    help !== void 0 && /* @__PURE__ */ jsx20("p", { id: helpId, className: "text-xs text-neutral-500 dark:text-neutral-400", children: help }),
-    shownError && /* @__PURE__ */ jsx20("p", { id: errorId, className: "text-xs font-medium text-red-600 dark:text-red-400", children: shownError })
+    help !== void 0 && /* @__PURE__ */ jsx32("p", { id: helpId, className: "text-xs text-neutral-500 dark:text-neutral-400", children: help }),
+    shownError && /* @__PURE__ */ jsx32("p", { id: errorId, className: "text-xs font-medium text-red-600 dark:text-red-400", children: shownError })
   ] }) });
 }
 function useControl(explicitId) {
-  const form = useContext4(FormContext);
-  const field = useContext4(FieldContext);
-  const fallbackId = useId7();
+  const form = useContext5(FormContext);
+  const field = useContext5(FieldContext);
+  const fallbackId = useId9();
   return {
     form,
     field,
@@ -5092,7 +6673,7 @@ function useControl(explicitId) {
 function TextInput({ value, onChange, className, id, disabled, type = "text", ...props }) {
   const c = useControl(id);
   const current = value ?? c.read() ?? "";
-  return /* @__PURE__ */ jsx20(
+  return /* @__PURE__ */ jsx32(
     "input",
     {
       id: c.id,
@@ -5112,7 +6693,7 @@ function TextInput({ value, onChange, className, id, disabled, type = "text", ..
 function NumberInput({ value, onChange, className, id, disabled, ...props }) {
   const c = useControl(id);
   const current = value ?? c.read();
-  return /* @__PURE__ */ jsx20(
+  return /* @__PURE__ */ jsx32(
     "input",
     {
       id: c.id,
@@ -5135,7 +6716,7 @@ function NumberInput({ value, onChange, className, id, disabled, ...props }) {
 function TextArea({ value, onChange, className, id, disabled, rows = 4, ...props }) {
   const c = useControl(id);
   const current = value ?? c.read() ?? "";
-  return /* @__PURE__ */ jsx20(
+  return /* @__PURE__ */ jsx32(
     "textarea",
     {
       id: c.id,
@@ -5168,10 +6749,10 @@ function Select({
   const seed = bound === void 0 ? value !== void 0 && value !== "" ? value : firstEnabled : void 0;
   const current = value ?? bound ?? firstEnabled ?? "";
   const write = c.write;
-  useEffect8(() => {
+  useEffect10(() => {
     if (seed !== void 0) write(seed);
   }, [seed]);
-  return /* @__PURE__ */ jsxs19(
+  return /* @__PURE__ */ jsxs30(
     "select",
     {
       id: c.id,
@@ -5185,8 +6766,8 @@ function Select({
       ...c.ariaProps,
       ...props,
       children: [
-        placeholder !== void 0 && /* @__PURE__ */ jsx20("option", { value: "", disabled: true, children: placeholder }),
-        options.map((opt) => /* @__PURE__ */ jsx20("option", { value: opt.value, disabled: opt.disabled, children: opt.label }, opt.value))
+        placeholder !== void 0 && /* @__PURE__ */ jsx32("option", { value: "", disabled: true, children: placeholder }),
+        options.map((opt) => /* @__PURE__ */ jsx32("option", { value: opt.value, disabled: opt.disabled, children: opt.label }, opt.value))
       ]
     }
   );
@@ -5194,7 +6775,7 @@ function Select({
 function Checkbox({ checked, onChange, label, className, id, disabled, ...props }) {
   const c = useControl(id);
   const current = checked ?? Boolean(c.read());
-  return /* @__PURE__ */ jsxs19(
+  return /* @__PURE__ */ jsxs30(
     "label",
     {
       className: cn(
@@ -5203,7 +6784,7 @@ function Checkbox({ checked, onChange, label, className, id, disabled, ...props 
         className
       ),
       children: [
-        /* @__PURE__ */ jsx20(
+        /* @__PURE__ */ jsx32(
           "input",
           {
             id: c.id,
@@ -5231,14 +6812,14 @@ function RadioGroup({ options, value, onChange, name, className, disabled }) {
   const c = useControl();
   const groupName = name ?? c.field?.name ?? c.id;
   const current = value ?? c.read() ?? "";
-  return /* @__PURE__ */ jsx20(
+  return /* @__PURE__ */ jsx32(
     "div",
     {
       role: "radiogroup",
       "aria-describedby": c.ariaProps["aria-describedby"],
       "aria-invalid": c.ariaProps["aria-invalid"],
       className: cn("flex flex-col gap-2", className),
-      children: options.map((opt) => /* @__PURE__ */ jsxs19(
+      children: options.map((opt) => /* @__PURE__ */ jsxs30(
         "label",
         {
           className: cn(
@@ -5246,7 +6827,7 @@ function RadioGroup({ options, value, onChange, name, className, disabled }) {
             (disabled || c.disabled || opt.disabled) && "cursor-not-allowed opacity-60"
           ),
           children: [
-            /* @__PURE__ */ jsx20(
+            /* @__PURE__ */ jsx32(
               "input",
               {
                 type: "radio",
@@ -5275,7 +6856,7 @@ function RadioGroup({ options, value, onChange, name, className, disabled }) {
 function DatePicker({ value, onChange, className, id, disabled, ...props }) {
   const c = useControl(id);
   const current = value ?? c.read() ?? "";
-  return /* @__PURE__ */ jsx20(
+  return /* @__PURE__ */ jsx32(
     "input",
     {
       id: c.id,
@@ -5292,10 +6873,899 @@ function DatePicker({ value, onChange, className, id, disabled, ...props }) {
     }
   );
 }
+function TimePicker({ value, onChange, className, id, disabled, ...props }) {
+  const c = useControl(id);
+  const current = value ?? c.read() ?? "";
+  return /* @__PURE__ */ jsx32(
+    "input",
+    {
+      id: c.id,
+      type: "time",
+      className: cn(inputBase, className),
+      value: current,
+      disabled: disabled || c.disabled,
+      onChange: (e) => {
+        onChange?.(e.target.value);
+        c.write(e.target.value);
+      },
+      ...c.ariaProps,
+      ...props
+    }
+  );
+}
+function FieldArray({
+  name,
+  label,
+  help,
+  newItem,
+  addLabel = "Add another",
+  min = 0,
+  max,
+  reorder = true,
+  emptyText = "Nothing added yet.",
+  children,
+  className
+}) {
+  const form = useContext5(FormContext);
+  const helpId = useId9();
+  const raw = form?.values[name];
+  const rows = useMemo4(
+    () => Array.isArray(raw) ? raw : [],
+    [raw]
+  );
+  const disabled = form?.disabled ?? false;
+  const arrayError = form?.errors[name];
+  const write = (next) => form?.setValue(name, next);
+  const add = () => write([...rows, newItem ? newItem() : {}]);
+  const removeAt = (i) => write(rows.filter((_, at) => at !== i));
+  const move = (i, delta) => {
+    const to = i + delta;
+    if (to < 0 || to >= rows.length) return;
+    const next = [...rows];
+    const [row] = next.splice(i, 1);
+    next.splice(to, 0, row);
+    write(next);
+  };
+  return /* @__PURE__ */ jsxs30("div", { className: cn("flex flex-col gap-2 text-left", className), children: [
+    label !== void 0 && /* @__PURE__ */ jsx32("span", { className: "text-sm font-medium text-neutral-800 dark:text-neutral-200", children: label }),
+    rows.length === 0 && /* @__PURE__ */ jsx32("p", { className: "rounded-md border border-dashed border-neutral-300 px-3 py-4 text-center text-sm text-neutral-500 dark:border-neutral-700 dark:text-neutral-400", children: emptyText }),
+    rows.map((row, i) => /* @__PURE__ */ jsx32(
+      FieldArrayRow,
+      {
+        form,
+        arrayName: name,
+        index: i,
+        row,
+        disabled,
+        canRemove: !disabled && rows.length > min,
+        canMoveUp: reorder && !disabled && i > 0,
+        canMoveDown: reorder && !disabled && i < rows.length - 1,
+        onRemove: () => removeAt(i),
+        onMove: (d) => move(i, d),
+        children: children(row, i)
+      },
+      i
+    )),
+    help !== void 0 && /* @__PURE__ */ jsx32("p", { id: helpId, className: "text-xs text-neutral-500 dark:text-neutral-400", children: help }),
+    arrayError && /* @__PURE__ */ jsx32("p", { className: "text-xs font-medium text-red-600 dark:text-red-400", children: arrayError }),
+    (max === void 0 || rows.length < max) && /* @__PURE__ */ jsx32("div", { children: /* @__PURE__ */ jsx32(Button, { type: "button", variant: "secondary", size: "sm", disabled, onClick: add, children: addLabel }) })
+  ] });
+}
+function FieldArrayRow({
+  form,
+  arrayName,
+  index,
+  row,
+  disabled,
+  canRemove,
+  canMoveUp,
+  canMoveDown,
+  onRemove,
+  onMove,
+  children
+}) {
+  const prefix = `${arrayName}.${index}.`;
+  const errors = useMemo4(() => {
+    const out = {};
+    for (const [key, message] of Object.entries(form?.errors ?? {})) {
+      if (key.startsWith(prefix)) out[key.slice(prefix.length)] = message;
+    }
+    return out;
+  }, [form?.errors, prefix]);
+  const ctx = useMemo4(
+    () => ({
+      values: row,
+      errors,
+      disabled,
+      setValue: (key, value) => {
+        const current = Array.isArray(form?.values[arrayName]) ? [...form?.values[arrayName]] : [];
+        current[index] = { ...current[index] ?? {}, [key]: value };
+        form?.setValue(arrayName, current);
+      }
+    }),
+    [row, errors, disabled, form, arrayName, index]
+  );
+  return /* @__PURE__ */ jsx32(FormContext.Provider, { value: ctx, children: /* @__PURE__ */ jsxs30("div", { className: "flex items-start gap-2 rounded-md border border-neutral-200 p-3 dark:border-neutral-800", children: [
+    /* @__PURE__ */ jsx32("div", { className: "flex min-w-0 flex-1 flex-col gap-3", children }),
+    /* @__PURE__ */ jsxs30("div", { className: "flex shrink-0 flex-col gap-1", children: [
+      (canMoveUp || canMoveDown) && /* @__PURE__ */ jsxs30(Fragment7, { children: [
+        /* @__PURE__ */ jsx32(RowButton, { label: `Move row ${index + 1} up`, disabled: !canMoveUp, onClick: () => onMove(-1), children: /* @__PURE__ */ jsx32("svg", { "aria-hidden": "true", className: "h-3.5 w-3.5", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", children: /* @__PURE__ */ jsx32("path", { strokeLinecap: "round", strokeLinejoin: "round", d: "m6 14 6-6 6 6" }) }) }),
+        /* @__PURE__ */ jsx32(RowButton, { label: `Move row ${index + 1} down`, disabled: !canMoveDown, onClick: () => onMove(1), children: /* @__PURE__ */ jsx32("svg", { "aria-hidden": "true", className: "h-3.5 w-3.5", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", children: /* @__PURE__ */ jsx32("path", { strokeLinecap: "round", strokeLinejoin: "round", d: "m6 10 6 6 6-6" }) }) })
+      ] }),
+      /* @__PURE__ */ jsx32(RowButton, { label: `Remove row ${index + 1}`, disabled: !canRemove, onClick: onRemove, danger: true, children: /* @__PURE__ */ jsx32("svg", { "aria-hidden": "true", className: "h-3.5 w-3.5", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", children: /* @__PURE__ */ jsx32("path", { strokeLinecap: "round", d: "M6 6l12 12M18 6L6 18" }) }) })
+    ] })
+  ] }) });
+}
+function RowButton({
+  label,
+  disabled,
+  onClick,
+  danger = false,
+  children
+}) {
+  return /* @__PURE__ */ jsx32(
+    "button",
+    {
+      type: "button",
+      "aria-label": label,
+      disabled,
+      onClick,
+      className: cn(
+        "rounded p-1 transition-colors disabled:cursor-not-allowed disabled:opacity-30",
+        danger ? "text-neutral-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10 dark:hover:text-red-400" : "text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200",
+        focusRing
+      ),
+      children
+    }
+  );
+}
+
+// src/components/combobox.tsx
+import {
+  useCallback as useCallback5,
+  useEffect as useEffect11,
+  useId as useId10,
+  useMemo as useMemo5,
+  useRef as useRef10,
+  useState as useState18
+} from "react";
+import { jsx as jsx33, jsxs as jsxs31 } from "react/jsx-runtime";
+function Combobox({
+  options,
+  loadOptions,
+  value,
+  onChange,
+  multiple = false,
+  searchable = true,
+  placeholder = "Search",
+  emptyText = "Nothing matches that",
+  disabled,
+  id,
+  className
+}) {
+  const c = useControl(id);
+  const baseId = useId10();
+  const bound = c.read();
+  const raw = value ?? bound;
+  const selected = useMemo5(
+    () => multiple ? Array.isArray(raw) ? raw : raw ? [String(raw)] : [] : raw ? [String(raw)] : [],
+    [multiple, raw]
+  );
+  const [open, setOpen] = useState18(false);
+  const [query, setQuery] = useState18("");
+  const [active, setActive] = useState18(0);
+  const [loaded, setLoaded] = useState18([]);
+  const [loading, setLoading] = useState18(false);
+  const openPanel = () => {
+    setOpen(true);
+    setActive(0);
+  };
+  const rootRef = useRef10(null);
+  const inputRef = useRef10(null);
+  const off = disabled || c.disabled;
+  const seq = useRef10(0);
+  const loadRef = useRef10(loadOptions);
+  loadRef.current = loadOptions;
+  useEffect11(() => {
+    if (!open || !loadRef.current) return;
+    const mine = ++seq.current;
+    setLoading(true);
+    const t = setTimeout(() => {
+      void Promise.resolve(loadRef.current?.(query)).then((list) => {
+        if (mine !== seq.current) return;
+        setLoaded(list ?? []);
+      }).catch(() => {
+        if (mine === seq.current) setLoaded([]);
+      }).finally(() => {
+        if (mine === seq.current) setLoading(false);
+      });
+    }, 200);
+    return () => clearTimeout(t);
+  }, [open, query]);
+  const all = loadOptions ? loaded : options ?? [];
+  const shown = useMemo5(() => {
+    if (loadOptions || !query.trim()) return all;
+    const needle = query.trim().toLowerCase();
+    return all.filter(
+      (o) => o.value.toLowerCase().includes(needle) || labelText(o.label).toLowerCase().includes(needle)
+    );
+  }, [all, query, loadOptions]);
+  const enabled = useMemo5(() => shown.filter((o) => !o.disabled), [shown]);
+  useEffect11(() => {
+    if (active > enabled.length - 1) setActive(Math.max(0, enabled.length - 1));
+  }, [enabled.length, active]);
+  const labelFor = useCallback5(
+    (v) => all.find((o) => o.value === v)?.label ?? v,
+    [all]
+  );
+  const commit = (next) => {
+    const out = multiple ? next : next[0] ?? "";
+    onChange?.(out);
+    c.write(out);
+  };
+  const pick = (opt) => {
+    if (opt.disabled) return;
+    if (multiple) {
+      commit(selected.includes(opt.value) ? selected.filter((v) => v !== opt.value) : [...selected, opt.value]);
+      setQuery("");
+      inputRef.current?.focus();
+      return;
+    }
+    commit([opt.value]);
+    setQuery("");
+    setOpen(false);
+  };
+  useEffect11(() => {
+    if (!open) return;
+    const onDocClick = (e) => {
+      if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [open]);
+  const onKeyDown = (e) => {
+    if (off) return;
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        if (!open) openPanel();
+        else setActive((i) => enabled.length ? (i + 1) % enabled.length : 0);
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        if (open) setActive((i) => enabled.length ? (i - 1 + enabled.length) % enabled.length : 0);
+        break;
+      case "Home":
+        if (!open) return;
+        e.preventDefault();
+        setActive(0);
+        break;
+      case "End":
+        if (!open) return;
+        e.preventDefault();
+        setActive(Math.max(0, enabled.length - 1));
+        break;
+      case "Enter": {
+        if (!open) return;
+        e.preventDefault();
+        const opt = enabled[active];
+        if (opt) pick(opt);
+        break;
+      }
+      case "Escape":
+        if (!open) return;
+        e.preventDefault();
+        setOpen(false);
+        break;
+      case "Backspace":
+        if (multiple && query === "" && selected.length > 0) {
+          e.preventDefault();
+          commit(selected.slice(0, -1));
+        }
+        break;
+    }
+  };
+  const activeId = enabled[active] ? `${baseId}-o-${enabled[active].value}` : void 0;
+  const singleLabel = !multiple && selected[0] ? labelText(labelFor(selected[0])) : "";
+  return /* @__PURE__ */ jsxs31("div", { ref: rootRef, className: cn("relative text-left", className), children: [
+    /* @__PURE__ */ jsxs31(
+      "div",
+      {
+        className: cn(
+          inputBase,
+          "flex min-h-[38px] flex-wrap items-center gap-1.5 py-1.5",
+          off && "cursor-not-allowed bg-neutral-100 dark:bg-neutral-800"
+        ),
+        onClick: () => {
+          if (off) return;
+          openPanel();
+          inputRef.current?.focus();
+        },
+        children: [
+          multiple && selected.map((v) => /* @__PURE__ */ jsxs31(
+            "span",
+            {
+              className: "inline-flex items-center gap-1 rounded-full bg-neutral-100 py-0.5 pl-2 pr-1 text-xs font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200",
+              children: [
+                labelFor(v),
+                !off && /* @__PURE__ */ jsx33(
+                  "button",
+                  {
+                    type: "button",
+                    "aria-label": `Remove ${labelText(labelFor(v))}`,
+                    onClick: (e) => {
+                      e.stopPropagation();
+                      commit(selected.filter((x) => x !== v));
+                    },
+                    className: cn("rounded-full p-0.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-100", focusRing),
+                    children: /* @__PURE__ */ jsx33("svg", { "aria-hidden": "true", className: "h-3 w-3", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", children: /* @__PURE__ */ jsx33("path", { strokeLinecap: "round", d: "M6 6l12 12M18 6L6 18" }) })
+                  }
+                )
+              ]
+            },
+            v
+          )),
+          /* @__PURE__ */ jsx33(
+            "input",
+            {
+              ref: inputRef,
+              id: c.id,
+              type: "text",
+              role: "combobox",
+              autoComplete: "off",
+              "aria-expanded": open,
+              "aria-controls": `${baseId}-list`,
+              "aria-autocomplete": "list",
+              "aria-activedescendant": open ? activeId : void 0,
+              readOnly: !searchable,
+              disabled: off,
+              value: open || multiple ? query : singleLabel,
+              placeholder: multiple && selected.length ? "" : !multiple && singleLabel ? singleLabel : placeholder,
+              onChange: (e) => {
+                setQuery(e.target.value);
+                setActive(0);
+                setOpen(true);
+              },
+              onFocus: () => {
+                if (!off && !open) openPanel();
+              },
+              onKeyDown,
+              ...c.ariaProps,
+              className: "min-w-[8rem] flex-1 border-0 bg-transparent p-0 text-sm text-neutral-900 outline-none placeholder:text-neutral-400 disabled:cursor-not-allowed dark:text-neutral-100 dark:placeholder:text-neutral-500"
+            }
+          ),
+          /* @__PURE__ */ jsx33(ChevronIcon2, {})
+        ]
+      }
+    ),
+    open && /* @__PURE__ */ jsxs31(
+      "ul",
+      {
+        id: `${baseId}-list`,
+        role: "listbox",
+        "aria-multiselectable": multiple || void 0,
+        className: "absolute z-30 mt-1 max-h-60 w-full overflow-auto rounded-md border border-neutral-200 bg-white py-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-900",
+        children: [
+          loading && shown.length === 0 && /* @__PURE__ */ jsx33("li", { className: "px-3 py-2 text-sm text-neutral-500 dark:text-neutral-400", children: "Looking" }),
+          !loading && shown.length === 0 && /* @__PURE__ */ jsx33("li", { className: "px-3 py-2 text-sm text-neutral-500 dark:text-neutral-400", children: emptyText }),
+          shown.map((opt) => {
+            const on = selected.includes(opt.value);
+            const highlighted = !opt.disabled && enabled[active]?.value === opt.value;
+            return /* @__PURE__ */ jsxs31(
+              "li",
+              {
+                id: `${baseId}-o-${opt.value}`,
+                role: "option",
+                "aria-selected": on,
+                "aria-disabled": opt.disabled || void 0,
+                onMouseDown: (e) => e.preventDefault(),
+                onClick: () => pick(opt),
+                className: cn(
+                  "flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm text-neutral-700 dark:text-neutral-200",
+                  highlighted && "bg-neutral-100 dark:bg-neutral-800",
+                  opt.disabled && "cursor-not-allowed opacity-50"
+                ),
+                children: [
+                  /* @__PURE__ */ jsx33("span", { className: "min-w-0 flex-1 truncate", children: opt.label }),
+                  on && /* @__PURE__ */ jsx33(TickIcon3, {})
+                ]
+              },
+              opt.value
+            );
+          })
+        ]
+      }
+    )
+  ] });
+}
+function labelText(label) {
+  return typeof label === "string" || typeof label === "number" ? String(label) : "";
+}
+function ChevronIcon2() {
+  return /* @__PURE__ */ jsx33(
+    "svg",
+    {
+      "aria-hidden": "true",
+      className: "ml-auto h-4 w-4 shrink-0 text-neutral-400",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      children: /* @__PURE__ */ jsx33("path", { strokeLinecap: "round", strokeLinejoin: "round", d: "m6 9 6 6 6-6" })
+    }
+  );
+}
+function TickIcon3() {
+  return /* @__PURE__ */ jsx33(
+    "svg",
+    {
+      "aria-hidden": "true",
+      className: "h-4 w-4 shrink-0 text-[color:var(--rm-accent)]",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2.5",
+      children: /* @__PURE__ */ jsx33("path", { strokeLinecap: "round", strokeLinejoin: "round", d: "m5 13 4 4L19 7" })
+    }
+  );
+}
+
+// src/components/date-range.tsx
+import { useMemo as useMemo6 } from "react";
+import { jsx as jsx34, jsxs as jsxs32 } from "react/jsx-runtime";
+function isoDate(d) {
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+function daysAgo(n) {
+  const d = /* @__PURE__ */ new Date();
+  d.setDate(d.getDate() - n);
+  return d;
+}
+function defaultPresets() {
+  const today = () => isoDate(/* @__PURE__ */ new Date());
+  return [
+    { label: "Last 7 days", range: () => ({ from: isoDate(daysAgo(6)), to: today() }) },
+    { label: "Last 30 days", range: () => ({ from: isoDate(daysAgo(29)), to: today() }) },
+    { label: "Last 90 days", range: () => ({ from: isoDate(daysAgo(89)), to: today() }) },
+    {
+      label: "This month",
+      range: () => {
+        const now = /* @__PURE__ */ new Date();
+        return { from: isoDate(new Date(now.getFullYear(), now.getMonth(), 1)), to: today() };
+      }
+    },
+    {
+      label: "This quarter",
+      range: () => {
+        const now = /* @__PURE__ */ new Date();
+        const firstMonth = Math.floor(now.getMonth() / 3) * 3;
+        return { from: isoDate(new Date(now.getFullYear(), firstMonth, 1)), to: today() };
+      }
+    }
+  ];
+}
+function DateRangePicker({
+  value,
+  onChange,
+  presets = true,
+  min,
+  max,
+  fromLabel = "From",
+  toLabel = "To",
+  disabled,
+  className
+}) {
+  const c = useControl();
+  const bound = c.read();
+  const current = value ?? bound ?? { from: "", to: "" };
+  const off = disabled || c.disabled;
+  const list = useMemo6(
+    () => presets === true ? defaultPresets() : presets === false ? [] : presets,
+    [presets]
+  );
+  const commit = (next) => {
+    onChange?.(next);
+    c.write(next);
+  };
+  const setFrom = (from) => commit({ from, to: current.to && from > current.to ? from : current.to });
+  const setTo = (to) => commit({ from: current.from && to && to < current.from ? to : current.from, to });
+  const active = list.find((p) => {
+    const r = p.range();
+    return r.from === current.from && r.to === current.to;
+  });
+  return /* @__PURE__ */ jsxs32("div", { className: cn("text-left", className), children: [
+    list.length > 0 && /* @__PURE__ */ jsx34("div", { className: "mb-2 flex flex-wrap gap-1.5", children: list.map((p) => /* @__PURE__ */ jsx34(
+      "button",
+      {
+        type: "button",
+        disabled: off,
+        "aria-pressed": active?.label === p.label,
+        onClick: () => commit(p.range()),
+        className: cn(
+          "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+          active?.label === p.label ? "border-[color:var(--rm-accent)] bg-[color:var(--rm-accent)] text-white" : "border-neutral-300 bg-white text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800",
+          focusRing
+        ),
+        children: p.label
+      },
+      p.label
+    )) }),
+    /* @__PURE__ */ jsxs32("div", { className: "flex flex-wrap items-end gap-3", children: [
+      /* @__PURE__ */ jsxs32("label", { className: "flex min-w-[9rem] flex-1 flex-col gap-1", children: [
+        /* @__PURE__ */ jsx34("span", { className: "text-xs font-medium text-neutral-600 dark:text-neutral-400", children: fromLabel }),
+        /* @__PURE__ */ jsx34(
+          "input",
+          {
+            type: "date",
+            value: current.from,
+            min,
+            max: current.to || max,
+            disabled: off,
+            onChange: (e) => setFrom(e.target.value),
+            ...c.ariaProps,
+            className: cn(inputBase, "h-9")
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxs32("label", { className: "flex min-w-[9rem] flex-1 flex-col gap-1", children: [
+        /* @__PURE__ */ jsx34("span", { className: "text-xs font-medium text-neutral-600 dark:text-neutral-400", children: toLabel }),
+        /* @__PURE__ */ jsx34(
+          "input",
+          {
+            type: "date",
+            value: current.to,
+            min: current.from || min,
+            max,
+            disabled: off,
+            onChange: (e) => setTo(e.target.value),
+            className: cn(inputBase, "h-9")
+          }
+        )
+      ] })
+    ] })
+  ] });
+}
+
+// src/components/switch.tsx
+import { jsx as jsx35, jsxs as jsxs33 } from "react/jsx-runtime";
+function Switch({
+  checked,
+  onChange,
+  label,
+  description,
+  disabled,
+  className,
+  id,
+  ...props
+}) {
+  const c = useControl(id);
+  const on = checked ?? Boolean(c.read());
+  const off = disabled || c.disabled;
+  const toggle = () => {
+    if (off) return;
+    onChange?.(!on);
+    c.write(!on);
+  };
+  return /* @__PURE__ */ jsxs33("div", { className: cn("flex items-start gap-3 text-left", off && "opacity-60", className), children: [
+    /* @__PURE__ */ jsx35(
+      "button",
+      {
+        id: c.id,
+        type: "button",
+        role: "switch",
+        "aria-checked": on,
+        "aria-label": props["aria-label"],
+        disabled: off,
+        onClick: toggle,
+        ...c.ariaProps,
+        className: cn(
+          "relative mt-0.5 inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors disabled:cursor-not-allowed",
+          on ? "bg-[color:var(--rm-accent)]" : "bg-neutral-300 dark:bg-neutral-700",
+          focusRing
+        ),
+        children: /* @__PURE__ */ jsx35(
+          "span",
+          {
+            "aria-hidden": "true",
+            className: cn(
+              "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition-transform",
+              on ? "translate-x-4" : "translate-x-0"
+            )
+          }
+        )
+      }
+    ),
+    (label !== void 0 || description !== void 0) && /* @__PURE__ */ jsxs33("span", { className: "min-w-0", children: [
+      label !== void 0 && /* @__PURE__ */ jsx35(
+        "button",
+        {
+          type: "button",
+          disabled: off,
+          onClick: toggle,
+          className: "block cursor-pointer text-left text-sm font-medium text-neutral-800 disabled:cursor-not-allowed dark:text-neutral-200",
+          children: label
+        }
+      ),
+      description !== void 0 && /* @__PURE__ */ jsx35("span", { className: "mt-0.5 block text-xs text-neutral-500 dark:text-neutral-400", children: description })
+    ] })
+  ] });
+}
+
+// src/components/tag-input.tsx
+import { useRef as useRef11, useState as useState19 } from "react";
+import { jsx as jsx36, jsxs as jsxs34 } from "react/jsx-runtime";
+function TagInput({
+  value,
+  onChange,
+  placeholder = "Type and press Enter",
+  unique = true,
+  max,
+  disabled,
+  id,
+  className
+}) {
+  const c = useControl(id);
+  const bound = c.read();
+  const tags = value ?? (Array.isArray(bound) ? bound : []);
+  const [draft, setDraft] = useState19("");
+  const inputRef = useRef11(null);
+  const off = disabled || c.disabled;
+  const commit = (next) => {
+    onChange?.(next);
+    c.write(next);
+  };
+  const add = (raw) => {
+    const text = raw.trim();
+    if (!text) return;
+    if (unique && tags.includes(text)) {
+      setDraft("");
+      return;
+    }
+    if (max !== void 0 && tags.length >= max) return;
+    commit([...tags, text]);
+    setDraft("");
+  };
+  const removeAt = (i) => commit(tags.filter((_, at) => at !== i));
+  const onKeyDown = (e) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      add(draft);
+      return;
+    }
+    if (e.key === "Backspace" && draft === "" && tags.length > 0) {
+      e.preventDefault();
+      removeAt(tags.length - 1);
+    }
+  };
+  return /* @__PURE__ */ jsxs34(
+    "div",
+    {
+      onClick: () => inputRef.current?.focus(),
+      className: cn(
+        inputBase,
+        "flex min-h-[38px] cursor-text flex-wrap items-center gap-1.5 py-1.5",
+        off && "cursor-not-allowed bg-neutral-100 dark:bg-neutral-800",
+        className
+      ),
+      children: [
+        tags.map((tag, i) => /* @__PURE__ */ jsxs34(
+          "span",
+          {
+            className: "inline-flex items-center gap-1 rounded-full bg-neutral-100 py-0.5 pl-2 pr-1 text-xs font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200",
+            children: [
+              tag,
+              !off && /* @__PURE__ */ jsx36(
+                "button",
+                {
+                  type: "button",
+                  "aria-label": `Remove ${tag}`,
+                  onClick: (e) => {
+                    e.stopPropagation();
+                    removeAt(i);
+                  },
+                  className: cn(
+                    "rounded-full p-0.5 text-neutral-400 transition-colors hover:bg-neutral-200 hover:text-neutral-700 dark:hover:bg-neutral-700 dark:hover:text-neutral-100",
+                    focusRing
+                  ),
+                  children: /* @__PURE__ */ jsx36("svg", { "aria-hidden": "true", className: "h-3 w-3", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", children: /* @__PURE__ */ jsx36("path", { strokeLinecap: "round", d: "M6 6l12 12M18 6L6 18" }) })
+                }
+              )
+            ]
+          },
+          `${tag}-${i}`
+        )),
+        /* @__PURE__ */ jsx36(
+          "input",
+          {
+            ref: inputRef,
+            id: c.id,
+            type: "text",
+            value: draft,
+            disabled: off || max !== void 0 && tags.length >= max,
+            placeholder: tags.length === 0 ? placeholder : "",
+            onChange: (e) => setDraft(e.target.value),
+            onKeyDown,
+            onBlur: () => add(draft),
+            ...c.ariaProps,
+            className: "min-w-[8rem] flex-1 border-0 bg-transparent p-0 text-sm text-neutral-900 outline-none placeholder:text-neutral-400 disabled:cursor-not-allowed dark:text-neutral-100 dark:placeholder:text-neutral-500"
+          }
+        )
+      ]
+    }
+  );
+}
+
+// src/components/slider.tsx
+import { jsx as jsx37, jsxs as jsxs35 } from "react/jsx-runtime";
+function Slider({
+  value,
+  onChange,
+  min = 0,
+  max = 100,
+  step = 1,
+  showValue = true,
+  formatValue,
+  minLabel,
+  maxLabel,
+  className,
+  id,
+  disabled,
+  ...props
+}) {
+  const c = useControl(id);
+  const bound = c.read();
+  const current = value ?? (typeof bound === "number" && Number.isFinite(bound) ? bound : Math.round((min + max) / 2));
+  const off = disabled || c.disabled;
+  return /* @__PURE__ */ jsxs35("div", { className: cn("w-full text-left", className), children: [
+    /* @__PURE__ */ jsxs35("div", { className: "flex items-center gap-3", children: [
+      /* @__PURE__ */ jsx37(
+        "input",
+        {
+          id: c.id,
+          type: "range",
+          min,
+          max,
+          step,
+          value: current,
+          disabled: off,
+          onChange: (e) => {
+            const next = Number(e.target.value);
+            onChange?.(next);
+            c.write(next);
+          },
+          className: cn(
+            "h-1.5 w-full cursor-pointer appearance-none rounded-full bg-neutral-200 accent-[var(--rm-accent)] disabled:cursor-not-allowed disabled:opacity-60 dark:bg-neutral-700",
+            focusRing
+          ),
+          ...c.ariaProps,
+          ...props
+        }
+      ),
+      showValue && /* @__PURE__ */ jsx37(
+        "output",
+        {
+          htmlFor: c.id,
+          className: "w-12 shrink-0 text-right text-sm tabular-nums text-neutral-700 dark:text-neutral-300",
+          children: formatValue ? formatValue(current) : current
+        }
+      )
+    ] }),
+    (minLabel !== void 0 || maxLabel !== void 0) && /* @__PURE__ */ jsxs35("div", { className: "mt-1 flex justify-between text-xs text-neutral-500 dark:text-neutral-400", children: [
+      /* @__PURE__ */ jsx37("span", { children: minLabel }),
+      /* @__PURE__ */ jsx37("span", { children: maxLabel })
+    ] })
+  ] });
+}
+
+// src/components/rating.tsx
+import { useState as useState20 } from "react";
+import { jsx as jsx38, jsxs as jsxs36 } from "react/jsx-runtime";
+function Rating({
+  value,
+  onChange,
+  max = 5,
+  min = 1,
+  variant = "star",
+  readOnly = false,
+  disabled,
+  label = "Rating",
+  describeValue,
+  children,
+  className
+}) {
+  const c = useControl();
+  const bound = c.read();
+  const current = value ?? (typeof bound === "number" && Number.isFinite(bound) ? bound : void 0);
+  const off = disabled || c.disabled || readOnly;
+  const [hover, setHover] = useState20(null);
+  const values = [];
+  for (let v = min; v <= max; v++) values.push(v);
+  const pick = (v) => {
+    if (off) return;
+    onChange?.(v);
+    c.write(v);
+  };
+  const onKeyDown = (e) => {
+    if (off) return;
+    const at = current ?? min;
+    let next = null;
+    if (e.key === "ArrowRight" || e.key === "ArrowUp") next = Math.min(max, at + 1);
+    else if (e.key === "ArrowLeft" || e.key === "ArrowDown") next = Math.max(min, at - 1);
+    else if (e.key === "Home") next = min;
+    else if (e.key === "End") next = max;
+    if (next === null) return;
+    e.preventDefault();
+    pick(next);
+  };
+  const shown = hover ?? current;
+  return /* @__PURE__ */ jsxs36("div", { className: cn("flex items-center gap-2 text-left", className), children: [
+    /* @__PURE__ */ jsx38(
+      "div",
+      {
+        role: "radiogroup",
+        "aria-label": label,
+        "aria-describedby": c.ariaProps["aria-describedby"],
+        "aria-invalid": c.ariaProps["aria-invalid"],
+        tabIndex: off ? -1 : 0,
+        onKeyDown,
+        onMouseLeave: () => setHover(null),
+        className: cn("inline-flex items-center gap-1 rounded", focusRing, off && "opacity-70"),
+        children: values.map((v) => {
+          const on = shown !== void 0 && v <= shown;
+          const name = describeValue?.(v) ?? String(v);
+          return /* @__PURE__ */ jsx38(
+            "button",
+            {
+              type: "button",
+              role: "radio",
+              "aria-checked": current === v,
+              "aria-label": name,
+              tabIndex: -1,
+              disabled: off,
+              onClick: () => pick(v),
+              onMouseEnter: () => !off && setHover(v),
+              className: cn(
+                "rounded transition-colors disabled:cursor-not-allowed",
+                variant === "star" ? "p-0.5 text-neutral-300 dark:text-neutral-600" : "h-8 w-8 border border-neutral-300 text-sm font-medium text-neutral-600 dark:border-neutral-700 dark:text-neutral-300",
+                variant === "star" && on && "text-[color:var(--rm-accent)]",
+                variant === "scale" && current === v && "border-[color:var(--rm-accent)] bg-[color:var(--rm-accent)] text-white"
+              ),
+              children: variant === "star" ? /* @__PURE__ */ jsx38(StarIcon, { filled: on }) : v
+            },
+            v
+          );
+        })
+      }
+    ),
+    children
+  ] });
+}
+function StarIcon({ filled }) {
+  return /* @__PURE__ */ jsx38(
+    "svg",
+    {
+      "aria-hidden": "true",
+      className: "h-5 w-5",
+      viewBox: "0 0 24 24",
+      fill: filled ? "currentColor" : "none",
+      stroke: "currentColor",
+      strokeWidth: "1.5",
+      children: /* @__PURE__ */ jsx38(
+        "path",
+        {
+          strokeLinecap: "round",
+          strokeLinejoin: "round",
+          d: "m12 3.5 2.6 5.3 5.9.9-4.2 4.1 1 5.8-5.3-2.8-5.3 2.8 1-5.8-4.2-4.1 5.9-.9L12 3.5Z"
+        }
+      )
+    }
+  );
+}
 
 // src/components/json-input.tsx
-import { useEffect as useEffect9, useRef as useRef7, useState as useState12 } from "react";
-import { jsx as jsx21, jsxs as jsxs20 } from "react/jsx-runtime";
+import { useEffect as useEffect12, useRef as useRef12, useState as useState21 } from "react";
+import { jsx as jsx39, jsxs as jsxs37 } from "react/jsx-runtime";
 function print(value) {
   if (value === void 0 || value === null) return "";
   try {
@@ -5318,10 +7788,10 @@ function JsonInput({
 }) {
   const c = useControl(id);
   const bound = value ?? c.read();
-  const [text, setText] = useState12(() => print(bound));
-  const [invalid, setInvalid] = useState12(false);
-  const ownWrite = useRef7(print(bound));
-  useEffect9(() => {
+  const [text, setText] = useState21(() => print(bound));
+  const [invalid, setInvalid] = useState21(false);
+  const ownWrite = useRef12(print(bound));
+  useEffect12(() => {
     const next = print(bound);
     if (next === ownWrite.current) return;
     ownWrite.current = next;
@@ -5350,8 +7820,8 @@ function JsonInput({
   };
   const errorId = `${c.id}-json-error`;
   const describedBy = [c.ariaProps["aria-describedby"], invalid ? errorId : null].filter(Boolean).join(" ") || void 0;
-  return /* @__PURE__ */ jsxs20("div", { className: "flex flex-col gap-1.5", children: [
-    /* @__PURE__ */ jsx21(
+  return /* @__PURE__ */ jsxs37("div", { className: "flex flex-col gap-1.5", children: [
+    /* @__PURE__ */ jsx39(
       "textarea",
       {
         id: c.id,
@@ -5382,29 +7852,29 @@ function JsonInput({
         ...props
       }
     ),
-    invalid && /* @__PURE__ */ jsx21("p", { id: errorId, role: "alert", className: "text-xs font-medium text-red-600 dark:text-red-400", children: invalidMessage })
+    invalid && /* @__PURE__ */ jsx39("p", { id: errorId, role: "alert", className: "text-xs font-medium text-red-600 dark:text-red-400", children: invalidMessage })
   ] });
 }
 
 // src/components/file-upload.tsx
-import { useEffect as useEffect10, useRef as useRef8, useState as useState13 } from "react";
+import { useEffect as useEffect13, useRef as useRef13, useState as useState22 } from "react";
 import { markGesture } from "@robomotion/apps-runtime";
 import { useFileUpload } from "@robomotion/apps-runtime/react";
 
 // src/components/progress.tsx
-import { Fragment as Fragment4, jsx as jsx22, jsxs as jsxs21 } from "react/jsx-runtime";
+import { Fragment as Fragment8, jsx as jsx40, jsxs as jsxs38 } from "react/jsx-runtime";
 function Progress({ value, label, showValue = false, className, ...props }) {
   const determinate = typeof value === "number" && Number.isFinite(value);
   const clamped = determinate ? Math.min(100, Math.max(0, value)) : 0;
-  return /* @__PURE__ */ jsxs21("div", { className: cn("w-full", className), ...props, children: [
-    (label || showValue && determinate) && /* @__PURE__ */ jsxs21("div", { className: "mb-1 flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400", children: [
-      /* @__PURE__ */ jsx22("span", { children: label }),
-      showValue && determinate && /* @__PURE__ */ jsxs21("span", { children: [
+  return /* @__PURE__ */ jsxs38("div", { className: cn("w-full", className), ...props, children: [
+    (label || showValue && determinate) && /* @__PURE__ */ jsxs38("div", { className: "mb-1 flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400", children: [
+      /* @__PURE__ */ jsx40("span", { children: label }),
+      showValue && determinate && /* @__PURE__ */ jsxs38("span", { children: [
         Math.round(clamped),
         "%"
       ] })
     ] }),
-    /* @__PURE__ */ jsx22(
+    /* @__PURE__ */ jsx40(
       "div",
       {
         role: "progressbar",
@@ -5413,15 +7883,15 @@ function Progress({ value, label, showValue = false, className, ...props }) {
         "aria-valuemax": 100,
         "aria-valuenow": determinate ? Math.round(clamped) : void 0,
         className: "h-2 w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800",
-        children: determinate ? /* @__PURE__ */ jsx22(
+        children: determinate ? /* @__PURE__ */ jsx40(
           "div",
           {
             className: "h-full rounded-full bg-[color:var(--rm-accent)] transition-[width] duration-300",
             style: { width: `${clamped}%` }
           }
-        ) : /* @__PURE__ */ jsxs21(Fragment4, { children: [
-          /* @__PURE__ */ jsx22("style", { children: `@keyframes rm-indeterminate{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}` }),
-          /* @__PURE__ */ jsx22(
+        ) : /* @__PURE__ */ jsxs38(Fragment8, { children: [
+          /* @__PURE__ */ jsx40("style", { children: `@keyframes rm-indeterminate{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}` }),
+          /* @__PURE__ */ jsx40(
             "div",
             {
               className: "h-full w-1/3 rounded-full bg-[color:var(--rm-accent)]",
@@ -5435,7 +7905,7 @@ function Progress({ value, label, showValue = false, className, ...props }) {
 }
 
 // src/components/file-upload.tsx
-import { jsx as jsx23, jsxs as jsxs22 } from "react/jsx-runtime";
+import { jsx as jsx41, jsxs as jsxs39 } from "react/jsx-runtime";
 function FileUpload({
   onUpload,
   onError,
@@ -5449,13 +7919,13 @@ function FileUpload({
   className
 }) {
   const { upload, uploading, progress, error } = useFileUpload();
-  const inputRef = useRef8(null);
-  const zoneRef = useRef8(null);
-  const [dragOver, setDragOver] = useState13(false);
-  const [uploaded, setUploaded] = useState13(null);
-  const onErrorRef = useRef8(onError);
+  const inputRef = useRef13(null);
+  const zoneRef = useRef13(null);
+  const [dragOver, setDragOver] = useState22(false);
+  const [uploaded, setUploaded] = useState22(null);
+  const onErrorRef = useRef13(onError);
   onErrorRef.current = onError;
-  useEffect10(() => {
+  useEffect13(() => {
     if (error) onErrorRef.current?.(error);
   }, [error]);
   const start = async (file) => {
@@ -5477,8 +7947,8 @@ function FileUpload({
     setDragOver(false);
     void start(e.dataTransfer.files?.[0]);
   };
-  return /* @__PURE__ */ jsxs22("div", { className: cn("text-left", className), children: [
-    /* @__PURE__ */ jsx23(
+  return /* @__PURE__ */ jsxs39("div", { className: cn("text-left", className), children: [
+    /* @__PURE__ */ jsx41(
       "input",
       {
         ref: inputRef,
@@ -5493,7 +7963,7 @@ function FileUpload({
         }
       }
     ),
-    /* @__PURE__ */ jsxs22(
+    /* @__PURE__ */ jsxs39(
       "button",
       {
         ref: zoneRef,
@@ -5515,7 +7985,7 @@ function FileUpload({
           (disabled || uploading) && "cursor-not-allowed opacity-60"
         ),
         children: [
-          /* @__PURE__ */ jsx23(
+          /* @__PURE__ */ jsx41(
             "svg",
             {
               "aria-hidden": "true",
@@ -5524,7 +7994,7 @@ function FileUpload({
               fill: "none",
               stroke: "currentColor",
               strokeWidth: "1.5",
-              children: /* @__PURE__ */ jsx23(
+              children: /* @__PURE__ */ jsx41(
                 "path",
                 {
                   strokeLinecap: "round",
@@ -5534,107 +8004,24 @@ function FileUpload({
               )
             }
           ),
-          /* @__PURE__ */ jsx23("span", { className: "text-sm font-medium text-neutral-700 dark:text-neutral-300", children: label }),
-          hint && /* @__PURE__ */ jsx23("span", { className: "text-xs text-neutral-500 dark:text-neutral-400", children: hint })
+          /* @__PURE__ */ jsx41("span", { className: "text-sm font-medium text-neutral-700 dark:text-neutral-300", children: label }),
+          hint && /* @__PURE__ */ jsx41("span", { className: "text-xs text-neutral-500 dark:text-neutral-400", children: hint })
         ]
       }
     ),
-    uploading && /* @__PURE__ */ jsx23("div", { className: "mt-3", children: /* @__PURE__ */ jsx23(Progress, { value: progress, label: "Uploading", showValue: true }) }),
-    !uploading && uploaded && /* @__PURE__ */ jsxs22("p", { className: "mt-2 flex items-center gap-1.5 text-sm text-green-700 dark:text-green-400", children: [
-      /* @__PURE__ */ jsx23("svg", { "aria-hidden": "true", className: "h-4 w-4", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: /* @__PURE__ */ jsx23("path", { strokeLinecap: "round", strokeLinejoin: "round", d: "m5 13 4 4L19 7" }) }),
+    uploading && /* @__PURE__ */ jsx41("div", { className: "mt-3", children: /* @__PURE__ */ jsx41(Progress, { value: progress, label: "Uploading", showValue: true }) }),
+    !uploading && uploaded && /* @__PURE__ */ jsxs39("p", { className: "mt-2 flex items-center gap-1.5 text-sm text-green-700 dark:text-green-400", children: [
+      /* @__PURE__ */ jsx41("svg", { "aria-hidden": "true", className: "h-4 w-4", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: /* @__PURE__ */ jsx41("path", { strokeLinecap: "round", strokeLinejoin: "round", d: "m5 13 4 4L19 7" }) }),
       uploaded.name,
       " uploaded"
     ] }),
-    !uploading && error && /* @__PURE__ */ jsx23("p", { role: "alert", className: "mt-2 text-sm font-medium text-red-600 dark:text-red-400", children: error.message })
+    !uploading && error && /* @__PURE__ */ jsx41("p", { role: "alert", className: "mt-2 text-sm font-medium text-red-600 dark:text-red-400", children: error.message })
   ] });
 }
 
-// src/components/skeleton.tsx
-import { jsx as jsx24 } from "react/jsx-runtime";
-var base = "animate-pulse bg-neutral-200 dark:bg-neutral-800";
-function Skeleton({
-  variant = "text",
-  lines = 1,
-  width,
-  height,
-  className,
-  style,
-  ...props
-}) {
-  if (variant === "text" && lines > 1) {
-    return /* @__PURE__ */ jsx24("div", { className: cn("flex flex-col gap-2", className), "aria-hidden": "true", style, ...props, children: Array.from({ length: lines }, (_, i) => /* @__PURE__ */ jsx24(
-      "div",
-      {
-        className: cn(base, "h-4 rounded"),
-        style: { width: i === lines - 1 ? "60%" : width ?? "100%" }
-      },
-      i
-    )) });
-  }
-  return /* @__PURE__ */ jsx24(
-    "div",
-    {
-      "aria-hidden": "true",
-      className: cn(
-        base,
-        variant === "circle" ? "rounded-full" : "rounded",
-        variant === "text" && "h-4",
-        variant === "circle" && !height && "h-10 w-10",
-        variant === "rect" && !height && "h-24",
-        className
-      ),
-      style: { width, height, ...style },
-      ...props
-    }
-  );
-}
-
-// src/components/status-badge.tsx
-import { jsx as jsx25, jsxs as jsxs23 } from "react/jsx-runtime";
-var STYLES = {
-  ok: {
-    pill: "bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-500/10 dark:text-green-400 dark:ring-green-500/30",
-    dot: "bg-green-500",
-    label: "OK"
-  },
-  warn: {
-    pill: "bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-400 dark:ring-amber-500/30",
-    dot: "bg-amber-500",
-    label: "Warning"
-  },
-  error: {
-    pill: "bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-500/10 dark:text-red-400 dark:ring-red-500/30",
-    dot: "bg-red-500",
-    label: "Error"
-  },
-  pending: {
-    pill: "bg-neutral-100 text-neutral-600 ring-neutral-500/20 dark:bg-neutral-500/10 dark:text-neutral-300 dark:ring-neutral-400/30",
-    dot: "bg-neutral-400",
-    label: "Pending"
-  }
-};
-function StatusBadge({ status, children, className, ...props }) {
-  const s = STYLES[status];
-  return /* @__PURE__ */ jsxs23(
-    "span",
-    {
-      className: cn(
-        "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset",
-        s.pill,
-        className
-      ),
-      ...props,
-      children: [
-        /* @__PURE__ */ jsx25("span", { "aria-hidden": "true", className: cn("h-1.5 w-1.5 rounded-full", s.dot) }),
-        children ?? s.label
-      ]
-    }
-  );
-}
-
 // src/components/layout.tsx
-import { jsx as jsx26 } from "react/jsx-runtime";
-var GAP = {
+import { jsx as jsx42 } from "react/jsx-runtime";
+var GAP2 = {
   0: "gap-0",
   1: "gap-1",
   2: "gap-2",
@@ -5656,10 +8043,10 @@ var JUSTIFY = {
   between: "justify-between"
 };
 function Stack({ className, gap = 4, align, ...props }) {
-  return /* @__PURE__ */ jsx26(
+  return /* @__PURE__ */ jsx42(
     "div",
     {
-      className: cn("flex flex-col", GAP[gap], align && ALIGN[align], className),
+      className: cn("flex flex-col", GAP2[gap], align && ALIGN[align], className),
       ...props
     }
   );
@@ -5672,12 +8059,12 @@ function Row({
   wrap = false,
   ...props
 }) {
-  return /* @__PURE__ */ jsx26(
+  return /* @__PURE__ */ jsx42(
     "div",
     {
       className: cn(
         "flex flex-row",
-        GAP[gap],
+        GAP2[gap],
         ALIGN[align],
         justify && JUSTIFY[justify],
         wrap && "flex-wrap",
@@ -5709,12 +8096,12 @@ var LG_COLS = {
   6: "lg:grid-cols-6"
 };
 function Grid({ className, gap = 4, cols = 1, mdCols, lgCols, ...props }) {
-  return /* @__PURE__ */ jsx26(
+  return /* @__PURE__ */ jsx42(
     "div",
     {
       className: cn(
         "grid",
-        GAP[gap],
+        GAP2[gap],
         COLS[cols],
         mdCols && MD_COLS[mdCols],
         lgCols && LG_COLS[lgCols],
@@ -5726,9 +8113,9 @@ function Grid({ className, gap = 4, cols = 1, mdCols, lgCols, ...props }) {
 }
 
 // src/components/assistant-widget.tsx
-import { useEffect as useEffect11, useRef as useRef9, useState as useState14 } from "react";
+import { useEffect as useEffect14, useRef as useRef14, useState as useState23 } from "react";
 import { useAssistant, useMaybeAppClient as useMaybeAppClient2 } from "@robomotion/apps-runtime/react";
-import { jsx as jsx27, jsxs as jsxs24 } from "react/jsx-runtime";
+import { jsx as jsx43, jsxs as jsxs40 } from "react/jsx-runtime";
 var STORAGE_OPEN = "rm.app.assistant.open";
 var assistantProse = cn(
   "[&_p]:my-1 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0",
@@ -5743,28 +8130,28 @@ var assistantProse = cn(
 function AssistantWidget({ title = "Assistant", placeholder = "Ask the app to do something\u2026", className }) {
   const app = useMaybeAppClient2();
   if (!app) return null;
-  return /* @__PURE__ */ jsx27(AssistantWidgetInner, { title, placeholder, className });
+  return /* @__PURE__ */ jsx43(AssistantWidgetInner, { title, placeholder, className });
 }
 function AssistantWidgetInner({ title, placeholder, className }) {
   const { available, greeting, messages, busy, send } = useAssistant();
-  const [open, setOpen] = useState14(() => {
+  const [open, setOpen] = useState23(() => {
     try {
       return sessionStorage.getItem(STORAGE_OPEN) === "1";
     } catch {
       return false;
     }
   });
-  const [draft, setDraft] = useState14("");
-  const listRef = useRef9(null);
-  const inputRef = useRef9(null);
-  useEffect11(() => {
+  const [draft, setDraft] = useState23("");
+  const listRef = useRef14(null);
+  const inputRef = useRef14(null);
+  useEffect14(() => {
     try {
       sessionStorage.setItem(STORAGE_OPEN, open ? "1" : "0");
     } catch {
     }
     if (open) inputRef.current?.focus();
   }, [open]);
-  useEffect11(() => {
+  useEffect14(() => {
     const el = listRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages]);
@@ -5781,20 +8168,20 @@ function AssistantWidgetInner({ title, placeholder, className }) {
       submit();
     }
   };
-  return /* @__PURE__ */ jsxs24("div", { className: cn("fixed bottom-4 right-4 z-40 flex flex-col items-end gap-3", className), "data-rm-assistant": "", children: [
-    open && /* @__PURE__ */ jsxs24(
+  return /* @__PURE__ */ jsxs40("div", { className: cn("fixed bottom-4 right-4 z-40 flex flex-col items-end gap-3", className), "data-rm-assistant": "", children: [
+    open && /* @__PURE__ */ jsxs40(
       "div",
       {
         role: "dialog",
         "aria-label": title,
         className: "flex h-[min(32rem,calc(100vh-6rem))] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-black/10 bg-white text-left shadow-2xl dark:border-white/10 dark:bg-neutral-900",
         children: [
-          /* @__PURE__ */ jsxs24("header", { className: "flex items-center justify-between border-b border-black/5 px-4 py-3 dark:border-white/10", children: [
-            /* @__PURE__ */ jsxs24("div", { className: "flex items-center gap-2", children: [
-              /* @__PURE__ */ jsx27("span", { className: "inline-block h-2.5 w-2.5 rounded-full bg-[color:var(--rm-accent)]", "aria-hidden": "true" }),
-              /* @__PURE__ */ jsx27("span", { className: "text-sm font-semibold", children: title })
+          /* @__PURE__ */ jsxs40("header", { className: "flex items-center justify-between border-b border-black/5 px-4 py-3 dark:border-white/10", children: [
+            /* @__PURE__ */ jsxs40("div", { className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ jsx43("span", { className: "inline-block h-2.5 w-2.5 rounded-full bg-[color:var(--rm-accent)]", "aria-hidden": "true" }),
+              /* @__PURE__ */ jsx43("span", { className: "text-sm font-semibold", children: title })
             ] }),
-            /* @__PURE__ */ jsx27(
+            /* @__PURE__ */ jsx43(
               "button",
               {
                 type: "button",
@@ -5805,9 +8192,9 @@ function AssistantWidgetInner({ title, placeholder, className }) {
               }
             )
           ] }),
-          /* @__PURE__ */ jsxs24("div", { ref: listRef, className: "flex-1 space-y-3 overflow-y-auto px-4 py-3 text-sm", children: [
-            messages.length === 0 && /* @__PURE__ */ jsx27("p", { className: "text-neutral-500", children: greeting || "Tell me what you want done in this app and I will do it." }),
-            messages.map((m) => /* @__PURE__ */ jsx27("div", { className: cn("flex", m.role === "user" ? "justify-end" : "justify-start"), children: /* @__PURE__ */ jsxs24(
+          /* @__PURE__ */ jsxs40("div", { ref: listRef, className: "flex-1 space-y-3 overflow-y-auto px-4 py-3 text-sm", children: [
+            messages.length === 0 && /* @__PURE__ */ jsx43("p", { className: "text-neutral-500", children: greeting || "Tell me what you want done in this app and I will do it." }),
+            messages.map((m) => /* @__PURE__ */ jsx43("div", { className: cn("flex", m.role === "user" ? "justify-end" : "justify-start"), children: /* @__PURE__ */ jsxs40(
               "div",
               {
                 className: cn(
@@ -5815,18 +8202,18 @@ function AssistantWidgetInner({ title, placeholder, className }) {
                   m.role === "user" ? "whitespace-pre-wrap rounded-br-md bg-[color:var(--rm-accent)] text-white" : cn("rounded-bl-md bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100", assistantProse)
                 ),
                 children: [
-                  m.role === "user" ? m.text : m.text ? /* @__PURE__ */ jsx27(Xa, { mode: "streaming", isAnimating: !!m.streaming, children: m.text }) : m.streaming ? /* @__PURE__ */ jsx27("span", { className: "animate-pulse", children: "\u2026" }) : null,
-                  m.tools && m.tools.length > 0 && /* @__PURE__ */ jsxs24("div", { className: "mt-1 text-[11px] opacity-70", children: [
+                  m.role === "user" ? m.text : m.text ? /* @__PURE__ */ jsx43(Xa, { mode: "streaming", isAnimating: !!m.streaming, children: m.text }) : m.streaming ? /* @__PURE__ */ jsx43("span", { className: "animate-pulse", children: "\u2026" }) : null,
+                  m.tools && m.tools.length > 0 && /* @__PURE__ */ jsxs40("div", { className: "mt-1 text-[11px] opacity-70", children: [
                     "Did: ",
                     m.tools.join(", ")
                   ] }),
-                  m.error && /* @__PURE__ */ jsx27("div", { className: "mt-1 text-[12px] text-red-600 dark:text-red-400", children: m.error })
+                  m.error && /* @__PURE__ */ jsx43("div", { className: "mt-1 text-[12px] text-red-600 dark:text-red-400", children: m.error })
                 ]
               }
             ) }, m.id))
           ] }),
-          /* @__PURE__ */ jsx27("form", { onSubmit: submit, className: "border-t border-black/5 p-3 dark:border-white/10", children: /* @__PURE__ */ jsxs24("div", { className: "flex items-end gap-2", children: [
-            /* @__PURE__ */ jsx27(
+          /* @__PURE__ */ jsx43("form", { onSubmit: submit, className: "border-t border-black/5 p-3 dark:border-white/10", children: /* @__PURE__ */ jsxs40("div", { className: "flex items-end gap-2", children: [
+            /* @__PURE__ */ jsx43(
               "textarea",
               {
                 ref: inputRef,
@@ -5842,7 +8229,7 @@ function AssistantWidgetInner({ title, placeholder, className }) {
                 "aria-label": "Message the assistant"
               }
             ),
-            /* @__PURE__ */ jsx27(
+            /* @__PURE__ */ jsx43(
               "button",
               {
                 type: "submit",
@@ -5858,7 +8245,7 @@ function AssistantWidgetInner({ title, placeholder, className }) {
         ]
       }
     ),
-    /* @__PURE__ */ jsxs24(
+    /* @__PURE__ */ jsxs40(
       "button",
       {
         type: "button",
@@ -5870,7 +8257,7 @@ function AssistantWidgetInner({ title, placeholder, className }) {
           focusRing
         ),
         children: [
-          /* @__PURE__ */ jsx27("span", { "aria-hidden": "true", children: "\u2726" }),
+          /* @__PURE__ */ jsx43("span", { "aria-hidden": "true", children: "\u2726" }),
           title
         ]
       }
@@ -5878,8 +8265,14 @@ function AssistantWidgetInner({ title, placeholder, className }) {
   ] });
 }
 export {
+  Accordion,
+  AccordionItem,
+  Alert,
   AppShell,
   AssistantWidget,
+  Avatar,
+  AvatarGroup,
+  Breadcrumbs,
   Button,
   Calendar,
   Card,
@@ -5888,16 +8281,21 @@ export {
   CardHeader,
   Chart,
   Checkbox,
+  Combobox,
+  Composer,
   ConfirmDialog,
   ConnectionBanner,
+  CopyButton,
   DEFAULT_ACCENT,
   DataTable,
   DatePicker,
+  DateRangePicker,
   Dialog,
   Drawer,
   EmptyState,
   ErrorState,
   Field,
+  FieldArray,
   FileUpload,
   Form,
   Grid,
@@ -5909,21 +8307,34 @@ export {
   Markdown,
   Menu,
   MenuItem,
+  Message,
   NumberInput,
+  Popover,
   Progress,
   RadioGroup,
+  Rating,
   Row,
   Screen,
   Select,
   Skeleton,
+  Slider,
   Spinner,
   Stack,
+  Stat,
   StatusBadge,
+  Step,
+  Stepper,
+  Switch,
   Tab,
   TabPanel,
   Tabs,
+  TagInput,
   TextArea,
   TextInput,
+  Thread,
+  TimePicker,
+  Timeline,
+  TimelineItem,
   Toast,
   Tooltip,
   accentStyle,

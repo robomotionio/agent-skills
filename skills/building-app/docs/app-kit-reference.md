@@ -30,14 +30,17 @@ type error you will see in a review - it is a blank white preview and
 ```tsx
 // Everything you can render. There is nothing else, and nothing else is allowed.
 import {
-  AppShell, Screen, ConnectionBanner,
+  AppShell, Screen, ConnectionBanner, Breadcrumbs, AssistantWidget,
   Button, Spinner, Card, CardHeader, CardBody, CardFooter, DataTable,
-  Form, Field, TextInput, NumberInput, TextArea, Select, Checkbox,
-  RadioGroup, DatePicker, JsonInput, useFormValues, FileUpload,
-  Progress, Skeleton, StatusBadge, EmptyState, ErrorState,
+  Form, Field, FieldArray, TextInput, NumberInput, TextArea, Select, Combobox,
+  Checkbox, Switch, RadioGroup, DatePicker, TimePicker, DateRangePicker,
+  TagInput, Slider, Rating, JsonInput, useFormValues, FileUpload,
+  Progress, Skeleton, StatusBadge, Stat, Alert, CopyButton, EmptyState, ErrorState,
   Toast, useToast, toast, dismissToast,
-  Dialog, ConfirmDialog, Drawer, Tabs, Tab, TabPanel, Menu, MenuItem, Tooltip,
-  Chart, Kanban, KanbanColumn, KanbanCard, Calendar, Markdown, JsonView,
+  Dialog, ConfirmDialog, Drawer, Popover, Tabs, Tab, TabPanel, Stepper, Step,
+  Accordion, AccordionItem, Menu, MenuItem, Tooltip,
+  Chart, Kanban, KanbanColumn, KanbanCard, Calendar, Timeline, TimelineItem,
+  Avatar, AvatarGroup, Thread, Message, Composer, Markdown, JsonView,
   Stack, Row, Grid, cn, accentStyle, focusRing, inputBase, DEFAULT_ACCENT,
 } from "@robomotion/app-kit";
 
@@ -83,6 +86,28 @@ One routed screen with a title and description. One `Screen` per file under `src
 
 Renders the robot-offline and contract-mismatch states. `AppShell` already includes it; only place it yourself in a screen that must show connection state inline. Never build your own offline warning.
 
+### `Breadcrumbs`
+
+Where the person is, and one press back to anywhere above them. A detail screen reached from a list needs this and the shell's nav cannot give it: the nav says which section, the crumbs say which record. The last crumb is the page they are already on, so it carries no `path` and is not a link.
+
+```tsx
+<Breadcrumbs
+  items={[{ label: "Invoices", path: "/" }, { label: invoice.supplier, path: `/supplier?id=${invoice.supplier_id}` }, { label: invoice.number }]}
+  onNavigate={navigate}
+/>
+```
+
+### `AssistantWidget`
+
+The app's own assistant, in the corner of every screen. It talks to the flow through the app's MCP server, so it can answer questions about the app's own data and run its actions; it is not a general chatbot bolted on. Mount it once, beside the routed screens inside `AppShell`. Only add it when the person asked for one.
+
+```tsx
+<AppShell title="Invoice Approvals" nav={nav} onNavigate={navigate}>
+  {screen}
+  <AssistantWidget title="Ask about these invoices" />
+</AppShell>
+```
+
 ### Routing (`src/lib/router.tsx`)
 
 The scaffold ships a tiny History API router; it is not a package and there is nothing to install. Screens are real paths that match the `route` of each screen in `app.json`: `/`, `/review`, never `#/review`. A link to a screen is an ordinary URL that can be shared and reloaded.
@@ -111,7 +136,7 @@ const approve = useApproveInvoice();
 </Button>
 ```
 
-`loading` still exists for a button whose busy state comes from somewhere else, and `onClick` still runs first when both are given. Inside a `<Form action={…}>` the submit button takes no `action` of its own; the form runs it.
+`loading` still exists for a button whose busy state comes from somewhere else, and `onClick` still runs first when both are given. Inside a `<Form action={…}>` the submit button takes no `action` of its own; the form runs it. `Spinner` is the same spinner on its own, for the rare busy state no `Button` owns - never draw one with a `border animate-spin` div.
 
 ### `Progress`
 
@@ -138,6 +163,49 @@ Exactly four states: `ok` / `warn` / `error` / `pending`. Map your domain onto t
 
 ```tsx
 <StatusBadge status={invoice.approved ? "ok" : "pending"} />
+```
+
+### `Stat`
+
+One number said properly: what it is, what it is now, whether that is better or worse than last time, and the shape of how it got there. Every dashboard opens with a row of these, so **never hand-write a tile with your own colours** - `upIsGood={false}` is what makes a rise in "Errors" read as red rather than green.
+
+```tsx
+<Grid cols={1} mdCols={2} lgCols={4}>
+  {metrics.map((m) => (
+    <Stat
+      key={m.id}
+      label={m.label}
+      value={m.value.toLocaleString()}
+      unit={m.unit}
+      delta={m.change_pct}
+      deltaLabel="vs last week"
+      upIsGood={m.up_is_good}
+      trend={m.recent}
+    />
+  ))}
+</Grid>
+```
+
+`trend` is a plain list of recent numbers, oldest first, drawn as a small line under the value. `loading` shows a placeholder instead of a misleading zero.
+
+### `Alert`
+
+An inline message that STAYS on the page: "three rows could not be read", "the robot runs this at 6am", "nothing was saved". A `Toast` disappears after five seconds, which is right for "Saved" and wrong for anything the person still has to act on. `variant`: `info` / `success` / `warning` / `error`.
+
+```tsx
+{skipped > 0 && (
+  <Alert variant="warning" title={`${skipped} rows were skipped`} onDismiss={() => setSkipped(0)}>
+    They had no email address on them.
+  </Alert>
+)}
+```
+
+### `CopyButton`
+
+Copy a reference number, a link, or a whole answer the robot wrote. It falls back to the older clipboard command on the pages where the modern one is refused (plain http, some embedded frames) and says what happened either way, which a hand-written `navigator.clipboard.writeText` does not.
+
+```tsx
+<CopyButton value={invoice.number}>Copy the reference</CopyButton>
 ```
 
 ### `Toast` / `useToast`
@@ -218,6 +286,19 @@ The same overlay anchored to a side, for detail that is too long for a centred b
 <Drawer open={!!selected} onClose={() => setSelected(null)} title="History" side="right">
   <Stack gap={3}>{selected?.events.map((e) => <div key={e.id}>{e.what}</div>)}</Stack>
 </Drawer>
+```
+
+### `Popover`
+
+A small panel hung off a control: a set of filters, an explanation with a link in it, a preset chooser. A `Tooltip` is one sentence on hover and nothing in it can be clicked; a `Dialog` takes over the screen. This is the thing in between. It portals out to the page root, so **never hand-roll one** - an absolutely positioned `div` is clipped by the first card with `overflow-hidden`.
+
+```tsx
+<Popover trigger="Filters" title="Show me">
+  <Stack gap={2}>
+    <Checkbox label="Only unpaid" checked={unpaid} onChange={setUnpaid} />
+    <Checkbox label="Over 1,000" checked={large} onChange={setLarge} />
+  </Stack>
+</Popover>
 ```
 
 ### `Menu` / `MenuItem`
@@ -325,6 +406,38 @@ const table = useRef<DataTableApi | null>(null);
 <Button action={addOrder} params={draft} onClick={() => setTimeout(() => table.current?.refresh(), 0)}>Add</Button>
 ```
 
+**Ticking a run of rows and doing one thing to all of them.** `selectable` puts a tick box on every row, and `rowKey` becomes required when you use it - the selection belongs to RECORDS, not to row positions, and without a key turning the page silently reassigns the ticks to different rows. `bulkActions` are the buttons that appear above the table once something is ticked. **Never build a checkbox column and an array of ticked ids by hand**: that is where the page-turning bugs live.
+
+```tsx
+const archiveLeads = useArchiveLeads();
+<DataTable
+  columns={cols}
+  source={{ action: listLeads, pageSize: 25 }}
+  rowKey={(row) => row.id}
+  selectable
+  filterable
+  exportable
+  exportFilename="leads.csv"
+  bulkActions={[
+    { label: "Archive", danger: true, action: archiveLeads,
+      params: (s) => ({ ids: s.keys, all_matching: s.allMatching, filter: s.filter }) },
+  ]}
+/>
+```
+
+A bulk action is handed the selection, and it comes in two shapes:
+
+```ts
+{ keys: string[], rows: T[], filter: string, count: number }   // these rows
+{ allMatching: true, filter: string, count: number }           // everything this filter matches
+```
+
+The second is what "Select all N" produces over a paged `source`: the flow is told the filter and does the work, because forty thousand keys in a browser is not a selection. Declare the action's params open (`{"type": "object"}`) and read whichever half arrived. A bulk action with a plain callback is `{ label, onSelect }` instead, like a row action.
+
+**Taking the list away.** `exportable` adds an Export CSV button. Over a paged source it asks the SAME action with `limit: 0`, which the page contract already defines as "no paging: all of them" - so an export needs no second action and no extra contract. Cells come from a column's `value` or the row's own property, never from `render`, so give any rendered column a `value` if it should appear in the file.
+
+`tableRef` also carries `selection()` and `clearSelection()`, for a screen that must read the ticks itself: `table.current?.selection<Lead>()`.
+
 ### `Tabs` / `Tab` / `TabPanel`
 
 Sections of one screen, when splitting them into routed screens would be too much. The strip is one stop in the tab order and the arrow keys move between the tabs, which is the part a hand-rolled row of buttons never gets right.
@@ -338,9 +451,36 @@ Sections of one screen, when splitting them into routed screens would be too muc
 </Tabs>
 ```
 
+### `Stepper` / `Step`
+
+A long job broken into steps: "upload the file", "check what we read", "confirm and send". One question at a time is the difference between a form somebody finishes and a form of thirty fields somebody abandons. `<Stepper>` reads its children the way `<Tabs>` does, and only the current `<Step>`'s content is on screen. A step ahead of the person cannot be jumped to; one behind them can.
+
+```tsx
+<Stepper label="Send an invoice">
+  <Step title="Who"><Field name="customer" label="Customer"><Combobox options={customers} /></Field></Step>
+  <Step title="What"><FieldArray name="lines">{…}</FieldArray></Step>
+  <Step title="Send"><Button action={sendInvoice} params={draft}>Send it</Button></Step>
+</Stepper>
+```
+
+There is **no `action` prop**: the last step holds an ordinary `<Button action={…}>` or a `<Form action={…}>`, which keeps the run in one place and out of the double-run trap. `controls={false}` hides the Back/Next pair when the screen's own state drives `value`.
+
+### `Accordion` / `AccordionItem`
+
+Sections that fold away: a long form's optional parts, an FAQ, the detail under each row of a summary. `type="single"` closes the others when one opens; the default keeps as many open as the person wants. The arrow keys move between the headers, which is the part a `<div onClick>` with a chevron never gets right.
+
+```tsx
+<Accordion type="single" defaultValue={["delivery"]}>
+  <AccordionItem value="delivery" title="Delivery" description="Where it goes">…</AccordionItem>
+  <AccordionItem value="payment" title="Payment" meta={<StatusBadge status="ok">Paid</StatusBadge>}>…</AccordionItem>
+</Accordion>
+```
+
 ### `Chart`
 
-`bar`, `line` or `pie`, drawn as inline SVG in the app's own accent. **Never write your own SVG or reach for a charting library** - neither is allowed, and this is why the kit has one. `data` is `{label, value}[]`, which is the shape a flow hands back with nothing to convert.
+`bar`, `line`, `area` or `pie`, drawn as inline SVG in the app's own accent. **Never write your own SVG and never reach for a charting library** - neither is allowed, and this is why the kit has one.
+
+**One series** is `data`, which is `{label, value}[]` - the shape a flow hands back with nothing to convert.
 
 ```tsx
 const year = useMonthlyTotals();
@@ -357,6 +497,22 @@ const year = useMonthlyTotals();
   </CardBody>
 </Card>
 ```
+
+**Several series** is `series`, and it is what makes "us against them over time" expressible at all - a rank tracker, a price watcher, this month against last, one line per branch. Each entry is `{ name, points: {x, y}[] }`; `name` is what the key says, `x` is a category or a date. One chart, several lines: **never draw one chart per thing being compared.**
+
+```tsx
+const ranks = useWeeklyRanks();
+<Chart
+  kind="line"
+  xKind="time"
+  title="Where we come up in search"
+  series={ranks.data?.series ?? SAMPLE_SERIES}
+  source={{ action: ranks }}
+  legend
+/>
+```
+
+`xKind="time"` lays the points out to scale and puts them in date order however the flow answered; leave it out and dates are detected anyway. `stacked` stacks bars instead of standing them side by side. Colours come from the app's accent at descending opacities, so nobody picks any; `color` on a series overrides one when a colour carries meaning ("red is the overdue line").
 
 Say what the chart shows in `title`; it becomes the accessible name, so a screen reader gets "Takings by month" rather than "graphic". `source` links the chart to the step that produced the numbers, the way a table's does.
 
@@ -390,6 +546,43 @@ A month at a time, with `{date, label}` events on the days. Dates are ISO `"yyyy
 />
 ```
 
+### `Timeline` / `TimelineItem`
+
+What happened, in order: an audit trail, a document's history, the steps a robot took. A `DataTable` of the same rows answers "which one" and this answers "what happened next". The dot colours are `StatusBadge`'s, so a `warn` here is the same amber as a `warn` anywhere else. An ISO timestamp in `at` is read as a date in the person's own locale; words are left alone.
+
+```tsx
+<Timeline>
+  {doc.history.map((e, i) => (
+    <TimelineItem key={i} at={e.at} title={e.title} body={e.note} status={e.status} />
+  ))}
+</Timeline>
+```
+
+### `Avatar` / `AvatarGroup`
+
+Who did this: a face beside a row, a comment or an approval, with their initials when there is no picture - which is most of the time, and is the case a bare `<img>` gets wrong. `AvatarGroup` overlaps them and counts the ones that did not fit.
+
+```tsx
+<AvatarGroup max={3}>
+  {reviewers.map((r) => <Avatar key={r.id} name={r.name} src={r.photo_url} />)}
+</AvatarGroup>
+```
+
+### `Thread` / `Message` / `Composer`
+
+A conversation on a screen: notes on a case, comments on an approval, messages with a robot that answers them. It holds no messages of its own and opens no socket - the screen keeps the list (from an action's result, appended to by `useEvent`) and hands it over. Bodies render through `Markdown`, so a robot answering in bullet points arrives as bullet points. `Message` and `Composer` are the halves, for a screen that lays out its own.
+
+```tsx
+const notes = useCaseNotes();
+const addNote = useAddNote();
+const [messages, setMessages] = useState<ThreadMessage[]>([]);
+useEvent<Note>("noteAdded", (n) => setMessages((m) => [...m, { id: n.id, author: n.by, at: n.at, body: n.text }]));
+
+<Thread messages={messages} action={addNote} params={(text) => ({ caseId, note: text })} />
+```
+
+Enter sends and Shift+Enter starts a new line. Pass `readOnly` for a history with nothing to add.
+
 ### `Markdown`
 
 Markdown the robot produced - a summary, a written-up report - rendered as prose rather than printed as a wall of asterisks. It sanitises what it renders, which is why text that came back from a website or a document goes here and never into `dangerouslySetInnerHTML`.
@@ -413,7 +606,7 @@ It is a viewer, not a formatter. When the screen DOES know the shape, show the f
 
 ### `Form` / `Field` and the inputs
 
-`TextInput`, `NumberInput`, `TextArea`, `Select`, `Checkbox`, `RadioGroup`, `DatePicker`.
+`TextInput`, `NumberInput`, `TextArea`, `Select`, `Combobox`, `Checkbox`, `Switch`, `RadioGroup`, `DatePicker`, `TimePicker`, `DateRangePicker`, `TagInput`, `Slider`, `Rating`, `FieldArray`.
 
 **Always pass `schema`.** It is the generated params schema for the action, and
 without it the form checks nothing at all. The types in `actions.gen.ts` are
@@ -481,6 +674,98 @@ for that field. Give the `Form` an `initialValues` covering it, or leave the
 control uncontrolled and let the form hold it.
 
 `action` runs `submit.run(values)` once the values validate, after `onSubmit` if you also gave one, and links the submit button to the step in the flow. When the screen checks the fields by hand before calling (trimming, custom messages), keep `onSubmit` and spread `bindAction(submit)` on the submit button instead so the link is still declared.
+
+### `FieldArray`
+
+A repeating group of fields: an invoice's lines, a booking's guests, a shipment's parcels. The form's value at `name` is a REAL array of objects, which is exactly what `{"type": "array", "items": {…}}` declares in `app.json` and what the flow loops over. **Never keep the rows in the screen's own `useState` beside the form** - that is a second copy, and the add/remove bugs all live in keeping the two in step.
+
+The fields inside a row use plain names (`"description"`), never `"lines.0.description"`: the array puts them in the right row, which is why the same `<Field><TextInput/></Field>` pair works inside a row and outside one.
+
+```tsx
+<Form values={values} onChange={setValues} schema={SendInvoiceParamsSchema} action={sendInvoice}>
+  <FieldArray name="lines" label="Lines" newItem={() => ({ description: "", qty: 1 })} addLabel="Add a line">
+    {() => (
+      <Row gap={3} align="start">
+        <Field name="description" label="What" className="flex-1"><TextInput /></Field>
+        <Field name="qty" label="How many" className="w-28"><NumberInput /></Field>
+      </Row>
+    )}
+  </FieldArray>
+  <Button type="submit">Send it</Button>
+</Form>
+```
+
+Rows can be moved up and down and removed; `min` and `max` bound how many there can be. A schema error inside a row lands on that row's own field.
+
+### `Combobox`
+
+A `Select` you can type in. A native select is fine up to about twenty options and unusable past it, and "pick the customer" or "pick the country" is never twenty. Three shapes, one component: search a list, pick several (`multiple`, and the form value is then a string ARRAY), or ask the robot as you type (`loadOptions`, for a list that lives in a database and is too big to hand over).
+
+```tsx
+<Field name="customer" label="Customer">
+  <Combobox options={customerOptions} placeholder="Start typing" />
+</Field>
+
+<Field name="labels" label="Send to">
+  <Combobox multiple options={teamOptions} />
+</Field>
+
+<Field name="supplier" label="Supplier">
+  <Combobox loadOptions={async (q) => (await searchSuppliers.run({ q })).rows.map((r) => ({ value: r.id, label: r.name }))} />
+</Field>
+```
+
+`options` are `{ value, label }` objects and `value` is always a string, the same as `Select`. `loadOptions` is debounced, so typing is one question to the robot, not one per keystroke.
+
+### `DateRangePicker`
+
+"Between these two dates" as one control, with the answers people actually ask for one press away (last 7 / 30 / 90 days, this month, this quarter). Almost every report, chart and export is over a period, and two `DatePicker`s are not this: the second date has to be after the first, and "last 30 days" has to be counted backwards by hand. The value is `{ from, to }`, both ISO `"yyyy-mm-dd"`.
+
+```tsx
+const [period, setPeriod] = useState<DateRange>({ from: "2026-08-01", to: "2026-08-31" });
+<DateRangePicker value={period} onChange={setPeriod} />
+```
+
+Pass `presets={false}` to hide the quick answers, or your own list to replace them.
+
+### `Switch`
+
+On or off for a setting that takes effect as soon as it is flipped: "email me when this finishes", "pause the robot". A `Checkbox` is for a value a form is about to submit; a `Switch` is for a thing that is either on or off right now, and the two read differently to everybody.
+
+```tsx
+<Switch checked={paused} onChange={setPaused} label="Pause the robot" description="Nothing runs until this is back on." />
+```
+
+### `TagInput`
+
+Short strings typed one at a time: labels on a lead, recipients on a send, skills on a role. The form value is a string ARRAY, which is what the contract's array type wants and what a flow can loop over. **Never use a `TextInput` and split on commas in the flow** - every one of those got the trimming wrong.
+
+```tsx
+<Field name="labels" label="Labels" help="Press Enter after each one.">
+  <TagInput placeholder="urgent, vip" />
+</Field>
+```
+
+### `Slider`
+
+A number chosen by dragging: a threshold, a confidence, a budget. It writes a NUMBER, and shows the value beside the track.
+
+```tsx
+<Field name="threshold" label="How sure the robot must be">
+  <Slider min={50} max={100} formatValue={(v) => `${v}%`} minLabel="Loose" maxLabel="Strict" />
+</Field>
+```
+
+### `Rating`
+
+"How did that go?" as one control: stars for a satisfaction score, or a numbered scale for an NPS-style question. It is one radiogroup with one stop in the tab order and the arrow keys between the values, which a row of clickable star glyphs never is.
+
+```tsx
+<Field name="score" label="How did we do?"><Rating /></Field>
+<Field name="nps" label="How likely are you to recommend us?">
+  <Rating variant="scale" min={0} max={10} />
+</Field>
+```
 
 ### `JsonInput`
 
@@ -593,6 +878,9 @@ AppShell:         { title: ReactNode, accent?: string, logo?: ReactNode,
 Screen:           { title: ReactNode, description?: ReactNode, actions?: ReactNode,
                     children?: ReactNode }
 ConnectionBanner: { state?: ConnectionState, className?: string }
+Breadcrumbs:      { items: { label: ReactNode; path?: string }[] /* the last one has no path */,
+                    onNavigate?: (path: string) => void, label?: string /* default "Breadcrumb" */ }
+AssistantWidget:  { title?: string /* default "Assistant" */, placeholder?: string }
 ```
 
 **Actions and feedback**
@@ -605,6 +893,15 @@ Spinner:     { className?: string }
 Progress:    { value?: number /* 0-100; omit for indeterminate */, label?: string,
                showValue?: boolean }
 StatusBadge: { status: "ok"|"warn"|"error"|"pending", children?: ReactNode }
+Stat:        { label: ReactNode, value: ReactNode, unit?: ReactNode,
+               delta?: number /* percent */, deltaLabel?: ReactNode,
+               upIsGood?: boolean /* default true */, trend?: number[] /* oldest first */,
+               icon?: ReactNode, loading?: boolean, card?: boolean /* default true */ }
+Alert:       { variant?: "info"|"success"|"warning"|"error" /* default "info" */,
+               title?: ReactNode, onDismiss?: () => void, action?: ReactNode,
+               children?: ReactNode }
+CopyButton:  { value: string, children?: ReactNode, label?: string /* default "Copy" */,
+               toastTitle?: ReactNode, size?: "sm"|"md", disabled?: boolean }
 Skeleton:    { variant?: "text"|"rect"|"circle" /* default "text" */, lines?: number,
                width?: string | number, height?: string | number }
 EmptyState:  { title: ReactNode, description?: ReactNode, icon?: ReactNode,
@@ -636,10 +933,27 @@ Drawer:        { open: boolean, onClose: () => void, title?: ReactNode,
                  description?: ReactNode, side?: "left"|"right" /* default "right" */,
                  size?: "sm"|"md"|"lg", footer?: ReactNode, hideClose?: boolean,
                  children?: ReactNode }
+Popover:       { trigger: ReactNode, title?: ReactNode,
+                 side?: "top"|"bottom"|"left"|"right" /* default "bottom" */,
+                 align?: "start"|"center"|"end" /* default "start" */,
+                 open?: boolean, onOpenChange?: (open: boolean) => void,
+                 label?: string, width?: number /* default 288 */,
+                 triggerClassName?: string, children?: ReactNode }
 Tabs:          { value?: string, defaultValue?: string, onChange?: (v: string) => void,
                  label?: string, children?: ReactNode }
 Tab:           { value: string, disabled?: boolean, badge?: ReactNode, children?: ReactNode }
 TabPanel:      { value: string, children?: ReactNode }
+Stepper:       { value?: number, defaultValue?: number, onChange?: (i: number) => void,
+                 label?: string, controls?: boolean /* default true */,
+                 backLabel?: string, nextLabel?: string, nextDisabled?: boolean,
+                 nonLinear?: boolean, children?: ReactNode }   // no `action` prop, on purpose
+Step:          { title: ReactNode, description?: ReactNode, optional?: boolean,
+                 disabled?: boolean, children?: ReactNode }
+Accordion:     { type?: "single"|"multiple" /* default "multiple" */, value?: string[],
+                 defaultValue?: string[], onChange?: (v: string[]) => void,
+                 children?: ReactNode }
+AccordionItem: { value: string, title: ReactNode, description?: ReactNode,
+                 meta?: ReactNode, disabled?: boolean, children?: ReactNode }
 Menu:          { items?: MenuItemDef[], trigger?: ReactNode, label?: string /* default "More" */,
                  align?: "start"|"end" /* default "end" */, menuLabel?: string,
                  disabled?: boolean, children?: ReactNode }
@@ -668,11 +982,25 @@ DataTable<T>: { columns: DataTableColumn<T>[], rows?: T[],
                 caption?: string,
                 emptyTitle?: ReactNode, emptyDescription?: ReactNode, emptyState?: ReactNode,
                 loading?: boolean, source?: DataTableSource,
-                tableRef?: MutableRefObject<DataTableApi | null> }
+                tableRef?: MutableRefObject<DataTableApi | null>,
+                // selection: `rowKey` is REQUIRED once `selectable` is set
+                selectable?: boolean, selectedKeys?: string[], defaultSelectedKeys?: string[],
+                onSelectionChange?: (keys: string[], rows: T[]) => void,
+                bulkActions?: DataTableBulkAction<T>[],
+                // export
+                exportable?: boolean, exportFilename?: string /* default "export.csv" */ }
 
 DataTableSource: { action: ActionLike, pageSize?: number }   // paged: the table fetches
                  | { name: string, records?: unknown }       // an identity tag for rows you hold
-DataTableApi:    { refresh: () => void }
+DataTableApi:    { refresh: () => void, selection: <T>() => DataTableSelection<T>,
+                   clearSelection: () => void }
+
+DataTableSelection<T>: { keys?: string[], rows?: T[], allMatching?: boolean,
+                         filter: string, count: number }
+DataTableBulkAction<T>: { label: string, danger?: boolean,
+                          disabled?: (s: DataTableSelection<T>) => boolean }
+                        & ( { onSelect: (s: DataTableSelection<T>) => void }
+                          | { action: ActionLike, params?: (s: DataTableSelection<T>) => unknown } )
 
 // what a paged action is called with, and what it must answer
 PageRequest: { filter: string, sort?: { key: string, dir: "asc"|"desc" },
@@ -682,16 +1010,26 @@ PageReply<T>: { rows: T[], total: number }
 DataTableColumn<T>: { key: string, header: ReactNode, sortable?: boolean,
                       render?: (row: T) => ReactNode,
                       value?: (row: T) => string | number | null | undefined,
-                      align?: "left"|"right"|"center", className?: string }
+                      align?: "left"|"right"|"center", className?: string,
+                      noExport?: boolean }
 
 DataTableRowAction<T>: { label: string, danger?: boolean, disabled?: (row: T) => boolean }
                        & ( { onSelect: (row: T) => void }
                          | { action: ActionLike, params: (row: T) => unknown } )
 
-Chart:      { kind: "bar"|"line"|"pie", data: { label: string; value: number }[],
+Chart:      { kind: "bar"|"line"|"area"|"pie",
+              data?: ChartDatum[],        // one series, the short way
+              series?: ChartSeries[],     // several; wins when both are given
+              xKind?: "category"|"time",  // default: "time" when every x parses as a date
+              legend?: boolean,           // default: on for a pie and for >1 series
+              stacked?: boolean,          // bar only
               title?: string, description?: string, height?: number /* default 220 */,
-              formatValue?: (v: number) => string, emptyState?: ReactNode,
-              source?: DataTableSource }
+              formatValue?: (v: number) => string, formatX?: (x: string | number) => string,
+              emptyState?: ReactNode, source?: DataTableSource }
+
+ChartDatum:  { label: string, value: number }
+ChartPoint:  { x: string | number /* a name, or a date: "2026-04", "2026-04-17" */, y: number }
+ChartSeries: { name: string, points: ChartPoint[], color?: string }
 Kanban:       { onMove?: (m: { key: string; from: string; to: string }) => void,
                 action?: ActionLike, children?: ReactNode }
 KanbanColumn: { id: string, title: ReactNode, meta?: ReactNode, emptyState?: ReactNode,
@@ -702,6 +1040,25 @@ Calendar:   { month?: string /* "yyyy-mm" */, defaultMonth?: string,
               events?: { date: string /* "yyyy-mm-dd" */; label: ReactNode }[],
               selected?: string, onSelect?: (date: string, events: CalendarEvent[]) => void,
               weekStartsOn?: "monday"|"sunday" /* default "monday" */, maxPerDay?: number }
+Timeline:     { children?: ReactNode }
+TimelineItem: { title: ReactNode, at?: ReactNode /* ISO reads as a date */, body?: ReactNode,
+                status?: "ok"|"warn"|"error"|"pending" /* default "pending" */,
+                by?: ReactNode /* usually an Avatar */, children?: ReactNode }
+Avatar:       { name?: string, src?: string, size?: "xs"|"sm"|"md"|"lg" /* default "md" */,
+                fallback?: ReactNode }
+AvatarGroup:  { max?: number /* default 4 */, size?: "xs"|"sm"|"md"|"lg", children?: ReactNode }
+Thread:       { messages: ThreadMessage[], onSend?: (text: string) => void,
+                action?: ActionLike, params?: (text: string) => unknown,
+                placeholder?: string, busy?: boolean, emptyState?: ReactNode,
+                height?: number /* default 360 */, readOnly?: boolean, sendLabel?: string }
+Message:      { message: ThreadMessage }
+Composer:     { onSend?: (text: string) => void, action?: ActionLike,
+                params?: (text: string) => unknown, placeholder?: string,
+                busy?: boolean, disabled?: boolean, sendLabel?: string }
+
+ThreadMessage: { body: string /* markdown */, id?: string, author?: string, avatarUrl?: string,
+                 at?: string, own?: boolean, streaming?: boolean }
+
 Markdown:   { children?: string, streaming?: boolean }
 JsonView:   { value: unknown, maxDepth?: number /* default 2 */, copyable?: boolean,
               emptyState?: ReactNode, label?: string }
@@ -716,6 +1073,11 @@ Form:        { action?: ActionLike, schema?: ContractSchema, values?: FormValues
                disabled?: boolean, children?: ReactNode }
 Field:       { name: string, label: ReactNode, help?: ReactNode, required?: boolean,
                error?: ReactNode, children?: ReactNode }   // it is `help`, NOT `hint`
+FieldArray:  { name: string, label?: ReactNode, help?: ReactNode,
+               newItem?: () => FormValues /* default {} */, addLabel?: string,
+               min?: number, max?: number, reorder?: boolean /* default true */,
+               emptyText?: ReactNode,
+               children: (item: FormValues, index: number) => ReactNode }  // writes an ARRAY
 TextInput:   { value?: string, onChange?: (v: string) => void,
                type?: "text"|"email"|"password"|"url"|"tel"|"search" }
 NumberInput: { value?: number, onChange?: (v: number | undefined) => void }   // writes a NUMBER
@@ -726,6 +1088,26 @@ Checkbox:    { checked?: boolean, onChange?: (checked: boolean) => void, label?:
 RadioGroup:  { options: SelectOption[], value?: string, onChange?: (v: string) => void,
                name?: string, disabled?: boolean }
 DatePicker:  { value?: string /* ISO "yyyy-mm-dd" */, onChange?: (v: string) => void }
+TimePicker:  { value?: string /* 24-hour "hh:mm" */, onChange?: (v: string) => void }
+DateRangePicker: { value?: DateRange, onChange?: (r: DateRange) => void,
+               presets?: boolean | DateRangePreset[] /* default true */,
+               min?: string, max?: string, fromLabel?: ReactNode, toLabel?: ReactNode }
+Combobox:    { options?: SelectOption[], loadOptions?: (q: string) => Promise<SelectOption[]>,
+               value?: string | string[], onChange?: (v: string | string[]) => void,
+               multiple?: boolean, searchable?: boolean /* default true */,
+               placeholder?: string, emptyText?: string }   // multiple writes an ARRAY
+Switch:      { checked?: boolean, onChange?: (checked: boolean) => void,
+               label?: ReactNode, description?: ReactNode }
+TagInput:    { value?: string[], onChange?: (v: string[]) => void, placeholder?: string,
+               unique?: boolean /* default true */, max?: number }   // writes an ARRAY
+Slider:      { value?: number, onChange?: (v: number) => void,
+               min?: number /* default 0 */, max?: number /* default 100 */, step?: number,
+               showValue?: boolean /* default true */, formatValue?: (v: number) => ReactNode,
+               minLabel?: ReactNode, maxLabel?: ReactNode }   // writes a NUMBER
+Rating:      { value?: number, onChange?: (v: number) => void,
+               max?: number /* default 5 */, min?: number /* default 1; 0 for NPS */,
+               variant?: "star"|"scale" /* default "star" */, readOnly?: boolean,
+               label?: string, describeValue?: (v: number) => string }
 JsonInput:   { value?: Record<string, unknown>,
                onChange?: (v: Record<string, unknown> | undefined) => void,
                formatOnBlur?: boolean /* default true */, invalidMessage?: string,
@@ -736,6 +1118,8 @@ FileUpload:  { action?: ActionLike, params?: Record<string, unknown> | (() => Re
                isPublic?: boolean, disabled?: boolean }
 
 SelectOption:  { value: string, label: ReactNode, disabled?: boolean }
+DateRange:     { from: string /* ISO "yyyy-mm-dd" */, to: string }
+DateRangePreset: { label: string, range: () => DateRange }
 useFormValues(): FormValues            // the current bag, inside a Form
 ```
 

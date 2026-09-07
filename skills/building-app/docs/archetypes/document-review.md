@@ -8,6 +8,9 @@ A DOCUMENT goes in, the ROBOT reads it, a PERSON checks and fixes the result: "u
 
 - **inbox** (`/`): a `FileUpload` drop zone on top, a `DataTable` of processed documents below fed by `source={{ action: listDocuments }}`, with a `StatusBadge` (`pending` while extracting, `warn` when ready to check, `ok` when confirmed). Uploading immediately calls the extract action; show `Progress` fed by the action's progress while the robot reads.
 - **review** (`/review`): the extracted fields as an editable `Form` (`Field` per extracted value, low-confidence ones visually flagged) next to the document's name, and one primary Confirm `Button` that calls the save action with the corrected values.
+  - **The three moments are a `Stepper`**: upload, being read, check and confirm. This archetype's whole shape is a job with stages, and drawing them is what tells somebody halfway through where they are and what is still to come. Drive it from the screen's own state with `controls={false}`; the Confirm `Button` lives in the last `<Step>` (a `Stepper` runs no action of its own).
+  - **What happened to this document is a `Timeline`**: uploaded, read, "the date was hard to read", confirmed. The table answers "which one" and this answers "what happened next", which is the question in front of somebody deciding whether to trust what was read. `status` on each entry colours the dot the same amber the rest of the app uses for a warning.
+  - A document whose lines were extracted (an invoice's items, a delivery note's rows) gets a `FieldArray`, so the person can fix a line the robot mis-read, add one it missed and remove one it invented.
 
 Sample data: a `SAMPLE_DOCUMENTS` const with a few rows in mixed statuses, so both screens render before any backend exists.
 
@@ -15,6 +18,7 @@ Sample data: a `SAMPLE_DOCUMENTS` const with a few rows in mixed statuses, so bo
 
 - Extract is THE long action: `progress: true` (the robot narrates "reading page 2 of 5"), `cancellable: true` (people re-upload the wrong file constantly), a generous timeout, and `queue`/1 because one extraction engine or browser does the reading. The file travels as a `FileRef`; the flow fetches the bytes with `App Get File`.
 - Save is a quick second action that writes the human-corrected fields to the system of record and flips the document's status.
+- The flow records each thing that happens to a document as it happens (received, read, flagged, confirmed) and hands the list back with the document, so the review screen's `Timeline` shows what really happened rather than three moments the browser guessed.
 - The documents and how far along each one is live in a database the flow owns (`Robomotion.SQLite` unless they belong in a system of record); the robot writes each one's state as it works. `listDocuments` hands the inbox one page at a time, and `documentReady` is what makes an inbox nobody is touching ask again.
 
 ## `app.json` fragment
