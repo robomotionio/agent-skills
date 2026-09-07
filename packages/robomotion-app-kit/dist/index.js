@@ -1,8 +1,7 @@
 import {
   Xa,
   clsx
-} from "./chunk-VYJ4JBQ5.js";
-import "./chunk-G3PMV62Z.js";
+} from "./chunk-MAGV6XDF.js";
 
 // node_modules/tailwind-merge/dist/bundle-mjs.mjs
 var CLASS_PART_SEPARATOR = "-";
