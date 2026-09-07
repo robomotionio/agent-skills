@@ -74,11 +74,11 @@ interface ActionDataSource {
     pageSize?: number;
 }
 /** An identity tag for rows the screen already holds. */
-interface RecordsDataSource {
+interface NamedDataSource {
+    /** The action the rows came from. */
     name: string;
-    records?: unknown;
 }
-type AnyDataSource = ActionDataSource | RecordsDataSource;
+type AnyDataSource = ActionDataSource | NamedDataSource;
 /** What a paged action is called with. */
 interface PageRequest {
     /** The text in the filter box, "" when empty. */
@@ -343,9 +343,9 @@ interface DataTableRowLinkedAction<T> extends DataTableRowActionBase<T> {
 type DataTableRowAction<T> = DataTableRowCallbackAction<T> | DataTableRowLinkedAction<T>;
 /**
  * Where the rows come from. Either an identity tag for rows the screen
- * already holds - the useCollection() or useAction() result itself, for rows
- * that were sorted or mapped into a new array and lost their tag - or an
- * action the table calls for one page at a time.
+ * already holds - the useAction() result itself, for rows that were sorted or
+ * mapped into a new array and lost their tag - or an action the table calls
+ * for one page at a time.
  */
 type DataTableSource = AnyDataSource;
 /** What `tableRef` hands back, for a screen that must re-ask by hand. */
@@ -355,7 +355,12 @@ interface DataTableApi {
 }
 interface DataTableProps<T> {
     columns: DataTableColumn<T>[];
-    /** The rows to show. Omit when `source` is a paged action: the table fetches them. */
+    /**
+     * The rows to show. With a paged `source` the table fetches its own, and
+     * these are what it shows until the first answer arrives - which is how a
+     * screen keeps its sample rows visible before the backend exists, without
+     * a mode flag that unwires the action.
+     */
     rows?: T[];
     /** Stable row identity; falls back to the row index. */
     rowKey?: (row: T) => string;
@@ -768,4 +773,4 @@ interface AssistantWidgetProps {
 }
 declare function AssistantWidget({ title, placeholder, className }: AssistantWidgetProps): react.JSX.Element | null;
 
-export { type ActionDataSource, type ActionLike, type AnyDataSource, AppShell, type AppShellNavItem, type AppShellProps, type AppTheme, AssistantWidget, type AssistantWidgetProps, Button, type ButtonProps, Calendar, type CalendarEvent, type CalendarProps, Card, CardBody, CardFooter, CardHeader, type CardHeaderProps, type CardProps, Chart, type ChartDatum, type ChartProps, Checkbox, type CheckboxProps, ConfirmDialog, type ConfirmDialogProps, ConnectionBanner, type ConnectionBannerProps, DEFAULT_ACCENT, DataTable, type DataTableApi, type DataTableColumn, type DataTableProps, type DataTableRowAction, type DataTableRowCallbackAction, type DataTableRowLinkedAction, type DataTableSource, DatePicker, type DatePickerProps, Dialog, type DialogProps, Drawer, type DrawerProps, EmptyState, type EmptyStateProps, ErrorState, type ErrorStateProps, Field, type FieldProps, FileUpload, type FileUploadProps, Form, type FormProps, type FormValues, Grid, type GridProps, JsonInput, type JsonInputProps, JsonView, type JsonViewProps, Kanban, KanbanCard, type KanbanCardProps, KanbanColumn, type KanbanColumnProps, type KanbanMove, type KanbanProps, Markdown, type MarkdownProps, Menu, MenuItem, type MenuItemDef, type MenuItemProps, type MenuProps, NumberInput, type NumberInputProps, type PageReply, type PageRequest, type ParamsOf, Progress, type ProgressProps, RadioGroup, type RadioGroupProps, type RecordsDataSource, Row, type RowProps, Screen, type ScreenProps, Select, type SelectOption, type SelectProps, Skeleton, type SkeletonProps, Spinner, Stack, type StackProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, Tab, TabPanel, type TabPanelProps, type TabProps, Tabs, type TabsProps, TextArea, type TextAreaProps, TextInput, type TextInputProps, Toast, type ToastOptions, type ToastProps, Tooltip, type TooltipProps, type UseToastResult, accentStyle, applyTheme, cn, dismissToast, focusRing, inputBase, toast, useFormValues, useThemeBridge, useToast };
+export { type ActionDataSource, type ActionLike, type AnyDataSource, AppShell, type AppShellNavItem, type AppShellProps, type AppTheme, AssistantWidget, type AssistantWidgetProps, Button, type ButtonProps, Calendar, type CalendarEvent, type CalendarProps, Card, CardBody, CardFooter, CardHeader, type CardHeaderProps, type CardProps, Chart, type ChartDatum, type ChartProps, Checkbox, type CheckboxProps, ConfirmDialog, type ConfirmDialogProps, ConnectionBanner, type ConnectionBannerProps, DEFAULT_ACCENT, DataTable, type DataTableApi, type DataTableColumn, type DataTableProps, type DataTableRowAction, type DataTableRowCallbackAction, type DataTableRowLinkedAction, type DataTableSource, DatePicker, type DatePickerProps, Dialog, type DialogProps, Drawer, type DrawerProps, EmptyState, type EmptyStateProps, ErrorState, type ErrorStateProps, Field, type FieldProps, FileUpload, type FileUploadProps, Form, type FormProps, type FormValues, Grid, type GridProps, JsonInput, type JsonInputProps, JsonView, type JsonViewProps, Kanban, KanbanCard, type KanbanCardProps, KanbanColumn, type KanbanColumnProps, type KanbanMove, type KanbanProps, Markdown, type MarkdownProps, Menu, MenuItem, type MenuItemDef, type MenuItemProps, type MenuProps, type NamedDataSource, NumberInput, type NumberInputProps, type PageReply, type PageRequest, type ParamsOf, Progress, type ProgressProps, RadioGroup, type RadioGroupProps, Row, type RowProps, Screen, type ScreenProps, Select, type SelectOption, type SelectProps, Skeleton, type SkeletonProps, Spinner, Stack, type StackProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, Tab, TabPanel, type TabPanelProps, type TabProps, Tabs, type TabsProps, TextArea, type TextAreaProps, TextInput, type TextInputProps, Toast, type ToastOptions, type ToastProps, Tooltip, type TooltipProps, type UseToastResult, accentStyle, applyTheme, cn, dismissToast, focusRing, inputBase, toast, useFormValues, useThemeBridge, useToast };

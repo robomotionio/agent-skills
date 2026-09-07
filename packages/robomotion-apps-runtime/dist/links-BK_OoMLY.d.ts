@@ -1,62 +1,4 @@
-import { d as CollectionOp, l as FileUploadOptions, F as FileRef, e as ConnectionState, V as Viewer, k as CreateAppOptions, C as CallOptions, c as AppErrorCode } from './types-yhl7P3Mb.js';
-
-/**
- * A live view over one server-side collection (sdk.md "Collections",
- * protocol.md sections 4.2 and 8).
- *
- * The robot numbers every change with a per-collection `seq`. A snapshot
- * carries the seq it represents; a delta must be exactly lastSeq + 1 to be
- * applied. Anything at or below lastSeq is a duplicate and is dropped;
- * anything above lastSeq + 1 means we missed a delta and must ask again
- * from lastSeq (the robot answers with the missing deltas, or a fresh
- * snapshot when the gap exceeds its retained window).
- *
- * Record identity is the `key` carried on every op (and derived from the
- * contract's key field for snapshot records). We keep a `keys` array in
- * lockstep with `records` so deletes reindex in O(n).
- */
-declare class Collection<T = unknown> {
-    readonly name: string;
-    /** The current record array. Treat as read-only. */
-    records: T[];
-    /** True until the first snapshot lands. */
-    loading: boolean;
-    /** Highest seq applied so far; 0 before the first snapshot. */
-    lastSeq: number;
-    /** Wire subscription bookkeeping, driven by the client. */
-    desired: number;
-    wireSubscribed: boolean;
-    private keys;
-    private index;
-    private changeCbs;
-    private readonly requestSubscribe;
-    private readonly requestUnsubscribe;
-    constructor(name: string, requestSubscribe: (col: Collection<T>, sinceSeq: number) => void, requestUnsubscribe: (col: Collection<T>) => void);
-    /**
-     * Stamp the array and every record with the collection's identity, so a
-     * table fed these objects (or a filtered subset of them) can say which
-     * collection it shows without the author writing anything.
-     */
-    private tagRecords;
-    /**
-     * Declare interest. Returns an unsubscribe function; the wire subscription
-     * is reference counted, so several screens can share one collection.
-     */
-    subscribe(): () => void;
-    /** Drop every subscription and tell the robot to stop sending. */
-    unsubscribe(): void;
-    /** Fires after every applied snapshot or delta. Returns an off function. */
-    onChange(cb: () => void): () => void;
-    applySnapshot(seq: number, records: T[], keyOf: (r: T) => string): void;
-    /**
-     * Apply one data_change. Returns:
-     *  - "applied": in-order, records updated
-     *  - "stale":   duplicate (seq <= lastSeq), dropped
-     *  - "gap":     out of order (seq > lastSeq + 1), caller must resubscribe
-     */
-    applyChange(seq: number, ops: CollectionOp<T>[]): "applied" | "stale" | "gap";
-    private emit;
-}
+import { j as FileUploadOptions, F as FileRef, d as ConnectionState, V as Viewer, i as CreateAppOptions, C as CallOptions, c as AppErrorCode } from './types-DcK_8fGj.js';
 
 /**
  * File transfer over the existing /v1/artifacts.* REST endpoints
@@ -214,7 +156,6 @@ declare class AppClient {
     private pending;
     private assistantTurns;
     private eventHandlers;
-    private collections;
     constructor(options: CreateAppOptions);
     /**
      * What this page SAYS about who it is for: an explicit option, else the
@@ -331,8 +272,6 @@ declare class AppClient {
     private settle;
     /** Subscribe to a server event by name. Returns an off function. */
     on(event: string, handler: (payload: unknown) => void): () => void;
-    /** Get (or create) the shared handle for one collection. */
-    collection<T = unknown>(name: string): Collection<T>;
 }
 /**
  * Create, connect and return an AppClient (sdk.md "Creating a client").
@@ -365,7 +304,7 @@ declare function isAppError(e: unknown): e is AppError;
 type LinkMode = "off" | "hover" | "all";
 type LinkState = "linked" | "running" | "ok" | "failed" | "missing";
 type LinkKind = "declared" | "inferred" | "screen" | "hook";
-type LinkNamespace = "action" | "collection" | "event";
+type LinkNamespace = "action" | "event";
 /** What the host knows about one link key. */
 interface LinkHandler {
     title: string;
@@ -382,7 +321,6 @@ interface LinkSite {
     /** Present when repeated controls collapsed into this one entry. */
     count?: number;
     action?: string;
-    collection?: string;
     event?: string;
 }
 interface LinksHandle {
@@ -399,8 +337,6 @@ declare function splitLinkKey(key: string): {
     ns: LinkNamespace;
     name: string;
 };
-/** Tag a records array, or one record, as belonging to a collection. */
-declare function tagCollection(value: unknown, name: string): void;
 /** Tag an action's result, progress or error object with its action. */
 declare function tagAction(value: unknown, name: string): void;
 /** The link key an object was tagged with, if any. */
@@ -413,10 +349,6 @@ type Named = string | {
 /** Spread on any element to declare "this runs action X". */
 declare function bindAction(action: Named): {
     "data-rm-action": string;
-};
-/** Spread on any element to declare "this shows collection X". */
-declare function bindCollection(collection: Named): {
-    "data-rm-collection": string;
 };
 /** The link key of whatever caused the current code to run, if recent. */
 declare function currentCause(): {
@@ -436,4 +368,4 @@ declare function markGesture(el: Element | null | undefined): void;
  */
 declare function installLinks(options?: InstallLinksOptions): LinksHandle;
 
-export { AppClient as A, Collection as C, FilesApi as F, type InstallLinksOptions as I, type LinkHandler as L, ViewerInfo as V, AppError as a, type ArtifactAddress as b, type AssistantTurnHandle as c, type AssistantTurnHandlers as d, ConnectionInfo as e, type LinkKind as f, type LinkMode as g, type LinkNamespace as h, type LinkSite as i, type LinkState as j, type LinksHandle as k, bindAction as l, bindCollection as m, createApp as n, currentCause as o, decodeArtifactId as p, encodeArtifactId as q, installLinks as r, isAppError as s, linkKey as t, lookupTag as u, markGesture as v, splitLinkKey as w, tagAction as x, tagCollection as y };
+export { AppClient as A, ConnectionInfo as C, FilesApi as F, type InstallLinksOptions as I, type LinkHandler as L, ViewerInfo as V, AppError as a, type ArtifactAddress as b, type AssistantTurnHandle as c, type AssistantTurnHandlers as d, type LinkKind as e, type LinkMode as f, type LinkNamespace as g, type LinkSite as h, type LinkState as i, type LinksHandle as j, bindAction as k, createApp as l, currentCause as m, decodeArtifactId as n, encodeArtifactId as o, installLinks as p, isAppError as q, linkKey as r, lookupTag as s, markGesture as t, splitLinkKey as u, tagAction as v };

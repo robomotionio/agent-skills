@@ -259,7 +259,6 @@ function noteHookUse(key, delta) {
 }
 var OVERLAY_ATTR2 = "data-rm-links";
 var ATTR_ACTION = "data-rm-action";
-var ATTR_COLLECTION = "data-rm-collection";
 var ATTR_EVENT = "data-rm-event";
 var ATTR_INFERRED = "data-rm-action-inferred";
 var ATTR_DROPZONE = "data-rm-dropzone";
@@ -280,7 +279,7 @@ var COLORS = {
   missing: "#f59e0b"
 };
 var SITE_SELECTOR = `button,a,[role="button"],label,form,[${ATTR_DROPZONE}],[${ATTR_ACTION}]`;
-var DECLARED_SELECTOR = `[${ATTR_ACTION}],[${ATTR_COLLECTION}],[${ATTR_EVENT}],[${ATTR_INFERRED}]`;
+var DECLARED_SELECTOR = `[${ATTR_ACTION}],[${ATTR_EVENT}],[${ATTR_INFERRED}]`;
 function linkKey(ns, name) {
   return `${ns}:${name}`;
 }
@@ -289,7 +288,7 @@ function splitLinkKey(key) {
   if (at < 0) return { ns: "action", name: key };
   const ns = key.slice(0, at);
   const name = key.slice(at + 1);
-  if (ns === "collection" || ns === "event") return { ns, name };
+  if (ns === "event") return { ns, name };
   return { ns: "action", name };
 }
 function describeKey(key) {
@@ -299,9 +298,6 @@ function describeKey(key) {
 var tags = /* @__PURE__ */ new WeakMap();
 function taggable(value) {
   return typeof value === "object" && value !== null || typeof value === "function";
-}
-function tagCollection(value, name) {
-  if (taggable(value)) tags.set(value, linkKey("collection", name));
 }
 function tagAction(value, name) {
   if (taggable(value)) tags.set(value, linkKey("action", name));
@@ -316,9 +312,6 @@ function nameOf(v) {
 }
 function bindAction(action) {
   return { "data-rm-action": nameOf(action) };
-}
-function bindCollection(collection) {
-  return { "data-rm-collection": nameOf(collection) };
 }
 var cause = null;
 function setCause(key) {
@@ -550,7 +543,6 @@ function installLinks(options = {}) {
       const declared = /* @__PURE__ */ new Set();
       const pairs = [
         [ATTR_ACTION, "action"],
-        [ATTR_COLLECTION, "collection"],
         [ATTR_EVENT, "event"]
       ];
       for (const [attr, ns] of pairs) {
@@ -778,8 +770,6 @@ function installLinks(options = {}) {
   };
   const glyph = (ns) => {
     switch (ns) {
-      case "collection":
-        return `<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1" y="1.5" width="8" height="7" rx="1"/><path d="M1 4.5h8M4 4.5v4"/></svg>`;
       case "event":
         return `<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 3.5v3M4 2v6M6 3v4M8 3.8v2.4"/></svg>`;
       default:
@@ -1087,7 +1077,7 @@ function installLinks(options = {}) {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: [ATTR_ACTION, ATTR_COLLECTION, ATTR_EVENT, ATTR_INFERRED]
+      attributeFilter: [ATTR_ACTION, ATTR_EVENT, ATTR_INFERRED]
     });
   };
   const gestureTypes = ["pointerdown", "click", "keydown", "submit", "change", "drop"];
@@ -1146,14 +1136,12 @@ export {
   noteHookUse,
   linkKey,
   splitLinkKey,
-  tagCollection,
   tagAction,
   lookupTag,
   bindAction,
-  bindCollection,
   setCause,
   currentCause,
   markGesture,
   installLinks
 };
-//# sourceMappingURL=chunk-DWK5FP3E.js.map
+//# sourceMappingURL=chunk-NQW7S5BP.js.map

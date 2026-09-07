@@ -41,6 +41,14 @@ contract, the part an agent reads before it touches a tool.
 - **Presentation only.** No params, no result schemas, no types. `app.json` owns the contract
   and typegen; `mcp.json` changes nothing on the wire and nothing in the contract hash.
   A tool named here that `app.json` does not declare is ignored.
+- **Every action is a tool, both halves of it.** The tool's name is the action's name, its
+  `inputSchema` is the action's `params` and its `outputSchema` is the action's `result`,
+  with `#/types/` references inlined so a client can actually read them. An action is the
+  only way into an app, so this is the whole surface: reads and writes go through the same
+  door. Write `result` properly even when only a screen reads it - a result left vague is a
+  tool an agent has to call to find out what it does, which is not what you want on an
+  action that writes. A result that genuinely has no fixed shape stays open and is simply
+  not advertised.
 - **`instructions` is the soul.** One paragraph: what the app is for, who uses it, the
   house rules an agent must keep (what needs confirmation, what it must never do). Write
   it as if briefing a new colleague.

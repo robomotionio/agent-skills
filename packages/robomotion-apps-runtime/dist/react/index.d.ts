@@ -1,8 +1,8 @@
 import * as react from 'react';
 import { ReactNode } from 'react';
-import { A as AppClient, a as AppError } from '../links-oeEh2xts.js';
-export { l as bindAction, m as bindCollection, v as markGesture } from '../links-oeEh2xts.js';
-import { b as ActionProgress, e as ConnectionState, l as FileUploadOptions, F as FileRef, V as Viewer } from '../types-yhl7P3Mb.js';
+import { A as AppClient, a as AppError } from '../links-BK_OoMLY.js';
+export { k as bindAction, t as markGesture } from '../links-BK_OoMLY.js';
+import { b as ActionProgress, d as ConnectionState, j as FileUploadOptions, F as FileRef, V as Viewer } from '../types-DcK_8fGj.js';
 
 interface AppProviderProps {
     app: AppClient;
@@ -50,15 +50,6 @@ declare function useAction<TParams = unknown, TData = unknown>(name: string): Us
  * acts.
  */
 declare function shouldRetryOnReconnect(error: AppError | undefined, state: ConnectionState): boolean;
-interface UseCollectionResult<T = unknown> {
-    records: T[];
-    loading: boolean;
-    error: AppError | undefined;
-    /** The collection name, so bindCollection can stamp the link. */
-    name: string;
-}
-/** Subscribe to a collection for the component's lifetime. */
-declare function useCollection<T = unknown>(name: string): UseCollectionResult<T>;
 /** Subscribe to a server event for the component's lifetime. */
 declare function useEvent<T = unknown>(name: string, cb: (payload: T) => void): void;
 interface UseConnectionResult {
@@ -107,4 +98,4 @@ interface UseAssistantResult {
  */
 declare function useAssistant(): UseAssistantResult;
 
-export { AppProvider, type AppProviderProps, type AssistantMessage, type UseActionResult, type UseAssistantResult, type UseCollectionResult, type UseConnectionResult, type UseFileUploadResult, shouldRetryOnReconnect, useAction, useAppClient, useAssistant, useCollection, useConnection, useEvent, useFileUpload, useMaybeAppClient, useViewer };
+export { AppProvider, type AppProviderProps, type AssistantMessage, type UseActionResult, type UseAssistantResult, type UseConnectionResult, type UseFileUploadResult, shouldRetryOnReconnect, useAction, useAppClient, useAssistant, useConnection, useEvent, useFileUpload, useMaybeAppClient, useViewer };

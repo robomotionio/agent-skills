@@ -15,9 +15,10 @@ Sample data: a `SAMPLE_METRICS` and `SAMPLE_RECENT` const per screen with realis
 
 ## Backend shape
 
-- Collections carry the state: one for the headline numbers, one for the recent records. The robot refreshes them on its own schedule and via `App Update Data`; screens just subscribe.
-- One action: refresh on demand. It drives one scrape/fetch pipeline, so queue it - two overlapping refreshes fight over the same browser.
-- An event only if a threshold matters ("tell everyone when we sell out"). Refreshing alone needs no event: the collection delta already updates every screen.
+- The numbers live in a database the flow owns - `Robomotion.SQLite` by default, or the system the robot fetched them from when that can be asked again cheaply. The robot writes them there as it collects them.
+- One read action, `getOverview`, hands the screen everything on it: the numbers, the chart series and the last few records. A wall screen shows a small fixed amount, so it can hold those rows itself; a list people scroll and search is a paged action instead (`DataTable`'s `source`).
+- One action for refresh on demand. It drives one scrape/fetch pipeline, so queue it - two overlapping refreshes fight over the same browser.
+- An event when a threshold matters ("tell everyone when we sell out"), and when one person's Refresh should reach a screen nobody is standing at: a table only asks again when something on its own screen makes it, so a wall display would otherwise sit on this morning's numbers.
 
 ## `app.json` fragment
 
@@ -45,6 +46,19 @@ Sample data: a `SAMPLE_METRICS` and `SAMPLE_RECENT` const per screen with realis
     }
   },
   "actions": {
+    "getOverview": {
+      "description": "See the headline numbers, the trend and the latest orders.",
+      "params": { "type": "object", "properties": {} },
+      "result": {
+        "type": "object",
+        "properties": {
+          "metrics": { "type": "array", "items": { "$ref": "#/types/Metric" } },
+          "recent":  { "type": "array", "items": { "$ref": "#/types/Order" } },
+          "refreshed_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "timeout_ms": 30000
+    },
     "refreshNow": {
       "description": "Fetch the latest numbers right now instead of waiting for the next update.",
       "params": { "type": "object", "properties": {} },
@@ -68,21 +82,6 @@ Sample data: a `SAMPLE_METRICS` and `SAMPLE_RECENT` const per screen with realis
         }
       },
       "audience": "broadcast"
-    }
-  },
-  "collections": {
-    "metrics": {
-      "description": "The headline numbers shown on the overview.",
-      "record": { "$ref": "#/types/Metric" },
-      "key": "name",
-      "scope": "shared"
-    },
-    "recentOrders": {
-      "description": "The most recent orders, newest first.",
-      "record": { "$ref": "#/types/Order" },
-      "key": "id",
-      "scope": "shared",
-      "max_records": 200
     }
   },
   "screens": {
