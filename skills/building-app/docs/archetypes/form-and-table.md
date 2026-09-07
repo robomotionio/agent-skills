@@ -7,6 +7,7 @@ People ENTER records and SEE them accumulate: "submit expenses", "log support re
 ## Screens
 
 - **submit** (`/`): one `Form` built from the action's params - `Field`s with `Select` / `NumberInput` / `TextArea` / `DatePicker`, an optional `FileUpload` for a receipt or attachment, and one primary submit `Button`. On success: `useToast` confirmation and a cleared form.
+  - When the fields are **not fixed** - the person says the shape changes every time, or it varies by category - declare the action's `params` as the open shape (`{ "type": "object" }`) and give the form a `JsonInput` instead of inventing a field list that will be wrong. A form with three known fields and one free-form bag gets three real inputs and one `JsonInput`, not one `JsonInput` for the lot.
 - **records** (`/records`): a `DataTable` of what's been submitted, newest first, `StatusBadge` per row if records have a lifecycle.
 
 Sample data: a `SAMPLE_RECORDS` const of 6-10 rows spanning the categories.

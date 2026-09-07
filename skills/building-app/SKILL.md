@@ -26,15 +26,48 @@ flow/src/generated/actions.gen.ts    ← flow: param/result types per action
 
 Any behavior change starts in `app.json`, then regenerate, then touch screens and flow. Changing `app.json` without regenerating leaves both sides referencing types that no longer exist, so `tsc` fails inside `validate_app` before anything ships. **Drift is a compile error, never a runtime surprise.** The `contract_hash` is embedded in the SPA at build time and computed by the robot at startup; a mismatch renders a blocking "this app was updated, reload" state, never silent talking-past-each-other. Authoring guide: `./docs/contract.md`.
 
+### When the shape is open, say so
+
+Not every payload has fields you can name, and inventing some is worse than
+admitting it. Two spellings are legal in `app.json` and both generate a usable
+type:
+
+| Written as | Means | The screen gets |
+|---|---|---|
+| `"params": { "type": "object" }` | any object | `Record<string, unknown>` |
+| `"result": { "type": "object" }` | any object | `Record<string, unknown>` |
+| `"result": {}` | any value at all | `unknown` |
+
+Reach for one when the payload really is open:
+
+- **A pass-through payload** the screen assembles and the flow hands straight
+  on - to a webhook, a spreadsheet row, another system's API.
+- **A dynamic form**, where the fields are not known when you write the app.
+  The kit's `JsonInput` parses what the person typed and hands the form a real
+  object, so `<Form action={run}>` sends it as the params.
+- **A result the flow decides**: a report, a lookup against a system whose
+  response shape is not yours. The kit's `JsonView` renders it without the
+  screen knowing its shape.
+
+Still write the `description` - it is all the person, the Designer and an MCP
+client have to go on. The call site is unchecked, so `run({ ...payload })`
+compiles; that is the point, and also the cost, so **type what you know, open
+what you don't**. An action with three known fields and one free-form bag
+declares the three and puts the bag in a property; it does not open the whole
+thing. `additionalProperties` is not in the subset and is not needed: the open
+object is exactly `{ "type": "object" }`.
+
 ## Workflow (tuned for time-to-first-pixel)
 
 Narrate progress through `todo_write`, with items phrased in the user's language ("Design the review screen", "Teach the robot to read invoices") - never internal steps ("run typegen", "start dev server").
 
-**The tools, in the order you need them:** `create_app` (once, first) -> `sync_app` -> `save_app` -> `create_app_robot` (only with a yes, see below) -> `start_app_session` -> `validate_app` -> `publish_app`. There is no `push_app` step: the app half of every save is sent to Robomotion when your turn ends, whether or not you ask, so calling it yourself only makes the person wait twice. `list_apps` finds an existing app; `app_dev_server` controls the preview process. Never write app or flow files before `create_app` has returned - there is no working copy to write into until it has.
+**The tools, in the order you need them:** `create_app` (once, first) -> `sync_app` -> `save_app` -> `create_app_robot` (only with a yes, see below) -> `start_app_session` -> `validate_app` -> `publish_app`. There is no `push_app` step: the app half of every save is sent to Robomotion when your turn ends, whether or not you ask, so calling it yourself only makes the person wait twice. `list_apps` finds an existing app; `app_dev_server` controls the preview process. Before the contract, `searching-packages` (step 0c) is what tells you what the robot can already do. Never write app or flow files before `create_app` has returned - there is no working copy to write into until it has.
 
 0. **Create the app first.** Call `create_app` with a short human name and, WHEN YOU ARE ALREADY IN A FLOW, its id as `flowId` - in the Build view you always are, and omitting it binds the app to a different flow than the one on the user's screen. It returns `app_id`, `flow_id` and the local paths, and clones both working copies. Then `sync_app` before you read or write anything. Continuing an existing app instead? `list_apps`, then `sync_app`.
 
 0b. **Clarify - at most 3 questions, total.** Use `ask_user_question` with quick replies, ONE question per turn. Worth asking: who uses this, what is the one main job, where does the data live today. Never ask about technology, hosting, colors, or frameworks. If the request already answers a question, don't ask it.
+
+0c. **Find the backend pieces before you design anything.** For every external system or capability the person named - their CRM, their shared drive, a spreadsheet, a mailbox, a database, a website with no API - use the **`searching-packages`** skill BEFORE you choose an archetype or write a line of `app.json`. The Robomotion library is 229 packages deep and the flow behind an app can reach all of it, so the shape of the app follows what is actually there: which systems have a package, what those packages can do, and what has to be done by driving a browser or a desktop program instead. **A package beats raw HTTP** every time - it carries the authentication, the paging and the error handling you would otherwise write and get wrong. Name what you found in your reply, in the person's words ("I can talk to your Google Sheet directly"), never as a package list. Skipping this is how an app gets built around what you guessed the robot could do rather than what it can.
 1. **Pick an archetype silently**: dashboard / approval-queue / form-and-table / document-review. Match by what the person wants to DO, not the words they used - the chooser table is in `./docs/archetypes/` (one file per archetype). Never say the archetype name to the user; say what you're building: "I'll make you an app with two screens: a queue of waiting invoices, and a page to approve each one."
 2. **Write `app.json`** - read `./docs/contract.md` first. Every `description` line doubles as the Designer's UI copy, so write it for the end user.
 2b. **Clear out the demo the app arrived with.** A new app already renders something, and every file of that demo is written against the seed's contract - it imports types from `src/generated/actions.gen`. Your `app.json` deletes those types, so **any leftover file fails `tsc` inside `validate_app`, including one that nothing imports any more**. Deleting the screens you noticed is not enough. After you have written your own screens, ask the checkout what is still pointing at the contract:
