@@ -256,6 +256,37 @@ return msg;`
 And when a search legitimately finds nothing, say which it was: an empty answer
 from the service and an answer you could not read are the same screen otherwise.
 
+**A not-found is a status code you can name, not "anything but 200".** Some
+services answer a miss with a `404` and a JSON body rather than an empty list,
+so the not-found branch has to read the status - and the moment it does, the
+easy shape is `if (status === 200) { ...rows } else { ...nothing matched }`,
+which quietly tells the person their word, their part number or their postcode
+does not exist every time the call times out, the service is down, or the key
+is wrong. Those are three different sentences and only one of them is theirs
+to fix. Name the codes that mean not-found and let the rest be a failure:
+
+```ts
+func: `var status = msg.httpStatus;
+msg.failed = '';
+if (status === 404) { msg.result = { found: false, message: 'Nothing matched that.' }; return msg; }
+if (status < 200 || status >= 300) {
+  msg.failed = 'The service is not answering just now (' + status + '). Try again in a minute.';
+  return msg;
+}
+// ... 2xx: read the body, and an empty list is ALSO found:false
+return msg;`
+```
+
+Both of those are branches, not throws, by the rule above: `msg.failed` goes to
+a `Core.Flow.Switch` and out through `App Respond Error`, so the person gets a
+sentence and the canvas stays green.
+
+Give the call room, too. `optTimeout` is in seconds and a public service on the
+other side of the world is regularly slower than it looks from here: a timeout
+set to about what the call takes today is a coin flip, and the side it lands on
+is a wrong answer on the person's screen. Sixty seconds costs nothing when the
+answer arrives in two.
+
 **A row that lacks what the person asked for is not a match.** Public indexes
 mix kinds of record - datasets and books beside papers, comments beside
 stories, albums beside songs - and the first rows a search returns are often
