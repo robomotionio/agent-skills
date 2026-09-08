@@ -1,7 +1,7 @@
 ---
 name: building-app
-description: "Builds a Robomotion App - a real React web app plus a robot backend - by conversation with a non-technical person. Owns the full lifecycle: clarify → contract (app.json) → screens with sample data → live preview in ~90s → backend actions → publish. Use when the user wants an app, dashboard, portal, form, approval queue, or any screens people will click."
-triggers: [an app, the app, my app, web app, webapp, a dashboard, dashboard for, approval queue, internal tool, a portal, user interface, a screen where, a page where, a form for, a form where, little app, small app, simple app, /\bapps?\b/, /\bdashboards?\b/, /\bportals?\b/]
+description: "Builds a Robomotion App - a real React web app plus a robot backend - by conversation with a non-technical person. Owns the full lifecycle: clarify → contract (app.json) → screens with sample data → live preview in ~90s → backend actions → publish. Use when the user wants an app, dashboard, portal, form, approval queue, a board of things that move through stages, or any screens people will click."
+triggers: [an app, the app, my app, web app, webapp, a dashboard, dashboard for, approval queue, internal tool, a portal, user interface, a screen where, a page where, a form for, a form where, little app, small app, simple app, /\bapps?\b/, /\bdashboards?\b/, /\bportals?\b/, a pipeline, kanban, a board where, drag and drop, /\bpipelines?\b/]
 ---
 
 # Robomotion App Builder
@@ -68,7 +68,7 @@ Narrate progress through `todo_write`, with items phrased in the user's language
 0b. **Clarify - at most 3 questions, total.** Use `ask_user_question` with quick replies, ONE question per turn. Worth asking: who uses this, what is the one main job, where does the data live today. Never ask about technology, hosting, colors, or frameworks. If the request already answers a question, don't ask it.
 
 0c. **Find the backend pieces before you design anything.** For every external system or capability the person named - their CRM, their shared drive, a spreadsheet, a mailbox, a database, a website with no API - use the **`searching-packages`** skill BEFORE you choose an archetype or write a line of `app.json`. The Robomotion library is 229 packages deep and the flow behind an app can reach all of it, so the shape of the app follows what is actually there: which systems have a package, what those packages can do, and what has to be done by driving a browser or a desktop program instead. **A package beats raw HTTP** every time - it carries the authentication, the paging and the error handling you would otherwise write and get wrong. Name what you found in your reply, in the person's words ("I can talk to your Google Sheet directly"), never as a package list. Skipping this is how an app gets built around what you guessed the robot could do rather than what it can.
-1. **Pick an archetype silently**: dashboard / approval-queue / form-and-table / document-review. Match by what the person wants to DO, not the words they used - the chooser table is in `./docs/archetypes/` (one file per archetype). Never say the archetype name to the user; say what you're building: "I'll make you an app with two screens: a queue of waiting invoices, and a page to approve each one."
+1. **Pick an archetype silently**: dashboard / approval-queue / form-and-table / document-review / board. Match by what the person wants to DO, not the words they used - the chooser table is in `./docs/archetypes/` (one file per archetype). Never say the archetype name to the user; say what you're building: "I'll make you an app with two screens: a queue of waiting invoices, and a page to approve each one."
 2. **Write `app.json`** - read `./docs/contract.md` first. Every `description` line doubles as the Designer's UI copy, so write it for the end user.
 2b. **Clear out the demo the app arrived with.** A new app already renders something, and every file of that demo is written against the seed's contract - it imports types from `src/generated/actions.gen`. Your `app.json` deletes those types, so **any leftover file fails `tsc` inside `validate_app`, including one that nothing imports any more**. Deleting the screens you noticed is not enough. After you have written your own screens, ask the checkout what is still pointing at the contract:
 
@@ -669,6 +669,7 @@ so the app adopts it instead of scaffolding a second one.
 | Approval-queue archetype | `./docs/archetypes/approval-queue.md` |
 | Form-and-table archetype | `./docs/archetypes/form-and-table.md` |
 | Document-review archetype | `./docs/archetypes/document-review.md` |
+| Board archetype (things that move through stages) | `./docs/archetypes/board.md` |
 
 ## Related skills
 

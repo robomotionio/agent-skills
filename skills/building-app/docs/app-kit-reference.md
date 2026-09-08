@@ -569,7 +569,9 @@ const moveCard = useMoveCard();
 </Kanban>
 ```
 
-The action is called with `{ key, from, to }` - which card, which column it left, which one it landed in. That is the whole payload, so the action's params can be declared open.
+The action is called with `{ key, from, to }` - which card, which column it left, which one it landed in. Declare the move action's params as those three names: a board whose action expects `{ id, stage }` passes every check and answers "invalid parameters" on the first drag.
+
+**Never write your own dragging beside this.** `draggable` / `onDragStart` / `onDrop` is HTML5 drag: mouse only, nothing on a touch screen, and no keyboard path at all. This component is the one place an app gets dragging from.
 
 ### `Calendar`
 
