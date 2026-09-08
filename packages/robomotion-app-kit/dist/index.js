@@ -8190,6 +8190,13 @@ function Grid({ className, gap = 4, cols = 1, mdCols, lgCols, ...props }) {
 import { useEffect as useEffect14, useRef as useRef14, useState as useState23 } from "react";
 import { useAssistant, useMaybeAppClient as useMaybeAppClient2 } from "@robomotion/apps-runtime/react";
 import { jsx as jsx43, jsxs as jsxs40 } from "react/jsx-runtime";
+function didLine(tools) {
+  const words = tools.map(
+    (t) => t.replace(/[_-]+/g, " ").replace(/([a-z0-9])([A-Z])/g, "$1 $2").trim().toLowerCase().replace(/^./, (c) => c.toUpperCase())
+  );
+  if (words.length === 1) return `Ran ${words[0]}`;
+  return `Ran ${words.slice(0, -1).join(", ")} and ${words[words.length - 1]}`;
+}
 var STORAGE_OPEN = "rm.app.assistant.open";
 var assistantProse = cn(
   "[&_p]:my-1 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0",
@@ -8276,11 +8283,8 @@ function AssistantWidgetInner({ title, placeholder, className }) {
                   m.role === "user" ? "whitespace-pre-wrap rounded-br-md bg-[color:var(--rm-accent)] text-white" : cn("rounded-bl-md bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100", assistantProse)
                 ),
                 children: [
+                  m.tools && m.tools.length > 0 && /* @__PURE__ */ jsx43("div", { className: "mb-1 text-[11px] opacity-70", children: didLine(m.tools) }),
                   m.role === "user" ? m.text : m.text ? /* @__PURE__ */ jsx43(Xa, { mode: "streaming", isAnimating: !!m.streaming, children: m.text }) : m.streaming ? /* @__PURE__ */ jsx43("span", { className: "animate-pulse", children: "\u2026" }) : null,
-                  m.tools && m.tools.length > 0 && /* @__PURE__ */ jsxs40("div", { className: "mt-1 text-[11px] opacity-70", children: [
-                    "Did: ",
-                    m.tools.join(", ")
-                  ] }),
                   m.error && /* @__PURE__ */ jsx43("div", { className: "mt-1 text-[12px] text-red-600 dark:text-red-400", children: m.error })
                 ]
               }
