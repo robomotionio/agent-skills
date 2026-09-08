@@ -5266,10 +5266,10 @@ function formatAt2(at) {
 // src/components/data-table.tsx
 import {
   useCallback as useCallback3,
-  useEffect as useEffect8,
+  useEffect as useEffect9,
   useMemo as useMemo2,
   useRef as useRef7,
-  useState as useState13
+  useState as useState14
 } from "react";
 
 // src/components/empty-state.tsx
@@ -5312,7 +5312,9 @@ function EmptyState({ icon, title, description, action, className, ...props }) {
 }
 
 // src/components/error-state.tsx
+import { useEffect as useEffect8, useState as useState13 } from "react";
 import { AppError } from "@robomotion/apps-runtime";
+import { useMaybeAppClient as useMaybeAppClient2 } from "@robomotion/apps-runtime/react";
 import { jsx as jsx27, jsxs as jsxs25 } from "react/jsx-runtime";
 function plainMessage(raw) {
   let s = raw.replace(/\r/g, "");
@@ -5352,6 +5354,17 @@ function looksLikeRefusal(error) {
   }
   return /[.!]$/.test(text) && /^[A-Z"']/.test(text);
 }
+function useSaidByTheBanner(error) {
+  const app = useMaybeAppClient2();
+  const [state, setState] = useState13(app?.connection.state);
+  useEffect8(() => {
+    if (!app) return;
+    setState(app.connection.state);
+    return app.connection.onChange(setState);
+  }, [app]);
+  if (state !== "unconfigured") return false;
+  return error instanceof AppError && error.code === "robot_offline";
+}
 function ErrorState({
   error,
   title,
@@ -5360,8 +5373,10 @@ function ErrorState({
   className,
   ...props
 }) {
+  const saidByTheBanner = useSaidByTheBanner(error);
   const retryable = error instanceof AppError ? error.retryable : true;
   const heading = title ?? defaultTitle(error);
+  if (saidByTheBanner) return null;
   return /* @__PURE__ */ jsxs25(
     "div",
     {
@@ -5444,24 +5459,24 @@ function DataTable(props) {
     exportable = false,
     exportFilename = "export.csv"
   } = props;
-  const [filter, setFilter] = useState13("");
-  const [sortKey, setSortKey] = useState13(null);
-  const [sortDir, setSortDir] = useState13("asc");
-  const [page, setPage] = useState13(0);
+  const [filter, setFilter] = useState14("");
+  const [sortKey, setSortKey] = useState14(null);
+  const [sortDir, setSortDir] = useState14("asc");
+  const [page, setPage] = useState14(0);
   const paged = !!source && isActionSource(source);
   const pagedAction = paged ? source.action : null;
   const actionName = pagedAction?.name ?? "";
   const actionRef = useRef7(pagedAction);
   actionRef.current = pagedAction;
   const effPageSize = paged ? source.pageSize ?? pageSize : pageSize;
-  const [remote, setRemote] = useState13(null);
-  const [remoteLoading, setRemoteLoading] = useState13(false);
-  const [remoteError, setRemoteError] = useState13(null);
-  const [reloadTick, setReloadTick] = useState13(0);
+  const [remote, setRemote] = useState14(null);
+  const [remoteLoading, setRemoteLoading] = useState14(false);
+  const [remoteError, setRemoteError] = useState14(null);
+  const [reloadTick, setReloadTick] = useState14(0);
   const seq = useRef7(0);
   const ownFetch = useRef7(false);
-  const [askedFilter, setAskedFilter] = useState13("");
-  useEffect8(() => {
+  const [askedFilter, setAskedFilter] = useState14("");
+  useEffect9(() => {
     if (!paged) return;
     const t = setTimeout(() => setAskedFilter(filter), 250);
     return () => clearTimeout(t);
@@ -5507,12 +5522,12 @@ function DataTable(props) {
       if (mine === seq.current) setRemoteLoading(false);
     }
   }, [askedFilter, sortKey, sortDir, clampedPage, effPageSize]);
-  useEffect8(() => {
+  useEffect9(() => {
     if (!paged || !actionName) return;
     void fetchPage();
   }, [paged, actionName, fetchPage, reloadTick]);
   const wasLoading = useRef7(false);
-  useEffect8(() => {
+  useEffect9(() => {
     if (!paged) {
       wasLoading.current = false;
       return;
@@ -5524,7 +5539,7 @@ function DataTable(props) {
     }
     wasLoading.current = busy2;
   });
-  useEffect8(() => {
+  useEffect9(() => {
     if (!paged) return;
     return onActionDone((name) => {
       if (name && name === actionRef.current?.name) return;
@@ -5564,15 +5579,15 @@ function DataTable(props) {
   }, [paged, filtered, columns, sortKey, sortDir]);
   inMemoryTotal.current = sorted.length;
   const pageRows = paged ? remote?.rows ?? rows : paging ? sorted.slice(clampedPage * effPageSize, clampedPage * effPageSize + effPageSize) : sorted;
-  useEffect8(() => {
+  useEffect9(() => {
     if (page > pageCount - 1) setPage(pageCount - 1);
   }, [page, pageCount]);
   const keyOf = useCallback3(
     (row, index) => rowKey ? rowKey(row) : String(clampedPage * effPageSize + index),
     [rowKey, clampedPage, effPageSize]
   );
-  const [ownKeys, setOwnKeys] = useState13(defaultSelectedKeys ?? []);
-  const [allMatching, setAllMatching] = useState13(false);
+  const [ownKeys, setOwnKeys] = useState14(defaultSelectedKeys ?? []);
+  const [allMatching, setAllMatching] = useState14(false);
   const keys = selectedKeys ?? ownKeys;
   const keySet = useMemo2(() => new Set(keys), [keys]);
   const seen = useRef7(/* @__PURE__ */ new Map());
@@ -5600,12 +5615,12 @@ function DataTable(props) {
     if (selectedKeys === void 0) setOwnKeys([]);
     onSelectionChange?.([], []);
   }, [selectedKeys, onSelectionChange]);
-  useEffect8(() => {
+  useEffect9(() => {
     setAllMatching(false);
   }, [askedFilter, filter]);
   const selectionRef = useRef7(selection);
   selectionRef.current = selection;
-  useEffect8(() => {
+  useEffect9(() => {
     if (!tableRef) return;
     tableRef.current = {
       refresh,
@@ -5656,7 +5671,7 @@ function DataTable(props) {
     a.onSelect(sel);
   };
   const bulkNames = joinNames((bulkActions ?? []).map((a) => isLinkedBulk(a) ? a.action.name : void 0));
-  const [exporting, setExporting] = useState13(false);
+  const [exporting, setExporting] = useState14(false);
   const exportColumns = useMemo2(() => columns.filter((c) => !c.noExport), [columns]);
   const exportCsv = async () => {
     setExporting(true);
@@ -5930,7 +5945,7 @@ function TickBox({
   onChange
 }) {
   const ref = useRef7(null);
-  useEffect8(() => {
+  useEffect9(() => {
     if (ref.current) ref.current.indeterminate = indeterminate && !checked;
   }, [indeterminate, checked]);
   return /* @__PURE__ */ jsx28(
@@ -6050,9 +6065,9 @@ import {
   createContext as createContext4,
   isValidElement as isValidElement4,
   useContext as useContext4,
-  useEffect as useEffect9,
+  useEffect as useEffect10,
   useRef as useRef8,
-  useState as useState14
+  useState as useState15
 } from "react";
 import { jsx as jsx29, jsxs as jsxs27 } from "react/jsx-runtime";
 var KanbanContext = createContext4(null);
@@ -6062,10 +6077,10 @@ function Kanban({ onMove, action, className, children }) {
   for (const c of items2) {
     if (isValidElement4(c) && c.type === KanbanColumn) columns.push(String(c.props.id));
   }
-  const [dragKey, setDragKey] = useState14(null);
-  const [dragFrom, setDragFrom] = useState14(null);
-  const [dragOffset, setDragOffset] = useState14({ x: 0, y: 0 });
-  const [overColumn, setOverColumn] = useState14(null);
+  const [dragKey, setDragKey] = useState15(null);
+  const [dragFrom, setDragFrom] = useState15(null);
+  const [dragOffset, setDragOffset] = useState15({ x: 0, y: 0 });
+  const [overColumn, setOverColumn] = useState15(null);
   const origin = useRef8({ x: 0, y: 0 });
   const latest = useRef8({
     key: "",
@@ -6086,7 +6101,7 @@ function Kanban({ onMove, action, className, children }) {
     setDragOffset({ x: 0, y: 0 });
     setOverColumn(null);
   };
-  useEffect9(() => {
+  useEffect10(() => {
     if (!dragKey) return;
     const onPointerMove = (e) => {
       setDragOffset({ x: e.clientX - origin.current.x, y: e.clientY - origin.current.y });
@@ -6204,7 +6219,7 @@ function columnOf(el) {
 }
 
 // src/components/calendar.tsx
-import { useMemo as useMemo3, useState as useState15 } from "react";
+import { useMemo as useMemo3, useState as useState16 } from "react";
 import { Fragment as Fragment6, jsx as jsx30, jsxs as jsxs28 } from "react/jsx-runtime";
 function iso(y, m, d) {
   return `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
@@ -6226,7 +6241,7 @@ function Calendar({
   className
 }) {
   const today = /* @__PURE__ */ new Date();
-  const [ownMonth, setOwnMonth] = useState15(
+  const [ownMonth, setOwnMonth] = useState16(
     defaultMonth ?? `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`
   );
   const current = month ?? ownMonth;
@@ -6375,7 +6390,7 @@ function NavButton({ label, onClick, dir }) {
 }
 
 // src/components/json-view.tsx
-import { useState as useState16 } from "react";
+import { useState as useState17 } from "react";
 import { jsx as jsx31, jsxs as jsxs29 } from "react/jsx-runtime";
 function isEmpty(value) {
   if (value === void 0 || value === null) return true;
@@ -6391,7 +6406,7 @@ function JsonView({
   label = "Result",
   className
 }) {
-  const [copied, setCopied] = useState16(false);
+  const [copied, setCopied] = useState17(false);
   if (isEmpty(value)) {
     return /* @__PURE__ */ jsx31(
       "div",
@@ -6445,7 +6460,7 @@ function Node({
   maxDepth
 }) {
   const branch = value !== null && typeof value === "object";
-  const [open, setOpen] = useState16(depth < maxDepth);
+  const [open, setOpen] = useState17(depth < maxDepth);
   if (!branch) {
     return /* @__PURE__ */ jsxs29("li", { role: "treeitem", className: "whitespace-pre-wrap break-words", children: [
       name !== null && /* @__PURE__ */ jsx31(Key, { name }),
@@ -6505,11 +6520,11 @@ import {
   createContext as createContext5,
   useCallback as useCallback4,
   useContext as useContext5,
-  useEffect as useEffect10,
+  useEffect as useEffect11,
   useId as useId9,
   useMemo as useMemo4,
   useRef as useRef9,
-  useState as useState17
+  useState as useState18
 } from "react";
 import { Fragment as Fragment7, jsx as jsx32, jsxs as jsxs30 } from "react/jsx-runtime";
 var FormContext = createContext5(null);
@@ -6632,11 +6647,11 @@ function Form({
   className,
   ...props
 }) {
-  const [ownValues, setOwnValues] = useState17(initialValues ?? {});
-  const [errors, setErrors] = useState17({});
+  const [ownValues, setOwnValues] = useState18(initialValues ?? {});
+  const [errors, setErrors] = useState18({});
   const values = controlledValues ?? ownValues;
   const formRef = useRef9(null);
-  useEffect10(() => {
+  useEffect11(() => {
     const form = formRef.current;
     if (!form || !action) return;
     const target = submitControlOf(form) ?? form;
@@ -6829,7 +6844,7 @@ function Select({
   const seed = bound === void 0 ? value !== void 0 && value !== "" ? value : firstEnabled : void 0;
   const current = value ?? bound ?? firstEnabled ?? "";
   const write = c.write;
-  useEffect10(() => {
+  useEffect11(() => {
     if (seed !== void 0) write(seed);
   }, [seed]);
   return /* @__PURE__ */ jsxs30(
@@ -7103,11 +7118,11 @@ function RowButton({
 // src/components/combobox.tsx
 import {
   useCallback as useCallback5,
-  useEffect as useEffect11,
+  useEffect as useEffect12,
   useId as useId10,
   useMemo as useMemo5,
   useRef as useRef10,
-  useState as useState18
+  useState as useState19
 } from "react";
 import { jsx as jsx33, jsxs as jsxs31 } from "react/jsx-runtime";
 function Combobox({
@@ -7131,11 +7146,11 @@ function Combobox({
     () => multiple ? Array.isArray(raw) ? raw : raw ? [String(raw)] : [] : raw ? [String(raw)] : [],
     [multiple, raw]
   );
-  const [open, setOpen] = useState18(false);
-  const [query, setQuery] = useState18("");
-  const [active, setActive] = useState18(0);
-  const [loaded, setLoaded] = useState18([]);
-  const [loading, setLoading] = useState18(false);
+  const [open, setOpen] = useState19(false);
+  const [query, setQuery] = useState19("");
+  const [active, setActive] = useState19(0);
+  const [loaded, setLoaded] = useState19([]);
+  const [loading, setLoading] = useState19(false);
   const openPanel = () => {
     setOpen(true);
     setActive(0);
@@ -7146,7 +7161,7 @@ function Combobox({
   const seq = useRef10(0);
   const loadRef = useRef10(loadOptions);
   loadRef.current = loadOptions;
-  useEffect11(() => {
+  useEffect12(() => {
     if (!open || !loadRef.current) return;
     const mine = ++seq.current;
     setLoading(true);
@@ -7171,7 +7186,7 @@ function Combobox({
     );
   }, [all, query, loadOptions]);
   const enabled = useMemo5(() => shown.filter((o) => !o.disabled), [shown]);
-  useEffect11(() => {
+  useEffect12(() => {
     if (active > enabled.length - 1) setActive(Math.max(0, enabled.length - 1));
   }, [enabled.length, active]);
   const labelFor = useCallback5(
@@ -7195,7 +7210,7 @@ function Combobox({
     setQuery("");
     setOpen(false);
   };
-  useEffect11(() => {
+  useEffect12(() => {
     if (!open) return;
     const onDocClick = (e) => {
       if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
@@ -7573,7 +7588,7 @@ function Switch({
 }
 
 // src/components/tag-input.tsx
-import { useRef as useRef11, useState as useState19 } from "react";
+import { useRef as useRef11, useState as useState20 } from "react";
 import { jsx as jsx36, jsxs as jsxs34 } from "react/jsx-runtime";
 function TagInput({
   value,
@@ -7588,7 +7603,7 @@ function TagInput({
   const c = useControl(id);
   const bound = c.read();
   const tags = value ?? (Array.isArray(bound) ? bound : []);
-  const [draft, setDraft] = useState19("");
+  const [draft, setDraft] = useState20("");
   const inputRef = useRef11(null);
   const off = disabled || c.disabled;
   const commit = (next) => {
@@ -7739,7 +7754,7 @@ function Slider({
 }
 
 // src/components/rating.tsx
-import { useState as useState20 } from "react";
+import { useState as useState21 } from "react";
 import { jsx as jsx38, jsxs as jsxs36 } from "react/jsx-runtime";
 function Rating({
   value,
@@ -7758,7 +7773,7 @@ function Rating({
   const bound = c.read();
   const current = value ?? (typeof bound === "number" && Number.isFinite(bound) ? bound : void 0);
   const off = disabled || c.disabled || readOnly;
-  const [hover, setHover] = useState20(null);
+  const [hover, setHover] = useState21(null);
   const values = [];
   for (let v = min; v <= max; v++) values.push(v);
   const pick = (v) => {
@@ -7844,7 +7859,7 @@ function StarIcon({ filled }) {
 }
 
 // src/components/json-input.tsx
-import { useEffect as useEffect12, useRef as useRef12, useState as useState21 } from "react";
+import { useEffect as useEffect13, useRef as useRef12, useState as useState22 } from "react";
 import { jsx as jsx39, jsxs as jsxs37 } from "react/jsx-runtime";
 function print(value) {
   if (value === void 0 || value === null) return "";
@@ -7868,10 +7883,10 @@ function JsonInput({
 }) {
   const c = useControl(id);
   const bound = value ?? c.read();
-  const [text, setText] = useState21(() => print(bound));
-  const [invalid, setInvalid] = useState21(false);
+  const [text, setText] = useState22(() => print(bound));
+  const [invalid, setInvalid] = useState22(false);
   const ownWrite = useRef12(print(bound));
-  useEffect12(() => {
+  useEffect13(() => {
     const next = print(bound);
     if (next === ownWrite.current) return;
     ownWrite.current = next;
@@ -7937,7 +7952,7 @@ function JsonInput({
 }
 
 // src/components/file-upload.tsx
-import { useEffect as useEffect13, useRef as useRef13, useState as useState22 } from "react";
+import { useEffect as useEffect14, useRef as useRef13, useState as useState23 } from "react";
 import { markGesture } from "@robomotion/apps-runtime";
 import { useFileUpload } from "@robomotion/apps-runtime/react";
 
@@ -8001,11 +8016,11 @@ function FileUpload({
   const { upload, uploading, progress, error } = useFileUpload();
   const inputRef = useRef13(null);
   const zoneRef = useRef13(null);
-  const [dragOver, setDragOver] = useState22(false);
-  const [uploaded, setUploaded] = useState22(null);
+  const [dragOver, setDragOver] = useState23(false);
+  const [uploaded, setUploaded] = useState23(null);
   const onErrorRef = useRef13(onError);
   onErrorRef.current = onError;
-  useEffect13(() => {
+  useEffect14(() => {
     if (error) onErrorRef.current?.(error);
   }, [error]);
   const start = async (file) => {
@@ -8193,8 +8208,8 @@ function Grid({ className, gap = 4, cols = 1, mdCols, lgCols, ...props }) {
 }
 
 // src/components/assistant-widget.tsx
-import { useEffect as useEffect14, useRef as useRef14, useState as useState23 } from "react";
-import { useAssistant, useMaybeAppClient as useMaybeAppClient2 } from "@robomotion/apps-runtime/react";
+import { useEffect as useEffect15, useRef as useRef14, useState as useState24 } from "react";
+import { useAssistant, useMaybeAppClient as useMaybeAppClient3 } from "@robomotion/apps-runtime/react";
 import { jsx as jsx43, jsxs as jsxs40 } from "react/jsx-runtime";
 function didLine(tools) {
   const words = tools.map(
@@ -8215,30 +8230,30 @@ var assistantProse = cn(
   "[&_blockquote]:border-l-2 [&_blockquote]:border-black/10 [&_blockquote]:pl-2 [&_blockquote]:opacity-80 dark:[&_blockquote]:border-white/20"
 );
 function AssistantWidget({ title = "Assistant", placeholder = "Ask the app to do something\u2026", className }) {
-  const app = useMaybeAppClient2();
+  const app = useMaybeAppClient3();
   if (!app) return null;
   return /* @__PURE__ */ jsx43(AssistantWidgetInner, { title, placeholder, className });
 }
 function AssistantWidgetInner({ title, placeholder, className }) {
   const { available, greeting, messages, busy, send } = useAssistant();
-  const [open, setOpen] = useState23(() => {
+  const [open, setOpen] = useState24(() => {
     try {
       return sessionStorage.getItem(STORAGE_OPEN) === "1";
     } catch {
       return false;
     }
   });
-  const [draft, setDraft] = useState23("");
+  const [draft, setDraft] = useState24("");
   const listRef = useRef14(null);
   const inputRef = useRef14(null);
-  useEffect14(() => {
+  useEffect15(() => {
     try {
       sessionStorage.setItem(STORAGE_OPEN, open ? "1" : "0");
     } catch {
     }
     if (open) inputRef.current?.focus();
   }, [open]);
-  useEffect14(() => {
+  useEffect15(() => {
     const el = listRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages]);

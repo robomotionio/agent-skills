@@ -1203,7 +1203,7 @@ interface ErrorStateProps extends Omit<HTMLAttributes<HTMLDivElement>, "title"> 
     retryLabel?: string;
 }
 /** Message plus retry, driven by an AppError (sdk.md). */
-declare function ErrorState({ error, title, onRetry, retryLabel, className, ...props }: ErrorStateProps): react.JSX.Element;
+declare function ErrorState({ error, title, onRetry, retryLabel, className, ...props }: ErrorStateProps): react.JSX.Element | null;
 
 interface ToastOptions {
     title: ReactNode;
