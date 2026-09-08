@@ -5492,6 +5492,12 @@ function DataTable(props) {
     try {
       const reply = await action.run(req);
       if (mine !== seq.current) return;
+      const failure = reply === void 0 ? action.error : void 0;
+      if (failure) {
+        setRemoteError(failure);
+        setRemote({ rows: [], total: 0 });
+        return;
+      }
       setRemote(readPageReply(reply, req));
     } catch (e) {
       if (mine !== seq.current) return;
