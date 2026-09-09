@@ -87,7 +87,45 @@ function bridgeScript(screens) {
     if (typeof watchForRecovery === "function") watchForRecovery();
   };
   var screens = ${JSON.stringify(screens)};
-  var ready = function () { post("rm-app-ready", { screens: screens, loadId: loadId }); };
+
+  // The first screen actually drawn, as distinct from the page having
+  // loaded. rm-app-ready fires on DOMContentLoaded, which is before the
+  // app's module has run - so a module that fails on import, or a Vite
+  // transform that answers 500, leaves the page "ready" with nothing on it
+  // but the placeholder below. The host covered that gap with the kit's
+  // own "Getting your app ready" line for as long as it took (twenty-ninth
+  // pass, app 3: four minutes). The placeholder is marked, and the app has
+  // drawn when the mount point holds something that is not it.
+  var drawn = false;
+  var hasDrawn = function () {
+    var root = document.getElementById("root");
+    if (!root || root.children.length === 0) return false;
+    for (var i = 0; i < root.children.length; i++) {
+      if (!root.children[i].hasAttribute("data-rm-placeholder")) return true;
+    }
+    return false;
+  };
+  var drawnObserver = null;
+  var announceDrawn = function () {
+    if (drawn) return;
+    drawn = true;
+    if (drawnObserver) { try { drawnObserver.disconnect(); } catch (e) {} drawnObserver = null; }
+    post("rm-app-drawn", { loadId: loadId });
+  };
+  var watchForDrawn = function () {
+    if (hasDrawn()) { announceDrawn(); return; }
+    var root = document.getElementById("root");
+    if (!root || typeof MutationObserver !== "function") return;
+    if (drawnObserver) return;
+    drawnObserver = new MutationObserver(function () { if (hasDrawn()) announceDrawn(); });
+    drawnObserver.observe(root, { childList: true });
+  };
+  // reportsDrawn tells the host a drawn announcement follows; a host framing
+  // an older kit, which never sends one, keeps treating ready as drawn.
+  var ready = function () {
+    post("rm-app-ready", { screens: screens, loadId: loadId, reportsDrawn: true });
+    watchForDrawn();
+  };
   if (document.readyState === "complete" || document.readyState === "interactive") ready();
   else document.addEventListener("DOMContentLoaded", ready);
 
@@ -110,6 +148,9 @@ function bridgeScript(screens) {
   var recoveryTimer = 0;
   var announceRecovery = function () {
     loadId = "L" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    // A new load id is a new page as far as the host is concerned, so the
+    // drawn announcement is owed again under it.
+    drawn = false;
     ready();
   };
   var watchForRecovery = function () {
@@ -238,7 +279,7 @@ function robomotionAppKit(options = {}) {
   return [sharedResolvePlugin(), bridgePlugin(options)];
 }
 var ROOT_DIV = '<div id="root"></div>';
-var ROOT_DIV_WITH_PLACEHOLDER = `<div id="root"><div style="display:flex;align-items:center;justify-content:center;min-height:60vh;padding:24px;font:14px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:#8a8a8a;text-align:center">Getting your app ready\u2026</div></div>`;
+var ROOT_DIV_WITH_PLACEHOLDER = `<div id="root"><div data-rm-placeholder="" style="display:flex;align-items:center;justify-content:center;min-height:60vh;padding:24px;font:14px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:#8a8a8a;text-align:center">Getting your app ready\u2026</div></div>`;
 function bridgePlugin(options = {}) {
   let root = process.cwd();
   let base = "/";
