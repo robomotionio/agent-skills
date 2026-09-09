@@ -498,6 +498,42 @@ f.edge('1a7c52', 0, 'e3b9f6', 0);
 | ForkBranch | ForkBranch → Port 0 branches → Done each → Port 1 continues |
 | Worker Pool | ForkBranch + MemoryQueue + Catch → Done pattern |
 
+## Jumping Forward: `GoTo`/`Label` Is Not Only For Loops
+
+Every branch has to end somewhere, and several branches often end in the SAME
+place: one error responder, one "say why" node, one rejoin after the special
+cases. Wiring each of them straight there with `f.edge()` works and reads
+terribly, because the target is laid out after the chain that declared it and
+the wire is drawn diagonally across every row in between - once per branch.
+
+A four-action app flow built that way (2026-09-09) had a wire crossing three
+unrelated actions for every refusal branch. It ran perfectly. The person opened
+the canvas and asked whether their app was broken.
+
+`Core.Flow.GoTo` has **no outgoing wire** - it jumps - so the long edge stops
+existing rather than being redrawn shorter.
+
+```typescript
+// Once, beside the node it guards. Nothing is wired INTO a Label on an app
+// flow: it has no input port there, and a GoTo is how you arrive.
+f.node('9c41ab', 'Core.Flow.Label', 'Refused', {});
+f.node('9c41ac', 'Robomotion.Apps.RespondError', 'Say Why', { ... });
+f.edge('9c41ab', 0, '9c41ac', 0);
+
+// Then on each far branch, in its own row, a short hop to a GoTo sitting there.
+f.node('a7b2c1', 'Core.Flow.GoTo', 'Say Why', {
+  optNodes: { ids: ['9c41ab'], type: 'goto', all: false }
+});
+f.edge('7a1b06', 1, 'a7b2c1', 0);   // the Switch's refused port
+```
+
+**Rule of thumb: more than about two rows of travel, make it a `GoTo`.** Name
+the GoTo after where it goes ("Say Why", "Give Up", "Next Invoice") so the row
+still reads left to right and nothing is hidden by the jump.
+
+`Core.Flow.Goto` with a lowercase T is not a registered type - the capital in
+`GoTo` is load-bearing (`reference/node-naming.md`).
+
 ## See Also
 
 - `loops.md` - Label/Goto patterns for loops

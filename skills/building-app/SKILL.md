@@ -232,6 +232,36 @@ canvas and an `error` line in the robot's log every time somebody is told no -
 and they will open that canvas and ask whether their app is broken. Reserve
 `throw` for what you did not foresee.
 
+**A wire that crosses other rows is a `GoTo`, not an edge.** An app flow is
+one row of nodes per action, stacked. The refused side of an action's Switch
+goes to that action's `App Respond Error`, and there are usually two or three
+branch points feeding it from different places in the chain. Written as
+`f.edge(...)` into a node declared after the chain, the layout puts that node
+rows away and draws a wire diagonally across every action in between - once
+per branch. Open a four-action app built that way and the canvas is a cat's
+cradle; the person WILL open it, and they will ask whether their app is broken.
+
+`Core.Flow.Label` and `Core.Flow.GoTo` are the answer, and they are not only a
+loop construct. A `GoTo` has no outgoing wire at all - it jumps - so the long
+edge stops existing rather than being redrawn shorter:
+
+```ts
+// Beside the node it guards. Nothing is ever wired INTO a Label: it has no
+// input port, and a GoTo is how you arrive.
+f.node('7a1b0b', 'Core.Flow.Label', 'Refused', {});
+f.node('7a1b07', 'Robomotion.Apps.RespondError', 'Say Why', REFUSE_ERR);
+f.edge('7a1b0b', 0, '7a1b07', 0);
+
+// On each branch point, in its own row, a short hop to a GoTo sitting there.
+f.node('7a1b0c', 'Core.Flow.GoTo', 'Say Why', { optNodes: { ids: ['7a1b0b'], type: 'goto', all: false } });
+f.edge('7a1b06', 1, '7a1b0c', 0);
+```
+
+The rule: **if an edge would span more than about two rows, make it a `GoTo` to
+a `Label`.** Name the GoTo after where it goes ("Say Why"), so the row still
+reads left to right and nothing is hidden. `Core.Flow.Goto` with a lowercase T
+is not a registered type - the capital in `GoTo` is load-bearing.
+
 An action that calls a website uses `Core.Net.HttpRequest`, which is not in this
 package and is the one node worth naming here so you do not spend a search
 round on it.
