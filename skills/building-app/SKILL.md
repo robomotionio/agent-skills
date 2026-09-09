@@ -111,6 +111,13 @@ Narrate progress through `todo_write`, with items phrased in the user's language
    robot fails honestly and says so. A wired button on a draft app is correct;
    an unwired one is a mockup you will tell somebody is an app.
 
+   **That banner is the kit's, so do not write it a second time.** An
+   `<Alert title="Sample data">The screens below show sample data until the
+   robot is connected.</Alert>` on the screen says exactly what the banner
+   two inches above it already says, and the person reads the same sentence
+   twice before they read anything about their app (2026-09-09, the
+   earthquake app's first screen). Say nothing; the banner has it.
+
    **And the sample answer goes the moment the robot is connected.** The
    banner that explained it goes with the connection, so a sample result
    left on a connected app reads as a real answer to a form nobody has
