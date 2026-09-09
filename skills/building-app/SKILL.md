@@ -498,6 +498,20 @@ and `<apps>/<appId>/flow`. Work only in those.
   theirs - use `poll_logs` on the `studio_id` that `start_app_session`
   returned: a Debug or Log step in the flow arrives there as a `debug` event,
   with the value in it.
+
+- **A press of yours never deletes something the person put there.** The rows
+  in their app are their work, and everything on their screens is derived from
+  them. Testing a delete by deleting one of their records is the one press you
+  must never make: on 2026-09-09 a build checked its own fix with six presses
+  of `removeMatchNight` on real ids, and the two match nights the person had
+  entered - the rows every number on the last screen came from - were gone,
+  unsaid and unrecovered. To test a delete, press the matching create first,
+  delete THAT, and say what you tried. The harness refuses the other case
+  outright; if the person has asked for one of their own records to go, say
+  plainly that you will not remove their data from your side and point them at
+  the button that does it. The same care applies to a create: a row you add to
+  try something out is taken away again before you hand the app back, or named
+  in what you say.
 - **When something fails, read the robot's error BEFORE explaining it.**
   `poll_logs` on the app session's `studio_id` carries the node that failed
   and why, in the robot's own words. Diagnosing from the shape of the symptom
