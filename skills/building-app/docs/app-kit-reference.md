@@ -123,6 +123,22 @@ const id = new URLSearchParams(useSearch()).get("id");
 
 Never read `window.location.hash` and never build URLs by hand; the app is mounted under a prefix (`/<app id>/` when published, `/preview/<instance>/` in the preview) that only `screenHref` and `navigate` know about.
 
+**An absolute path written by hand is always wrong**, however innocent it looks:
+
+```tsx
+<a href="/">Go to Trips</a>          // ✗ the SITE root, not your first screen
+<Link to="/trips">All trips</Link>   // ✗ same
+window.location.href = "/settings";  // ✗ same
+```
+
+Each of those leaves the app's base and lands the WHOLE page on the serving
+tier's "not found", from which the only way back is reloading the Designer.
+It works everywhere except the one place the app actually runs, so nothing but
+pressing the link finds it. Write `screenHref("/")` for an href and
+`navigate("/trips")` in a handler. `validate_app`'s `screen-links` check
+refuses the three spellings above; a link that really does leave the app needs
+a full URL with its scheme.
+
 ## Actions and feedback
 
 ### `Button`
