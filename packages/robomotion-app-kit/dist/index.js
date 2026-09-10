@@ -5475,6 +5475,7 @@ function DataTable(props) {
   const [reloadTick, setReloadTick] = useState14(0);
   const seq = useRef7(0);
   const ownFetch = useRef7(false);
+  const superseded = useRef7(0);
   const [askedFilter, setAskedFilter] = useState14("");
   useEffect9(() => {
     if (!paged) return;
@@ -5513,6 +5514,15 @@ function DataTable(props) {
         setRemote({ rows: [], total: 0 });
         return;
       }
+      if (reply === void 0) {
+        superseded.current += 1;
+        if (superseded.current < 2) {
+          ownFetch.current = false;
+          if (!(actionRef.current?.loading ?? false)) setReloadTick((t) => t + 1);
+          return;
+        }
+      }
+      superseded.current = 0;
       setRemote(readPageReply(reply, req));
     } catch (e) {
       if (mine !== seq.current) return;

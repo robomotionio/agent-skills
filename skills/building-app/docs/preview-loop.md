@@ -45,11 +45,26 @@ There is also a reactive path you don't control: a runtime error in the preview 
 
 ## The draft backend
 
-`start_app_session` creates a **draft** app instance and starts the flow long-lived on the **local** robot. From that moment the preview's buttons hit a real robot - not mocks that later turn out to lie.
+`start_app_session` creates a **draft** app instance and starts the flow long-lived on the app's **own** robot. From that moment the preview's buttons hit a real robot - not mocks that later turn out to lie.
 
 - Before the session exists, screens render their `SAMPLE_*` data and the app is honestly display-only. Get it live early anyway: seeing screens is what keeps the person engaged.
-- After every flow save the session is bounced and the panel says so ("reconnecting the robot..."). Expect in-flight calls at that moment to fail retryably; don't diagnose them as bugs.
-- The robot must be local and online. If it isn't, the buttons show the offline state - tell the person to start their robot; do not rebuild anything.
+- **The backend is checked before the person touches it.** Every start (and every restart after a save) is followed by `smoke_app`, run by the harness: each button pressed once through the app's own MCP door, the report attached to the `start_app_session` result. A `dead_end` there is a path that never reaches `App Respond`, and `last_node` says where it stopped; `unwired` is an action with no `App Action` node; `dead_after_first` is a flow that ended itself. The classify-then-act table is step 6b of the skill. A backend that has not answered the smoke pass has not been shown to work, whatever the preview looks like.
+- `call_action` presses one button with values you choose - the way to prove the case the stand-ins could not (a real country code, a real record id) or to press a write on purpose.
+- After every flow save the session is bounced and the panel says so ("reconnecting the robot..."). Expect in-flight calls at that moment to fail retryably - the smoke pass waits a bounce out on its own; a call that fails during a bounce is not a fault, so don't diagnose it as one.
+- The robot must be online. If it isn't, the buttons show the offline state - tell the person to start their robot; do not rebuild anything.
+
+### When a press did nothing
+
+Walk this in order rather than guessing. Every line is observable; the smoke
+report answers the first and the last for you.
+
+| Ask | Where | If it fails |
+|---|---|---|
+| Is the flow still running? | `start_app_session` (says "already running" or restarts), `smoke_app` `door` = `not_running`, robot log `Stopped running` | The flow ended itself: rule 5 - a `Stop`/`End` on a path, or an unhandled error with no `Catch` -> `App Respond Error`. |
+| Did the press reach the flow at all? | `smoke_app` / `call_action` on that button: `unwired` means no `App Action` serves it | Add the `App Action` node with that action name. |
+| Did the steps run, and how far? | `poll_logs` on the session's `studio_id`; `last_node` in the smoke row | A `dead_end` at `last_node`: the path from there never reaches `App Respond`. Wire it. |
+| Is the robot the app's own, and connected? | `start_app_session` refuses any other robot; the preview's banner | Start the session again; never pick another robot. |
+| Is the app on the same contract as the flow? | `stale` in the smoke row; the preview's "app was updated, reload" state | Save the flow and start the session again. |
 
 ## Sequencing a change
 

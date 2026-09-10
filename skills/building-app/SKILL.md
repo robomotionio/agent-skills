@@ -61,7 +61,7 @@ object is exactly `{ "type": "object" }`.
 
 Narrate progress through `todo_write`, with items phrased in the user's language ("Design the review screen", "Teach the robot to read invoices") - never internal steps ("run typegen", "start dev server").
 
-**The tools, in the order you need them:** `create_app` (once, first) -> `sync_app` -> `save_app` -> `create_app_robot` (only with a yes, see below) -> `start_app_session` -> `validate_app` -> `publish_app`. There is no `push_app` step: the app half of every save is sent to Robomotion when your turn ends, whether or not you ask, so calling it yourself only makes the person wait twice. `list_apps` finds an existing app; `app_dev_server` controls the preview process. Before the contract, `searching-packages` (step 0c) is what tells you what the robot can already do. Never write app or flow files before `create_app` has returned - there is no working copy to write into until it has.
+**The tools, in the order you need them:** `create_app` (once, first) -> `sync_app` -> `save_app` -> `create_app_robot` (only with a yes, see below) -> `start_app_session` -> `smoke_app` (run for you, read its report - step 6b) -> `validate_app` -> `publish_app`. There is no `push_app` step: the app half of every save is sent to Robomotion when your turn ends, whether or not you ask, so calling it yourself only makes the person wait twice. `list_apps` finds an existing app; `app_dev_server` controls the preview process. Before the contract, `searching-packages` (step 0c) is what tells you what the robot can already do. Never write app or flow files before `create_app` has returned - there is no working copy to write into until it has.
 
 0. **Create the app first.** Call `create_app` with a short human name and, WHEN YOU ARE ALREADY IN A FLOW, its id as `flowId` - in the Build view you always are, and omitting it binds the app to a different flow than the one on the user's screen. It returns `app_id`, `flow_id` and the local paths, and clones both working copies. Then `sync_app` before you read or write anything. Continuing an existing app instead? `list_apps`, then `sync_app`.
 
@@ -110,6 +110,13 @@ Narrate progress through `todo_write`, with items phrased in the user's language
    sample data." at the top of the app, and an action that cannot reach a
    robot fails honestly and says so. A wired button on a draft app is correct;
    an unwired one is a mockup you will tell somebody is an app.
+
+   **That banner is the kit's, so do not write it a second time.** An
+   `<Alert title="Sample data">The screens below show sample data until the
+   robot is connected.</Alert>` on the screen says exactly what the banner
+   two inches above it already says, and the person reads the same sentence
+   twice before they read anything about their app (2026-09-09, the
+   earthquake app's first screen). Say nothing; the banner has it.
 
    **And the sample answer goes the moment the robot is connected.** The
    banner that explained it goes with the connection, so a sample result
@@ -231,6 +238,36 @@ the screen, but it also paints a red "Node Execution Error" on the person's
 canvas and an `error` line in the robot's log every time somebody is told no -
 and they will open that canvas and ask whether their app is broken. Reserve
 `throw` for what you did not foresee.
+
+**A wire that crosses other rows is a `GoTo`, not an edge.** An app flow is
+one row of nodes per action, stacked. The refused side of an action's Switch
+goes to that action's `App Respond Error`, and there are usually two or three
+branch points feeding it from different places in the chain. Written as
+`f.edge(...)` into a node declared after the chain, the layout puts that node
+rows away and draws a wire diagonally across every action in between - once
+per branch. Open a four-action app built that way and the canvas is a cat's
+cradle; the person WILL open it, and they will ask whether their app is broken.
+
+`Core.Flow.Label` and `Core.Flow.GoTo` are the answer, and they are not only a
+loop construct. A `GoTo` has no outgoing wire at all - it jumps - so the long
+edge stops existing rather than being redrawn shorter:
+
+```ts
+// Beside the node it guards. Nothing is ever wired INTO a Label: it has no
+// input port, and a GoTo is how you arrive.
+f.node('7a1b0b', 'Core.Flow.Label', 'Refused', {});
+f.node('7a1b07', 'Robomotion.Apps.RespondError', 'Say Why', REFUSE_ERR);
+f.edge('7a1b0b', 0, '7a1b07', 0);
+
+// On each branch point, in its own row, a short hop to a GoTo sitting there.
+f.node('7a1b0c', 'Core.Flow.GoTo', 'Say Why', { optNodes: { ids: ['7a1b0b'], type: 'goto', all: false } });
+f.edge('7a1b06', 1, '7a1b0c', 0);
+```
+
+The rule: **if an edge would span more than about two rows, make it a `GoTo` to
+a `Label`.** Name the GoTo after where it goes ("Say Why"), so the row still
+reads left to right and nothing is hidden. `Core.Flow.Goto` with a lowercase T
+is not a registered type - the capital in `GoTo` is load-bearing.
 
 An action that calls a website uses `Core.Net.HttpRequest`, which is not in this
 package and is the one node worth naming here so you do not spend a search
@@ -397,7 +434,36 @@ Note what the example does **not** have: an ending. No `Core.Flow.Stop`, no
 screens (hard rule 5) - the last node on every path is its `App Respond` or
 `App Respond Error`. This is the single easiest way to ship an app that works
 exactly once, so check for it before you save.
-6. **`start_app_session`.** On a brand-new app, **ask before you call it**: `create_app` has already told you the app has no robot of its own, and calling `start_app_session` only to be refused puts a failed step on the person's screen one row above the question that follows it. Ask first (6a), then call `start_app_session` after the yes. An app that already has its robot needs no question - call it straight away. It brings up the app's OWN robot on this computer and starts the flow on it; the preview's buttons now hit a real robot. An app runs on its own robot and on no other - you never pick a robot for it, and you never run it on the person's Development or Production robot. Delete each `SAMPLE_*` const as its backend action comes alive. The buttons need no change, because step 3a wired them to the real action from the start; if changing one is what makes it work, the app was a mockup until now and you have just found that out later than the person would have.
+6. **`start_app_session`.** On a brand-new app, **ask before you call it**: `create_app` has already told you the app has no robot of its own, and calling `start_app_session` only to be refused puts a failed step on the person's screen one row above the question that follows it. Ask first (6a), then call `start_app_session` after the yes. An app that already has its robot needs no question - call it straight away. It brings up the app's OWN robot on this computer and starts the flow on it; the preview's buttons now hit a real robot - and so does the harness, before the person does (6b). An app runs on its own robot and on no other - you never pick a robot for it, and you never run it on the person's Development or Production robot. Delete each `SAMPLE_*` const as its backend action comes alive. The buttons need no change, because step 3a wired them to the real action from the start; if changing one is what makes it work, the app was a mockup until now and you have just found that out later than the person would have.
+
+6b. **Read the smoke report before you say anything works.** Every
+   `start_app_session` that starts (or restarts) the backend is followed, by
+   the harness, by `smoke_app`: every button pressed once through the app's
+   own MCP door - the same `action_call` a press in the preview sends - with
+   stand-in values built from each action's schema (a description's own
+   example first, then an enum's first member, today for a date, "smoke test"
+   / 1 / true otherwise). The report arrives as a second block of the
+   `start_app_session` result, one row per button, and the row's word is the
+   whole diagnosis. Classify, then act - never explain:
+
+   | Row says | It means | Do this |
+   |---|---|---|
+   | `answered` | The path reached an `App Respond` (or `App Respond Error`). `result` holds what came back. | Read `result`. An answer that says the stand-in values were not understood ("that doesn't look like a country code") proved only the rejection path - press it yourself with `call_action` and real values before you call the button working. |
+   | `refused` | `invalid_params`: the stand-ins were the wrong shape; the path behind the check is untested. | `call_action` with values you choose, and say which case you proved. |
+   | `dead_end` | The robot's watchdog fired: the path from that `App Action` never reaches an `App Respond`. `last_node` is the last step that started and never finished. | Open the flow, find `last_node`, wire the path from it through to an `App Respond` (a port that goes nowhere, a chain nothing enters, a branch with no answer). Save. The harness restarts the backend and presses again after your save; read that report too. |
+   | `unwired` | No `App Action` node serves this action. | Add `Robomotion.Apps.Action` with this action name, wire its path to an `App Respond`, save. |
+   | `stale` | `contract_mismatch` / `unknown_action`: the running backend is older than `app.json`. | Save the flow and call `start_app_session` again. |
+   | `dead_after_first` | The first press answered and the second found nothing running: the flow ended itself. | Hard rule 5. Remove the `Stop`/`End`, or the path that reaches one; wire `Core.Trigger.Catch` to an `App Respond Error`. Save. |
+   | `not_running` / `still_starting` | The flow is not up, or never loaded its contract. | `start_app_session` once more; if it says the session is up, read `poll_logs` for why the flow ended, say so, and end your turn. |
+   | `busy` / `slow` / `error` / `skipped` | Nothing proven either way. | Say nothing alarming about the buttons; `call_action` the one that matters if you need to know. |
+
+   **Never say a button works that the report says did not answer** - and
+   never say the app is ready over a `failed` verdict. Write actions ARE
+   pressed, for real: a row named "smoke test" may now sit in the person's
+   list. Tell them so in one sentence and offer to remove it with the app's
+   own delete; never pretend the pass did not run. Reading `last_node` beats
+   every theory you have about why a press timed out (the twenty-sixth pass
+   spent twenty-one minutes on a confident wrong one).
 
 6a. **When the app has no robot of its own yet - a brand-new app never does,
    and `start_app_session` says so if you call it anyway - the question is a
@@ -456,14 +522,33 @@ and `<apps>/<appId>/flow`. Work only in those.
 - **`archetypes/` in the app repo is reference material.** It is not compiled
   and not checked; leave it where it is. Never delete it and never edit
   `tsconfig.json` to work around it.
-- **You cannot press the buttons.** The preview is signed in as the person,
-  not as you, so the only way an action runs for real is that THEY press it.
-  Never try to call an action yourself: no hand-written websocket message, no
-  reading the runtime's compiled source to work out the wire format, and never
-  open `credentials.yaml` or any other secret. To prove an action end to end,
-  ask them to press it and watch with `poll_logs` on the `studio_id` that
-  `start_app_session` returned - a Debug or Log step in the flow arrives there
-  as a `debug` event, with the value in it.
+- **You cannot press the buttons in the preview - you can, and must, press
+  them through the app's own door.** The preview is signed in as the person,
+  not as you, so nothing you do can drive it. But every app is also an MCP
+  server, and a `tools/call` through it is the very same `action_call` a
+  press sends: after `start_app_session` the harness runs `smoke_app` (every
+  button once) and puts the report in front of you (step 6b); `call_action`
+  presses one button with values you choose. That is the whole of how an
+  action runs for real from here. Never hand-write a websocket message, never
+  read the runtime's compiled source to work out the wire format, and never
+  open `credentials.yaml` or any other secret. To watch a press - yours or
+  theirs - use `poll_logs` on the `studio_id` that `start_app_session`
+  returned: a Debug or Log step in the flow arrives there as a `debug` event,
+  with the value in it.
+
+- **A press of yours never deletes something the person put there.** The rows
+  in their app are their work, and everything on their screens is derived from
+  them. Testing a delete by deleting one of their records is the one press you
+  must never make: on 2026-09-09 a build checked its own fix with six presses
+  of `removeMatchNight` on real ids, and the two match nights the person had
+  entered - the rows every number on the last screen came from - were gone,
+  unsaid and unrecovered. To test a delete, press the matching create first,
+  delete THAT, and say what you tried. The harness refuses the other case
+  outright; if the person has asked for one of their own records to go, say
+  plainly that you will not remove their data from your side and point them at
+  the button that does it. The same care applies to a create: a row you add to
+  try something out is taken away again before you hand the app back, or named
+  in what you say.
 - **When something fails, read the robot's error BEFORE explaining it.**
   `poll_logs` on the app session's `studio_id` carries the node that failed
   and why, in the robot's own words. Diagnosing from the shape of the symptom
@@ -642,13 +727,13 @@ so the app adopts it instead of scaffolding a second one.
 |---|---|
 | `get_preview_errors` returns a build error | Fix it, re-check, only then reply. Never paste a stack trace at the user; say "fixing a mistake I made on the review screen". |
 | Runtime error in the preview (`rm-app-error`) | Same fix-and-recheck. The Designer already auto-retries at most twice per user message - work within that, don't loop forever. |
-| An action times out | The call ALWAYS terminates (robot-side watchdog), so a hung button means a wrong `timeout_ms` or a path that never reaches `App Respond`. Long robot work (browser, PDF): raise `timeout_ms` in `app.json` and set `progress: true`, then send `App Progress` from the flow so the wait is visible. |
+| An action times out | The call ALWAYS terminates (robot-side watchdog), so a hung button means a path that never reaches `App Respond`, or a `timeout_ms` too short for the work. Do not theorise: `smoke_app` (or `call_action` on that one button) presses it from here and answers `dead_end` with `last_node`, the last step that started and never finished - fix the wiring from there (step 6b). Long robot work (browser, PDF): raise `timeout_ms` in `app.json` and set `progress: true`, then send `App Progress` from the flow so the wait is visible. |
 | Robot is offline (`robot_offline` state or error) | It's retryable and the kit's `ConnectionBanner` already shows it. Tell the person plainly: "Your robot is offline - start it and the buttons will work again." Do NOT rebuild or edit anything. |
 | The app's OWN robot shows as offline in `list_robots` before a run | Expected between runs: an app's robot is brought up on this computer only while its session runs, and `start_app_session` does that for you. You never start it by hand and never pick another robot in its place. If a run fails, look at what actually failed - `poll_logs` on the app's session, and the robot's own log - not at the robot's resting state. |
 | The buttons do nothing and the app says "The robot for this app is not connected" - about a robot that IS connected and running the flow | The chat path and the app path are different transports, and this message comes from the app one. Do not rebuild anything and do not blame the robot. The two causes seen live: the flow stopped itself (see rule 5 - an app flow never ends), or the robot's app connection was churning while the page's key exchange was in flight, in which case the robot's log says `dropping <type> for unknown conn ... (no key exchange yet)` and a reload of the app gets a fresh key. Say what you found; if it is the second, say the connection dropped and ask them to reload the preview. |
 | `start_app_session` says the app has no robot of its own | Expected on a brand-new app: a draft does not get a robot until somebody asks to run it. **Ask with `ask_user_question`, then act** - question "Your app needs a robot to run on. Shall I set one up?", replies "Yes, set it up" / "Not now". **Prose is not an acceptable spelling of this question** (step 6a): asking it in a sentence at the end of your summary leaves the person nothing to press. The word is "robot" - not "app-robot", not "app-robot slots". On yes: `create_app_robot` and then `start_app_session` **in the same turn** - `start_app_session` brings the app's own robot up on this computer for you, so there is nothing for them to start and nothing to wait for. Never end the turn on "now start that robot": bringing it up is your job, not theirs. On no: stop there and say the preview still shows the screens with sample data. Never call `create_app_robot` without the yes: it spends one of a small number of slots in their workspace. |
 | `create_app_robot` says the workspace is full | Give them the numbers it returns and the two ways forward, in plain words: they can delete an app they no longer use to free a slot, or add more robots to their plan. Both are theirs to do from the Designer - the Run dialog and the Build panel both carry an "Add more robots" button and a way to free one. Do not delete anything yourself and do not retry. |
-| `start_app_session` says the robot is busy | Each app has its own robot now, so this means this app's OWN backend is already running - which is usually success, not a fault: the session is up and the buttons answer. Only if a run genuinely needs a fresh backend, stop this app's session and start it again; never touch another app's robot. |
+| `start_app_session` says the robot is busy | Each app has its own robot now, so this means this app's OWN backend is already running. Whether the buttons answer is not an assumption any more: the smoke report on that same result says which did and which did not (step 6b). Only if a run genuinely needs a fresh backend, stop this app's session and start it again; never touch another app's robot. |
 | `start_app_session` did not start (robot not connected, or it did not take the run) | Say it in one sentence and **end your turn**: "Your robot isn't running - start it and tell me, and I'll connect the app." Do NOT retry, do NOT call `stop_flow`, do NOT inspect packages, the package server or the network: the tool result already says what happened, and retrying proves nothing it did not. When the person says the robot is up, call `start_app_session` once more. |
 | `queue_full` / `concurrency_rejected` | Backpressure, both retryable. If it recurs, the action's `concurrency` is wrong for how it's used - see `./docs/contract.md`. |
 | `validate_app` fails with type errors naming generated types | You changed `app.json` without regenerating, or a generated file was hand-edited. Regenerate; never patch the generated file. |

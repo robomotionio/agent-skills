@@ -59,7 +59,10 @@ contract, the part an agent reads before it touches a tool.
   cannot be undone (deleting, sending, paying, deciding), `idempotent` when calling twice
   is harmless. Clients confirm destructive calls and may retry idempotent ones.
 - **`enabled: false`** keeps an action off both the MCP server and the assistant. Use it
-  for admin or bulk actions a person should click deliberately.
+  for admin or bulk actions a person should click deliberately. The harness's smoke pass
+  (`smoke_app`, step 6b) presses through this same door, so a tool that is off here is
+  not pressed either - it shows in the report as `not_exposed`, and only a person can
+  prove it.
 - **`assistant.public`** is off by default. Anonymous visitors of a public app get the
   assistant only if you turn it on, because every message runs the app's actions and
   costs the owner model credits.
