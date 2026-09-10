@@ -3,11 +3,16 @@
 The complete catalogue. Compose screens from these and Tailwind layout classes; there is nothing else, and nothing else is allowed. Every component is themed from `app.json`'s `theme.accent`, dark-mode aware, and accessible by default - you never write colors, focus rings, or ARIA by hand.
 
 This file is COMPLETE for everything it names. Do not open the packages' own
-`.d.ts` files to check it. On 2026-09-06 a build spent eight shell calls and
-about ninety seconds walking
+files to check it - not the `.d.ts`, not the built `dist/` bundle, not
+`package.json`; nothing under `node_modules/@robomotion/**` at all. On
+2026-09-06 a build spent eight shell calls and about ninety seconds walking
 `node_modules/@robomotion/apps-runtime/dist/**` to find out one thing this
 page already says - and the person watching got six identical "Checked how to
-build it" rows for it. `tsc` is the check, not a `grep`: write the screen,
+build it" rows for it. On 2026-09-08 another one read the rule, skipped the
+`.d.ts` it names, and grepped `@robomotion/app-kit/dist/index.js` for its
+exports instead: the list of exports is the code block below, and a `grep`
+that finds it there has cost the person a row on screen to learn what they
+were already told. `tsc` is the check, not a `grep`: write the screen,
 run the typecheck, and read what it says. Only if `tsc` disagrees with a
 snippet here does the package's own type win, and then it is `tsc` telling
 you, not a file you went looking for.
