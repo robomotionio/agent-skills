@@ -240,27 +240,57 @@ only in this package, and hunting for them costs a search round every build.
 | `Robomotion.Apps.GetFile` | App Get File | `optDownloadDir` |
 | `Robomotion.Apps.SaveFile` | App Save File | nothing |
 
-One complete action, start to finish:
+One complete action, start to finish. It is always two files: `main.ts` names
+the screen, and the screen's subflow file holds the action.
 
 ```ts
+// main.ts - the package, one SubFlow node per screen, the catch-all (below)
 import { flow, Message } from '@robomotion/sdk';
 
 flow.create('<flowId>', '<Flow Name>', (f) => {
-  f.addDependency('Robomotion.Apps', '0.3.1');
+  f.addDependency('Robomotion.Apps', '0.3.3');
 
+  f.node('b2d4e1', 'Core.Flow.SubFlow', 'Problems', {});
+}).start();
+```
+
+```ts
+// subflows/b2d4e1.ts - the file name is the SubFlow node's id
+import { subflow } from '@robomotion/sdk';
+
+subflow.create('Problems', (f) => {
   f.node('a3c1f9', 'Robomotion.Apps.Action', 'Search Call', { optActionName: 'search' })
     .then('b8e274', 'Core.Programming.Function', 'Do The Work', {
       func: 'msg.result = { hits: [] };\nreturn msg;',
     })
     .then('c4d952', 'Robomotion.Apps.Respond', 'Send Results', {});
-}).start();
+});
 ```
+
+**A screen's subflow has no `Core.Flow.Begin` and no `Core.Flow.End`.** This
+overrides `creating-flow`'s subflow pattern, which opens every subflow with
+`Begin` and closes it with `End`. `App Action` is a trigger with no input port
+(0 inputs), so it is always the FIRST node of its chain, written with
+`f.node(...)`, and nothing is ever `.then()`ed into it. `Begin` chained into
+`App Action` does not compile: `Cannot chain to node '<id>'
+(Robomotion.Apps.Action): it has 0 inputs`. So:
+
+- A screen with two actions has two `f.node(...)` chains in its subflow file,
+  each starting at its own `App Action`.
+- Steps an action needs first (open the database, make sure the tables exist)
+  go AFTER its `App Action`, never before it.
+- A sub-screen's `Core.Flow.SubFlow` node sits in its parent's subflow file the
+  same way it sits in `main.ts`: its own `f.node(...)`, chained to nothing.
+
+**`f.addDependency('Robomotion.Apps', '0.3.3')` goes in `main.ts`, once.** The
+subflow files use the main flow's packages, and `main.ts` needs it anyway for
+the catch-all's `App Respond Error`.
 
 The caller's arguments arrive as **`msg.params.<field>`**; the answer is whatever
 sits on **`msg.result`** when `App Respond` runs. Both shapes are already typed
 for you in `src/generated/actions.gen.ts` at the project root.
 
-**And the catch-all, in the same file, every time.** An unhandled error ends
+**And the catch-all, in `main.ts`, every time.** An unhandled error ends
 the flow and the app with it (hard rule 5), so every backend has a
 `Core.Trigger.Catch` wired to an `App Respond Error`. This is the whole of it -
 there is nothing to look up in `creating-flow` for it:
