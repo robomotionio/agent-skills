@@ -93,6 +93,12 @@ interface AppContract {
     theme?: {
         accent?: string;
         mode?: "light" | "dark" | "system";
+        /** The shell: a sidebar (the default with two or more screens) or a top bar. */
+        layout?: "sidebar" | "topbar";
+        /** Corner radius of every surface. */
+        radius?: "none" | "sm" | "md" | "lg" | "xl";
+        /** How tightly things sit. */
+        density?: "compact" | "comfortable";
     };
     types?: Record<string, ContractSchema>;
     actions: Record<string, ContractAction>;
