@@ -1,4 +1,4 @@
-import { j as FileUploadOptions, F as FileRef, d as ConnectionState, V as Viewer, i as CreateAppOptions, C as CallOptions, c as AppErrorCode } from './types-DcK_8fGj.js';
+import { j as FileUploadOptions, F as FileRef, d as ConnectionState, V as Viewer, i as CreateAppOptions, C as CallOptions, c as AppErrorCode } from './types-BOvW7G1-.js';
 
 /**
  * File transfer over the existing /v1/artifacts.* REST endpoints

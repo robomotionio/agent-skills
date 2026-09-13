@@ -17350,14 +17350,19 @@ var EditMap = class {
    */
   constructor() {
     this.map = [];
+    this.index = /* @__PURE__ */ new Map();
   }
   /**
    * Create an edit: a remove and/or add at a certain place.
    *
    * @param {number} index
+   *   Index at which to apply the edit.
    * @param {number} remove
+   *   Count of items to remove at the index.
    * @param {Array<Event>} add
+   *   Items to add at the index.
    * @returns {undefined}
+   *   Nothing.
    */
   add(index2, remove, add) {
     addImplementation(this, index2, remove, add);
@@ -17378,7 +17383,9 @@ var EditMap = class {
    * Done, change the events.
    *
    * @param {Array<Event>} events
+   *   List of events to apply the edits to.
    * @returns {undefined}
+   *   Nothing.
    */
   consume(events) {
     this.map.sort(function(a, b3) {
@@ -17404,22 +17411,22 @@ var EditMap = class {
       slice = vecs.pop();
     }
     this.map.length = 0;
+    this.index.clear();
   }
 };
 function addImplementation(editMap, at, remove, add) {
-  let index2 = 0;
   if (remove === 0 && add.length === 0) {
     return;
   }
-  while (index2 < editMap.map.length) {
-    if (editMap.map[index2][0] === at) {
-      editMap.map[index2][1] += remove;
-      editMap.map[index2][2].push(...add);
-      return;
-    }
-    index2 += 1;
+  const existing = editMap.index.get(at);
+  if (existing) {
+    existing[1] += remove;
+    existing[2].push(...add);
+    return;
   }
-  editMap.map.push([at, remove, add]);
+  const change = [at, remove, add];
+  editMap.map.push(change);
+  editMap.index.set(at, change);
 }
 
 // node_modules/micromark-extension-gfm-table/lib/infer.js
@@ -17470,10 +17477,15 @@ function tokenizeTable(effects, ok3, nok) {
   function start2(code4) {
     let index2 = self2.events.length - 1;
     while (index2 > -1) {
-      const type = self2.events[index2][1].type;
+      const {
+        type
+      } = self2.events[index2][1];
       if (type === "lineEnding" || // Note: markdown-rs uses `whitespace` instead of `linePrefix`
-      type === "linePrefix") index2--;
-      else break;
+      type === "linePrefix") {
+        index2--;
+      } else {
+        break;
+      }
     }
     const tail = index2 > -1 ? self2.events[index2][1].type : null;
     const next2 = tail === "tableHead" || tail === "tableRow" ? bodyRowStart : headRowBefore;
@@ -18938,6 +18950,7 @@ var fallbackThemeArr = [];
 var fromTheme = (key) => {
   const themeGetter = (theme) => theme[key] || fallbackThemeArr;
   themeGetter.isThemeGetter = true;
+  themeGetter.themeKey = key;
   return themeGetter;
 };
 var arbitraryValueRegex = /^\[(?:(\w[\w-]*):)?(.+)\]$/i;
@@ -18945,7 +18958,7 @@ var arbitraryVariableRegex = /^\((?:(\w[\w-]*):)?(.+)\)$/i;
 var fractionRegex = /^\d+(?:\.\d+)?\/\d+(?:\.\d+)?$/;
 var tshirtUnitRegex = /^(\d+(\.\d+)?)?(xs|sm|md|lg|xl)$/;
 var lengthUnitRegex = /\d+(%|px|r?em|[sdl]?v([hwib]|min|max)|pt|pc|in|cm|mm|cap|ch|ex|r?lh|cq(w|h|i|b|min|max))|\b(calc|min|max|clamp)\(.+\)|^0$/;
-var colorFunctionRegex = /^(rgba?|hsla?|hwb|(ok)?(lab|lch)|color-mix)\(.+\)$/;
+var colorFunctionRegex = /^(rgba?|hsla?|hwb|(ok)?(lab|lch)|color-mix|color|light-dark)\(.+\)$/;
 var shadowRegex = /^(inset_)?-?((\d+)?\.?(\d+)[a-z]+|0)_-?((\d+)?\.?(\d+)[a-z]+|0)/;
 var imageRegex = /^(url|image|image-set|cross-fade|element|(repeating-)?(linear|radial|conic)-gradient)\(.+\)$/;
 var isFraction = (value) => fractionRegex.test(value);
@@ -19065,7 +19078,7 @@ var getDefaultConfig = () => {
   const scaleAlignSecondaryAxis = () => ["start", "end", "center", "stretch", "center-safe", "end-safe"];
   const scaleMargin = () => ["auto", ...scaleUnambiguousSpacing()];
   const scaleSizing = () => [isFraction, "auto", "full", "dvw", "dvh", "lvw", "lvh", "svw", "svh", "min", "max", "fit", ...scaleUnambiguousSpacing()];
-  const scaleSizingInline = () => [isFraction, "screen", "full", "dvw", "lvw", "svw", "min", "max", "fit", ...scaleUnambiguousSpacing()];
+  const scaleSizingInline = () => [themeContainer, isFraction, "screen", "full", "dvw", "lvw", "svw", "min", "max", "fit", ...scaleUnambiguousSpacing()];
   const scaleSizingBlock = () => [isFraction, "screen", "full", "lh", "dvh", "lvh", "svh", "min", "max", "fit", ...scaleUnambiguousSpacing()];
   const scaleColor = () => [themeColor, isArbitraryVariable, isArbitraryValue];
   const scaleBgPosition = () => [...scalePosition(), isArbitraryVariablePosition, isArbitraryPosition, {
@@ -19160,7 +19173,7 @@ var getDefaultConfig = () => {
        * @see https://tailwindcss.com/docs/columns
        */
       columns: [{
-        columns: [isNumber2, isArbitraryValue, isArbitraryVariable, themeContainer]
+        columns: [isNumber2, "auto", isArbitraryValue, isArbitraryVariable, themeContainer]
       }],
       /**
        * Break After
@@ -19796,42 +19809,42 @@ var getDefaultConfig = () => {
       }],
       /**
        * Inline Size
-       * @see https://tailwindcss.com/docs/width
+       * @see https://tailwindcss.com/docs/inline-size
        */
       "inline-size": [{
         inline: ["auto", ...scaleSizingInline()]
       }],
       /**
        * Min-Inline Size
-       * @see https://tailwindcss.com/docs/min-width
+       * @see https://tailwindcss.com/docs/min-inline-size
        */
       "min-inline-size": [{
         "min-inline": ["auto", ...scaleSizingInline()]
       }],
       /**
        * Max-Inline Size
-       * @see https://tailwindcss.com/docs/max-width
+       * @see https://tailwindcss.com/docs/max-inline-size
        */
       "max-inline-size": [{
         "max-inline": ["none", ...scaleSizingInline()]
       }],
       /**
        * Block Size
-       * @see https://tailwindcss.com/docs/height
+       * @see https://tailwindcss.com/docs/block-size
        */
       "block-size": [{
         block: ["auto", ...scaleSizingBlock()]
       }],
       /**
        * Min-Block Size
-       * @see https://tailwindcss.com/docs/min-height
+       * @see https://tailwindcss.com/docs/min-block-size
        */
       "min-block-size": [{
         "min-block": ["auto", ...scaleSizingBlock()]
       }],
       /**
        * Max-Block Size
-       * @see https://tailwindcss.com/docs/max-height
+       * @see https://tailwindcss.com/docs/max-block-size
        */
       "max-block-size": [{
         "max-block": ["none", ...scaleSizingBlock()]
@@ -19893,7 +19906,7 @@ var getDefaultConfig = () => {
        * @see https://tailwindcss.com/docs/max-height
        */
       "max-h": [{
-        "max-h": ["screen", "lh", ...scaleSizing()]
+        "max-h": ["screen", "lh", "none", ...scaleSizing()]
       }],
       // ------------------
       // --- Typography ---
@@ -19993,6 +20006,7 @@ var getDefaultConfig = () => {
        */
       leading: [{
         leading: [
+          "none",
           /** Deprecated since Tailwind CSS v4.0.0. @see https://github.com/tailwindlabs/tailwindcss.com/issues/2027#issuecomment-2620152757 */
           themeLeading,
           ...scaleUnambiguousSpacing()
@@ -20202,7 +20216,7 @@ var getDefaultConfig = () => {
             to: ["t", "tr", "r", "br", "b", "bl", "l", "tl"]
           }, isInteger, isArbitraryVariable, isArbitraryValue],
           radial: ["", isArbitraryVariable, isArbitraryValue],
-          conic: [isInteger, isArbitraryVariable, isArbitraryValue]
+          conic: ["", isInteger, isArbitraryVariable, isArbitraryValue]
         }, isArbitraryVariableImage, isArbitraryImage]
       }],
       /**
@@ -20600,6 +20614,8 @@ var getDefaultConfig = () => {
         shadow: [
           // Deprecated since Tailwind CSS v4.0.0
           "",
+          // Deprecated since Tailwind CSS v4.0.0
+          "inner",
           "none",
           themeShadow,
           isArbitraryVariableShadow,
@@ -21693,16 +21709,16 @@ var getDefaultConfig = () => {
       overflow: ["overflow-x", "overflow-y"],
       overscroll: ["overscroll-x", "overscroll-y"],
       inset: ["inset-x", "inset-y", "inset-bs", "inset-be", "start", "end", "top", "right", "bottom", "left"],
-      "inset-x": ["right", "left"],
-      "inset-y": ["top", "bottom"],
+      "inset-x": ["start", "end", "right", "left"],
+      "inset-y": ["inset-bs", "inset-be", "top", "bottom"],
       flex: ["basis", "grow", "shrink"],
       gap: ["gap-x", "gap-y"],
       p: ["px", "py", "ps", "pe", "pbs", "pbe", "pt", "pr", "pb", "pl"],
-      px: ["pr", "pl"],
-      py: ["pt", "pb"],
+      px: ["ps", "pe", "pr", "pl"],
+      py: ["pbs", "pbe", "pt", "pb"],
       m: ["mx", "my", "ms", "me", "mbs", "mbe", "mt", "mr", "mb", "ml"],
-      mx: ["mr", "ml"],
-      my: ["mt", "mb"],
+      mx: ["ms", "me", "mr", "ml"],
+      my: ["mbs", "mbe", "mt", "mb"],
       size: ["w", "h"],
       "font-size": ["leading"],
       "fvn-normal": ["fvn-ordinal", "fvn-slashed-zero", "fvn-figure", "fvn-spacing", "fvn-fraction"],
@@ -21721,19 +21737,19 @@ var getDefaultConfig = () => {
       "rounded-l": ["rounded-tl", "rounded-bl"],
       "border-spacing": ["border-spacing-x", "border-spacing-y"],
       "border-w": ["border-w-x", "border-w-y", "border-w-s", "border-w-e", "border-w-bs", "border-w-be", "border-w-t", "border-w-r", "border-w-b", "border-w-l"],
-      "border-w-x": ["border-w-r", "border-w-l"],
-      "border-w-y": ["border-w-t", "border-w-b"],
+      "border-w-x": ["border-w-s", "border-w-e", "border-w-r", "border-w-l"],
+      "border-w-y": ["border-w-bs", "border-w-be", "border-w-t", "border-w-b"],
       "border-color": ["border-color-x", "border-color-y", "border-color-s", "border-color-e", "border-color-bs", "border-color-be", "border-color-t", "border-color-r", "border-color-b", "border-color-l"],
-      "border-color-x": ["border-color-r", "border-color-l"],
-      "border-color-y": ["border-color-t", "border-color-b"],
+      "border-color-x": ["border-color-s", "border-color-e", "border-color-r", "border-color-l"],
+      "border-color-y": ["border-color-bs", "border-color-be", "border-color-t", "border-color-b"],
       translate: ["translate-x", "translate-y", "translate-none"],
       "translate-none": ["translate", "translate-x", "translate-y", "translate-z"],
       "scroll-m": ["scroll-mx", "scroll-my", "scroll-ms", "scroll-me", "scroll-mbs", "scroll-mbe", "scroll-mt", "scroll-mr", "scroll-mb", "scroll-ml"],
-      "scroll-mx": ["scroll-mr", "scroll-ml"],
-      "scroll-my": ["scroll-mt", "scroll-mb"],
+      "scroll-mx": ["scroll-ms", "scroll-me", "scroll-mr", "scroll-ml"],
+      "scroll-my": ["scroll-mbs", "scroll-mbe", "scroll-mt", "scroll-mb"],
       "scroll-p": ["scroll-px", "scroll-py", "scroll-ps", "scroll-pe", "scroll-pbs", "scroll-pbe", "scroll-pt", "scroll-pr", "scroll-pb", "scroll-pl"],
-      "scroll-px": ["scroll-pr", "scroll-pl"],
-      "scroll-py": ["scroll-pt", "scroll-pb"],
+      "scroll-px": ["scroll-ps", "scroll-pe", "scroll-pr", "scroll-pl"],
+      "scroll-py": ["scroll-pbs", "scroll-pbe", "scroll-pt", "scroll-pb"],
       touch: ["touch-x", "touch-y", "touch-pz"],
       "touch-x": ["touch"],
       "touch-y": ["touch"],
@@ -27801,7 +27817,7 @@ var $r = (e) => {
 `; ) t--;
   return e.slice(0, t);
 };
-var qr = lazy(() => import("./highlighted-body-KPVGNVTW-RC655SIN.js").then((e) => ({ default: e.HighlightedCodeBlockBody })));
+var qr = lazy(() => import("./highlighted-body-KPVGNVTW-P4SDUNWK.js").then((e) => ({ default: e.HighlightedCodeBlockBody })));
 var Tt = ({ code: e, language: t, className: o, children: n, isIncomplete: r2 = false, startLine: s2, lineNumbers: a, ...l }) => {
   let i = C3(), { codeBlockMaxHeight: c2 } = useContext(S2), d2 = useMemo(() => $r(e), [e]), p2 = useMemo(() => ({ bg: "transparent", fg: "inherit", tokens: d2.split(`
 `).map((m3) => [{ content: m3, color: "inherit", bgColor: "transparent", htmlStyle: {}, offset: 0 }]) }), [d2]);
@@ -28233,7 +28249,7 @@ var Xo = ({ children: e, className: t, maxHeight: o, showControls: n, showCopy: 
 };
 var Fs = /startLine=(\d+)/;
 var js = /\bnoLineNumbers\b/;
-var _s = lazy(() => import("./mermaid-HWGCJPDP-ZJV2VBM5.js").then((e) => ({ default: e.Mermaid })));
+var _s = lazy(() => import("./mermaid-HWGCJPDP-62WW4FJ2.js").then((e) => ({ default: e.Mermaid })));
 var zs = /language-([^\s]+)/;
 var $s = "node";
 function D3(e, t) {
@@ -28971,4 +28987,4 @@ export {
   Xa,
   Vo
 };
-//# sourceMappingURL=chunk-JWSPEJ2V.js.map
+//# sourceMappingURL=chunk-AAFKE4O6.js.map

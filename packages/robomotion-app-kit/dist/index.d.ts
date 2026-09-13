@@ -1,6 +1,6 @@
 import { ClassValue } from 'clsx';
 import * as react from 'react';
-import { CSSProperties, HTMLAttributes, ReactNode, ButtonHTMLAttributes, MouseEvent, MutableRefObject, InputHTMLAttributes, FormHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
+import { CSSProperties, SVGAttributes, ReactNode, HTMLAttributes, ButtonHTMLAttributes, MouseEvent, InputHTMLAttributes, MutableRefObject, FormHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
 import { ConnectionState, ContractSchema, FileRef, AppError } from '@robomotion/apps-runtime';
 import * as class_variance_authority_types from 'class-variance-authority/types';
 import { VariantProps } from 'class-variance-authority';
@@ -11,15 +11,121 @@ declare function cn(...inputs: ClassValue[]): string;
 /** The Robomotion brand orange; app.json's theme.accent overrides it. */
 declare const DEFAULT_ACCENT = "#FF4F00";
 /**
- * Every component takes its accent from the --rm-accent CSS variable, so one
- * style attribute (set by AppShell from app.json's theme.accent) themes the
- * whole tree.
+ * The token vocabulary, one class each. Read `tk.bgCard` as "the card
+ * surface", not as a colour: it is white in light and near-black in dark,
+ * and it follows the app's own tokens if a later kit changes them.
+ */
+declare const tk: {
+    readonly bgBackground: "bg-[color:oklch(var(--rm-background))]";
+    readonly bgCard: "bg-[color:oklch(var(--rm-card))]";
+    readonly bgPopover: "bg-[color:oklch(var(--rm-popover))]";
+    readonly bgMuted: "bg-[color:oklch(var(--rm-muted))]";
+    readonly bgMutedHalf: "bg-[color:oklch(var(--rm-muted)/0.5)]";
+    readonly bgSecondary: "bg-[color:oklch(var(--rm-secondary))]";
+    readonly bgPrimary: "bg-[color:oklch(var(--rm-primary))]";
+    readonly bgPrimarySoft: "bg-[color:oklch(var(--rm-primary)/0.1)]";
+    readonly bgDestructive: "bg-[color:oklch(var(--rm-destructive))]";
+    readonly bgDestructiveSoft: "bg-[color:oklch(var(--rm-destructive)/0.1)]";
+    readonly bgSuccess: "bg-[color:oklch(var(--rm-success))]";
+    readonly bgSuccessSoft: "bg-[color:oklch(var(--rm-success)/0.12)]";
+    readonly bgWarning: "bg-[color:oklch(var(--rm-warning))]";
+    readonly bgWarningSoft: "bg-[color:oklch(var(--rm-warning)/0.14)]";
+    readonly bgInfo: "bg-[color:oklch(var(--rm-info))]";
+    readonly bgInfoSoft: "bg-[color:oklch(var(--rm-info)/0.1)]";
+    readonly bgSidebar: "bg-[color:oklch(var(--rm-sidebar))]";
+    readonly bgSidebarAccent: "bg-[color:oklch(var(--rm-sidebar-accent))]";
+    readonly bgForeground: "bg-[color:oklch(var(--rm-foreground))]";
+    readonly bgBorder: "bg-[color:oklch(var(--rm-border))]";
+    readonly bgInput: "bg-[color:oklch(var(--rm-input))]";
+    readonly fg: "text-[color:oklch(var(--rm-foreground))]";
+    readonly fgMuted: "text-[color:oklch(var(--rm-muted-foreground))]";
+    readonly fgCard: "text-[color:oklch(var(--rm-card-foreground))]";
+    readonly fgPopover: "text-[color:oklch(var(--rm-popover-foreground))]";
+    readonly fgBackground: "text-[color:oklch(var(--rm-background))]";
+    readonly fgPrimary: "text-[color:oklch(var(--rm-primary))]";
+    readonly fgOnPrimary: "text-[color:oklch(var(--rm-primary-foreground))]";
+    readonly fgSecondary: "text-[color:oklch(var(--rm-secondary-foreground))]";
+    readonly fgDestructive: "text-[color:oklch(var(--rm-destructive))]";
+    readonly fgOnDestructive: "text-[color:oklch(var(--rm-destructive-foreground))]";
+    readonly fgSuccess: "text-[color:oklch(var(--rm-success))]";
+    readonly fgWarning: "text-[color:oklch(var(--rm-warning))]";
+    readonly fgInfo: "text-[color:oklch(var(--rm-info))]";
+    readonly fgSidebar: "text-[color:oklch(var(--rm-sidebar-foreground))]";
+    readonly fgFaint: "text-[color:oklch(var(--rm-muted-foreground)/0.6)]";
+    readonly border: "border-[color:oklch(var(--rm-border))]";
+    readonly borderInput: "border-[color:oklch(var(--rm-input))]";
+    readonly borderPrimary: "border-[color:oklch(var(--rm-primary))]";
+    readonly borderDestructive: "border-[color:oklch(var(--rm-destructive))]";
+    readonly borderSuccess: "border-[color:oklch(var(--rm-success))]";
+    readonly borderWarning: "border-[color:oklch(var(--rm-warning))]";
+    readonly borderInfo: "border-[color:oklch(var(--rm-info))]";
+    readonly borderSidebar: "border-[color:oklch(var(--rm-sidebar-border))]";
+    readonly borderSuccessSoft: "border-[color:oklch(var(--rm-success)/0.3)]";
+    readonly borderWarningSoft: "border-[color:oklch(var(--rm-warning)/0.35)]";
+    readonly borderDestructiveSoft: "border-[color:oklch(var(--rm-destructive)/0.3)]";
+    readonly borderInfoSoft: "border-[color:oklch(var(--rm-info)/0.3)]";
+    readonly divide: "divide-[color:oklch(var(--rm-border))]";
+    readonly ring: "ring-[color:oklch(var(--rm-ring))]";
+    readonly ringBorder: "ring-[color:oklch(var(--rm-border))]";
+    readonly ringCard: "ring-[color:oklch(var(--rm-card))]";
+    readonly hoverBgMuted: "hover:bg-[color:oklch(var(--rm-muted))]";
+    readonly hoverBgMutedHalf: "hover:bg-[color:oklch(var(--rm-muted)/0.5)]";
+    readonly hoverBgSidebarAccent: "hover:bg-[color:oklch(var(--rm-sidebar-accent))]";
+    readonly hoverFg: "hover:text-[color:oklch(var(--rm-foreground))]";
+    readonly hoverFgSidebar: "hover:text-[color:oklch(var(--rm-foreground))]";
+    readonly hoverBgDestructiveSoft: "hover:bg-[color:oklch(var(--rm-destructive)/0.1)]";
+    readonly focusBgMuted: "focus:bg-[color:oklch(var(--rm-muted))]";
+    readonly focusBgDestructiveSoft: "focus:bg-[color:oklch(var(--rm-destructive)/0.1)]";
+    readonly selectedBgPrimarySoft: "bg-[color:oklch(var(--rm-primary)/0.08)]";
+    readonly fillPrimary: "fill-[color:oklch(var(--rm-primary))]";
+    readonly strokePrimary: "stroke-[color:oklch(var(--rm-primary))]";
+    readonly strokeBorder: "stroke-[color:oklch(var(--rm-border))]";
+    readonly radius: "rounded-[var(--rm-radius)]";
+    readonly radiusMd: "rounded-[calc(var(--rm-radius)_-_0.125rem)]";
+    readonly radiusSm: "rounded-[calc(var(--rm-radius)_-_0.25rem)]";
+    readonly radiusLg: "rounded-[calc(var(--rm-radius)_+_0.25rem)]";
+    readonly shadowSm: "shadow-[shadow:var(--rm-shadow-sm)]";
+    readonly shadowMd: "shadow-[shadow:var(--rm-shadow-md)]";
+    readonly shadowLg: "shadow-[shadow:var(--rm-shadow-lg)]";
+    readonly fontMono: "font-[family-name:var(--rm-font-mono)]";
+};
+/** Shared focus ring, visible in both themes, driven by the accent. */
+declare const focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:oklch(var(--rm-ring))] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:oklch(var(--rm-background))]";
+/** Base classes shared by all text-like inputs. */
+declare const inputBase = "block w-full rounded-[calc(var(--rm-radius)_-_0.125rem)] border border-[color:oklch(var(--rm-input))] bg-[color:oklch(var(--rm-card))] px-3 py-2 text-sm text-[color:oklch(var(--rm-foreground))] shadow-[shadow:var(--rm-shadow-sm)] transition-colors placeholder:text-[color:oklch(var(--rm-muted-foreground))] focus:border-[color:oklch(var(--rm-ring))] focus:outline-none focus:ring-1 focus:ring-[color:oklch(var(--rm-ring))] disabled:cursor-not-allowed disabled:bg-[color:oklch(var(--rm-muted))] disabled:text-[color:oklch(var(--rm-muted-foreground))] aria-[invalid=true]:border-[color:oklch(var(--rm-destructive))] aria-[invalid=true]:focus:ring-[color:oklch(var(--rm-destructive))]";
+/** The type scale, as the components use it. A screen composes these through
+ * the components (Screen's title IS pageTitle); they are exported for the
+ * rare custom surface. */
+declare const textStyles: {
+    readonly pageTitle: "text-2xl font-semibold tracking-tight text-[color:oklch(var(--rm-foreground))]";
+    readonly sectionTitle: "text-base font-semibold text-[color:oklch(var(--rm-foreground))]";
+    readonly cardTitle: "text-sm font-semibold text-[color:oklch(var(--rm-foreground))]";
+    readonly body: "text-sm text-[color:oklch(var(--rm-foreground))]";
+    readonly muted: "text-sm text-[color:oklch(var(--rm-muted-foreground))]";
+    readonly caption: "text-xs text-[color:oklch(var(--rm-muted-foreground))]";
+    readonly stat: "text-3xl font-semibold tracking-tight tabular-nums text-[color:oklch(var(--rm-foreground))]";
+    readonly mono: "font-[family-name:var(--rm-font-mono)] text-xs";
+};
+/**
+ * The accent as inline style, for a custom surface that must be themed on
+ * its own. AppShell used to set this on its root div; since 0.5 it calls
+ * applyAccent() instead, so a Dialog or a Toast portalled to <body> is
+ * themed too (they were not: the variable never reached them).
  */
 declare function accentStyle(accent?: string): CSSProperties;
-/** Shared focus ring, visible in both themes, driven by the accent. */
-declare const focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--rm-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-neutral-950";
-/** Base classes shared by all text-like inputs. */
-declare const inputBase: string;
+/** Write the accent's tokens onto <html>, where every portal can see them. */
+declare function applyAccent(accent?: string): void;
+/**
+ * Make sure the page has the kit's tokens.
+ *
+ * An app scaffolded from the 0.5 template imports the stylesheet. One
+ * scaffolded earlier does not, and never will - sync_app re-copies the
+ * packages, never index.css - so under the new kit every `var(--rm-card)`
+ * would be undefined and the page would paint transparent. `--rm-kit` is the
+ * sentinel the stylesheet sets; when it is missing, the same block is put in
+ * a <style> at the top of <head>, where the app's own CSS still wins.
+ */
+declare function ensureTokens(): boolean;
 
 /** The two themes an app paints in. */
 type AppTheme = "light" | "dark";
@@ -32,6 +138,14 @@ type AppTheme = "light" | "dark";
  * white dropdowns and a white scrollbar.
  */
 declare function applyTheme(theme: AppTheme): void;
+/**
+ * A theme the PERSON chose: applied now and remembered, so the app opens in
+ * it next time. This is what ThemeToggle calls. A theme pushed by the host
+ * (useThemeBridge) is deliberately not remembered; see below.
+ */
+declare function setTheme(theme: AppTheme, remember?: boolean): void;
+/** The current theme, re-rendered when <html>'s class changes for any reason. */
+declare function useTheme(): AppTheme;
 /**
  * Keep the app's theme in step with whatever framed it.
  *
@@ -52,6 +166,29 @@ declare function applyTheme(theme: AppTheme): void;
  * it always has.
  */
 declare function useThemeBridge(): void;
+
+declare const ICON_NAMES: readonly ["home", "layout-dashboard", "list", "table", "kanban", "calendar", "calendar-days", "calendar-clock", "calendar-check", "clock", "inbox", "mail", "mail-open", "mail-check", "message-square", "message-circle", "bell", "settings", "sliders-horizontal", "search", "filter", "filter-x", "menu", "panel-left", "panel-left-close", "log-in", "log-out", "plus", "minus", "x", "check", "check-check", "pencil", "trash-2", "copy", "save", "refresh-cw", "rotate-cw", "undo-2", "redo-2", "play", "pause", "square", "send", "reply", "forward", "upload", "download", "cloud-upload", "import", "paperclip", "printer", "share-2", "external-link", "link", "unlink", "eye", "eye-off", "maximize-2", "minimize-2", "grip-vertical", "power", "arrow-up", "arrow-down", "arrow-left", "arrow-right", "arrow-up-right", "arrow-down-right", "arrow-up-down", "chevron-up", "chevron-down", "chevron-left", "chevron-right", "chevrons-up-down", "chevrons-left", "chevrons-right", "trending-up", "trending-down", "circle-check", "circle-x", "circle-alert", "circle-help", "circle-minus", "circle-plus", "triangle-alert", "info", "circle", "circle-dot", "loader", "loader-circle", "hourglass", "timer", "history", "archive", "flag", "pin", "star", "heart", "bookmark", "tag", "tags", "hash", "at-sign", "lightbulb", "target", "award", "user", "users", "user-plus", "user-check", "user-x", "contact", "building-2", "briefcase", "handshake", "shield", "shield-check", "lock", "lock-open", "key", "folder", "folder-open", "file", "file-text", "file-plus", "file-check", "file-spreadsheet", "file-down", "file-up", "clipboard", "clipboard-check", "image", "database", "server", "layers", "box", "package", "shopping-cart", "credit-card", "receipt", "wallet", "banknote", "coins", "dollar-sign", "percent", "calculator", "truck", "map-pin", "map", "globe", "phone", "landmark", "gift", "megaphone", "chart-bar", "chart-line", "chart-pie", "chart-column", "activity", "zap", "sparkles", "bot", "cpu", "sun", "moon", "monitor", "smartphone", "wifi", "wifi-off", "plug", "qr-code", "scan", "languages", "ellipsis", "ellipsis-vertical", "list-checks", "layout-grid", "columns-3", "rows-3"];
+type IconName = (typeof ICON_NAMES)[number];
+
+type IconSize = 12 | 14 | 16 | 18 | 20 | 24 | 28 | 32;
+interface IconProps extends Omit<SVGAttributes<SVGSVGElement>, "name"> {
+    name: IconName;
+    /** Rendered size in pixels. Default 16. */
+    size?: IconSize;
+    /** Stroke width. Default 2; 1.5 reads lighter at 24 and above. */
+    strokeWidth?: number;
+    /** An accessible name. Without one the icon is decorative and hidden from screen readers. */
+    label?: string;
+}
+/** Resolve an alias or an unknown name to one the data has. */
+declare function resolveIconName(name: string): IconName | null;
+declare const Icon: react.ForwardRefExoticComponent<IconProps & react.RefAttributes<SVGSVGElement>>;
+/**
+ * An `icon` prop is a name or an element. A component calls this to draw
+ * whichever it was given, so a screen can write `icon="plus"` and the rare
+ * custom glyph still fits.
+ */
+declare function renderIcon(icon: IconName | ReactNode | undefined, size?: IconSize, className?: string): ReactNode;
 
 interface ActionLike<P = unknown> {
     /** The action name; becomes data-rm-action on the widget. */
@@ -103,28 +240,60 @@ interface PageReply<T> {
 interface AppShellNavItem {
     label: string;
     path: string;
+    /** A kit icon name or an element. In the sidebar every item should have one. */
+    icon?: IconName | ReactNode;
+    /** Items with the same group are drawn under a small heading. */
+    group?: string;
+    /** A count or a dot at the end of the item. */
+    badge?: ReactNode;
+    /** Match only this exact path, not its children. Default: exact for "/", prefix otherwise. */
+    exact?: boolean;
 }
 interface AppShellProps extends Omit<HTMLAttributes<HTMLDivElement>, "title"> {
     /** App name, from app.json's name. */
     title: ReactNode;
+    /** A line under the name in the sidebar's brand block. */
+    subtitle?: ReactNode;
     /** Accent color, from app.json's theme.accent. Defaults to the brand orange. */
     accent?: string;
     logo?: ReactNode;
-    /** Optional top navigation, one item per screen. */
+    /** Navigation, one item per screen. */
     nav?: AppShellNavItem[];
     activePath?: string;
     /** SPA navigation callback; without it nav items render as plain links. */
     onNavigate?: (path: string) => void;
     /** Forwarded to ConnectionBanner; omit to read it from AppProvider. */
     connectionState?: ConnectionState;
+    /** Controls at the right of the top bar. */
     headerRight?: ReactNode;
+    /** Something in the middle of the top bar: a search box, a period picker. */
+    topbar?: ReactNode;
+    /** "sidebar" or "topbar". Default: sidebar when there are two or more nav items. */
+    layout?: "sidebar" | "topbar";
+    /** Let the sidebar fold to its icon rail. Default true. */
+    collapsible?: boolean;
+    defaultCollapsed?: boolean;
+    /** The foot of the sidebar. Default: a ThemeToggle when the app is not embedded. */
+    sidebarFooter?: ReactNode;
+    /** How wide the content column may be. Default "default" (72rem). */
+    contentWidth?: "default" | "wide" | "full";
     children?: ReactNode;
 }
-/**
- * Page frame: header, optional nav, content slot, connection banner
- * (sdk.md). Also sets the accent CSS variable and mounts the toast viewport.
- */
-declare function AppShell({ title, accent, logo, nav, activePath, onNavigate, connectionState, headerRight, children, className, style, ...props }: AppShellProps): react.JSX.Element;
+declare function AppShell({ title, subtitle, accent, logo, nav, activePath, onNavigate, connectionState, headerRight, topbar, layout: layoutProp, collapsible, defaultCollapsed, sidebarFooter, contentWidth, children, className, style, ...props }: AppShellProps): react.JSX.Element;
+
+interface BreadcrumbItem {
+    label: ReactNode;
+    /** The screen's route. Omit for the current page, which is never a link. */
+    path?: string;
+}
+interface BreadcrumbsProps extends Omit<HTMLAttributes<HTMLElement>, "onSelect"> {
+    items: BreadcrumbItem[];
+    /** SPA navigation callback; defaults to the shell's; without either the crumbs render as plain links. */
+    onNavigate?: (path: string) => void;
+    /** Accessible name for the trail. Default "Breadcrumb". */
+    label?: string;
+}
+declare function Breadcrumbs({ items, onNavigate, label, className, ...props }: BreadcrumbsProps): react.JSX.Element;
 
 interface ScreenProps extends Omit<HTMLAttributes<HTMLElement>, "title"> {
     /** Screen title, rendered as the page heading. */
@@ -132,14 +301,53 @@ interface ScreenProps extends Omit<HTMLAttributes<HTMLElement>, "title"> {
     description?: ReactNode;
     /** Right-aligned header actions (buttons etc.). */
     actions?: ReactNode;
+    /** A kit icon name or an element beside the title. */
+    icon?: IconName | ReactNode;
+    /** A Badge beside the title. */
+    badge?: ReactNode;
+    /** The trail above the title, for a detail screen. */
+    breadcrumbs?: BreadcrumbItem[];
+    /** A back arrow to this screen path. */
+    backPath?: string;
+    /** A Tabs strip under the header. */
+    tabs?: ReactNode;
     children?: ReactNode;
 }
 /** One routed screen with title and description (sdk.md). */
-declare function Screen({ title, description, actions, children, className, ...props }: ScreenProps): react.JSX.Element;
+declare function Screen({ title, description, actions, icon, badge, breadcrumbs, backPath, tabs, children, className, ...props }: ScreenProps): react.JSX.Element;
+
+interface PageHeaderProps extends Omit<HTMLAttributes<HTMLElement>, "title"> {
+    title: ReactNode;
+    description?: ReactNode;
+    /** A kit icon name or an element beside the title. */
+    icon?: IconName | ReactNode;
+    /** A Badge beside the title: a state, a count. */
+    badge?: ReactNode;
+    /** The trail above the title. */
+    breadcrumbs?: BreadcrumbItem[];
+    /** A back arrow to this screen path, for a detail page. */
+    backPath?: string;
+    /** Called by the back arrow; defaults to the shell's onNavigate. */
+    onNavigate?: (path: string) => void;
+    /** Right-aligned controls. */
+    actions?: ReactNode;
+    /** A Tabs strip under the header, for a screen in sections. */
+    tabs?: ReactNode;
+    /** The id put on the heading, for a section's aria-labelledby. */
+    titleId?: string;
+}
+declare function PageHeader({ title, description, icon, badge, breadcrumbs, backPath, onNavigate, actions, tabs, titleId, className, ...props }: PageHeaderProps): react.JSX.Element;
+
+interface ThemeToggleProps {
+    /** Show the words beside the icon. Default false. */
+    showLabel?: boolean;
+    className?: string;
+}
+declare function ThemeToggle({ showLabel, className }: ThemeToggleProps): react.JSX.Element;
 
 declare const buttonVariants: (props?: ({
-    variant?: "primary" | "secondary" | "ghost" | "danger" | null | undefined;
-    size?: "sm" | "md" | "lg" | null | undefined;
+    variant?: "primary" | "secondary" | "outline" | "ghost" | "danger" | null | undefined;
+    size?: "sm" | "md" | "lg" | "icon" | null | undefined;
 } & class_variance_authority_types.ClassProp) | undefined) => string;
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
     /** Shows a spinner and disables the button while true. Defaults to `action.loading` when an action is given. */
@@ -152,12 +360,129 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>, VariantPr
     action?: ActionLike;
     /** Params for `action`: a value, or a function of the click event. */
     params?: ParamsOf<unknown, MouseEvent<HTMLButtonElement>>;
+    /** An icon before the label: a kit icon name, or an element. */
+    icon?: IconName | ReactNode;
+    /** An icon after the label. */
+    iconRight?: IconName | ReactNode;
     children?: ReactNode;
 }
 declare const Button: react.ForwardRefExoticComponent<ButtonProps & react.RefAttributes<HTMLButtonElement>>;
 declare function Spinner({ className }: {
     className?: string;
 }): react.JSX.Element;
+
+type BadgeVariant = "neutral" | "accent" | "success" | "warning" | "danger" | "info" | "outline";
+interface BadgeProps extends Omit<HTMLAttributes<HTMLSpanElement>, "children"> {
+    variant?: BadgeVariant;
+    size?: "sm" | "md";
+    /** A coloured dot before the text. */
+    dot?: boolean;
+    /** An icon before the text. */
+    icon?: IconName | ReactNode;
+    /** Called by a small × after the text; the badge is removable when set. */
+    onRemove?: () => void;
+    /** Accessible name of the ×. Default "Remove". */
+    removeLabel?: string;
+    children?: ReactNode;
+}
+declare function Badge({ variant, size, dot, icon, onRemove, removeLabel, className, children, ...props }: BadgeProps): react.JSX.Element;
+
+interface KbdProps extends HTMLAttributes<HTMLElement> {
+    children?: ReactNode;
+}
+declare function Kbd({ className, children, ...props }: KbdProps): react.JSX.Element;
+
+interface SeparatorProps extends HTMLAttributes<HTMLDivElement> {
+    orientation?: "horizontal" | "vertical";
+    /** Words in the middle of a horizontal rule. */
+    label?: ReactNode;
+}
+declare function Separator({ orientation, label, className, ...props }: SeparatorProps): react.JSX.Element;
+
+interface DescriptionItem {
+    label: ReactNode;
+    value: ReactNode;
+    /** Spans both columns in a two-column list. */
+    wide?: boolean;
+}
+interface DescriptionListProps extends HTMLAttributes<HTMLDListElement> {
+    items: DescriptionItem[];
+    /** Pairs per row at md and up. Default 1. */
+    columns?: 1 | 2 | 3;
+    /** Label beside the value instead of above it. Default false. */
+    inline?: boolean;
+    /** Tighter rows. */
+    dense?: boolean;
+    /** What to show for a value that is empty. Default an en dash. */
+    emptyText?: ReactNode;
+}
+declare function DescriptionList({ items, columns, inline, dense, emptyText, className, ...props }: DescriptionListProps): react.JSX.Element;
+
+interface ToolbarProps extends HTMLAttributes<HTMLDivElement> {
+    /** Controls at the end of the row (a Button, a Menu). */
+    end?: ReactNode;
+    children?: ReactNode;
+}
+declare function Toolbar({ end, children, className, ...props }: ToolbarProps): react.JSX.Element;
+interface SearchInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "onChange" | "value" | "type"> {
+    value?: string;
+    onChange?: (value: string) => void;
+    /** Accessible name. Default "Search". */
+    label?: string;
+    /** Show a × that clears the box when there is text. Default true. */
+    clearable?: boolean;
+}
+/** A search box with the icon in it and a way to clear it; `role="searchbox"`. */
+declare const SearchInput: react.ForwardRefExoticComponent<SearchInputProps & react.RefAttributes<HTMLInputElement>>;
+
+interface PaginationProps extends Omit<HTMLAttributes<HTMLElement>, "onChange"> {
+    /** The current page, 1-based. */
+    page: number;
+    pageCount: number;
+    onChange: (page: number) => void;
+    /** Rows altogether; with pageSize it prints the range on this page. */
+    total?: number;
+    pageSize?: number;
+    /** Accessible name. Default "Pagination". */
+    label?: string;
+    /** Words for the rows: "1 to 25 of 312 items". Default "rows". */
+    noun?: string;
+    size?: "sm" | "md";
+}
+declare function Pagination({ page, pageCount, onChange, total, pageSize, label, noun, size, className, ...props }: PaginationProps): react.JSX.Element;
+
+interface SegmentedOption {
+    value: string;
+    label: ReactNode;
+    icon?: IconName | ReactNode;
+    disabled?: boolean;
+}
+interface SegmentedControlProps extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
+    options: SegmentedOption[];
+    value: string;
+    onChange: (value: string) => void;
+    /** Accessible name. */
+    label?: string;
+    size?: "sm" | "md";
+}
+declare function SegmentedControl({ options, value, onChange, label, size, className, ...props }: SegmentedControlProps): react.JSX.Element;
+
+interface SparklineProps {
+    /** Recent values, oldest first. */
+    values: number[];
+    /** Drawing width in pixels. Default 120; the SVG scales to its box. */
+    width?: number;
+    /** Drawing height in pixels. Default 28. */
+    height?: number;
+    /** Fill the area under the line faintly. Default true. */
+    area?: boolean;
+    /** A colour of your own; the accent by default. */
+    color?: string;
+    /** An accessible name; without one the drawing is decorative. */
+    label?: string;
+    className?: string;
+}
+declare function Sparkline({ values, width, height, area, color, label, className }: SparklineProps): react.JSX.Element | null;
 
 type AlertVariant = "info" | "success" | "warning" | "error";
 interface AlertProps extends Omit<HTMLAttributes<HTMLDivElement>, "title"> {
@@ -188,6 +513,8 @@ declare function CopyButton({ value, children, label, toastTitle, size, disabled
 
 interface MenuItemDef {
     label: ReactNode;
+    /** An icon before the label. */
+    icon?: IconName | ReactNode;
     /** Red styling, for an item that removes something. */
     danger?: boolean;
     disabled?: boolean;
@@ -215,6 +542,8 @@ interface MenuProps {
 }
 declare function Menu({ items, children, trigger, label, align, menuLabel, disabled, className, }: MenuProps): react.JSX.Element;
 interface MenuItemProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "type" | "onSelect"> {
+    /** An icon before the label. */
+    icon?: IconName | ReactNode;
     danger?: boolean;
     /** The action this item runs (the object from useAction). */
     action?: ActionLike;
@@ -227,15 +556,21 @@ interface MenuItemProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "t
 declare const MenuItem: react.ForwardRefExoticComponent<MenuItemProps & react.RefAttributes<HTMLButtonElement>>;
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
+    /** Lifts on hover and takes the pointer cursor, for a card that is a link. */
+    interactive?: boolean;
     children?: ReactNode;
 }
-declare function Card({ className, ...props }: CardProps): react.JSX.Element;
+declare function Card({ className, interactive, ...props }: CardProps): react.JSX.Element;
 interface CardHeaderProps extends Omit<HTMLAttributes<HTMLDivElement>, "title"> {
     /** Optional title shortcut; children render below or instead of it. */
     title?: ReactNode;
     description?: ReactNode;
+    /** An icon before the title. */
+    icon?: IconName | ReactNode;
+    /** Controls on the right: a Button, a Menu, a Badge. */
+    actions?: ReactNode;
 }
-declare function CardHeader({ className, title, description, children, ...props }: CardHeaderProps): react.JSX.Element;
+declare function CardHeader({ className, title, description, icon, actions, children, ...props }: CardHeaderProps): react.JSX.Element;
 declare function CardBody({ className, ...props }: HTMLAttributes<HTMLDivElement>): react.JSX.Element;
 declare function CardFooter({ className, ...props }: HTMLAttributes<HTMLDivElement>): react.JSX.Element;
 
@@ -316,12 +651,14 @@ declare function Tabs({ value, defaultValue, onChange, label, className, childre
 interface TabProps {
     value: string;
     disabled?: boolean;
+    /** An icon before the label. */
+    icon?: IconName | ReactNode;
     /** A count or dot to the right of the label. */
     badge?: ReactNode;
     className?: string;
     children?: ReactNode;
 }
-declare function Tab({ value, disabled, badge, className, children }: TabProps): react.JSX.Element;
+declare function Tab({ value, disabled, icon, badge, className, children }: TabProps): react.JSX.Element;
 interface TabPanelProps {
     value: string;
     className?: string;
@@ -331,6 +668,7 @@ declare function TabPanel({ value, className, children }: TabPanelProps): react.
 
 type Side = "top" | "bottom" | "left" | "right";
 type Align = "start" | "center" | "end";
+
 interface PopoverProps {
     /** What the trigger button shows. */
     trigger: ReactNode;
@@ -357,7 +695,7 @@ interface TooltipProps {
     /** The text shown. */
     content: ReactNode;
     /** Which side it sits on. Default "top". */
-    side?: "top" | "bottom" | "left" | "right";
+    side?: Side;
     className?: string;
     /** Exactly one element: the control the hint describes. */
     children: ReactNode;
@@ -379,8 +717,8 @@ interface StatProps {
     upIsGood?: boolean;
     /** Recent values, oldest first, drawn as a small line under the number. */
     trend?: number[];
-    /** A glyph in the corner. */
-    icon?: ReactNode;
+    /** A kit icon name or an element, drawn in a tinted chip in the corner. */
+    icon?: IconName | ReactNode;
     /** Show a placeholder instead of the number while it is being fetched. */
     loading?: boolean;
     /** Draw it inside a Card. Default true; false to place it in your own. */
@@ -450,11 +788,11 @@ interface AccordionItemProps {
 declare function AccordionItem({ value, title, description, meta, disabled, className, children, }: AccordionItemProps): react.JSX.Element;
 
 type StatusBadgeStatus = "ok" | "warn" | "error" | "pending";
-interface StatusBadgeProps extends HTMLAttributes<HTMLSpanElement> {
+interface StatusBadgeProps extends Omit<HTMLAttributes<HTMLSpanElement>, "children"> {
     status: StatusBadgeStatus;
     children?: ReactNode;
 }
-declare function StatusBadge({ status, children, className, ...props }: StatusBadgeProps): react.JSX.Element;
+declare function StatusBadge({ status, children, ...props }: StatusBadgeProps): react.JSX.Element;
 
 interface TimelineProps extends HTMLAttributes<HTMLOListElement> {
     children?: ReactNode;
@@ -494,20 +832,6 @@ interface AvatarGroupProps extends HTMLAttributes<HTMLDivElement> {
 }
 /** A row of overlapping faces, with "+N" for the ones that did not fit. */
 declare function AvatarGroup({ max, size, children, className, ...props }: AvatarGroupProps): react.JSX.Element;
-
-interface BreadcrumbItem {
-    label: ReactNode;
-    /** The screen's route. Omit for the current page, which is never a link. */
-    path?: string;
-}
-interface BreadcrumbsProps extends Omit<HTMLAttributes<HTMLElement>, "onSelect"> {
-    items: BreadcrumbItem[];
-    /** SPA navigation callback; without it the crumbs render as plain links. */
-    onNavigate?: (path: string) => void;
-    /** Accessible name for the trail. Default "Breadcrumb". */
-    label?: string;
-}
-declare function Breadcrumbs({ items, onNavigate, label, className, ...props }: BreadcrumbsProps): react.JSX.Element;
 
 interface ThreadMessage {
     /** Stable identity; falls back to the index. */
@@ -727,11 +1051,11 @@ interface ChartSeries {
     /** What this line or set of bars is, for the legend and the tooltip. */
     name: string;
     points: ChartPoint[];
-    /** A colour of your own. Leave it out and the app's accent is used. */
+    /** A colour of your own. Leave it out and the chart palette is used. */
     color?: string;
 }
 interface ChartProps {
-    kind: "bar" | "line" | "area" | "pie";
+    kind: "bar" | "line" | "area" | "pie" | "donut";
     /** One series, the short way. Ignored when `series` is given. */
     data?: ChartDatum[];
     /** Several series. Each gets its own line, its own bars and a legend entry. */
@@ -741,7 +1065,7 @@ interface ChartProps {
      * out to scale. Defaults to "time" when every x parses as a date.
      */
     xKind?: "category" | "time";
-    /** Show the key. Defaults to on for a pie and for more than one series. */
+    /** Show the key. Defaults to on for a pie or donut and for more than one series. */
     legend?: boolean;
     /** Stack the bars instead of standing them side by side. Bar only. */
     stacked?: boolean;
@@ -1095,7 +1419,7 @@ interface SliderProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "value
     minLabel?: ReactNode;
     maxLabel?: ReactNode;
 }
-declare function Slider({ value, onChange, min, max, step, showValue, formatValue, minLabel, maxLabel, className, id, disabled, ...props }: SliderProps): react.JSX.Element;
+declare function Slider({ value, onChange, min, max, step, showValue, formatValue, minLabel, maxLabel, className, id, disabled, style, ...props }: SliderProps): react.JSX.Element;
 
 interface RatingProps {
     /** Controlled value. Inside a Field it reads the form's value instead. */
@@ -1156,6 +1480,12 @@ interface FileUploadProps {
  * Drag-and-drop file upload; returns a FileRef via useFileUpload (sdk.md).
  * Needs an AppProvider above it. Bytes travel over /v1/artifacts.*, never
  * over the socket.
+ *
+ * It looks like a dropzone, not a button: a dashed field with the upload
+ * glyph in a muted disc, the words under it, and the whole thing lifting
+ * when a file is dragged over. Upload is on 21% of the screens the AppSumo
+ * board was read from, and the native "Choose File" control is what an app
+ * had before this.
  */
 declare function FileUpload({ onUpload, onError, accept, label, hint, disabled, isPublic, action, params, className, }: FileUploadProps): react.JSX.Element;
 
@@ -1186,7 +1516,8 @@ interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
 declare function Skeleton({ variant, lines, width, height, className, style, ...props }: SkeletonProps): react.JSX.Element;
 
 interface EmptyStateProps extends Omit<HTMLAttributes<HTMLDivElement>, "title"> {
-    icon?: ReactNode;
+    /** A kit icon name or an element, drawn in a muted disc. Default "inbox". */
+    icon?: IconName | ReactNode;
     title: ReactNode;
     description?: ReactNode;
     /** One action (sdk.md), usually a Button. */
@@ -1286,4 +1617,4 @@ interface AssistantWidgetProps {
 }
 declare function AssistantWidget({ title, placeholder, className }: AssistantWidgetProps): react.JSX.Element | null;
 
-export { Accordion, AccordionItem, type AccordionItemProps, type AccordionProps, type ActionDataSource, type ActionLike, Alert, type AlertProps, type AlertVariant, type AnyDataSource, AppShell, type AppShellNavItem, type AppShellProps, type AppTheme, AssistantWidget, type AssistantWidgetProps, Avatar, AvatarGroup, type AvatarGroupProps, type AvatarProps, type BreadcrumbItem, Breadcrumbs, type BreadcrumbsProps, Button, type ButtonProps, Calendar, type CalendarEvent, type CalendarProps, Card, CardBody, CardFooter, CardHeader, type CardHeaderProps, type CardProps, Chart, type ChartDatum, type ChartPoint, type ChartProps, type ChartSeries, Checkbox, type CheckboxProps, Combobox, type ComboboxProps, Composer, type ComposerProps, ConfirmDialog, type ConfirmDialogProps, ConnectionBanner, type ConnectionBannerProps, CopyButton, type CopyButtonProps, DEFAULT_ACCENT, DataTable, type DataTableApi, type DataTableBulkAction, type DataTableBulkCallbackAction, type DataTableBulkLinkedAction, type DataTableColumn, type DataTableProps, type DataTableRowAction, type DataTableRowCallbackAction, type DataTableRowLinkedAction, type DataTableSelection, type DataTableSource, DatePicker, type DatePickerProps, type DateRange, DateRangePicker, type DateRangePickerProps, type DateRangePreset, Dialog, type DialogProps, Drawer, type DrawerProps, EmptyState, type EmptyStateProps, ErrorState, type ErrorStateProps, Field, FieldArray, type FieldArrayProps, type FieldProps, FileUpload, type FileUploadProps, Form, type FormProps, type FormValues, Grid, type GridProps, JsonInput, type JsonInputProps, JsonView, type JsonViewProps, Kanban, KanbanCard, type KanbanCardProps, KanbanColumn, type KanbanColumnProps, type KanbanMove, type KanbanProps, Markdown, type MarkdownProps, Menu, MenuItem, type MenuItemDef, type MenuItemProps, type MenuProps, Message, type MessageProps, type NamedDataSource, NumberInput, type NumberInputProps, type PageReply, type PageRequest, type ParamsOf, Popover, type PopoverProps, Progress, type ProgressProps, RadioGroup, type RadioGroupProps, Rating, type RatingProps, Row, type RowProps, Screen, type ScreenProps, Select, type SelectOption, type SelectProps, Skeleton, type SkeletonProps, Slider, type SliderProps, Spinner, Stack, type StackProps, Stat, type StatProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, Step, type StepProps, Stepper, type StepperProps, Switch, type SwitchProps, Tab, TabPanel, type TabPanelProps, type TabProps, Tabs, type TabsProps, TagInput, type TagInputProps, TextArea, type TextAreaProps, TextInput, type TextInputProps, Thread, type ThreadMessage, type ThreadProps, TimePicker, type TimePickerProps, Timeline, TimelineItem, type TimelineItemProps, type TimelineProps, Toast, type ToastOptions, type ToastProps, Tooltip, type TooltipProps, type UseToastResult, accentStyle, applyTheme, cn, dismissToast, focusRing, inputBase, toast, useFormValues, useThemeBridge, useToast };
+export { Accordion, AccordionItem, type AccordionItemProps, type AccordionProps, type ActionDataSource, type ActionLike, Alert, type AlertProps, type AlertVariant, type AnyDataSource, AppShell, type AppShellNavItem, type AppShellProps, type AppTheme, AssistantWidget, type AssistantWidgetProps, Avatar, AvatarGroup, type AvatarGroupProps, type AvatarProps, Badge, type BadgeProps, type BadgeVariant, type BreadcrumbItem, Breadcrumbs, type BreadcrumbsProps, Button, type ButtonProps, Calendar, type CalendarEvent, type CalendarProps, Card, CardBody, CardFooter, CardHeader, type CardHeaderProps, type CardProps, Chart, type ChartDatum, type ChartPoint, type ChartProps, type ChartSeries, Checkbox, type CheckboxProps, Combobox, type ComboboxProps, Composer, type ComposerProps, ConfirmDialog, type ConfirmDialogProps, ConnectionBanner, type ConnectionBannerProps, CopyButton, type CopyButtonProps, DEFAULT_ACCENT, DataTable, type DataTableApi, type DataTableBulkAction, type DataTableBulkCallbackAction, type DataTableBulkLinkedAction, type DataTableColumn, type DataTableProps, type DataTableRowAction, type DataTableRowCallbackAction, type DataTableRowLinkedAction, type DataTableSelection, type DataTableSource, DatePicker, type DatePickerProps, type DateRange, DateRangePicker, type DateRangePickerProps, type DateRangePreset, type DescriptionItem, DescriptionList, type DescriptionListProps, Dialog, type DialogProps, Drawer, type DrawerProps, EmptyState, type EmptyStateProps, ErrorState, type ErrorStateProps, Field, FieldArray, type FieldArrayProps, type FieldProps, FileUpload, type FileUploadProps, Form, type FormProps, type FormValues, Grid, type GridProps, ICON_NAMES, Icon, type IconName, type IconProps, type IconSize, JsonInput, type JsonInputProps, JsonView, type JsonViewProps, Kanban, KanbanCard, type KanbanCardProps, KanbanColumn, type KanbanColumnProps, type KanbanMove, type KanbanProps, Kbd, type KbdProps, Markdown, type MarkdownProps, Menu, MenuItem, type MenuItemDef, type MenuItemProps, type MenuProps, Message, type MessageProps, type NamedDataSource, NumberInput, type NumberInputProps, PageHeader, type PageHeaderProps, type PageReply, type PageRequest, Pagination, type PaginationProps, type ParamsOf, Popover, type PopoverProps, Progress, type ProgressProps, RadioGroup, type RadioGroupProps, Rating, type RatingProps, Row, type RowProps, Screen, type ScreenProps, SearchInput, type SearchInputProps, SegmentedControl, type SegmentedControlProps, type SegmentedOption, Select, type SelectOption, type SelectProps, Separator, type SeparatorProps, Skeleton, type SkeletonProps, Slider, type SliderProps, Sparkline, type SparklineProps, Spinner, Stack, type StackProps, Stat, type StatProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, Step, type StepProps, Stepper, type StepperProps, Switch, type SwitchProps, Tab, TabPanel, type TabPanelProps, type TabProps, Tabs, type TabsProps, TagInput, type TagInputProps, TextArea, type TextAreaProps, TextInput, type TextInputProps, ThemeToggle, type ThemeToggleProps, Thread, type ThreadMessage, type ThreadProps, TimePicker, type TimePickerProps, Timeline, TimelineItem, type TimelineItemProps, type TimelineProps, Toast, type ToastOptions, type ToastProps, Toolbar, type ToolbarProps, Tooltip, type TooltipProps, type UseToastResult, accentStyle, applyAccent, applyTheme, cn, dismissToast, ensureTokens, focusRing, inputBase, renderIcon, resolveIconName, setTheme, textStyles, tk, toast, useFormValues, useTheme, useThemeBridge, useToast };
