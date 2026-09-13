@@ -109,6 +109,9 @@ function bridgeScript(screens) {
   var announceDrawn = function () {
     if (drawn) return;
     drawn = true;
+    // The app is on screen, so the self-heal budget below is spent and owed
+    // again fresh the next time something breaks.
+    try { sessionStorage.removeItem(HEAL_KEY); } catch (e) {}
     if (drawnObserver) { try { drawnObserver.disconnect(); } catch (e) {} drawnObserver = null; }
     post("rm-app-drawn", { loadId: loadId });
   };
@@ -153,17 +156,106 @@ function bridgeScript(screens) {
     drawn = false;
     ready();
   };
+
+  // Re-fetch the whole page to pick up a fixed module graph that Vite's own
+  // hot reload did not deliver to us.
+  //
+  // The first write to an app's screens brings the preview up (issue 119),
+  // which is by definition a moment when screens.tsx names page files the
+  // assistant has not written yet: the frame boots, screens.tsx answers 500,
+  // and #root holds only the placeholder. When the missing files land, Vite
+  // sends a full-reload over its HMR socket - and a fresh tab of the same URL
+  // gets it and draws. The Build panel's embedded, cross-origin frame does
+  // NOT reliably get it (thirty-sixth pass: the frame sat on the placeholder
+  // for a whole build while, from inside it, screens.tsx served 200 and
+  // @vite/client pinged 200 - the module graph was healthy, the document was
+  // just stale). The bridge runs inside that frame, so it can do what the
+  // socket did not: reload.
+  //
+  // WHEN to reload is the whole question. A timer is wrong: the pages landed
+  // 17 s and 51 s after the boot, and any budget of blind reloads is spent
+  // long before that. Vite's error names the module it could not serve
+  // (err.id, the importer's file), so the frame polls exactly that file and
+  // reloads the moment the server answers it with 200 - not before, and not
+  // on a guess. The reload itself is still bounded, so a module that serves
+  // but whose graph fails on the next import cannot loop the frame; after
+  // the budget the host shows its own "hasn't shown its first screen" card.
+  var HEAL_KEY = "rm-heal-reloads";
+  var HEAL_MAX = 3;
+  var HEAL_EVERY_MS = 3000;
+  var HEAL_FOR_MS = 15 * 60 * 1000;
+  var selfHealReload = function () {
+    var n = 0;
+    try { n = parseInt(sessionStorage.getItem(HEAL_KEY) || "0", 10) || 0; } catch (e) {}
+    if (n >= HEAL_MAX) return;
+    try { sessionStorage.setItem(HEAL_KEY, String(n + 1)); } catch (e) {}
+    try { location.reload(); } catch (e) { /* a locked-down frame cannot heal itself */ }
+  };
+  // Vite's err.id is the module's absolute path on disk; /@fs/ is how the dev
+  // server serves any such path, transforming it the same way an import would.
+  var healUrlFor = function (id) {
+    if (!id || typeof id !== "string" || id.charAt(0) !== "/") return null;
+    try { return new URL("@fs" + id, document.baseURI).toString(); } catch (e) { return null; }
+  };
+  var healTarget = null;
+  var healTimer = 0;
+  var healUntil = 0;
+  var pollUntilServed = function () {
+    healTimer = 0;
+    if (drawn || hasDrawn()) return;           // came back on its own
+    if (!healTarget || Date.now() > healUntil) return;
+    var target = healTarget;
+    fetch(target, { cache: "no-store" }).then(function (r) {
+      if (r.ok) { selfHealReload(); return; }  // fixed on disk; nobody reloaded us
+      if (!healTimer) healTimer = setTimeout(pollUntilServed, HEAL_EVERY_MS);
+    }).catch(function () {
+      if (!healTimer) healTimer = setTimeout(pollUntilServed, HEAL_EVERY_MS);
+    });
+  };
+  var healWhenServed = function (id) {
+    var url = healUrlFor(id);
+    if (!url) return;
+    healTarget = url;                           // the newest failure is the one to watch
+    healUntil = Date.now() + HEAL_FOR_MS;
+    if (!healTimer) healTimer = setTimeout(pollUntilServed, HEAL_EVERY_MS);
+  };
+
   var watchForRecovery = function () {
     if (recoveryTimer) clearTimeout(recoveryTimer);
     var seen = errorCount;
     recoveryTimer = setTimeout(function () {
       recoveryTimer = 0;
       if (errorCount !== seen) return;           // still failing; stay quiet
-      var root = document.getElementById("root");
-      if (!root || root.children.length === 0) return;  // nothing rendered yet
+      // hasDrawn excludes the placeholder: a page holding only "Getting your
+      // app ready" has NOT come back, however quiet it has gone, and must not
+      // greet the host as if it had (that greeting is what wiped the reason
+      // off the host's card in the thirty-sixth pass).
+      if (!hasDrawn()) return;
       announceRecovery();
     }, 1500);
   };
+  // Vite hands its own events - vite:error, vite:afterUpdate - ONLY to
+  // listeners registered through its HMR API (import.meta.hot.on); it never
+  // dispatches them on window. The two window listeners below had therefore
+  // never fired since the day they were written: no compile failure ever
+  // reached reportError or __rm/errors, no hot update ever armed the
+  // recovery watch, and a frame that booted on a 500 had nothing watching it
+  // at all (thirty-sixth pass, proven with an instrumented page). This inline
+  // script has no import.meta.hot of its own, but the client module is
+  // served under the same base and exports the context factory, so borrow
+  // one and relay. Dynamic, and swallowed when it fails: a page not served
+  // by Vite has nothing to relay.
+  try {
+    import(new URL("@vite/client", document.baseURI).href).then(function (m) {
+      var hot = m.createHotContext("/__rm/bridge");
+      ["vite:error", "vite:afterUpdate"].forEach(function (ev) {
+        hot.on(ev, function (payload) {
+          try { window.dispatchEvent(new CustomEvent(ev, { detail: payload })); } catch (e) {}
+        });
+      });
+    }).catch(function () { /* not a Vite dev page: nothing to relay */ });
+  } catch (e) { /* no dynamic import here: nothing to relay */ }
+
   window.addEventListener("vite:afterUpdate", watchForRecovery);
 
   // Vite's own compile/transform failures, which reach the page as an overlay
@@ -172,6 +264,8 @@ function bridgeScript(screens) {
     var err = e && e.detail && e.detail.err;
     if (!err) return;
     reportError(err.message, err.stack, err.id || "vite");
+    // The one failure with a file to watch: poll it, reload when it serves.
+    healWhenServed(err.id);
   });
 
   // The route as the app's own router sees it: "/review", not
