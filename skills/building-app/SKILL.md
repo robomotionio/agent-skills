@@ -151,6 +151,59 @@ Narrate progress through `todo_write`, with items phrased in the user's language
 
 ### The flow side, exactly
 
+**One subflow per screen. `main.ts` is a table of contents, nothing else.**
+
+This is a hard rule, and it is about the person, not about tidiness. An app's
+backend grows one chain per action, all on one canvas: four screens came to ten
+unconnected chains stacked down a single surface, thirty nodes wide, and
+nothing on it said which row belonged to which screen (thirty-sixth pass). The
+person WILL open that canvas - it is their robot - and what they see decides
+whether they believe they own this app or are merely allowed to use it. Every
+screen you add makes it worse, and nobody ever goes back and splits it up.
+
+So, every time:
+
+- **`main.ts` holds only `Core.Flow.SubFlow` nodes - one per screen - and the
+  app's single `Core.Trigger.Catch`.** Nothing else lives there. Read top to
+  bottom, `main.ts` is the app's screen list.
+- **Every action a screen owns lives in that screen's subflow file**
+  (`subflows/<6-hex>.ts`): its `App Action` trigger, its work, its
+  `App Respond`, its refusal branch, its own `Label`/`GoTo` pairs.
+- **Name the subflow exactly what the person sees in the sidebar** -
+  `subflow.create('Problems', ...)`, not `subflow.create('listIssues', ...)`.
+  The canvas then labels each box with their own word for it.
+
+**Screens inside screens nest the same way.** When pressing a row opens a
+detail screen, that screen is a subflow called *from its parent's subflow*, not
+from `main.ts`, and its name carries the path:
+
+```
+main.ts
+├── SubFlow 'Check'                    → subflows/a1c3f0.ts
+├── SubFlow 'Problems'                 → subflows/b2d4e1.ts
+│     └── SubFlow 'Problems / Detail'        → subflows/c3e5f2.ts
+│           └── SubFlow 'Problems / Detail / History' → subflows/d4f6a3.ts
+├── SubFlow 'Pages'                    → subflows/e5a7b4.ts
+└── Catch 'Say What Went Wrong'
+```
+
+A person on the Detail screen looking for what it does finds one box called
+'Problems / Detail'. That is the whole point: the flow reads as the app's own
+navigation.
+
+**The cost, which you pay without complaining.** A subflow file's name IS its
+calling node's id, so one subflow is called from exactly one place - which is
+precisely what one-screen-one-subflow needs, so the rule and the runtime agree.
+But it also means a step several screens share (open the database, make sure
+the tables exist) CANNOT be one subflow called from five: write those four
+nodes into each screen's subflow. Do not try to call a subflow twice, do not
+flatten the app back onto one canvas to avoid repeating them. Four repeated
+nodes are cheaper than a canvas nobody can read.
+
+**This overrides `creating-flow`'s "do not use a subflow for fewer than three
+nodes".** There, the unit is the node; here it is the screen. A screen with one
+small action still gets its own subflow.
+
 The general node grammar belongs to `creating-flow`, but these seven types ship
 only in this package, and hunting for them costs a search round every build.
 `f.node` takes the **type**, never the display name:
