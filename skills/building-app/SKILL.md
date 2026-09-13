@@ -259,6 +259,9 @@ flow.create('<flowId>', '<Flow Name>', (f) => {
 import { subflow } from '@robomotion/sdk';
 
 subflow.create('Problems', (f) => {
+  f.node('e1a7c3', 'Core.Flow.Begin', 'Begin', {});
+  f.node('f2b8d4', 'Core.Flow.End', 'End', { sfPort: 0 });
+
   f.node('a3c1f9', 'Robomotion.Apps.Action', 'Search Call', { optActionName: 'search' })
     .then('b8e274', 'Core.Programming.Function', 'Do The Work', {
       func: 'msg.result = { hits: [] };\nreturn msg;',
@@ -267,14 +270,18 @@ subflow.create('Problems', (f) => {
 });
 ```
 
-**A screen's subflow has no `Core.Flow.Begin` and no `Core.Flow.End`.** This
-overrides `creating-flow`'s subflow pattern, which opens every subflow with
-`Begin` and closes it with `End`. `App Action` is a trigger with no input port
-(0 inputs), so it is always the FIRST node of its chain, written with
+**Every subflow MUST have its `Core.Flow.Begin` and `Core.Flow.End`, and in a
+screen's subflow they stand alone, connected to nothing.** `creating-flow`'s
+subflow rule stands: write both. What differs in an app is that nothing needs
+to enter through `Begin`. `App Action` is already a trigger: it has no input
+port (0 inputs), so it is always the FIRST node of its chain, written with
 `f.node(...)`, and nothing is ever `.then()`ed into it. `Begin` chained into
 `App Action` does not compile: `Cannot chain to node '<id>'
 (Robomotion.Apps.Action): it has 0 inputs`. So:
 
+- `Begin` and `End` are two lone `f.node(...)` lines at the top of the file.
+  Do not wire `Begin` to the action, and do not wire the action's path to
+  `End`: the path ends at its `App Respond`.
 - A screen with two actions has two `f.node(...)` chains in its subflow file,
   each starting at its own `App Action`.
 - Steps an action needs first (open the database, make sure the tables exist)
