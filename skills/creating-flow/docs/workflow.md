@@ -128,6 +128,8 @@ Do NOT say "you can now see the updated flow on your canvas" without a successfu
 
 If `save_flow` is NOT registered (pure CLI / Claude Code context), use `git commit` + `git push` from inside `<flow-dir>` instead — the per-project git remote is what the Designer pulls from.
 
+An app project is the same folder with its screens under `app/`: one `save_flow` (or one `git push`) at the root saves both halves. See the `building-app` skill.
+
 ## Step 6: Verify browser selectors (if browser flow)
 
 Selectors are verified during exploration (Step 3). If the code changed (different selectors, new actions), re-run the exploration against the current page to re-verify **before saving**.

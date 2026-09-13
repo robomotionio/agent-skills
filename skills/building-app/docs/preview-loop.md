@@ -70,7 +70,7 @@ report answers the first and the last for you.
 
 For a UI-only change ("bigger title", "green button"): edit the screen file → HMR shows it → `get_preview_errors` → reply. Seconds, no server restart, no push.
 
-For a contract change (new action, changed params): edit `app.json` → regenerate → fix `tsc` fallout in screens and flow → `push_app` → flow save bounces the session → `get_preview_errors` → reply. Tell the user the app is "updating" during the bounce, in plain words.
+For a contract change (new action, changed params): edit `app.json` → regenerate → fix `tsc` fallout in screens and flow → save (`save_flow`; the save bounces the session) → `get_preview_errors` → reply. Tell the user the app is "updating" during the bounce, in plain words.
 
 ## States the preview can be in
 

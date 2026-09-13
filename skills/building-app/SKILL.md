@@ -17,11 +17,11 @@ Two things decide whether this conversation goes well: **how fast the person see
 
 ## The contract is the spine
 
-`app.json` at the repo root is the **single source of truth** for actions, events, types, and screens. Typegen ripples every change into both projects:
+`app.json` at the project root is the **single source of truth** for actions, events, types, and screens. The project is one folder - the flow's - and the screens live in `app/` inside it. Typegen ripples every change into both halves:
 
 ```
 app/src/generated/actions.gen.ts     ← SPA: typed client + CONTRACT_HASH
-flow/src/generated/actions.gen.ts    ← flow: param/result types per action
+src/generated/actions.gen.ts         ← flow: param/result types per action
 ```
 
 Any behavior change starts in `app.json`, then regenerate, then touch screens and flow. Changing `app.json` without regenerating leaves both sides referencing types that no longer exist, so `tsc` fails inside `validate_app` before anything ships. **Drift is a compile error, never a runtime surprise.** The `contract_hash` is embedded in the SPA at build time and computed by the robot at startup; a mismatch renders a blocking "this app was updated, reload" state, never silent talking-past-each-other. Authoring guide: `./docs/contract.md`.
@@ -57,13 +57,35 @@ declares the three and puts the bag in a property; it does not open the whole
 thing. `additionalProperties` is not in the subset and is not needed: the open
 object is exactly `{ "type": "object" }`.
 
+## Which surface you are on
+
+One project, one folder, one save. The layout, in three lines:
+
+- `app.json` (and `mcp.json`) at the project root - the contract, where the robot reads it.
+- `app/` holds the screens: `app/package.json`, `app/src/`, and the two Robomotion packages under `app/vendor/`.
+- `src/generated/` on both sides (`src/generated/actions.gen.ts` for the flow, `app/src/generated/actions.gen.ts` for the screens) is codegen-owned; never hand-edit it.
+
+**If `create_app` is a registered tool**, you are under the Build view's harness and the tools are the surface: `create_app` -> `sync_app` -> `save_flow` -> `create_app_robot` (only with a yes) -> `start_app_session` -> `smoke_app` -> `validate_app` -> `publish_app`. Saving is one act: `save_flow` on the project root commits the flow and the screens together.
+
+**If it is not** (a terminal, Claude Code, a `git clone` of the flow), the `robomotion` CLI is the surface, one verb per job, and `git commit && git push` at the project root is the save:
+
+| Verb | Does |
+|---|---|
+| `robomotion app create "<name>"` | creates the app on the flow in this folder, pulls the seeded `app/`, places the packages, installs |
+| `robomotion app dev` | runs the screens on localhost and prints the address |
+| `robomotion app validate` | the same checks as `validate_app`, on the project root |
+| `robomotion app publish` | builds the screens, creates a flow version, publishes the app from it |
+| `robomotion app robot` | gives the app its own robot and keeps its token in `.robomotion/robot.json` |
+| `robomotion app start` | starts that robot and the app session on it |
+| `robomotion app press <action> [--params json]` | presses one action through the app's own door and prints the answer |
+
 ## Workflow (tuned for time-to-first-pixel)
 
 Narrate progress through `todo_write`, with items phrased in the user's language ("Design the review screen", "Teach the robot to read invoices") - never internal steps ("run typegen", "start dev server").
 
-**The tools, in the order you need them:** `create_app` (once, first) -> `sync_app` -> `save_app` -> `create_app_robot` (only with a yes, see below) -> `start_app_session` -> `smoke_app` (run for you, read its report - step 6b) -> `validate_app` -> `publish_app`. There is no `push_app` step: the app half of every save is sent to Robomotion when your turn ends, whether or not you ask, so calling it yourself only makes the person wait twice. `list_apps` finds an existing app; `app_dev_server` controls the preview process. Before the contract, `searching-packages` (step 0c) is what tells you what the robot can already do. Never write app or flow files before `create_app` has returned - there is no working copy to write into until it has.
+**The tools, in the order you need them:** `create_app` (once, first) -> `sync_app` -> `save_flow` -> `create_app_robot` (only with a yes, see below) -> `start_app_session` -> `smoke_app` (run for you, read its report - step 6b) -> `validate_app` -> `publish_app`. Saving is one act: `save_flow` on the project root commits the screens and the flow together, so there is nothing separate to push for the app. `list_apps` finds an existing app; `app_dev_server` controls the preview process. Before the contract, `searching-packages` (step 0c) is what tells you what the robot can already do. Never write app or flow files before `create_app` has returned - there is no working copy to write into until it has.
 
-0. **Create the app first.** Call `create_app` with a short human name and, WHEN YOU ARE ALREADY IN A FLOW, its id as `flowId` - in the Build view you always are, and omitting it binds the app to a different flow than the one on the user's screen. It returns `app_id`, `flow_id` and the local paths, and clones both working copies. Then `sync_app` before you read or write anything. Continuing an existing app instead? `list_apps`, then `sync_app`.
+0. **Create the app first.** Call `create_app` with a short human name and, WHEN YOU ARE ALREADY IN A FLOW, its id as `flowId` - in the Build view you always are, and omitting it binds the app to a different flow than the one on the user's screen. It returns `app_id`, `flow_id` and the paths - `flow_path`, the project root, and `app_path`, the `app/` folder inside it - and checks the one working copy out. Then `sync_app` before you read or write anything. Continuing an existing app instead? `list_apps`, then `sync_app`.
 
 0b. **Clarify - at most 3 questions, total.** Use `ask_user_question` with quick replies, ONE question per turn. Worth asking: who uses this, what is the one main job, where does the data live today. Never ask about technology, hosting, colors, or frameworks. If the request already answers a question, don't ask it.
 
@@ -144,10 +166,10 @@ Narrate progress through `todo_write`, with items phrased in the user's language
    that tries again. A screen where the loading branch is the only branch is
    not finished.
 
-4. **`save_app`.** It records the app's working copy and saves the flow behind it - the half the robot actually runs. The app's own copy goes to Robomotion when the turn ends, on its own; do not call `push_app` to make that happen sooner, because nothing between here and the end of the turn reads it. **The preview comes up on its own a few seconds after this first save** - the harness starts it and it appears in the person's preview panel - so do not call `app_dev_server start` for it: the tool answers "already running", and every such call is one more row on the person's screen that did nothing. Call `app_dev_server status` only when you have a reason to think the preview is down. Tell the person to look at the preview, and say that the numbers are sample data until their robot is connected.
+4. **`save_flow`, on the project root.** Saving is one act: it commits the screens under `app/` and the flow beside them in one go - the flow being the half the robot actually runs - and pushes. There is nothing separate to push for the app. **The preview comes up on its own a few seconds after this first save** - the harness starts it and it appears in the person's preview panel - so do not call `app_dev_server start` for it: the tool answers "already running", and every such call is one more row on the person's screen that did nothing. Call `app_dev_server status` only when you have a reason to think the preview is down. Tell the person to look at the preview, and say that the numbers are sample data until their robot is connected.
 4b. **`robomotion app codegen`** whenever `app.json` changes, before writing code against it. Run it from the app folder; it regenerates both typed clients and prints the contract hash.
 
-5. **Build the flow backend, one action at a time**, in the order the user will click them. For each action: `App Action` trigger → the real work → `App Respond` on EVERY path (an unresponded call only ends by timeout, which the user experiences as a hung button). Long work sends `App Progress`. The generated `flow/src/generated/actions.gen.ts` gives you the param/result types. Flow SDK mechanics (node grammar, browser, credentials) are the `creating-flow` skill - use it.
+5. **Build the flow backend, one action at a time**, in the order the user will click them. For each action: `App Action` trigger → the real work → `App Respond` on EVERY path (an unresponded call only ends by timeout, which the user experiences as a hung button). Long work sends `App Progress`. The generated `src/generated/actions.gen.ts` at the project root gives you the param/result types. Flow SDK mechanics (node grammar, browser, credentials) are the `creating-flow` skill - use it.
 
 ### The flow side, exactly
 
@@ -236,7 +258,7 @@ flow.create('<flowId>', '<Flow Name>', (f) => {
 
 The caller's arguments arrive as **`msg.params.<field>`**; the answer is whatever
 sits on **`msg.result`** when `App Respond` runs. Both shapes are already typed
-for you in `flow/src/generated/actions.gen.ts`.
+for you in `src/generated/actions.gen.ts` at the project root.
 
 **And the catch-all, in the same file, every time.** An unhandled error ends
 the flow and the app with it (hard rule 5), so every backend has a
@@ -545,8 +567,9 @@ exactly once, so check for it before you save.
 
 ## Stay inside your own app, and use the tools
 
-`create_app` and `sync_app` return the paths for THIS app: `<apps>/<appId>/app`
-and `<apps>/<appId>/flow`. Work only in those.
+`create_app` and `sync_app` return the paths for THIS app: `flow_path`, the
+project root (`main.ts`, `app.json`, `subflows/`), and `app_path`, the `app/`
+folder inside it (the screens). Work only in those.
 
 - **Your shell starts in the FLOW's folder, not the app's, and every command
   starts there again.** A `cd` in one command does not carry to the next, so
@@ -558,8 +581,8 @@ and `<apps>/<appId>/flow`. Work only in those.
   happens to be - one build wrote its whole backend into the wrong folder
   that way, saved it, and the next save replaced it with the empty skeleton.
   Always the absolute path.
-- **Never read, glob or grep another app's folder.** The apps directory holds
-  every app on this machine. A pattern like `*/flow/main.ts` walks all of them,
+- **Never read, glob or grep another app's folder.** The flows directory holds
+  every project on this machine. A pattern like `*/main.ts` walks all of them,
   wastes the whole turn, and risks copying one person's app into another's.
   Anchor every path at the two you were given.
 - **Never compute the contract hash yourself, and never shell out to `python`,
@@ -570,7 +593,7 @@ and `<apps>/<appId>/flow`. Work only in those.
   connecting with `contract_mismatch` - and python is not installed on most
   people's machines. `robomotion` is the tool that is always present; do not
   reach for `bun run`, `npm run` or `npx` to do a job it already does.
-- Prefer the app tools over raw shell generally: `sync_app`, `save_app`,
+- Prefer the app tools over raw shell generally: `sync_app`, `save_flow`,
   `validate_app`, `app_dev_server` each do one job properly.
 - **`archetypes/` in the app repo is reference material.** It is not compiled
   and not checked; leave it where it is. Never delete it and never edit
@@ -627,7 +650,7 @@ and `<apps>/<appId>/flow`. Work only in those.
 
 Each rule carries its reason. The reason is why you don't route around the rule when it feels inconvenient.
 
-0. **The harness installs the packages.** `create_app` and `sync_app` place `@robomotion/app-kit` and `@robomotion/apps-runtime` beside the app and run the install; their result carries a `packages_warning` if that did not work. Never symlink, copy or `bun install` packages by hand, and never borrow them from another app's checkout - if something looks missing, run `sync_app` and read its warning.
+0. **The harness installs the packages.** `create_app` and `sync_app` place `@robomotion/app-kit` and `@robomotion/apps-runtime` under `app/vendor/` and run the install; their result carries a `packages_warning` if that did not work. Never symlink, copy or `bun install` packages by hand, and never borrow them from another app's checkout - if something looks missing, run `sync_app` and read its warning.
 1. **Every control that runs an action declares it.** A button, upload zone or form that makes the robot do something takes the action through the kit's `action` prop (`<Button action={greet} params={{ name }}>`), or spreads `bindAction(greet)` when it must keep its own handler. Never write `onClick={() => greet.run(...)}` on its own: the Build view then cannot link the control to its step, the connections map reports the action as unlinked, and the person is told the button they can see does not exist. See `./docs/app-kit-reference.md`.
 1. **Kit-only.** Compose `@robomotion/app-kit` components plus Tailwind classes for layout. Never write a new UI primitive, never add an npm dependency, never edit `vite.config.ts`, `tailwind.config.ts`, `src/index.css` or the dependency list. The allowlist is exactly: `react`, `react-dom`, `@robomotion/app-kit`, `@robomotion/apps-runtime`, and the dev toolchain - `validate_app` fails on anything else. **Colours, tables, spinners and pictures drawn by hand are reported too** (`validate_app`'s `kit-only` check, by file and line): a Tailwind palette colour (`text-gray-500`), a `dark:` variant, a hex in brackets or an inline `style` colour; an inline `<svg>`; an inline `<table>`; an `animate-spin` div. The kit's preset gives a screen the colours it may name (`text-muted-foreground`, `bg-card`, `border-border`, `text-primary`), `Icon` gives it every picture, `DataTable` every table and `Spinner` the one spinner; the "Design language" section of `./docs/app-kit-reference.md` is the whole vocabulary. Every nav item carries an `icon` in `src/screens.tsx`, and every file under `src/pages/` opens with `<Screen>`. Reason: a prompt-built app that can pull arbitrary packages becomes a codebase nobody can review; the kit is also what keeps every screen themed, dark-mode aware, and accessible without you doing anything, and a colour chosen by hand is the one thing on the screen that does not follow the theme.
 2. **Actions only through the generated typed stubs.** `src/generated/actions.gen.ts` exports one hook per action, `use<Action>()` (for `greet`: `const greet = useGreet()`), plus `<Action>Params` / `<Action>Result` types; `greet.data` is typed and `<Form action={greet}>` / `<Button action={greet}>` link the control. Use those. Never write `useAction("name")` yourself - untyped, its `data` is `{}` and `tsc` fails on the first field you read. Events use `useEvent` with the generated payload types. Never hand-write transport, never invent a message format, never call `app.call` from screen code. Reason: the old app system died because clients hand-invented protocols over a raw channel and drift was discovered by users in production; the stubs make a contract change break `tsc` instead of a person.
@@ -678,14 +701,15 @@ Each rule carries its reason. The reason is why you don't route around the rule 
    `error.message` through - the first press before the file exists would
    show a raw path.
 
-7. **Saving is `save_flow` and `save_app`. Never git by hand.** `git add`,
-   `git commit`, `git push`, `git reset` and the rest are refused inside the
-   checkouts; reading (`git status`, `git log`, `git diff`) is free. Reason:
-   the save tools commit the right files, write the message, and write the
-   trailers that pair the app with the flow it was built against - which is
-   what every check downstream reads. A commit made by hand writes none of
-   that, so the checks then disagree about what was saved - and a checkout the
-   checks call saved can be deleted by the next sync.
+7. **Under the tools, saving is `save_flow`. From a terminal, `git commit &&
+   git push` is the save.** When `save_flow` is registered, `git add`, `git
+   commit`, `git push`, `git reset` and the rest are refused inside the
+   checkout; reading (`git status`, `git log`, `git diff`) is free. Reason:
+   the save tool commits the right files with the right message, and every
+   check downstream reads what it recorded; a commit made by hand beside it
+   leaves the two disagreeing about what was saved. Without the tools there
+   is nothing to disagree with: the project is one git repository, and
+   pushing it is the save.
 
 ## The preview loop
 

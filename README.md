@@ -17,6 +17,7 @@ Start with `creating-flow` if you're new — it bundles the full Robomotion 101 
 | [`searching-packages`](./skills/searching-packages/SKILL.md) | Find packages, nodes, templates, examples via the `robomotion` CLI (Bleve-backed fuzzy + semantic search). |
 | [`exploring-browser`](./skills/exploring-browser/SKILL.md) | Interactive browser exploration through `robomotion-browser-mcp`: snapshot, record actions, capture traffic. |
 | [`reversing-network`](./skills/reversing-network/SKILL.md) | Reverse-engineer a site's API from captured traffic and replace browser automation with HTTP. |
+| [`building-app`](./skills/building-app/SKILL.md) | Build a Robomotion App: screens under `app/` in front of a flow, in one repository. The harness tools under Build, or the `robomotion app` verbs from a terminal. |
 
 ## Installation
 
@@ -44,7 +45,23 @@ Both binaries are **required** and must be on `PATH`. Install from [robomotion.i
 | `robomotion` | CLI used by every skill — `build`, `validate`, `run`, `search`, `get`, `describe`, `docs`. |
 | `robomotion-browser-mcp` | MCP server the `exploring-browser` and `reversing-network` skills drive via `mcp__browser__*` tools. |
 
-`bun` is required for `testing-flow` (`bun test` is the test runner). No other MCP servers are needed — `robomotion` shells out to `robomotion-sdk-mcp` internally.
+`bun` is required for `testing-flow` (`bun test` is the test runner) and for `building-app` (the screens are a Vite project under `app/`). No other MCP servers are needed — `robomotion` shells out to `robomotion-sdk-mcp` internally.
+
+### Apps from a terminal
+
+A `git clone` of a flow is the whole project: if the flow backs an app, its screens are under `app/` in the same checkout. From a terminal the `robomotion app` verbs do the rest, one per job:
+
+```
+robomotion app create "<name>"          # create the app on the flow in this folder; pulls the seeded app/, places the packages, installs
+robomotion app dev                      # run the screens on localhost
+robomotion app validate                 # the same checks as the Build view's validate_app
+robomotion app publish                  # build the screens, create a flow version, publish the app from it
+robomotion app robot                    # give the app its own robot (token kept in .robomotion/robot.json)
+robomotion app start                    # start that robot and the app session on it
+robomotion app press <action> [--params '{...}']   # press one action through the app's own door
+```
+
+Saving is `git commit && git push` at the project root, the same as for a flow.
 
 ## Usage
 

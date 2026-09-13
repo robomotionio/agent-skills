@@ -102,4 +102,4 @@ One entry per screen with a one-line description and a `route` starting with `/`
 
 ## After every change
 
-Changing `app.json` changes `contract_hash`. The sequence is always: edit `app.json` → regenerate (both `actions.gen.ts` files) → fix whatever `tsc` now flags in screens and flow → `push_app`. Skipping the regenerate step doesn't cause subtle bugs; it causes a hard `validate_app` failure, by design.
+Changing `app.json` changes `contract_hash`. The sequence is always: edit `app.json` → regenerate (both `actions.gen.ts` files) → fix whatever `tsc` now flags in screens and flow → save (`save_flow`, or `git commit && git push` from a terminal). Skipping the regenerate step doesn't cause subtle bugs; it causes a hard `validate_app` failure, by design.
