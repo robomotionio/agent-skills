@@ -96,6 +96,49 @@ function healUrlFor(id, baseURI) {
     return null;
   }
 }
+function createChangeWatcher(bootRevision, deps) {
+  var timer = null;
+  var inFlight = false;
+  var until = 0;
+  var stop = function() {
+    if (timer !== null) {
+      deps.clearInterval(timer);
+      timer = null;
+    }
+  };
+  var tick = function() {
+    if (deps.hasDrawn() || deps.now() > until) {
+      stop();
+      return;
+    }
+    if (inFlight) return;
+    inFlight = true;
+    deps.fetchRevision().then(
+      function(rev) {
+        inFlight = false;
+        if (timer === null) return;
+        if (typeof rev !== "number" || !(rev > bootRevision)) return;
+        stop();
+        if (deps.hasDrawn()) return;
+        deps.reload();
+      },
+      function() {
+        inFlight = false;
+      }
+    );
+  };
+  return {
+    arm: function() {
+      if (deps.hasDrawn()) return;
+      until = deps.now() + deps.forMs;
+      if (timer === null) timer = deps.setInterval(tick, deps.everyMs);
+    },
+    armed: function() {
+      return timer !== null;
+    },
+    stop
+  };
+}
 
 // src/vite/index.ts
 var DEFAULT_CONTRACT = "../app.json";
@@ -129,7 +172,7 @@ function screensOf(contract) {
     route: s?.route ?? `/${name}`
   }));
 }
-function bridgeScript(screens) {
+function bridgeScript(screens, revision = 0) {
   return `(function () {
   var embedded = window.parent !== window;
   var post = function (type, data) {
@@ -181,6 +224,10 @@ function bridgeScript(screens) {
     reportToDevServer(payload);
     // Something failed, so start watching for it to stop failing.
     if (typeof watchForRecovery === "function") watchForRecovery();
+    // A failure before the first screen may be one no module 500 names
+    // (a wrong import name links as a SyntaxError on a 200): wait for the
+    // app's files to change, then load again.
+    if (typeof changeWatcher === "object" && changeWatcher) changeWatcher.arm();
   };
   var screens = ${JSON.stringify(screens)};
 
@@ -207,7 +254,7 @@ function bridgeScript(screens) {
     drawn = true;
     // The app is on screen, so the self-heal budget below is spent and owed
     // again fresh the next time something breaks.
-    try { sessionStorage.removeItem(HEAL_KEY); } catch (e) {}
+    try { sessionStorage.removeItem(HEAL_KEY); sessionStorage.removeItem(CHANGE_KEY); } catch (e) {}
     if (drawnObserver) { try { drawnObserver.disconnect(); } catch (e) {} drawnObserver = null; }
     post("rm-app-drawn", { loadId: loadId });
   };
@@ -305,6 +352,38 @@ function bridgeScript(screens) {
     forMs: HEAL_FOR_MS,
   });
   var healWhenServed = function (id) { healer.noteFailure(id); };
+
+  // The other half: a page that failed on modules that all serve 200. The
+  // dev server counts writes to the app's files and served this document at
+  // REVISION; once the count moves, the graph this page failed on is gone,
+  // so a reload is a new attempt rather than a blind retry. Its own budget,
+  // larger than the healer's, because each reload is earned by a write; it
+  // is cleared the moment the app draws.
+  var REVISION = ${Number.isFinite(revision) ? Math.floor(revision) : 0};
+  var CHANGE_KEY = "rm-change-reloads";
+  var CHANGE_MAX = 20;
+  var changeReload = function () {
+    var n = 0;
+    try { n = parseInt(sessionStorage.getItem(CHANGE_KEY) || "0", 10) || 0; } catch (e) {}
+    if (n >= CHANGE_MAX) return;
+    try { sessionStorage.setItem(CHANGE_KEY, String(n + 1)); } catch (e) {}
+    try { location.reload(); } catch (e) { /* a locked-down frame cannot heal itself */ }
+  };
+  var createChangeWatcher = ${createChangeWatcher.toString()};
+  var changeWatcher = createChangeWatcher(REVISION, {
+    fetchRevision: function () {
+      return fetch(new URL("__rm/revision", document.baseURI).toString(), { cache: "no-store" })
+        .then(function (r) { return r && r.ok ? r.json() : null; })
+        .then(function (j) { return j && typeof j.revision === "number" ? j.revision : null; });
+    },
+    reload: changeReload,
+    hasDrawn: function () { return drawn || hasDrawn(); },
+    now: Date.now,
+    setInterval: function (fn, ms) { return setInterval(fn, ms); },
+    clearInterval: function (h) { clearInterval(h); },
+    everyMs: HEAL_EVERY_MS,
+    forMs: HEAL_FOR_MS,
+  });
   // A fresh document whose own <script type=module> answered 500 raises no
   // vite:error at all - the failure happened before any module ran. When
   // the placeholder is still up a few seconds after boot and nothing is
@@ -318,6 +397,9 @@ function bridgeScript(screens) {
   var failedModuleUrls = ${failedModuleUrls.toString()};
   var bootCheck = function () {
     if (drawn || hasDrawn()) return;
+    // Still undrawn after boot, whatever the reason: a later write is the
+    // only thing that can change that, so watch for one.
+    changeWatcher.arm();
     var entries = [];
     try { entries = performance.getEntriesByType("resource"); } catch (e) {}
     var failed = failedModuleUrls(entries, location.origin);
@@ -506,6 +588,7 @@ var ROOT_DIV_WITH_PLACEHOLDER = `<div id="root"><div data-rm-placeholder="" styl
 function bridgePlugin(options = {}) {
   let root = process.cwd();
   let base = "/";
+  let revision = 0;
   return {
     name: "robomotion-app-kit",
     // Dev server only. Production builds never load this plugin, which is
@@ -553,6 +636,22 @@ function bridgePlugin(options = {}) {
       const basedErrorsPath = withBase(errorsPath);
       const browserErrors = [];
       const MAX_BROWSER_ERRORS = 50;
+      const revisionPath = "/__rm/revision";
+      const basedRevisionPath = withBase(revisionPath);
+      server.watcher?.on("all", (_event, file) => {
+        if (typeof file !== "string" || /[\\/](node_modules|\.git)[\\/]/.test(file)) return;
+        revision++;
+      });
+      server.middlewares.use((req, res, next) => {
+        const pathname = (req.url ?? "/").replace(/[?#].*$/, "");
+        if (pathname !== revisionPath && pathname !== basedRevisionPath) {
+          next();
+          return;
+        }
+        res.setHeader("Content-Type", "application/json");
+        res.setHeader("Cache-Control", "no-store");
+        res.end(JSON.stringify({ revision }));
+      });
       server.middlewares.use((req, res, next) => {
         const pathname = (req.url ?? "/").replace(/[?#].*$/, "");
         if (pathname !== errorsPath && pathname !== basedErrorsPath) {
@@ -632,7 +731,7 @@ function bridgePlugin(options = {}) {
       const tags = [
         {
           tag: "script",
-          children: bridgeScript(screensOf(contract)),
+          children: bridgeScript(screensOf(contract), revision),
           injectTo: "head"
         }
       ];
