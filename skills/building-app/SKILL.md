@@ -329,6 +329,19 @@ there is nothing to look up in `creating-flow` for it:
 `f.node(...)` chain, never `.then()`ed after anything), `optNodes` as written
 catches every node, and `msg.error.message` is the thrown error's own text.
 
+**Once, in `main.ts`, and not again in the screens.** The robot scopes a
+Catch to the file it sits in: a catch-all in `main.ts` covers the main flow
+and every error a screen's subflow leaves uncaught, because an uncaught error
+climbs to the parent until a Catch takes it, and stops there. So the one in
+`main.ts` is the safety net for the whole app, and a screen's subflow file
+does NOT get a copy of it. A second "Say What Went Wrong" pair in every screen
+says nothing the net does not already say, and it is noise on the person's
+canvas. A screen adds its own Catch only when it has something of its own to
+say: different words or a non-retryable answer for that screen (`all: true`
+inside the screen's file covers that screen's nodes only), or a Catch on the
+`ids` of one lookup so the action can answer with words about that lookup.
+The `main.ts` catch-all stays either way.
+
 `App Action` is a trigger, so it has no input port and the validator reports it
 as an unreachable node. `App Respond` and `App Respond Error` end a path, so it
 reports them as dead ends. Both warnings are expected on every app. Never
