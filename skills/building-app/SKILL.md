@@ -194,6 +194,14 @@ So, every time:
 - **Name the subflow exactly what the person sees in the sidebar** -
   `subflow.create('Problems', ...)`, not `subflow.create('listIssues', ...)`.
   The canvas then labels each box with their own word for it.
+- **Every screen's `Core.Flow.SubFlow` node is written with
+  `{ optHidePorts: true }`** - `f.node('b2d4e1', 'Core.Flow.SubFlow',
+  'Problems', { optHidePorts: true })`, never `{}`. A screen is entered by
+  `App Action` and left by `App Respond`, so the node's input and output
+  ports and the `Begin`/`End` inside are never wired; this option tells the
+  Designer not to draw them, and the person's canvas shows one clean box per
+  screen instead of ports that go nowhere. It is cosmetic and Designer-only:
+  the robot ignores it, and `Begin`/`End` are still written (below).
 
 **Screens inside screens nest the same way.** When pressing a row opens a
 detail screen, that screen is a subflow called *from its parent's subflow*, not
