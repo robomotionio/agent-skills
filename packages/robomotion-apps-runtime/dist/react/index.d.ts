@@ -18,6 +18,36 @@ type WriteDoneListener = (name: string) => void;
 declare function announceWriteDone(name: string): void;
 /** Listens for announced writes. Returns the unsubscribe. */
 declare function onWriteDone(listen: WriteDoneListener): () => void;
+/**
+ * What a call asks, as a string two equal calls share: params with their keys
+ * sorted, plus the options that change the call. Null when the params cannot
+ * be compared (a File, a cycle) - such a call is never coalesced or braked.
+ */
+declare function callKey(params: unknown, opts?: RunOptions): string | null;
+/** More than this many sends of one question inside the window trips the brake. */
+declare const LOOP_LIMIT = 10;
+declare const LOOP_WINDOW_MS = 30000;
+/**
+ * Stops one hook asking the same question in a loop. A screen whose effect
+ * re-runs on every render sends the same call each time the last answer
+ * lands; after LOOP_LIMIT sends of equal params inside LOOP_WINDOW_MS, with no
+ * announced write in between, nothing more is sent and the hook shows an
+ * error saying why. A person is never braked: a kit widget press announces
+ * its write, which starts the count again, and eleven hand presses of the
+ * same question inside thirty seconds, each waiting for its answer, is not a
+ * person reading the answers. A different question starts afresh.
+ */
+declare class LoopBrake {
+    private readonly name;
+    private key;
+    private starts;
+    private epoch;
+    tripped: boolean;
+    error: AppError | undefined;
+    constructor(name: string);
+    /** Notes a send of `key`. True when it must not be sent. */
+    note(key: string, now?: number): boolean;
+}
 interface RunOptions {
     timeoutMs?: number;
     /**
@@ -123,4 +153,4 @@ interface UseAssistantResult {
  */
 declare function useAssistant(): UseAssistantResult;
 
-export { AppProvider, type AppProviderProps, type AssistantMessage, type RunOptions, type UseActionOptions, type UseActionResult, type UseAssistantResult, type UseConnectionResult, type UseFileUploadResult, announceWriteDone, onWriteDone, shouldRetryOnReconnect, useAction, useAppClient, useAssistant, useConnection, useEvent, useFileUpload, useMaybeAppClient, useViewer };
+export { AppProvider, type AppProviderProps, type AssistantMessage, LOOP_LIMIT, LOOP_WINDOW_MS, LoopBrake, type RunOptions, type UseActionOptions, type UseActionResult, type UseAssistantResult, type UseConnectionResult, type UseFileUploadResult, announceWriteDone, callKey, onWriteDone, shouldRetryOnReconnect, useAction, useAppClient, useAssistant, useConnection, useEvent, useFileUpload, useMaybeAppClient, useViewer };

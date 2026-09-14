@@ -608,6 +608,15 @@ useEffect(() => { void summary.run({}); void customers.run({}); }, []);
 async function onAdd() { await addCustomer.run(draft); await customers.run({}); }
 ```
 
+The effect's dependency array is `[]`, or the values that should ask again (an id). Never the hook object or a function made during render: both are new on every render, so the effect asks after every answer and the screen shows Loading for ever. `validate_app`'s `effect-loop` check names it.
+
+```tsx
+// WRONG - `customers` is a new object every render: asks, re-renders, asks again, for ever.
+useEffect(() => { void customers.run({}); }, [customers]);
+// RIGHT
+useEffect(() => { void customers.run({}); }, []);
+```
+
 A form that creates a record must bring the list that shows it up to date. When that list is a `DataTable` with `source={{ action }}` on the same screen, the kit does it: the form announces its write when it settles and the table asks again. A list you render yourself, a dropdown or a counter, loaded by a generated hook whose action `mcp.json` marks `read_only`, asks again the same way. Anywhere else - a read not marked read-only, or a write the screen ran itself with `run` rather than through a kit widget - run the read again after the `await` of your own `run`, never before it, or hand the table a `tableRef` and call `refresh()` as above.
 
 A date and a time typed in two inputs are one value to the contract. Join them before `run` (a template such as `${date}T${time}:00`, or whatever shape `app.json` declares) - a form that sends `date` and `time` as two fields to an action that wants `starts_at` is refused by the input check and the person sees nothing happen.
