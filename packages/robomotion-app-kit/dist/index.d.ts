@@ -192,8 +192,13 @@ interface ActionLike<P = unknown> {
     loading: boolean;
     /** The last call's failure, when there was one; a Form shows it. */
     error?: unknown;
-    /** Method syntax keeps typed actions assignable to ActionLike<unknown>. */
-    run(params?: P): Promise<unknown>;
+    /**
+     * Method syntax keeps typed actions assignable to ActionLike<unknown>.
+     * `refreshOnWrite: false` tells a useAction hook the caller re-asks itself.
+     */
+    run(params?: P, opts?: {
+        refreshOnWrite?: boolean;
+    }): Promise<unknown>;
 }
 /** Params for an action-bound widget: a value, or a function of the triggering event. */
 type ParamsOf<P, E = unknown> = P | ((event: E) => P);

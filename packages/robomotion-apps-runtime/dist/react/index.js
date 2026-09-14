@@ -32,6 +32,21 @@ function useAppClient() {
 function useMaybeAppClient() {
   return useContext(AppContext);
 }
+var writeDoneListeners = /* @__PURE__ */ new Set();
+function announceWriteDone(name) {
+  for (const listen of [...writeDoneListeners]) {
+    try {
+      listen(name);
+    } catch {
+    }
+  }
+}
+function onWriteDone(listen) {
+  writeDoneListeners.add(listen);
+  return () => {
+    writeDoneListeners.delete(listen);
+  };
+}
 function useAction(name) {
   const app = useAppClient();
   const [data, setData] = useState(void 0);
@@ -59,6 +74,8 @@ function useAction(name) {
   const lastCallRef = useRef(null);
   const errorRef = useRef(void 0);
   errorRef.current = error;
+  const loadingRef = useRef(false);
+  loadingRef.current = loading;
   const runRef = useRef(null);
   useEffect(
     () => app.connection.onChange((state) => {
@@ -68,9 +85,24 @@ function useAction(name) {
     }),
     [app]
   );
+  useEffect(() => {
+    let queued = false;
+    return onWriteDone((writer) => {
+      if (writer === name || queued) return;
+      const last = lastCallRef.current;
+      if (!last || last.opts?.refreshOnWrite === false || loadingRef.current) return;
+      queued = true;
+      queueMicrotask(() => {
+        queued = false;
+        if (!aliveRef.current || loadingRef.current) return;
+        void runRef.current?.(last.params, last.opts);
+      });
+    });
+  }, [name]);
   const run = useCallback(
     async (params, opts) => {
       lastCallRef.current = { params, opts };
+      loadingRef.current = true;
       abortRef.current?.abort();
       const controller = new AbortController();
       abortRef.current = controller;
@@ -106,7 +138,10 @@ function useAction(name) {
         }
         return void 0;
       } finally {
-        if (current()) setLoading(false);
+        if (current()) {
+          loadingRef.current = false;
+          setLoading(false);
+        }
       }
     },
     [app, name]
@@ -115,7 +150,9 @@ function useAction(name) {
   return { run, data, error, loading, progress, cancel, name };
 }
 function shouldRetryOnReconnect(error, state) {
-  return state === "ready" && !!error && error.code === "robot_offline";
+  if (state !== "ready" || !error || error.code !== "robot_offline") return false;
+  const details = error.details;
+  return details?.sent !== true;
 }
 function useEvent(name, cb) {
   const app = useAppClient();
@@ -231,8 +268,10 @@ function useAssistant() {
 }
 export {
   AppProvider,
+  announceWriteDone,
   bindAction,
   markGesture,
+  onWriteDone,
   shouldRetryOnReconnect,
   useAction,
   useAppClient,

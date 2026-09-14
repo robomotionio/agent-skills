@@ -13,10 +13,21 @@ declare function AppProvider({ app, children }: AppProviderProps): react.Functio
 declare function useAppClient(): AppClient;
 /** Like useAppClient but returns null outside a provider (used by app-kit). */
 declare function useMaybeAppClient(): AppClient | null;
+type WriteDoneListener = (name: string) => void;
+/** Says a pressed action has settled, naming it. The kit's widgets call this. */
+declare function announceWriteDone(name: string): void;
+/** Listens for announced writes. Returns the unsubscribe. */
+declare function onWriteDone(listen: WriteDoneListener): () => void;
+interface RunOptions {
+    timeoutMs?: number;
+    /**
+     * False when something else owns refreshing this call - a paged DataTable
+     * re-asks for its page itself, and re-running here too fetched it twice.
+     */
+    refreshOnWrite?: boolean;
+}
 interface UseActionResult<TParams = unknown, TData = unknown> {
-    run: (params?: TParams, opts?: {
-        timeoutMs?: number;
-    }) => Promise<TData | undefined>;
+    run: (params?: TParams, opts?: RunOptions) => Promise<TData | undefined>;
     data: TData | undefined;
     error: AppError | undefined;
     loading: boolean;
@@ -48,6 +59,10 @@ declare function useAction<TParams = unknown, TData = unknown>(name: string): Us
  * is back. Only that failure: a refusal the robot itself gave (bad
  * parameters, the app's own error) is an answer and stands until the person
  * acts.
+ *
+ * A call that was already SENT when the robot dropped out is not asked
+ * again: the robot may have run it, and resending a write stores it twice.
+ * That failure stays on screen for the person to judge.
  */
 declare function shouldRetryOnReconnect(error: AppError | undefined, state: ConnectionState): boolean;
 /** Subscribe to a server event for the component's lifetime. */
@@ -98,4 +113,4 @@ interface UseAssistantResult {
  */
 declare function useAssistant(): UseAssistantResult;
 
-export { AppProvider, type AppProviderProps, type AssistantMessage, type UseActionResult, type UseAssistantResult, type UseConnectionResult, type UseFileUploadResult, shouldRetryOnReconnect, useAction, useAppClient, useAssistant, useConnection, useEvent, useFileUpload, useMaybeAppClient, useViewer };
+export { AppProvider, type AppProviderProps, type AssistantMessage, type RunOptions, type UseActionResult, type UseAssistantResult, type UseConnectionResult, type UseFileUploadResult, announceWriteDone, onWriteDone, shouldRetryOnReconnect, useAction, useAppClient, useAssistant, useConnection, useEvent, useFileUpload, useMaybeAppClient, useViewer };
