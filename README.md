@@ -27,7 +27,7 @@ Start with `creating-flow` if you're new — it bundles the full Robomotion 101 
 #    put them on your PATH.
 
 # 2. Log in once (asks for your API key without showing it; every command uses it)
-robomotion login
+robomotion auth login
 
 # 3. Install the skills. In Claude Code, as a plugin - this also adds the app
 #    hand-over check (a Stop hook that holds a hand-over until the app was
@@ -73,7 +73,7 @@ robomotion app screen "<label>"         # read what a screen of the running scre
 robomotion app status | logs [-f]       # where things stand; the app robot's output
 ```
 
-The Build view's harness presses the buttons and checks the screens on its own; from Claude Code those are steps the agent takes (`skills/building-app/docs/claude-code.md`), and the plugin's stop check holds a hand-over that skipped one.
+From a terminal or Claude Code the agent presses the buttons, uses the app in a headless browser and reads the screens itself (`skills/building-app/SKILL.md`, "The loop"); under Robomotion's Build with AI a harness does part of that (`skills/building-app/docs/build-view.md`). The Claude Code plugin's stop check holds a hand-over that skipped a step.
 
 Saving is `git commit && git push` at the project root, the same as for a flow.
 

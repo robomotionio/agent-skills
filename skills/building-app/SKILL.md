@@ -1,19 +1,21 @@
 ---
 name: building-app
-description: "Builds a Robomotion App - a real React web app plus a robot backend - by conversation with a non-technical person. Owns the full lifecycle: clarify → contract (app.json) → screens with sample data → live preview in ~90s → backend actions → publish. Use when the user wants an app, dashboard, portal, form, approval queue, a board of things that move through stages, or any screens people will click."
+description: "Builds a Robomotion App - a real React web app in front of a robot flow - by conversation with a non-technical person. Owns the full lifecycle: clarify → contract (app.json) → screens with app-kit → the flow behind them → run it on the app's robot → use the app in a browser and fix until it works → publish. Use when the user wants an app, dashboard, portal, form, approval queue, a board of things that move through stages, or any screens people will click."
 triggers: [an app, the app, my app, web app, webapp, a dashboard, dashboard for, approval queue, internal tool, a portal, user interface, a screen where, a page where, a form for, a form where, little app, small app, simple app, /\bapps?\b/, /\bdashboards?\b/, /\bportals?\b/, a pipeline, kanban, a board where, drag and drop, /\bpipelines?\b/]
 ---
 
 # Robomotion App Builder
 
-A Robomotion App is two artifacts a non-technical person creates by talking to you:
+A Robomotion App is two halves in ONE git repository, built by talking to you:
 
-- a **frontend**: a real React SPA in its own repo (`app-<appID>`), composed only from `@robomotion/app-kit`
-- a **backend**: a Robomotion flow running on their robot, one `App Action` trigger per action
+- the **screens**: a React app under `app/`, composed only from `@robomotion/app-kit`
+- the **robot's side**: a Robomotion flow (`main.ts`, `subflows/`) that answers every button, one `App Action` trigger per action
 
-They are joined by one file, **`app.json`**, and talk over a typed action-RPC. The robot is the differentiator: this app can open a browser, drive a desktop program, read a PDF. Lovable can't; Power Apps can't.
+They are joined by one file, **`app.json`**, and talk over a typed action-RPC. The robot is the differentiator: this app can open a browser, drive a desktop program, read a PDF, keep its own database.
 
-Two things decide whether this conversation goes well: **how fast the person sees the first pixel**, and **whether your words leak jargon**. Everything below serves those two. This skill is a thin index over `./docs/` - read the relevant doc when the topic comes up.
+Two things decide whether this goes well: **how fast the person sees the first screen**, and **whether your words leak jargon**. Everything below serves those two. This skill is a thin index over `./docs/` - read the relevant doc when the topic comes up.
+
+**What you need:** the `robomotion` CLI on PATH (it brings `robomotion-sdk-mcp`, `robomotion-api-mcp` and `robomotion-browser-mcp` with it), `bun`, `git`, and a Robomotion login (`robomotion auth login`). Nothing else: no Designer, no other MCP server. Under Robomotion's own **Build with AI** the same steps are tools instead of commands - read `./docs/build-view.md` there and only there.
 
 ## The contract is the spine
 
@@ -57,57 +59,60 @@ declares the three and puts the bag in a property; it does not open the whole
 thing. `additionalProperties` is not in the subset and is not needed: the open
 object is exactly `{ "type": "object" }`.
 
-## Which surface you are on
+## The surface: the `robomotion` CLI, and git
 
-One project, one folder, one save. The layout, in three lines:
+One project, one folder, one save. The layout:
 
 - `app.json` (and `mcp.json`) at the project root - the contract, where the robot reads it.
-- `app/` holds the screens: `app/package.json`, `app/src/`, and the two Robomotion packages under `app/vendor/`.
+- `main.ts` and `subflows/` at the root - the robot's side.
+- `app/` holds the screens: `app/package.json`, `app/src/`, the two Robomotion packages under `app/vendor/`.
 - `src/generated/` on both sides (`src/generated/actions.gen.ts` for the flow, `app/src/generated/actions.gen.ts` for the screens) is codegen-owned; never hand-edit it.
+- `.robomotion/` holds this machine's session files (never committed): the robot, the dev server, `checks.json`, and your `request-checks.md`.
 
-**Which host you are under decides the surface.** You are under the Robomotion Build view only when the tools `create_app`, `app_dev_server` and `ask_user_question` are ALL registered: then the tools are the surface, and its harness does the steps marked "the harness" below for you. `create_app` alone is not the test - someone can register the Robomotion tools in any assistant, and there nothing runs them for you.
-
-**Anywhere else** (Claude Code, a terminal, a `git clone` of the flow), the `robomotion` CLI is the surface, `git commit && git push` at the project root is the save, and **read `./docs/claude-code.md` before anything else**: it lists, as your own steps, everything the harness would have done unasked. Every tool this skill names maps to one command:
-
-| Build view tool | Claude Code / terminal |
+| Command | Does |
 |---|---|
-| `create_app` | `robomotion app create "<name>"` (in an empty folder it also makes the flow) |
-| `sync_app` | `robomotion app sync` |
-| `save_flow` | `git add -A && git commit -m "..." && git push` at the project root |
-| `validate_app` | `robomotion app validate` |
-| `app_dev_server start` | `robomotion app dev`, run in the background |
-| `app_dev_server read_screen` | `robomotion app screen "<label>"` |
-| `app_dev_server get_preview_errors` | `robomotion app screen` (its console errors) and the `app dev` output |
-| `create_app_robot` | `robomotion app robot` (only with a yes) |
-| `start_app_session` | `robomotion app start` (`--restart` after a save) |
-| `smoke_app` | `robomotion app smoke` |
-| `call_action` | `robomotion app press <action> --params '{...}'` |
-| `poll_logs` | `robomotion app logs` |
-| `publish_app` | `robomotion app publish` |
-| `ask_user_question` | AskUserQuestion |
-| `todo_write` | TodoWrite |
+| `robomotion auth login` | signs this machine in: a code and a link, approved in the person's browser. Run `robomotion auth whoami` first; if it says not logged in, ask the person to run the login (in Claude Code: type `! robomotion auth login`). Never ask for a key. |
+| `robomotion app create "<name>"` | creates the app on the flow in this folder; in an EMPTY folder it also creates the flow and checks it out here. Pulls the seeded `app/`, places the packages, installs. |
+| `robomotion app sync` | for an app that already exists: pull, place the packages, install |
+| `robomotion app codegen` (from `app/`) | regenerates both typed clients from `app.json` and prints the contract hash |
+| `robomotion app dev` | runs the screens on localhost and prints the address. Start it in the background; it keeps running. |
+| `robomotion app validate` | every check: schema, `tsc` on both halves, contract hash, the flow's wiring, the kit rules |
+| `git add -A && git commit -m "..." && git push` | the save, at the project root - screens and flow together |
+| `robomotion app robot` | gives the app its own robot (only after the person said yes) |
+| `robomotion app start [--restart]` | brings that robot up on this computer and starts the app on it; `--restart` after a save that changed the flow |
+| `robomotion app smoke` | presses every button once through the app's own door and reports what each answered |
+| `robomotion app press <action> --params '{...}'` | presses one button with values you choose |
+| `robomotion app try --screen "<label>" --fill "Label=value" --select "Label=option" --click "Button" --expect "text"` | uses the app the way a person does, in a headless browser signed in as them, and prints what the screen shows and what the robot did |
+| `robomotion app screen "<label>"` | reads what a screen shows (text and console errors) |
+| `robomotion app logs [-f]` | the robot's output: every step it ran, and the error when one failed |
+| `robomotion app status` | the app, the screens, the robot, what was last checked |
+| `robomotion app publish` | builds the screens, cuts a flow version, publishes - only when asked |
 
-`robomotion app status` shows the app, the screens, the robot and what was last checked.
+Results come on stdout; progress and complaints on stderr.
 
-## Workflow (tuned for time-to-first-pixel)
+## The loop
 
-Narrate progress through `todo_write`, with items phrased in the user's language ("Design the review screen", "Teach the robot to read invoices") - never internal steps ("run typegen", "start dev server").
+Narrate progress with the task list, in the person's language ("Design the review screen", "Teach the robot to read invoices") - never internal steps ("run typegen", "start dev server"). Ask questions with the question tool (AskUserQuestion in Claude Code), one per turn, with short options.
 
-**The tools, in the order you need them:** `create_app` (once, first) -> `sync_app` -> `save_flow` -> `create_app_robot` (only with a yes, see below) -> `start_app_session` -> `smoke_app` (run for you, read its report - step 6b) -> `validate_app` -> `publish_app`. Saving is one act: `save_flow` on the project root commits the screens and the flow together, so there is nothing separate to push for the app. `list_apps` finds an existing app; `app_dev_server` controls the preview process. Before the contract, `searching-packages` (step 0c) is what tells you what the robot can already do. Never write app or flow files before `create_app` has returned - there is no working copy to write into until it has.
+0. **Sign-in, then create.** `robomotion auth whoami`. Then `robomotion app create "<short human name>"` - in an empty folder it makes the flow too. Never write app or flow files before it has returned: there is nothing to write into until then. Continuing an existing app: `robomotion app sync`.
 
-0. **Create the app first.** Call `create_app` with a short human name and, WHEN YOU ARE ALREADY IN A FLOW, its id as `flowId` - in the Build view you always are, and omitting it binds the app to a different flow than the one on the user's screen. It returns `app_id`, `flow_id` and the paths - `flow_path`, the project root, and `app_path`, the `app/` folder inside it - and checks the one working copy out. Then `sync_app` before you read or write anything. Continuing an existing app instead? `list_apps`, then `sync_app`.
+0b. **Clarify - at most 3 questions, total.** ONE question per turn. Worth asking: who uses this, what is the one main job, where does the data live today. Never ask about technology, hosting, colours or frameworks. If the request already answers a question, don't ask it.
 
-0b. **Clarify - at most 3 questions, total.** Use `ask_user_question` with quick replies, ONE question per turn. Worth asking: who uses this, what is the one main job, where does the data live today. Never ask about technology, hosting, colors, or frameworks. If the request already answers a question, don't ask it.
+0c. **Find the robot's pieces before you design anything.** For every external system or capability the person named - their CRM, their shared drive, a spreadsheet, a mailbox, a database, a website with no API - use the **`searching-packages`** skill BEFORE you choose an archetype or write a line of `app.json`. The Robomotion library is 229 packages deep and the flow behind an app can reach all of it. **A package beats raw HTTP** every time. Name what you found in your reply, in the person's words ("I can talk to your Google Sheet directly"), never as a package list.
 
-0c. **Find the backend pieces before you design anything.** For every external system or capability the person named - their CRM, their shared drive, a spreadsheet, a mailbox, a database, a website with no API - use the **`searching-packages`** skill BEFORE you choose an archetype or write a line of `app.json`. The Robomotion library is 229 packages deep and the flow behind an app can reach all of it, so the shape of the app follows what is actually there: which systems have a package, what those packages can do, and what has to be done by driving a browser or a desktop program instead. **A package beats raw HTTP** every time - it carries the authentication, the paging and the error handling you would otherwise write and get wrong. Name what you found in your reply, in the person's words ("I can talk to your Google Sheet directly"), never as a package list. Skipping this is how an app gets built around what you guessed the robot could do rather than what it can.
-1. **Pick an archetype silently**: dashboard / approval-queue / form-and-table / document-review / board. Match by what the person wants to DO, not the words they used - the chooser table is in `./docs/archetypes/` (one file per archetype). Never say the archetype name to the user; say what you're building: "I'll make you an app with two screens: a queue of waiting invoices, and a page to approve each one." **Layout follows the screen count**: an app with two or more screens gets the kit's sidebar (the shell does it; give each screen an `icon`, and a `group` when there are more than five), a one-screen app the top bar. A person who asks for "tabs at the top" gets `theme.layout: "topbar"` in `app.json`.
-2. **Write `app.json`** - read `./docs/contract.md` first. Every `description` line doubles as the Designer's UI copy, so write it for the end user.
-2b. **Clear out the demo the app arrived with.** A new app already renders something, and every file of that demo is written against the seed's contract - it imports types from `src/generated/actions.gen`. Your `app.json` deletes those types, so **any leftover file fails `tsc` inside `validate_app`, including one that nothing imports any more**. Deleting the screens you noticed is not enough. After you have written your own screens, ask the checkout what is still pointing at the contract:
+0d. **Write the promises down.** Before any screen, write what the person asked for as short checkable lines in `.robomotion/request-checks.md` (their language is fine): counts, order, what an empty case shows, what is refused and what stays unchanged when it is, what each screen shows - naming each screen by the label its navigation will carry. Step 7 checks the screens against it. Never mention the file to the person.
 
-    grep -rl "generated/actions.gen" src/
+1. **Pick an archetype silently**: dashboard / approval-queue / form-and-table / document-review / board. Match by what the person wants to DO - the chooser is `./docs/archetypes/` (one file per archetype). Never say the archetype's name; say what you're building: "I'll make you an app with two screens: a queue of waiting invoices, and a page to approve each one." **Layout follows the screen count**: two or more screens get the kit's sidebar (give each screen an `icon`, and a `group` when there are more than five); a one-screen app the top bar. "Tabs at the top" is `theme.layout: "topbar"` in `app.json`.
 
-    Anything it lists that you did not write is debris from the demo: delete it. `src/screens.tsx` tells you which screens the app actually mounts, so anything unreachable from there goes too, whether or not it still compiles.
-2c. **Write `mcp.json` beside `app.json`** - read `./docs/mcp.md`. Every app is also an MCP server (its actions are tools, at `https://mcp.robomotion.io/<b58>`) and every app has an assistant in its corner; `mcp.json` is how both understand the app. It is presentation only: a server name, an `instructions` paragraph that says what the app is for and who uses it, a sentence per tool on when to reach for it, `"read_only": true` or `"read_only": false` on EVERY tool (true: it only reads and changes nothing; false: it changes something; `validate_app` fails a tool without it, and `robomotion app codegen` must run again after it changes), and the `destructive` / `idempotent` hints. Keep any action an agent must never run out of it with `"enabled": false`. Never put schemas in it - `app.json` owns those. Write it in the same pass as `app.json` and update it when an action changes meaning.
+2. **Write `app.json`** - read `./docs/contract.md` first. Every `description` doubles as UI copy, so write it for the end user. Then `robomotion app codegen` from `app/`.
+
+2b. **Clear out the demo the app arrived with.** A new app already renders something, written against the seed's contract. Your `app.json` deletes those types, so **any leftover demo file fails `tsc`, including one nothing imports**. After writing your screens, ask the checkout what still points at the contract:
+
+    grep -rl "generated/actions.gen" app/src/
+
+    Anything listed that you did not write is debris: delete it. `app/src/screens.tsx` says which screens the app mounts; anything unreachable from there goes too.
+
+2c. **Write `mcp.json` beside `app.json`** - read `./docs/mcp.md`. Every app is also an MCP server and has an assistant in its corner; `mcp.json` is how both understand it. Presentation only: a name, an `instructions` paragraph, a sentence per tool, `"read_only": true` or `false` on EVERY tool (`robomotion app validate` fails one without it; run `robomotion app codegen` again after it changes), and the `destructive` / `idempotent` hints. Keep an action an agent must never run out of it with `"enabled": false`. Never put schemas in it.
 
 3. **Generate the screens from the archetype, with sample data baked in.** The
    app's name belongs to the shell's title and nowhere else on a screen: a
@@ -133,7 +138,7 @@ Narrate progress through `todo_write`, with items phrased in the user's language
    ```
 
    A mode flag leaves a button that submits nothing for ever, and `tsc` passes
-   it, because nothing about an unwired button is a type error. `validate_app`
+   it, because nothing about an unwired button is a type error. `robomotion app validate`
    reports the shape (`screens-wired`); the person finds it sooner, by pressing
    it, and by then it is their app.
 
@@ -154,7 +159,7 @@ Narrate progress through `todo_write`, with items phrased in the user's language
    banner that explained it goes with the connection, so a sample result
    left on a connected app reads as a real answer to a form nobody has
    filled in. Gate the fallback on the connection, which `useConnection()`
-   reports (`validate_app`'s `sample-gated` check fails a fallback that is
+   reports (`robomotion app validate`'s `sample-gated` check fails a fallback that is
    not):
 
    ```tsx
@@ -183,10 +188,65 @@ Narrate progress through `todo_write`, with items phrased in the user's language
    is unreachable - no table, no sample rows, no error. Write
    `{list.error && <ErrorState/>}` and then the `DataTable` unconditionally.
 
-4. **`save_flow`, on the project root.** Saving is one act: it commits the screens under `app/` and the flow beside them in one go - the flow being the half the robot actually runs - and pushes. There is nothing separate to push for the app. **The preview comes up on its own a few seconds after this first save** - the harness starts it and it appears in the person's preview panel - so do not call `app_dev_server start` for it: the tool answers "already running", and every such call is one more row on the person's screen that did nothing. Call `app_dev_server status` only when you have a reason to think the preview is down. Tell the person to look at the preview, and say that the numbers are sample data until their robot is connected.
-4b. **`robomotion app codegen`** whenever `app.json` or a `read_only` mark in `mcp.json` changes, before writing code against it. Run it from the app folder; it regenerates both typed clients and prints the contract hash.
+3c. **A screen asks for what it shows when it opens, and a row button is a column.** A table with `source={{ action }}` loads itself; every other list, counter or detail runs its read in one `useEffect` on open, and a form that adds a record refetches the list that shows it. A button the person asked for on every row is rendered as a column, not folded into the table's "More" menu. Both are under `DataTable` in `./docs/app-kit-reference.md` ("Loading a screen", "A button on every row").
 
-5. **Build the flow backend, one action at a time**, in the order the user will click them. For each action: `App Action` trigger → the real work → `App Respond` on EVERY path (an unresponded call only ends by timeout, which the user experiences as a hung button). Long work sends `App Progress`. The generated `src/generated/actions.gen.ts` at the project root gives you the param/result types. Flow SDK mechanics (node grammar, browser, credentials) are the `creating-flow` skill - use it.
+4. **Start the screens and look.** `robomotion app dev` in the background, once; it prints the local address. After every batch of screen edits, `robomotion app screen "<label>"` on the screen you touched: it prints the text and the console errors, and a screen that throws on first render is caught here, not by the person. Give the person the address when they ask where the app is.
+
+4b. **`robomotion app codegen`** whenever `app.json` or a `read_only` mark in `mcp.json` changes, before writing code against it. Run it from `app/`.
+
+5. **Build the flow, one action at a time**, in the order the person will press them. For each action: `App Action` trigger → the real work → `App Respond` on EVERY path (an unresponded call only ends by timeout, which the person experiences as a hung button). Long work sends `App Progress`. `src/generated/actions.gen.ts` at the project root gives you the param/result types. Flow SDK mechanics (node grammar, browser, credentials) are the `creating-flow` skill - use it. The exact shape of an app's flow is the next section; read it before the first node.
+
+5b. **Check and save.** `robomotion app validate` until it passes, then `git add -A && git commit -m "<what changed>" && git push` at the project root. The robot fetches the flow from git: an uncommitted flow is a flow the robot has never seen.
+
+6b. **Press every button, then read the report before you say anything works.** After
+   every `robomotion app start` (and every `--restart`), run `robomotion app smoke`
+   yourself - nothing runs it for you: every button pressed once through the app's
+   own MCP door - the same `action_call` a press in the screens sends - with
+   stand-in values built from each action's schema (a description's own
+   example first, then an enum's first member, today for a date, "smoke test"
+   / 1 / true otherwise). The report has one row per button, and the row's word is the
+   whole diagnosis. Classify, then act - never explain:
+
+   | Row says | It means | Do this |
+   |---|---|---|
+   | `answered` | The path reached an `App Respond` (or `App Respond Error`). `result` holds what came back. | Read `result`. An answer that says the stand-in values were not understood ("that doesn't look like a country code") proved only the rejection path - press it yourself with `robomotion app press` and real values before you call the button working. |
+   | `refused` | `invalid_params`: the stand-ins were the wrong shape; the path behind the check is untested. | `robomotion app press` with values you choose, and say which case you proved. |
+   | `dead_end` | The robot's watchdog fired: the path from that `App Action` never reaches an `App Respond`. `last_node` is the last step that started and never finished. | Open the flow, find `last_node`, wire the path from it through to an `App Respond` (a port that goes nowhere, a chain nothing enters, a branch with no answer). Save, `robomotion app start --restart`, `robomotion app smoke` again; read that report too. |
+   | `unwired` | No `App Action` node serves this action. | Add `Robomotion.Apps.Action` with this action name, wire its path to an `App Respond`, save. |
+   | `stale` | `contract_mismatch` / `unknown_action`: the running backend is older than `app.json`. | Save the flow and call `robomotion app start` again. |
+   | `dead_after_first` | The first press answered and the second found nothing running: the flow ended itself. | Hard rule 5. Remove the `Stop`/`End`, or the path that reaches one; wire `Core.Trigger.Catch` to an `App Respond Error`. Save. |
+   | `not_running` / `still_starting` | The flow is not up, or never loaded its contract. | `robomotion app start` once more; if it says the session is up, read `robomotion app logs` for why the flow ended, say so, and end your turn. |
+   | `busy` / `slow` / `error` / `skipped` | Nothing proven either way. | Say nothing alarming about the buttons; `robomotion app press` the one that matters if you need to know. |
+
+   **Never say a button works that the report says did not answer** - and
+   never say the app is ready over a `failed` verdict. Write actions ARE
+   pressed, for real, and the pass takes its own creates away again through
+   the app's delete when there is one. `left_behind` names a create it could
+   not remove: add a delete for that record (contract, flow, screen), save,
+   restart, smoke again. Take away only what the pass or your own presses
+   made (`created_ids`, the ids your `press` calls returned) - never a record
+   you read from a list, never one the person entered. An update
+   (`updated_existing`) is not a leftover; leave it. Reading `last_node` beats
+   every theory you have about why a press timed out (the twenty-sixth pass
+   spent twenty-one minutes on a confident wrong one).
+
+6a. **When the app has no robot of its own yet - a brand-new app never does,
+   and `robomotion app start` says so if you call it anyway - the question is a
+   CARD, not a sentence.** This is the last question of the build and it
+   arrives at the end of a long summary, where a sentence ending in a question
+   mark leaves the person nothing to press. Call the question tool. Exactly
+   this shape:
+
+6d. **Prove the paths the stand-ins could not, with real values.** `robomotion app press <action> --params '{...}'` for the refusal ("not enough left"), the second page, the empty case. Read `robomotion app logs` when a press does not answer as you expect, BEFORE explaining anything: the failing step and its message are there in the robot's own words.
+
+7. **Use the app the way the person will, and check every promise.** With `robomotion app dev` running and the robot up, for each screen `.robomotion/request-checks.md` names, drive it as a person:
+
+    robomotion app try --screen "Items" --fill "Name=Rice" --fill "Unit=kg" --click "Add item" --expect "Rice"
+    robomotion app try --screen "Movements" --select "Item=Rice (kg)" --select "In or out=Out" --fill "Quantity=8" --click "Save" --expect "only"
+
+   It fills fields by their labels, presses buttons by their words, then prints the screen's text, the page's console errors, and every step the robot ran meanwhile. Check every line of `request-checks.md` against what the screen shows - reading a screen is not checking it. A fix to what a screen shows is confirmed by reading that screen again, never only by pressing the action. Fix any mismatch, save, restart when the flow changed, try again. Take away the records your tries made before you hand over, through the app's own delete.
+
+8. **Hand over, honestly.** Say what the app does and what to press, in the person's words; give them the local address; say nothing about ids, files or test data unless something was left behind. **Offer to publish; never publish unasked.** When they say yes, `robomotion app publish`.
 
 ### The flow side, exactly
 
@@ -610,7 +670,7 @@ because the robot did exactly what it was told.
 **So: a row action that toggles or edits a field spreads the row.** And when
 you change what an action takes, change all three halves in the same breath -
 `app.json`, the flow's write step, and every screen that calls it; the screen is
-the half most easily forgotten. `validate_app` reports a call site that passes
+the half most easily forgotten. `robomotion app validate` reports a call site that passes
 fewer fields than `app.json` declares (`action-params`); do not wave that
 through.
 
@@ -628,76 +688,17 @@ Note what the example does **not** have: an ending. No `Core.Flow.Stop`, no
 screens (hard rule 5) - the last node on every path is its `App Respond` or
 `App Respond Error`. This is the single easiest way to ship an app that works
 exactly once, so check for it before you save.
-6. **`start_app_session`.** On a brand-new app, **ask before you call it**: `create_app` has already told you the app has no robot of its own, and calling `start_app_session` only to be refused puts a failed step on the person's screen one row above the question that follows it. Ask first (6a), then call `start_app_session` after the yes. An app that already has its robot needs no question - call it straight away. It brings up the app's OWN robot on this computer and starts the flow on it; the preview's buttons now hit a real robot - and so does the harness, before the person does (6b). An app runs on its own robot and on no other - you never pick a robot for it, and you never run it on the person's Development or Production robot. Delete each `SAMPLE_*` const as its backend action comes alive. The buttons need no change, because step 3a wired them to the real action from the start; if changing one is what makes it work, the app was a mockup until now and you have just found that out later than the person would have.
-
-6b. **Read the smoke report before you say anything works.** Every
-   `start_app_session` that starts (or restarts) the backend is followed, by
-   the harness, by `smoke_app`: every button pressed once through the app's
-   own MCP door - the same `action_call` a press in the preview sends - with
-   stand-in values built from each action's schema (a description's own
-   example first, then an enum's first member, today for a date, "smoke test"
-   / 1 / true otherwise). The report arrives as a second block of the
-   `start_app_session` result, one row per button, and the row's word is the
-   whole diagnosis. Classify, then act - never explain:
-
-   | Row says | It means | Do this |
-   |---|---|---|
-   | `answered` | The path reached an `App Respond` (or `App Respond Error`). `result` holds what came back. | Read `result`. An answer that says the stand-in values were not understood ("that doesn't look like a country code") proved only the rejection path - press it yourself with `call_action` and real values before you call the button working. |
-   | `refused` | `invalid_params`: the stand-ins were the wrong shape; the path behind the check is untested. | `call_action` with values you choose, and say which case you proved. |
-   | `dead_end` | The robot's watchdog fired: the path from that `App Action` never reaches an `App Respond`. `last_node` is the last step that started and never finished. | Open the flow, find `last_node`, wire the path from it through to an `App Respond` (a port that goes nowhere, a chain nothing enters, a branch with no answer). Save. The harness restarts the backend and presses again after your save; read that report too. |
-   | `unwired` | No `App Action` node serves this action. | Add `Robomotion.Apps.Action` with this action name, wire its path to an `App Respond`, save. |
-   | `stale` | `contract_mismatch` / `unknown_action`: the running backend is older than `app.json`. | Save the flow and call `start_app_session` again. |
-   | `dead_after_first` | The first press answered and the second found nothing running: the flow ended itself. | Hard rule 5. Remove the `Stop`/`End`, or the path that reaches one; wire `Core.Trigger.Catch` to an `App Respond Error`. Save. |
-   | `not_running` / `still_starting` | The flow is not up, or never loaded its contract. | `start_app_session` once more; if it says the session is up, read `poll_logs` for why the flow ended, say so, and end your turn. |
-   | `busy` / `slow` / `error` / `skipped` | Nothing proven either way. | Say nothing alarming about the buttons; `call_action` the one that matters if you need to know. |
-
-   **Never say a button works that the report says did not answer** - and
-   never say the app is ready over a `failed` verdict. Write actions ARE
-   pressed, for real: a row named "smoke test" may now sit in the person's
-   list. Tell them so in one sentence and offer to remove it with the app's
-   own delete; never pretend the pass did not run. Reading `last_node` beats
-   every theory you have about why a press timed out (the twenty-sixth pass
-   spent twenty-one minutes on a confident wrong one).
-
-6a. **When the app has no robot of its own yet - a brand-new app never does,
-   and `start_app_session` says so if you call it anyway - the question is a
-   CARD, not a sentence.** This is the last question of the build and it
-   arrives at the end of a long summary, where a sentence ending in a question
-   mark leaves the person nothing to press. Call `ask_user_question`. Exactly
-   this shape:
-
-       ask_user_question
-         header:    "Robot"
-         question:  "Your app needs a robot to run on. Shall I set one up?"
-         options:   "Yes, set it up"  /  "Not now"
-
-   The **header** is a word the person reads too. It is "Robot". Not "App
-   robot", not "App-robot", not "Robot slot".
-
-   Writing the same words into your reply instead is not a different spelling
-   of the same thing, it is the fault. And the word is **"robot"** - never
-   "app-robot", never "one of your app-robot slots", never "application_lc".
-   The person owns robots; slots and types are our bookkeeping. **The same
-   holds in your closing summary**: nobody asked what it cost, so do not
-   volunteer "2 of your 4 robot slots in use". Say what it costs only if they
-   ask, and then say "robots", not "slots".
-6c. **A screen asks for what it shows when it opens, and a row button is a column.** A table with `source={{ action }}` loads itself; every other list, counter or detail runs its read in one `useEffect` on open, and a form that adds a record refetches the list that shows it. A button the person asked for on every row is rendered as a column, not folded into the table's "More" menu. Both are under `DataTable` in `./docs/app-kit-reference.md` ("Loading a screen", "A button on every row").
-7. **`validate_app`.** Fix until clean. It compiles both projects against the contract, checks the schema, and checks the dependency allowlist.
-8. **Offer to publish.** Never publish unasked. When the person says yes, `publish_app`.
 
 ## Stay inside your own app, and use the tools
 
-`create_app` and `sync_app` return the paths for THIS app: `flow_path`, the
-project root (`main.ts`, `app.json`, `subflows/`), and `app_path`, the `app/`
-folder inside it (the screens). Work only in those.
+The project is the folder `robomotion app create` ran in: `main.ts`, `app.json`, `subflows/` at its root, the screens under `app/`. Work only in it.
 
 - **Your shell starts in the FLOW's folder, not the app's, and every command
   starts there again.** A `cd` in one command does not carry to the next, so
   `pwd && ls && cat src/generated/actions.gen.ts` finds nothing and the next
   call goes hunting. Begin every command with `cd` into the folder you mean,
-  with the absolute path `create_app` gave you. **The same for the write and
-  edit tools**: the robot's steps live at `<flow_path>/main.ts` from
-  `create_app`'s result, and a bare `main.ts` lands wherever the shell
+  with the absolute path of the project. **The same for the write and
+  edit tools**: the robot's steps live at `<flow_path>/main.ts` of the project, and a bare `main.ts` lands wherever the shell
   happens to be - one build wrote its whole backend into the wrong folder
   that way, saved it, and the next save replaced it with the empty skeleton.
   Always the absolute path.
@@ -713,24 +714,21 @@ folder inside it (the screens). Work only in those.
   connecting with `contract_mismatch` - and python is not installed on most
   people's machines. `robomotion` is the tool that is always present; do not
   reach for `bun run`, `npm run` or `npx` to do a job it already does.
-- Prefer the app tools over raw shell generally: `sync_app`, `save_flow`,
-  `validate_app`, `app_dev_server` each do one job properly.
+- Prefer the `robomotion app` verbs over raw shell: each does one job properly.
 - **`archetypes/` in the app repo is reference material.** It is not compiled
   and not checked; leave it where it is. Never delete it and never edit
   `tsconfig.json` to work around it.
-- **You cannot press the buttons in the preview - you can, and must, press
-  them through the app's own door.** The preview is signed in as the person,
-  not as you, so nothing you do can drive it. But every app is also an MCP
+- **Press the buttons yourself, both ways.** Every app is also an MCP
   server, and a `tools/call` through it is the very same `action_call` a
-  press sends: after `start_app_session` the harness runs `smoke_app` (every
-  button once) and puts the report in front of you (step 6b); `call_action`
-  presses one button with values you choose. That is the whole of how an
-  action runs for real from here. Never hand-write a websocket message, never
+  press sends: `robomotion app smoke` presses every button once (step 6b),
+  `robomotion app press` one button with values you choose. And
+  `robomotion app try` presses them the way the person will, in a browser
+  signed in as them (step 7). That is the whole of how an action runs for
+  real from here. Never hand-write a websocket message, never
   read the runtime's compiled source to work out the wire format, and never
   open `credentials.yaml` or any other secret. To watch a press - yours or
-  theirs - use `poll_logs` on the `studio_id` that `start_app_session`
-  returned: a Debug or Log step in the flow arrives there as a `debug` event,
-  with the value in it.
+  theirs - `robomotion app logs -f`: a Debug or Log step in the flow arrives
+  there with its value.
 
 - **A press of yours never deletes something the person put there.** The rows
   in their app are their work, and everything on their screens is derived from
@@ -739,15 +737,15 @@ folder inside it (the screens). Work only in those.
   of `removeMatchNight` on real ids, and the two match nights the person had
   entered - the rows every number on the last screen came from - were gone,
   unsaid and unrecovered. To test a delete, press the matching create first,
-  delete THAT, and say what you tried. The harness refuses the other case
+  delete THAT, and say what you tried. `robomotion app smoke` refuses the other case
   outright; if the person has asked for one of their own records to go, say
   plainly that you will not remove their data from your side and point them at
   the button that does it. The same care applies to a create: a row you add to
   try something out is taken away again before you hand the app back, or named
   in what you say.
 - **When something fails, read the robot's error BEFORE explaining it.**
-  `poll_logs` on the app session's `studio_id` carries the node that failed
-  and why, in the robot's own words. Diagnosing from the shape of the symptom
+  `robomotion app logs` carries the step that failed and why, in the robot's
+  own words. Diagnosing from the shape of the symptom
   instead produces confident fiction - "your press never reached the robot"
   about a press that reached it and failed three steps in, on a reason the
   robot's log had stated in one line. A wrong explanation is worse than none:
@@ -755,13 +753,9 @@ folder inside it (the screens). Work only in those.
   believing it was fixed once already. If the logs say nothing, say that, and
   say what you are going to try next.
 
-  **Read the logs BEFORE restarting anything.** `start_app_session` mints a
-  NEW `studio_id`, and the failure the person is describing happened under
-  the old one - restart first and you are polling a clean, empty log, which
-  reads exactly like "the press never arrived". Poll the session that was
-  live when it broke; restart afterwards, if at all. `node_error` is a
-  `poll_logs` event like any other - the failing node and its message are
-  there for the asking.
+  **Read the logs BEFORE restarting anything.** The failure the person is
+  describing is in the log now; restart first and you are reading a fresh
+  one, which reads exactly like "the press never arrived".
 - **Never show identifiers.** App ids, flow ids, commit shas, contract hashes,
   file names and node property names are yours, not the person's. "The app is
   created" - not "The app was created (id `0cfd...`)".
@@ -770,9 +764,9 @@ folder inside it (the screens). Work only in those.
 
 Each rule carries its reason. The reason is why you don't route around the rule when it feels inconvenient.
 
-0. **The harness installs the packages.** `create_app` and `sync_app` place `@robomotion/app-kit` and `@robomotion/apps-runtime` under `app/vendor/` and run the install; their result carries a `packages_warning` if that did not work. Never symlink, copy or `bun install` packages by hand, and never borrow them from another app's checkout - if something looks missing, run `sync_app` and read its warning.
+0. **`robomotion app create` and `robomotion app sync` install the packages.** They place `@robomotion/app-kit` and `@robomotion/apps-runtime` under `app/vendor/` and run the install. Never symlink, copy or `bun install` packages by hand, and never borrow them from another app's checkout - if something looks missing, run `robomotion app sync` and read what it says.
 1. **Every control that runs an action declares it.** A button, upload zone or form that makes the robot do something takes the action through the kit's `action` prop (`<Button action={greet} params={{ name }}>`), or spreads `bindAction(greet)` when it must keep its own handler. Never write `onClick={() => greet.run(...)}` on its own: the Build view then cannot link the control to its step, the connections map reports the action as unlinked, and the person is told the button they can see does not exist. See `./docs/app-kit-reference.md`.
-1. **Kit-only.** Compose `@robomotion/app-kit` components plus Tailwind classes for layout. Never write a new UI primitive, never add an npm dependency, never edit `vite.config.ts`, `tailwind.config.ts`, `src/index.css` or the dependency list. The allowlist is exactly: `react`, `react-dom`, `@robomotion/app-kit`, `@robomotion/apps-runtime`, and the dev toolchain - `validate_app` fails on anything else. **Colours, tables, spinners and pictures drawn by hand are reported too** (`validate_app`'s `kit-only` check, by file and line): a Tailwind palette colour (`text-gray-500`), a `dark:` variant, a hex in brackets or an inline `style` colour; an inline `<svg>`; an inline `<table>`; an `animate-spin` div. The kit's preset gives a screen the colours it may name (`text-muted-foreground`, `bg-card`, `border-border`, `text-primary`), `Icon` gives it every picture, `DataTable` every table and `Spinner` the one spinner; the "Design language" section of `./docs/app-kit-reference.md` is the whole vocabulary. Every nav item carries an `icon` in `src/screens.tsx`, and every file under `src/pages/` opens with `<Screen>`. Reason: a prompt-built app that can pull arbitrary packages becomes a codebase nobody can review; the kit is also what keeps every screen themed, dark-mode aware, and accessible without you doing anything, and a colour chosen by hand is the one thing on the screen that does not follow the theme.
+1. **Kit-only.** Compose `@robomotion/app-kit` components plus Tailwind classes for layout. Never write a new UI primitive, never add an npm dependency, never edit `vite.config.ts`, `tailwind.config.ts`, `src/index.css` or the dependency list. The allowlist is exactly: `react`, `react-dom`, `@robomotion/app-kit`, `@robomotion/apps-runtime`, and the dev toolchain - `robomotion app validate` fails on anything else. **Colours, tables, spinners and pictures drawn by hand are reported too** (`robomotion app validate`'s `kit-only` check, by file and line): a Tailwind palette colour (`text-gray-500`), a `dark:` variant, a hex in brackets or an inline `style` colour; an inline `<svg>`; an inline `<table>`; an `animate-spin` div. The kit's preset gives a screen the colours it may name (`text-muted-foreground`, `bg-card`, `border-border`, `text-primary`), `Icon` gives it every picture, `DataTable` every table and `Spinner` the one spinner; the "Design language" section of `./docs/app-kit-reference.md` is the whole vocabulary. Every nav item carries an `icon` in `src/screens.tsx`, and every file under `src/pages/` opens with `<Screen>`. Reason: a prompt-built app that can pull arbitrary packages becomes a codebase nobody can review; the kit is also what keeps every screen themed, dark-mode aware, and accessible without you doing anything, and a colour chosen by hand is the one thing on the screen that does not follow the theme.
 2. **Actions only through the generated typed stubs.** `src/generated/actions.gen.ts` exports one hook per action, `use<Action>()` (for `greet`: `const greet = useGreet()`), plus `<Action>Params` / `<Action>Result` types; `greet.data` is typed and `<Form action={greet}>` / `<Button action={greet}>` link the control. Use those. Never write `useAction("name")` yourself - untyped, its `data` is `{}` and `tsc` fails on the first field you read. Events use `useEvent` with the generated payload types. Never hand-write transport, never invent a message format, never call `app.call` from screen code. Reason: the old app system died because clients hand-invented protocols over a raw channel and drift was discovered by users in production; the stubs make a contract change break `tsc` instead of a person.
 3. **One component per file, flat directories, no barrel files.** `src/pages/Review.tsx`, `src/components/InvoiceCard.tsx` - that's the whole depth. Reason: "make that button green" must resolve to exactly one file from the route context; barrels and deep nesting break targeted edits and make hot reload touch more than it should.
 4. **Never hand-edit generated files.** Anything under `src/generated/` is regenerated from `app.json`; edit `app.json` and regenerate. Reason: the next regeneration silently erases your edit, and an edited file no longer matches `contract_hash`, which blocks the app from connecting at all.
@@ -817,29 +811,14 @@ Each rule carries its reason. The reason is why you don't route around the rule 
    file, and `Core.CSV.ReadCSV` / `Core.CSV.WriteCSV` / `Core.CSV.AppendCSV`
    for a spreadsheet-shaped one. Read the node cards for their properties;
    do not tour the catalogue for them. A flow that reads a file and never
-   asks whether it is there fails `validate_app` when its Catch passes
+   asks whether it is there fails `robomotion app validate` when its Catch passes
    `error.message` through - the first press before the file exists would
    show a raw path.
 
-7. **Under the tools, saving is `save_flow`. From a terminal, `git commit &&
-   git push` is the save.** When `save_flow` is registered, `git add`, `git
-   commit`, `git push`, `git reset` and the rest are refused inside the
-   checkout; reading (`git status`, `git log`, `git diff`) is free. Reason:
-   the save tool commits the right files with the right message, and every
-   check downstream reads what it recorded; a commit made by hand beside it
-   leaves the two disagreeing about what was saved. Without the tools there
-   is nothing to disagree with: the project is one git repository, and
-   pushing it is the save.
-
-## The preview loop
-
-Full protocol: `./docs/preview-loop.md`. The short version:
-
-- `app_dev_server` is your native tool: `start` (idempotent), `stop`, `status`, `logs`, `get_preview_errors`, `read_screen` (opens the preview, goes to `screen` by its navigation label or route, and returns the text the screen shows plus console errors).
-- **Write the request's promises down, then check the screens against them.** Before building a new app, write what the person asked for as short checkable lines in `.robomotion/request-checks.md` in the project (their language is fine): counts, order, what an empty case shows, what is refused and what stays unchanged, what each screen shows. For example: "a list of the last N periods includes the current one and has N rows", "newest first", "a period with nothing shows 0". Before handing over, `read_screen` each screen the file names and check every line against what it shows; reading a screen is not checking it. Fix any mismatch first, and never mention the file to the person.
-- **A fix to what a screen shows is confirmed by reading that screen, never only by calling the action.** When the person says a screen is empty, wrong or not updating, `call_action` tells you what the robot has; `read_screen` tells you what they see. Read the screen after the fix, compare it with what they described, and tell them only what it actually shows. In the Build view the preview appears in the person's app preview panel by itself; never tell them to open a link, and never quote a `127.0.0.1` address (their robot may be on another machine). Outside the Build view there is no panel: give them the address `robomotion app dev` printed (`./docs/claude-code.md`). If they ask where the app lives, give the address from the tool result.
-- **Route context.** When the person navigates the preview, the current route arrives silently prepended to their next message. "Make that button green" resolves against the screen they are LOOKING AT - use that route, don't guess across screens, and don't ask which screen when the context already says.
-- **After EVERY edit batch, call `get_preview_errors` before telling the user you're done.** Reporting success on a preview that is throwing is worse than reporting the error. It answers in two parts - what the dev server compiled, and what the BROWSER reported (a wrong import name, a crash on first render, a rejected promise). The browser half is empty until the preview has actually loaded the screens, so "nothing from the browser" on a page nobody has opened is not a clean bill of health: say the build is clean and ask what they see.
+7. **The save is `git commit && git push` at the project root.** The robot
+   fetches the flow from git, so a flow that is not pushed is a flow the
+   robot has never seen, and `robomotion app validate` says so. (Under Build
+   with AI the save is a tool and git is refused: `./docs/build-view.md`.)
 
 ## Say it like a person
 
@@ -897,59 +876,33 @@ A wrong answer sitting under a red error card is worse than no answer.
 
 ## Ask vs decide
 
-Ask ONLY when the request genuinely matches more than one thing: two screens both have a "Send" button, "the report" could be either of two tables, an "approve" could mean one item or all filtered items. Then `ask_user_question` with 2-4 quick replies, one question per turn. Everything else: pick the sensible default and say what you picked in one line ("I put the newest items at the top - tell me if you'd rather sort by amount"). A person asked three questions in a row stops answering; a person told what was chosen corrects you for free.
-
-## An app for the flow that is already open
-
-An app is a set of screens plus exactly ONE flow behind it. When a project is
-already open, `flow_context` tells you which case you are in - decide from it,
-do not ask blindly:
-
-| `flow_context` says | What to do |
-|---|---|
-| `app_id` is set | This flow already backs an app. Continue THAT app - `list_apps` / `sync_app`, never `create_app`. |
-| `node_count` is 0 | An empty project. Use it as the new app's backend: `create_app` with its `flowId`. |
-| `node_count` > 0, no `app_id` | Genuinely ambiguous - **ask**. |
-
-Only the third row earns a question, and it is a real one: that flow is somebody's
-working automation with its own trigger, and giving it app screens means changing
-how it starts. Put it in their terms, not ours - "Add screens to the automation
-you have open, or start a fresh project with its own automation?" - with those two
-as the quick replies. Never say "flow_context", "node_count" or "trigger".
-
-If they choose the open automation, pass its flow id to `create_app` as `flowId`
-so the app adopts it instead of scaffolding a second one.
+Ask ONLY when the request genuinely matches more than one thing: two screens both have a "Send" button, "the report" could be either of two tables, an "approve" could mean one item or all filtered items. Then the question tool with 2-4 quick replies, one question per turn. Everything else: pick the sensible default and say what you picked in one line ("I put the newest items at the top - tell me if you'd rather sort by amount"). A person asked three questions in a row stops answering; a person told what was chosen corrects you for free.
 
 ## When things fail
 
 | Situation | Do this |
 |---|---|
-| `get_preview_errors` returns a build error | Fix it, re-check, only then reply. Never paste a stack trace at the user; say "fixing a mistake I made on the review screen". |
-| Runtime error in the preview (`rm-app-error`) | Same fix-and-recheck. The Designer already auto-retries at most twice per user message - work within that, don't loop forever. |
-| An action times out | The call ALWAYS terminates (robot-side watchdog), so a hung button means a path that never reaches `App Respond`, or a `timeout_ms` too short for the work. Do not theorise: `smoke_app` (or `call_action` on that one button) presses it from here and answers `dead_end` with `last_node`, the last step that started and never finished - fix the wiring from there (step 6b). Long robot work (browser, PDF): raise `timeout_ms` in `app.json` and set `progress: true`, then send `App Progress` from the flow so the wait is visible. |
+| `robomotion app screen` or `app try` reports a console error, or `app dev`'s output a build error | Fix it, re-check, only then reply. Never paste a stack trace at the user; say "fixing a mistake I made on the review screen". |
+| An action times out | The call ALWAYS terminates (robot-side watchdog), so a hung button means a path that never reaches `App Respond`, or a `timeout_ms` too short for the work. Do not theorise: `robomotion app smoke` (or `robomotion app press` on that one button) presses it from here and answers `dead_end` with `last_node`, the last step that started and never finished - fix the wiring from there (step 6b). Long robot work (browser, PDF): raise `timeout_ms` in `app.json` and set `progress: true`, then send `App Progress` from the flow so the wait is visible. |
 | Robot is offline (`robot_offline` state or error) | It's retryable and the kit's `ConnectionBanner` already shows it. Tell the person plainly: "Your robot is offline - start it and the buttons will work again." Do NOT rebuild or edit anything. |
-| The app's OWN robot shows as offline in `list_robots` before a run | Expected between runs: an app's robot is brought up on this computer only while its session runs, and `start_app_session` does that for you. You never start it by hand and never pick another robot in its place. If a run fails, look at what actually failed - `poll_logs` on the app's session, and the robot's own log - not at the robot's resting state. |
-| The buttons do nothing and the app says "The robot for this app is not connected" - about a robot that IS connected and running the flow | The chat path and the app path are different transports, and this message comes from the app one. Do not rebuild anything and do not blame the robot. The two causes seen live: the flow stopped itself (see rule 5 - an app flow never ends), or the robot's app connection was churning while the page's key exchange was in flight, in which case the robot's log says `dropping <type> for unknown conn ... (no key exchange yet)` and a reload of the app gets a fresh key. Say what you found; if it is the second, say the connection dropped and ask them to reload the preview. |
-| `start_app_session` says the app has no robot of its own | Expected on a brand-new app: a draft does not get a robot until somebody asks to run it. **Ask with `ask_user_question`, then act** - question "Your app needs a robot to run on. Shall I set one up?", replies "Yes, set it up" / "Not now". **Prose is not an acceptable spelling of this question** (step 6a): asking it in a sentence at the end of your summary leaves the person nothing to press. The word is "robot" - not "app-robot", not "app-robot slots". On yes: `create_app_robot` and then `start_app_session` **in the same turn** - `start_app_session` brings the app's own robot up on this computer for you, so there is nothing for them to start and nothing to wait for. Never end the turn on "now start that robot": bringing it up is your job, not theirs. On no: stop there and say the preview still shows the screens with sample data. Never call `create_app_robot` without the yes: it spends one of a small number of slots in their workspace. |
-| `create_app_robot` says the workspace is full | Give them the numbers it returns and the two ways forward, in plain words: they can delete an app they no longer use to free a slot, or add more robots to their plan. Both are theirs to do from the Designer - the Run dialog and the Build panel both carry an "Add more robots" button and a way to free one. Do not delete anything yourself and do not retry. |
-| `start_app_session` says the robot is busy | Each app has its own robot now, so this means this app's OWN backend is already running. Whether the buttons answer is not an assumption any more: the smoke report on that same result says which did and which did not (step 6b). Only if a run genuinely needs a fresh backend, stop this app's session and start it again; never touch another app's robot. |
-| `start_app_session` did not start (robot not connected, or it did not take the run) | Say it in one sentence and **end your turn**: "Your robot isn't running - start it and tell me, and I'll connect the app." Do NOT retry, do NOT call `stop_flow`, do NOT inspect packages, the package server or the network: the tool result already says what happened, and retrying proves nothing it did not. When the person says the robot is up, call `start_app_session` once more. |
+| The buttons do nothing and the app says "The robot for this app is not connected" - about a robot that IS connected and running the flow | The chat path and the app path are different transports, and this message comes from the app one. Do not rebuild anything and do not blame the robot. The two causes seen live: the flow stopped itself (see rule 5 - an app flow never ends), or the robot's app connection was churning while the page's key exchange was in flight, in which case the robot's log says `dropping <type> for unknown conn ... (no key exchange yet)` and a reload of the app gets a fresh key. Say what you found; if it is the second, say the connection dropped and ask them to reload the app. |
+| `robomotion app start` says the app has no robot of its own | Expected on a brand-new app. **Ask with the question tool, then act** (step 6a). On yes: `robomotion app robot` and then `robomotion app start` **in the same turn**. On no: stop there and say the screens show sample data until then. Never run `robomotion app robot` without the yes: it spends one of a small number of robots in their workspace. |
+| `robomotion app robot` says the workspace is full | Give them the numbers it returns and the two ways forward, in plain words: they can delete an app they no longer use to free a slot, or add more robots to their plan. Both are theirs to do in Robomotion's own pages. Do not delete anything yourself and do not retry. |
+| `robomotion app start` says the session was already running | This app's own backend is up. Run `robomotion app smoke` to know whether the buttons answer; `--restart` only when the flow changed. |
+| `robomotion app start` did not start (the robot did not connect within its wait, or did not take the run) | Read `.robomotion/robot.log` (`robomotion app logs`) once, say in one sentence what it says, and try `robomotion app start` once more. Do NOT inspect packages, the package server or the network. |
 | `queue_full` / `concurrency_rejected` | Backpressure, both retryable. If it recurs, the action's `concurrency` is wrong for how it's used - see `./docs/contract.md`. |
-| `validate_app` fails with type errors naming generated types | You changed `app.json` without regenerating, or a generated file was hand-edited. Regenerate; never patch the generated file. |
-| `validate_app` fails on a dependency | Something outside the allowlist crept into `package.json`. Remove it and compose from the kit instead. |
-| `validate_app` fails on the schema | A field in `app.json` breaks a rule (naming, limits, banned words in descriptions). Fix per `./docs/contract.md`. |
-| Preview shows the "app was updated, reload" state | The SPA and the robot hold different contract builds. Regenerate both sides from the current `app.json`, push, and bounce the session; the reload notice is the mismatch protection working, not a bug. |
+| `robomotion app validate` fails with type errors naming generated types | You changed `app.json` without regenerating, or a generated file was hand-edited. Regenerate; never patch the generated file. |
+| `robomotion app validate` fails on a dependency | Something outside the allowlist crept into `package.json`. Remove it and compose from the kit instead. |
+| `robomotion app validate` fails on the schema | A field in `app.json` breaks a rule (naming, limits, banned words in descriptions). Fix per `./docs/contract.md`. |
 
 ## Docs
-
-- `./docs/mcp.md` - `mcp.json`: the app as an MCP server and the assistant in its corner.
-- `./docs/claude-code.md` - building outside the Build view (Claude Code, a terminal): the CLI loop and the steps the harness is not there to do.
 
 | Topic | Doc |
 |---|---|
 | Composing screens: every kit component with a usage example | `./docs/app-kit-reference.md` |
 | Authoring `app.json`: naming, action vs event, timeouts, concurrency, descriptions | `./docs/contract.md` |
-| The preview loop in detail: dev server, route context, self-check, draft backend | `./docs/preview-loop.md` |
+| `mcp.json`: the app as an MCP server and the assistant in its corner | `./docs/mcp.md` |
+| Under Robomotion's Build with AI: the tools that stand in for the commands, and what its harness does for you | `./docs/build-view.md` |
 | Dashboard archetype | `./docs/archetypes/dashboard.md` |
 | Approval-queue archetype | `./docs/archetypes/approval-queue.md` |
 | Form-and-table archetype | `./docs/archetypes/form-and-table.md` |
@@ -958,9 +911,9 @@ so the app adopts it instead of scaffolding a second one.
 
 ## Related skills
 
-- `creating-flow` - the flow SDK grammar for the backend (node IDs, wiring, browser, credentials, data tables)
-- `exploring-browser` - map a live website before the backend automates it
-- `searching-packages` - find the right package/node for a backend action
+- `creating-flow` - the flow SDK grammar for the robot's side (node IDs, wiring, browser, credentials, data tables)
+- `exploring-browser` - map a live website before the robot automates it
+- `searching-packages` - find the right package/node for an action
 
 ## Dates on screen
 
