@@ -371,7 +371,19 @@ answer.
 foresee is the app WORKING, and it goes: a Function node that sets a flag
 (`msg.refused = 'The tin only has £5.00 in it.'`) → a `Core.Flow.Switch` on it
 → `App Respond Error` with that sentence on the refused side, the real work on
-the other. A `throw new Error(...)` caught by the Catch gets the same words to
+the other.
+
+**When a Function decides by itself (`outputs: 2`), the path that goes on is
+output 0.** `.then()` always continues from output 0, so write the check as
+`return [msg, null]` for "carry on" and `return [null, msg]` for "refuse", chain
+the real work with `.then()`, and send the refusal from output 1:
+`f.edge('<check id>', 1, '<App Respond Error or GoTo id>', 0)`. The other way
+round - refusing on output 0 and chaining the work with `.then()` - puts both on
+output 0 and wires the real path to nothing, so every good press is dropped
+and the screen waits until it times out. `robomotion build` refuses that shape
+(`a Function sends a message out of an output that goes nowhere`).
+
+A `throw new Error(...)` caught by the Catch gets the same words to
 the screen, but it also paints a red "Node Execution Error" on the person's
 canvas and an `error` line in the robot's log every time somebody is told no -
 and they will open that canvas and ask whether their app is broken. Reserve
