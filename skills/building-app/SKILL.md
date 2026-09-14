@@ -508,6 +508,13 @@ what it may use - `@robomotion/app-kit` on the screens, the Robomotion package
 library behind them - and storage is not a third one: it is one more package the
 flow calls, like every other system the flow reaches.
 
+Open a SQLite database by a full path built from the home folder, in a
+Function: `msg.db = 'Data Source=' + global.get('$Home$') + '/<app name>.db;Version=3;'`,
+then `Message('db')` on the SQLite nodes. Never a relative `Data Source=app.db`:
+the robot runs the package inside its own versioned folder, so that file is
+lost on the next package update and the app starts over empty. The validator
+refuses the relative form.
+
 So there is no storage half of the contract. **A screen reads stored data the
 way it reads anything else: by calling an ACTION**, and the flow answers it
 out of the database. Reason: the flow is the side that holds the credentials,
