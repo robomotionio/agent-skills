@@ -76,6 +76,17 @@ function createHealer(deps) {
     stop
   };
 }
+function failedModuleUrls(entries, origin) {
+  var out = [];
+  for (var i = 0; i < entries.length; i++) {
+    var e = entries[i];
+    if (!e || typeof e.responseStatus !== "number" || e.responseStatus < 400) continue;
+    if (e.initiatorType !== "script" && e.initiatorType !== "other") continue;
+    if (typeof e.name !== "string" || e.name.indexOf(origin + "/") !== 0) continue;
+    if (out.indexOf(e.name) < 0) out.push(e.name);
+  }
+  return out;
+}
 function healUrlFor(id, baseURI) {
   if (!id || typeof id !== "string" || id.charAt(0) !== "/") return null;
   if (id.indexOf("\0") >= 0 || id.indexOf("/@id/") >= 0) return null;
@@ -300,15 +311,28 @@ function bridgeScript(screens) {
   // being watched, the module script is probed once and, if it does not
   // serve, watched like any other failure.
   var HEAL_BOOT_MS = 5000;
-  setTimeout(function () {
-    if (drawn || hasDrawn() || healer.watching().length > 0) return;
+  // Any module in this document's graph that answered 4xx/5xx is watched too:
+  // a fresh document - including the one a heal reload made - raises no
+  // vite:error for a page below its module script (fortieth pass). Checked a
+  // few times, because a slow import can fail after the first look.
+  var failedModuleUrls = ${failedModuleUrls.toString()};
+  var bootCheck = function () {
+    if (drawn || hasDrawn()) return;
+    var entries = [];
+    try { entries = performance.getEntriesByType("resource"); } catch (e) {}
+    var failed = failedModuleUrls(entries, location.origin);
+    for (var i = 0; i < failed.length; i++) healer.watchUrl(failed[i]);
+    if (healer.watching().length > 0) return;
     var s = document.querySelector('script[type="module"][src]');
     var src = s && s.src;
     if (!src) return;
     fetch(src, { cache: "no-store" }).then(function (r) {
       if (!r.ok) healer.watchUrl(src);
     }).catch(function () { healer.watchUrl(src); });
-  }, HEAL_BOOT_MS);
+  };
+  setTimeout(bootCheck, HEAL_BOOT_MS);
+  setTimeout(bootCheck, 3 * HEAL_BOOT_MS);
+  setTimeout(bootCheck, 6 * HEAL_BOOT_MS);
 
   // The host answers a stale backend (issue 262): while it restarts the
   // robot's side the banner shows "Updating" instead of a Reload that cannot
