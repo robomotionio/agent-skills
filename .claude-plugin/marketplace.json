@@ -1,0 +1,14 @@
+{
+  "name": "robomotion",
+  "description": "Robomotion's agent skills for building flows and apps, packaged as a Claude Code plugin.",
+  "owner": {
+    "name": "Robomotion"
+  },
+  "plugins": [
+    {
+      "name": "robomotion",
+      "source": "./",
+      "description": "Robomotion agent skills for flows and apps, with the app hand-over check."
+    }
+  ]
+}

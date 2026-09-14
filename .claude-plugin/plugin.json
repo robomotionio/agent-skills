@@ -1,0 +1,9 @@
+{
+  "name": "robomotion",
+  "version": "0.1.0",
+  "description": "Build Robomotion flows and apps from Claude Code: the agent skills, plus a stop check that holds an app hand-over until it was validated, pressed and its screens read.",
+  "author": { "name": "Robomotion" },
+  "homepage": "https://www.robomotion.io",
+  "repository": "https://github.com/robomotionio/agent-skills",
+  "keywords": ["robomotion", "rpa", "automation", "apps"]
+}

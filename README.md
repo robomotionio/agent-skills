@@ -26,7 +26,15 @@ Start with `creating-flow` if you're new — it bundles the full Robomotion 101 
 #    `robomotion-browser-mcp` from https://robomotion.io/downloads and
 #    put them on your PATH.
 
-# 2. Install all skills into your project's .claude/skills directory
+# 2. Log in once (asks for your API key without showing it; every command uses it)
+robomotion login
+
+# 3. Install the skills. In Claude Code, as a plugin - this also adds the app
+#    hand-over check (a Stop hook that holds a hand-over until the app was
+#    validated, its buttons pressed and its screens read):
+#      /plugin marketplace add robomotionio/agent-skills
+#      /plugin install robomotion@robomotion
+#    Or copy the skills alone into your project's .claude/skills directory:
 npx skills add robomotionio/agent-skills -a claude-code -s '*' -y
 
 # 3. Wire up the `robomotion-browser-mcp` server — REQUIRED for the
@@ -52,14 +60,20 @@ Both binaries are **required** and must be on `PATH`. Install from [robomotion.i
 A `git clone` of a flow is the whole project: if the flow backs an app, its screens are under `app/` in the same checkout. From a terminal the `robomotion app` verbs do the rest, one per job:
 
 ```
-robomotion app create "<name>"          # create the app on the flow in this folder; pulls the seeded app/, places the packages, installs
+robomotion app create "<name>"          # create the app on the flow in this folder (an empty folder gets a new flow); installs
+robomotion app sync                     # pull, place the packages, install
 robomotion app dev                      # run the screens on localhost
 robomotion app validate                 # the same checks as the Build view's validate_app
 robomotion app publish                  # build the screens, create a flow version, publish the app from it
 robomotion app robot                    # give the app its own robot (token kept in .robomotion/robot.json)
-robomotion app start                    # start that robot and the app session on it
+robomotion app start [--restart]        # start that robot and the app session on it
 robomotion app press <action> [--params '{...}']   # press one action through the app's own door
+robomotion app smoke                    # press every action once and report, like the Build view's smoke_app
+robomotion app screen "<label>"         # read what a screen of the running screens shows
+robomotion app status | logs [-f]       # where things stand; the app robot's output
 ```
+
+The Build view's harness presses the buttons and checks the screens on its own; from Claude Code those are steps the agent takes (`skills/building-app/docs/claude-code.md`), and the plugin's stop check holds a hand-over that skipped one.
 
 Saving is `git commit && git push` at the project root, the same as for a flow.
 

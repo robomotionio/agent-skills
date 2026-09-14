@@ -65,19 +65,29 @@ One project, one folder, one save. The layout, in three lines:
 - `app/` holds the screens: `app/package.json`, `app/src/`, and the two Robomotion packages under `app/vendor/`.
 - `src/generated/` on both sides (`src/generated/actions.gen.ts` for the flow, `app/src/generated/actions.gen.ts` for the screens) is codegen-owned; never hand-edit it.
 
-**If `create_app` is a registered tool**, you are under the Build view's harness and the tools are the surface: `create_app` -> `sync_app` -> `save_flow` -> `create_app_robot` (only with a yes) -> `start_app_session` -> `smoke_app` -> `validate_app` -> `publish_app`. Saving is one act: `save_flow` on the project root commits the flow and the screens together.
+**Which host you are under decides the surface.** You are under the Robomotion Build view only when the tools `create_app`, `app_dev_server` and `ask_user_question` are ALL registered: then the tools are the surface, and its harness does the steps marked "the harness" below for you. `create_app` alone is not the test - someone can register the Robomotion tools in any assistant, and there nothing runs them for you.
 
-**If it is not** (a terminal, Claude Code, a `git clone` of the flow), the `robomotion` CLI is the surface, one verb per job, and `git commit && git push` at the project root is the save:
+**Anywhere else** (Claude Code, a terminal, a `git clone` of the flow), the `robomotion` CLI is the surface, `git commit && git push` at the project root is the save, and **read `./docs/claude-code.md` before anything else**: it lists, as your own steps, everything the harness would have done unasked. Every tool this skill names maps to one command:
 
-| Verb | Does |
+| Build view tool | Claude Code / terminal |
 |---|---|
-| `robomotion app create "<name>"` | creates the app on the flow in this folder, pulls the seeded `app/`, places the packages, installs |
-| `robomotion app dev` | runs the screens on localhost and prints the address |
-| `robomotion app validate` | the same checks as `validate_app`, on the project root |
-| `robomotion app publish` | builds the screens, creates a flow version, publishes the app from it |
-| `robomotion app robot` | gives the app its own robot and keeps its token in `.robomotion/robot.json` |
-| `robomotion app start` | starts that robot and the app session on it |
-| `robomotion app press <action> [--params json]` | presses one action through the app's own door and prints the answer |
+| `create_app` | `robomotion app create "<name>"` (in an empty folder it also makes the flow) |
+| `sync_app` | `robomotion app sync` |
+| `save_flow` | `git add -A && git commit -m "..." && git push` at the project root |
+| `validate_app` | `robomotion app validate` |
+| `app_dev_server start` | `robomotion app dev`, run in the background |
+| `app_dev_server read_screen` | `robomotion app screen "<label>"` |
+| `app_dev_server get_preview_errors` | `robomotion app screen` (its console errors) and the `app dev` output |
+| `create_app_robot` | `robomotion app robot` (only with a yes) |
+| `start_app_session` | `robomotion app start` (`--restart` after a save) |
+| `smoke_app` | `robomotion app smoke` |
+| `call_action` | `robomotion app press <action> --params '{...}'` |
+| `poll_logs` | `robomotion app logs` |
+| `publish_app` | `robomotion app publish` |
+| `ask_user_question` | AskUserQuestion |
+| `todo_write` | TodoWrite |
+
+`robomotion app status` shows the app, the screens, the robot and what was last checked.
 
 ## Workflow (tuned for time-to-first-pixel)
 
@@ -820,7 +830,7 @@ Full protocol: `./docs/preview-loop.md`. The short version:
 
 - `app_dev_server` is your native tool: `start` (idempotent), `stop`, `status`, `logs`, `get_preview_errors`, `read_screen` (opens the preview, goes to `screen` by its navigation label or route, and returns the text the screen shows plus console errors).
 - **Write the request's promises down, then check the screens against them.** Before building a new app, write what the person asked for as short checkable lines in `.robomotion/request-checks.md` in the project (their language is fine): counts, order, what an empty case shows, what is refused and what stays unchanged, what each screen shows. For example: "a list of the last N periods includes the current one and has N rows", "newest first", "a period with nothing shows 0". Before handing over, `read_screen` each screen the file names and check every line against what it shows; reading a screen is not checking it. Fix any mismatch first, and never mention the file to the person.
-- **A fix to what a screen shows is confirmed by reading that screen, never only by calling the action.** When the person says a screen is empty, wrong or not updating, `call_action` tells you what the robot has; `read_screen` tells you what they see. Read the screen after the fix, compare it with what they described, and tell them only what it actually shows. The preview appears in the person's app preview panel by itself; never tell them to open a link, and never quote a `127.0.0.1` address (their robot may be on another machine). If they ask where the app lives, give the address from the tool result.
+- **A fix to what a screen shows is confirmed by reading that screen, never only by calling the action.** When the person says a screen is empty, wrong or not updating, `call_action` tells you what the robot has; `read_screen` tells you what they see. Read the screen after the fix, compare it with what they described, and tell them only what it actually shows. In the Build view the preview appears in the person's app preview panel by itself; never tell them to open a link, and never quote a `127.0.0.1` address (their robot may be on another machine). Outside the Build view there is no panel: give them the address `robomotion app dev` printed (`./docs/claude-code.md`). If they ask where the app lives, give the address from the tool result.
 - **Route context.** When the person navigates the preview, the current route arrives silently prepended to their next message. "Make that button green" resolves against the screen they are LOOKING AT - use that route, don't guess across screens, and don't ask which screen when the context already says.
 - **After EVERY edit batch, call `get_preview_errors` before telling the user you're done.** Reporting success on a preview that is throwing is worse than reporting the error. It answers in two parts - what the dev server compiled, and what the BROWSER reported (a wrong import name, a crash on first render, a rejected promise). The browser half is empty until the preview has actually loaded the screens, so "nothing from the browser" on a page nobody has opened is not a clean bill of health: say the build is clean and ask what they see.
 
@@ -926,6 +936,7 @@ so the app adopts it instead of scaffolding a second one.
 ## Docs
 
 - `./docs/mcp.md` - `mcp.json`: the app as an MCP server and the assistant in its corner.
+- `./docs/claude-code.md` - building outside the Build view (Claude Code, a terminal): the CLI loop and the steps the harness is not there to do.
 
 | Topic | Doc |
 |---|---|
