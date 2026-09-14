@@ -250,7 +250,7 @@ import { flow, Message } from '@robomotion/sdk';
 flow.create('<flowId>', '<Flow Name>', (f) => {
   f.addDependency('Robomotion.Apps', '0.3.3');
 
-  f.node('b2d4e1', 'Core.Flow.SubFlow', 'Problems', {});
+  f.node('b2d4e1', 'Core.Flow.SubFlow', 'Problems', { optHidePorts: true });
 }).start();
 ```
 
@@ -288,6 +288,11 @@ port (0 inputs), so it is always the FIRST node of its chain, written with
   go AFTER its `App Action`, never before it.
 - A sub-screen's `Core.Flow.SubFlow` node sits in its parent's subflow file the
   same way it sits in `main.ts`: its own `f.node(...)`, chained to nothing.
+- **Every screen's `Core.Flow.SubFlow` node gets `{ optHidePorts: true }`**, in
+  `main.ts` and in a parent screen's file alike. It is a Designer-only cosmetic
+  option: the node's input/output ports and the lone `Begin`/`End` inside are
+  not drawn, because nothing is ever wired to them in a screen. The robot
+  ignores it, and the `Begin`/`End` lines above are still written.
 
 **`f.addDependency('Robomotion.Apps', '0.3.3')` goes in `main.ts`, once.** The
 subflow files use the main flow's packages, and `main.ts` needs it anyway for
