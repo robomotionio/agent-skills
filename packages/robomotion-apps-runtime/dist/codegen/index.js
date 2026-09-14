@@ -1,11 +1,13 @@
 import {
   canonicalizeJson,
   contractHashOf,
-  generate
-} from "../chunk-CQFG2NX5.js";
+  generate,
+  readOnlyActions
+} from "../chunk-IE7WBZ27.js";
 export {
   canonicalizeJson,
   contractHashOf,
-  generate
+  generate,
+  readOnlyActions
 };
 //# sourceMappingURL=index.js.map

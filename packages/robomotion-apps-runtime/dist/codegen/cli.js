@@ -2,7 +2,7 @@
 import {
   contractHashOf,
   generate
-} from "../chunk-CQFG2NX5.js";
+} from "../chunk-IE7WBZ27.js";
 
 // src/codegen/cli.ts
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
@@ -74,7 +74,9 @@ async function main() {
     console.log(await contractHashOf(text));
     return;
   }
-  const result = await generate(text);
+  const mcpPath = resolve(dirname(contractPath), "mcp.json");
+  const mcpText = existsSync(mcpPath) ? readFileSync(mcpPath, "utf-8") : void 0;
+  const result = await generate(text, mcpText);
   console.log(`contract_hash ${result.contractHash}`);
   const root = dirname(contractPath);
   let appOut = args.appOut ? resolve(args.appOut) : null;
