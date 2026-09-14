@@ -85,20 +85,6 @@ function useAction(name) {
     }),
     [app]
   );
-  useEffect(() => {
-    let queued = false;
-    return onWriteDone((writer) => {
-      if (writer === name || queued) return;
-      const last = lastCallRef.current;
-      if (!last || last.opts?.refreshOnWrite === false || loadingRef.current) return;
-      queued = true;
-      queueMicrotask(() => {
-        queued = false;
-        if (!aliveRef.current || loadingRef.current) return;
-        void runRef.current?.(last.params, last.opts);
-      });
-    });
-  }, [name]);
   const run = useCallback(
     async (params, opts) => {
       lastCallRef.current = { params, opts };
