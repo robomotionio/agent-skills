@@ -571,7 +571,7 @@ It also refetches after a write **it ran itself** - a `bulkActions` entry, or a 
 
 And it refetches after a write run by **any other kit widget on the screen**: a `Form` carrying an `action`, a `ConfirmDialog`, a `Button`, a `Menu` item, a `FileUpload`. Adding a supplier from a dialog and removing one from a confirm are different actions from the one the table reads with, and every widget that runs an action announces it when the call **settles**, so the list asks again at the right moment.
 
-The same announcement reaches **every action hook on the screen that has already asked something**: a list you loaded with `useEffect(() => { void readers.run({}); }, [])` and render yourself, a counter, a dropdown. Each asks its last question again, once, after a kit widget's write settles - so a hand-rendered list shows the new row too.
+The same announcement reaches **every action hook on the screen that has already asked something**: a list you loaded with `useEffect(() => { void list.run({}); }, [])` and render yourself, a counter, a dropdown. Each asks its last question again, once, after a kit widget's write settles - so a hand-rendered list shows the new row too.
 
 **So do not wire refreshing into the screen.** In particular, never hang a refresh off `onClick`, `onSubmit` or `onConfirm`:
 
