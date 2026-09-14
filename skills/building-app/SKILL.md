@@ -586,11 +586,16 @@ library behind them - and storage is not a third one: it is one more package the
 flow calls, like every other system the flow reaches.
 
 Open a SQLite database by a full path built from the home folder, in a
-Function: `msg.db = 'Data Source=' + global.get('$Home$') + '/<app name>.db;Version=3;'`,
-then `Message('db')` on the SQLite nodes. Never a relative `Data Source=app.db`:
-the robot runs the package inside its own versioned folder, so that file is
-lost on the next package update and the app starts over empty. The validator
-refuses the relative form.
+Function, and **put the app's own id in the file name**:
+`msg.db = 'Data Source=' + global.get('$Home$') + '/<app name>-<first 8 of app_id>.db;Version=3;'`,
+then `Message('db')` on the SQLite nodes. The id is what keeps two apps
+apart: a person who builds "Pantry Stock" twice gets two apps, and a file
+named only after the app hands the second one the first one's tables -
+`CREATE TABLE IF NOT EXISTS` sees them, keeps them, and every query then
+fails on a column the old table never had (seen live, 2026-09-14). Never a
+relative `Data Source=app.db` either: the robot runs the package inside its
+own versioned folder, so that file is lost on the next package update and
+the app starts over empty. The validator refuses the relative form.
 
 So there is no storage half of the contract. **A screen reads stored data the
 way it reads anything else: by calling an ACTION**, and the flow answers it
