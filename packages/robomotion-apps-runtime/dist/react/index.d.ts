@@ -26,6 +26,16 @@ interface RunOptions {
      */
     refreshOnWrite?: boolean;
 }
+interface UseActionOptions {
+    /**
+     * True only for an action that changes nothing (mcp.json `read_only`). A
+     * read hook asks its last question again after another action's announced
+     * write, so a list loaded by hand shows the row a form beside it added.
+     * Anything not known to be a read is never re-run: replaying a write
+     * stores it again. Codegen sets this; screens do not.
+     */
+    readOnly?: boolean;
+}
 interface UseActionResult<TParams = unknown, TData = unknown> {
     run: (params?: TParams, opts?: RunOptions) => Promise<TData | undefined>;
     data: TData | undefined;
@@ -53,7 +63,7 @@ interface UseActionResult<TParams = unknown, TData = unknown> {
  *   The sequence number is what stops a call that nobody is waiting for from
  *   writing anything at all.
  */
-declare function useAction<TParams = unknown, TData = unknown>(name: string): UseActionResult<TParams, TData>;
+declare function useAction<TParams = unknown, TData = unknown>(name: string, hookOpts?: UseActionOptions): UseActionResult<TParams, TData>;
 /**
  * A call refused for want of the robot is asked again, once, when the robot
  * is back. Only that failure: a refusal the robot itself gave (bad
@@ -113,4 +123,4 @@ interface UseAssistantResult {
  */
 declare function useAssistant(): UseAssistantResult;
 
-export { AppProvider, type AppProviderProps, type AssistantMessage, type RunOptions, type UseActionResult, type UseAssistantResult, type UseConnectionResult, type UseFileUploadResult, announceWriteDone, onWriteDone, shouldRetryOnReconnect, useAction, useAppClient, useAssistant, useConnection, useEvent, useFileUpload, useMaybeAppClient, useViewer };
+export { AppProvider, type AppProviderProps, type AssistantMessage, type RunOptions, type UseActionOptions, type UseActionResult, type UseAssistantResult, type UseConnectionResult, type UseFileUploadResult, announceWriteDone, onWriteDone, shouldRetryOnReconnect, useAction, useAppClient, useAssistant, useConnection, useEvent, useFileUpload, useMaybeAppClient, useViewer };

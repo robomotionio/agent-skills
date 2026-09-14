@@ -58,6 +58,11 @@ contract, the part an agent reads before it touches a tool.
 - **Hints are honest.** `read_only` for pure reads, `destructive` for anything that
   cannot be undone (deleting, sending, paying, deciding), `idempotent` when calling twice
   is harmless. Clients confirm destructive calls and may retry idempotent ones.
+  `read_only` also reaches the screens: `robomotion app codegen` reads `mcp.json` beside
+  `app.json` and binds the hook of each read-only action as a read, so a list the screen
+  loaded itself asks again after a kit widget writes. Run codegen again after changing
+  it. An action marked `read_only` that changes anything is run again after every write
+  on its screen, so the mark is for pure reads only.
 - **`enabled: false`** keeps an action off both the MCP server and the assistant. Use it
   for admin or bulk actions a person should click deliberately. The harness's smoke pass
   (`smoke_app`, step 6b) presses through this same door, so a tool that is off here is

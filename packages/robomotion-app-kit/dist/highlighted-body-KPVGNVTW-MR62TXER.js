@@ -3,9 +3,9 @@ import {
   El,
   S,
   co
-} from "./chunk-AAFKE4O6.js";
+} from "./chunk-UFH3J7GR.js";
 
-// node_modules/streamdown/dist/highlighted-body-KPVGNVTW.js
+// ../../../../robomotion-app-kit/node_modules/streamdown/dist/highlighted-body-KPVGNVTW.js
 import { useContext, useState, useEffect } from "react";
 import { jsx } from "react/jsx-runtime";
 var x = ({ code: s, language: e, maxHeight: h, raw: t, className: m, startLine: d, lineNumbers: a, ...c$1 }) => {
@@ -24,4 +24,4 @@ var x = ({ code: s, language: e, maxHeight: h, raw: t, className: m, startLine: 
 export {
   x as HighlightedCodeBlockBody
 };
-//# sourceMappingURL=highlighted-body-KPVGNVTW-P4SDUNWK.js.map
+//# sourceMappingURL=highlighted-body-KPVGNVTW-MR62TXER.js.map

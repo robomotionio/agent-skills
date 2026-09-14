@@ -47,7 +47,7 @@ function onWriteDone(listen) {
     writeDoneListeners.delete(listen);
   };
 }
-function useAction(name) {
+function useAction(name, hookOpts) {
   const app = useAppClient();
   const [data, setData] = useState(void 0);
   const [error, setError] = useState(void 0);
@@ -85,6 +85,22 @@ function useAction(name) {
     }),
     [app]
   );
+  const readOnly = hookOpts?.readOnly === true;
+  useEffect(() => {
+    if (!readOnly) return;
+    let queued = false;
+    return onWriteDone((writer) => {
+      if (writer === name || queued) return;
+      const last = lastCallRef.current;
+      if (!last || last.opts?.refreshOnWrite === false || loadingRef.current) return;
+      queued = true;
+      queueMicrotask(() => {
+        queued = false;
+        if (!aliveRef.current || loadingRef.current) return;
+        void runRef.current?.(last.params, last.opts);
+      });
+    });
+  }, [name, readOnly]);
   const run = useCallback(
     async (params, opts) => {
       lastCallRef.current = { params, opts };

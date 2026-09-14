@@ -132,7 +132,7 @@ function expect(p, ch) {
 }
 
 // src/codegen/index.ts
-async function generate(contractText) {
+async function generate(contractText, mcpText) {
   let contract;
   try {
     contract = JSON.parse(contractText);
@@ -151,7 +151,7 @@ async function generate(contractText) {
   return {
     contract,
     contractHash,
-    spaSource: emitSpa(contract, contractHash),
+    spaSource: emitSpa(contract, contractHash, readOnlyActions(mcpText)),
     flowSource: emitFlow(contract, contractHash)
   };
 }
@@ -213,7 +213,22 @@ function emitNamedTypes(contract) {
   }
   return out.join("\n\n");
 }
-function emitSpa(contract, hash) {
+function readOnlyActions(mcpText) {
+  const out = /* @__PURE__ */ new Set();
+  if (!mcpText) return out;
+  try {
+    const tools = JSON.parse(mcpText).tools;
+    if (!tools || typeof tools !== "object" || Array.isArray(tools)) return out;
+    for (const [name, hint] of Object.entries(tools)) {
+      if (hint && typeof hint === "object" && hint.read_only === true) {
+        out.add(name);
+      }
+    }
+  } catch {
+  }
+  return out;
+}
+function emitSpa(contract, hash, readOnly = /* @__PURE__ */ new Set()) {
   const definesFileRef = Boolean(contract.types?.FileRef);
   const types = emitNamedTypes(contract);
   const actionSigs = [];
@@ -245,7 +260,7 @@ function emitSpa(contract, hash) {
       [
         `/** Bind the ${JSON.stringify(name)} action with its contract types. */`,
         `export function use${pascal(name)}() {`,
-        `  return useAction<${P}, ${R}>(${JSON.stringify(name)});`,
+        readOnly.has(name) ? `  return useAction<${P}, ${R}>(${JSON.stringify(name)}, { readOnly: true });` : `  return useAction<${P}, ${R}>(${JSON.stringify(name)});`,
         `}`
       ].join("\n")
     );
@@ -318,6 +333,7 @@ function emitFlow(contract, hash) {
 export {
   canonicalizeJson,
   contractHashOf,
-  generate
+  generate,
+  readOnlyActions
 };
-//# sourceMappingURL=chunk-CQFG2NX5.js.map
+//# sourceMappingURL=chunk-IE7WBZ27.js.map
