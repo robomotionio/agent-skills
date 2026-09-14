@@ -310,6 +310,14 @@ The caller's arguments arrive as **`msg.params.<field>`**; the answer is whateve
 sits on **`msg.result`** when `App Respond` runs. Both shapes are already typed
 for you in `src/generated/actions.gen.ts` at the project root.
 
+**An action that makes a record answers with that record's `id`.**
+`{ id, ...whatever else the screen needs }` - `{ id: 'mv17...', balance: 17 }`,
+never `{ balance: 17 }` alone. The id is how the screen points at the row it
+just added, how the checks after a save know which row the press made, and
+how that same row is taken away again; a create that answers without it
+leaves a row nobody can name. Declare `id` in the action's `output` in
+`app.json`.
+
 **And the catch-all, in `main.ts`, every time.** An unhandled error ends
 the flow and the app with it (hard rule 5), so every backend has a
 `Core.Trigger.Catch` wired to an `App Respond Error`. This is the whole of it -
