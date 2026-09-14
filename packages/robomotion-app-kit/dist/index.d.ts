@@ -183,11 +183,6 @@ interface IconProps extends Omit<SVGAttributes<SVGSVGElement>, "name"> {
 /** Resolve an alias or an unknown name to one the data has. */
 declare function resolveIconName(name: string): IconName | null;
 declare const Icon: react.ForwardRefExoticComponent<IconProps & react.RefAttributes<SVGSVGElement>>;
-/**
- * An `icon` prop is a name or an element. A component calls this to draw
- * whichever it was given, so a screen can write `icon="plus"` and the rare
- * custom glyph still fits.
- */
 declare function renderIcon(icon: IconName | ReactNode | undefined, size?: IconSize, className?: string): ReactNode;
 
 interface ActionLike<P = unknown> {

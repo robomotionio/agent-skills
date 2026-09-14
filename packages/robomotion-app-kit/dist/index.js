@@ -3233,10 +3233,21 @@ var Icon = forwardRef(function Icon2({ name, size: size3 = 16, strokeWidth = 2, 
     }
   );
 });
+var warnedIcons = /* @__PURE__ */ new Set();
+function warnUnknownIcon(name) {
+  if (warnedIcons.has(name)) return;
+  warnedIcons.add(name);
+  if (typeof console !== "undefined") console.warn(`[app-kit] "${name}" is not a kit icon; drawing circle-dot. See the Icons list in the kit reference.`);
+}
 function renderIcon(icon, size3 = 16, className) {
   if (icon === void 0 || icon === null || icon === false) return null;
   if (typeof icon === "string") {
-    return resolveIconName(icon) ? /* @__PURE__ */ jsx(Icon, { name: icon, size: size3, className }) : icon;
+    if (resolveIconName(icon)) return /* @__PURE__ */ jsx(Icon, { name: icon, size: size3, className });
+    if (/^[a-z0-9]+(-[a-z0-9]+)*$/.test(icon)) {
+      warnUnknownIcon(icon);
+      return /* @__PURE__ */ jsx(Icon, { name: "circle-dot", size: size3, className });
+    }
+    return icon;
   }
   if (isValidElement(icon)) return icon;
   return icon;
