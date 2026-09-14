@@ -571,6 +571,8 @@ It also refetches after a write **it ran itself** - a `bulkActions` entry, or a 
 
 And it refetches after a write run by **any other kit widget on the screen**: a `Form` carrying an `action`, a `ConfirmDialog`, a `Button`, a `Menu` item, a `FileUpload`. Adding a supplier from a dialog and removing one from a confirm are different actions from the one the table reads with, and every widget that runs an action announces it when the call **settles**, so the list asks again at the right moment.
 
+The same announcement reaches **every action hook on the screen that has already asked something**: a list you loaded with `useEffect(() => { void readers.run({}); }, [])` and render yourself, a counter, a dropdown. Each asks its last question again, once, after a kit widget's write settles - so a hand-rendered list shows the new row too.
+
 **So do not wire refreshing into the screen.** In particular, never hang a refresh off `onClick`, `onSubmit` or `onConfirm`:
 
 ```tsx
@@ -606,7 +608,7 @@ useEffect(() => { void summary.run({}); void customers.run({}); }, []);
 async function onAdd() { await addCustomer.run(draft); await customers.run({}); }
 ```
 
-A form that creates a record must bring the list that shows it up to date. When that list is a `DataTable` on the same screen, the kit does it: the form announces its write when it settles and the table asks again. Anywhere else - a list you render yourself, a dropdown, a counter - run the read again after the `await` of your own `run`, never before it, or hand the table a `tableRef` and call `refresh()` as above.
+A form that creates a record must bring the list that shows it up to date. When the write is run by a kit widget (`Form`, `Button`, `ConfirmDialog`, `Menu` item, `FileUpload`), the kit does it: the widget announces the write when it settles, and every table and action hook on the screen that has asked something asks again. Only a write the screen starts itself with a hand-written `.run()` announces nothing - then run the read again after the `await` of that `run`, never before it, or hand the table a `tableRef` and call `refresh()` as above.
 
 A date and a time typed in two inputs are one value to the contract. Join them before `run` (a template such as `${date}T${time}:00`, or whatever shape `app.json` declares) - a form that sends `date` and `time` as two fields to an action that wants `starts_at` is refused by the input check and the person sees nothing happen.
 
