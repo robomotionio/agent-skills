@@ -3505,6 +3505,31 @@ var TONE = {
   danger: { strip: cn(tk.bgDestructiveSoft, tk.borderDestructiveSoft), icon: tk.fgDestructive },
   info: { strip: cn(tk.bgInfoSoft, tk.borderInfoSoft), icon: tk.fgInfo }
 };
+function useBackendUpdate() {
+  const [update, setUpdate] = useState({ phase: "idle" });
+  useEffect2(() => {
+    if (typeof window === "undefined") return;
+    const onUpdating = () => setUpdate({ phase: "updating" });
+    const onUpdated = (e) => {
+      const d = e.detail ?? {};
+      if (d.ok) {
+        try {
+          window.location.reload();
+        } catch {
+        }
+        return;
+      }
+      setUpdate({ phase: "failed", message: d.message || "The app could not be updated." });
+    };
+    window.addEventListener("rm:backend-updating", onUpdating);
+    window.addEventListener("rm:backend-updated", onUpdated);
+    return () => {
+      window.removeEventListener("rm:backend-updating", onUpdating);
+      window.removeEventListener("rm:backend-updated", onUpdated);
+    };
+  }, []);
+  return update;
+}
 function BannerView({
   state,
   className,
@@ -3513,6 +3538,7 @@ function BannerView({
   startError,
   mismatch
 }) {
+  const update = useBackendUpdate();
   if (state === "ready" || state === "connecting") return null;
   if (state === "app_not_running") {
     return /* @__PURE__ */ jsxs2(
@@ -3549,12 +3575,20 @@ function BannerView({
         children: [
           /* @__PURE__ */ jsxs2("p", { className: cn("flex items-center gap-2 text-sm font-medium", tk.fg), children: [
             /* @__PURE__ */ jsx3(Icon, { name: "circle-alert", size: 16, className: tone2.icon }),
-            mismatch?.message ?? "This app was updated. Reload the page to continue."
+            update.phase === "updating" ? "The app's screens are newer than the robot is running. Updating\u2026" : update.phase === "failed" ? update.message : mismatch?.message ?? "This app was updated. Reload the page to continue."
           ] }),
           otherApp ? (
             // Starting this app IS the fix, and it is one press when the page
             // can do it. Reload is not offered at all: it is the loop.
             onStart ? /* @__PURE__ */ jsx3(Button, { variant: "secondary", size: "sm", disabled: starting, onClick: onStart, children: starting ? "Starting\u2026" : "Start this app" }) : null
+          ) : update.phase === "updating" ? (
+            // The host is restarting the robot's side on the saved screens;
+            // the page reloads by itself when it says so. No Reload: that was
+            // the loop.
+            /* @__PURE__ */ jsxs2("span", { className: cn("flex items-center gap-2 text-sm", tk.fgMuted), children: [
+              /* @__PURE__ */ jsx3(Spinner, {}),
+              "Updating\u2026"
+            ] })
           ) : /* @__PURE__ */ jsx3(
             Button,
             {

@@ -12,7 +12,12 @@ interface AppRuntimeConfig {
     session_id?: string;
 }
 interface RobomotionAppKitOptions {
-    /** Path to app.json, relative to the Vite root. Default "app.json", falling back to "../app.json". */
+    /**
+     * Path to app.json, relative to the Vite root. Default "../app.json": the
+     * contract lives at the project root, one level above the screens, where
+     * the robot reads it. An older checkout with app.json beside package.json
+     * is still found.
+     */
     contract?: string;
     /** Defaults for /__rm/config.json fields the query string does not set. */
     config?: Partial<AppRuntimeConfig>;

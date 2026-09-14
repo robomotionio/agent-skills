@@ -49,7 +49,7 @@ function printHelp() {
       "  --app-out <file>    where to write the SPA actions.gen.ts",
       "                      (default: app/src/generated/actions.gen.ts when app/ exists)",
       "  --flow-out <file>   where to write the flow actions.gen.ts",
-      "                      (default: flow/src/generated/actions.gen.ts when flow/ exists)",
+      "                      (default: src/generated/actions.gen.ts beside main.ts, the flow at the project root)",
       "  --hash-only         print the contract hash and write nothing"
     ].join("\n")
   );
@@ -82,8 +82,8 @@ async function main() {
   if (!appOut && existsSync(resolve(root, "app"))) {
     appOut = resolve(root, "app/src/generated/actions.gen.ts");
   }
-  if (!flowOut && existsSync(resolve(root, "flow"))) {
-    flowOut = resolve(root, "flow/src/generated/actions.gen.ts");
+  if (!flowOut && existsSync(resolve(root, "main.ts"))) {
+    flowOut = resolve(root, "src/generated/actions.gen.ts");
   }
   if (!appOut && !flowOut) {
     appOut = resolve(root, "actions.gen.ts");
