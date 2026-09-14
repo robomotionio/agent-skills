@@ -176,6 +176,13 @@ Narrate progress through `todo_write`, with items phrased in the user's language
    that tries again. A screen where the loading branch is the only branch is
    not finished.
 
+   **The failure sits BESIDE the table, never in its place.** `ErrorState`
+   renders nothing when the connection banner has already said the same thing
+   (the robot is not connected), so `{list.error ? <ErrorState/> :
+   <DataTable/>}` leaves a form with nothing under it the moment the robot
+   is unreachable - no table, no sample rows, no error. Write
+   `{list.error && <ErrorState/>}` and then the `DataTable` unconditionally.
+
 4. **`save_flow`, on the project root.** Saving is one act: it commits the screens under `app/` and the flow beside them in one go - the flow being the half the robot actually runs - and pushes. There is nothing separate to push for the app. **The preview comes up on its own a few seconds after this first save** - the harness starts it and it appears in the person's preview panel - so do not call `app_dev_server start` for it: the tool answers "already running", and every such call is one more row on the person's screen that did nothing. Call `app_dev_server status` only when you have a reason to think the preview is down. Tell the person to look at the preview, and say that the numbers are sample data until their robot is connected.
 4b. **`robomotion app codegen`** whenever `app.json` or a `read_only` mark in `mcp.json` changes, before writing code against it. Run it from the app folder; it regenerates both typed clients and prints the contract hash.
 
