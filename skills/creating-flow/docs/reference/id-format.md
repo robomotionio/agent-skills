@@ -32,7 +32,9 @@ If the names don't match, the Designer can't enter the subflow on double-click. 
 
 ## How to generate
 
-Just pick a fresh 6-char lowercase hex string per node. The SDK doesn't care which one — only that it's hex and unique within the flow. There is no autoincrement, no namespace prefix, no convention to follow beyond the regex.
+Every id is random, made fresh for this flow. Run `openssl rand -hex 3` once per id you need (or `bun -e 'console.log(crypto.randomUUID().slice(0,6))'`). If you cannot run a command, write 6 hex characters with no pattern in them.
+
+**Never copy an id printed in these docs** (`42ec21`, `7dbafc`, `a3f21c` and every other example here) and never write a patterned one (`a1b2c3`, `aa11bb`, `cc22dd`, `000001`, `abcdef`). This matters most for subflows: the id is the `subflows/<id>.ts` filename, it is shown to the person as a file name, and two flows that copied the same example id collide when they are merged. The SDK only checks the regex and uniqueness inside the flow; it cannot tell a copied example from a real id.
 
 If a node ID needs to be referenced elsewhere (e.g., `Core.Flow.GoTo.optNodes.ids: ['a3f21c']`), copy the exact hex string. The same hex MUST appear in:
 - The node's `f.node(id, …)` call.

@@ -132,7 +132,7 @@ raw array literal. Accepted item shapes (`utils.BuildOptions`):
 widget at it (mirrors how legacy flows fed `optOptions`):
 
 ```ts
-.then('a1b2c3', 'Core.Programming.Function', 'Options', {
+.then('c49e05', 'Core.Programming.Function', 'Options', {
   func: `msg.options = ['Refund', 'Replace', 'Talk to agent']; return msg;`
 })
 .then('d4e5f6', 'Robomotion.ChatAssistant.Dropdown', 'Pick', {

@@ -8,7 +8,7 @@ Core concepts for Robomotion's visual flow execution model and project structure
 flows/<flow-name>/
 ├── main.ts          # TypeScript source (builder SDK)
 └── subflows/        # Optional subflow files
-    └── a1b2c3.ts    # Subflow (6-char hex ID)
+    └── <id>.ts      # Subflow; <id> = random 6-hex from `openssl rand -hex 3`
 ```
 
 **Build**: `robomotion build main.ts` -> merged JSON to stdout

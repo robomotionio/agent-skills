@@ -137,7 +137,7 @@ Inside loops, `GoTo` ends the body chain; `Stop` for the exit branch MUST be a s
 ## Node IDs
 
 Node IDs are 6-character random hexadecimal strings:
-- Examples: `42ec21`, `7dbafc`, `a06926`, `c3e8f1`
+- Shape examples only, never to be reused: `42ec21`, `7dbafc`. Make each real id with `openssl rand -hex 3`
 - Use lowercase hex characters (0-9, a-f)
 - Each node in a flow must have a unique ID
 

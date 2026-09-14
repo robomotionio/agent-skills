@@ -11,7 +11,7 @@ Robomotion is an RPA platform with a TypeScript SDK and a visual node editor. Th
 
 The SDK enforces these. Violations throw at `robomotion validate` / `build` with descriptive messages, so the agent never silently produces broken flows:
 
-1. **Node IDs MUST be 6-char lowercase hex** — `/^[0-9a-f]{6}$/`. `f.node()`, `.then()`, `f.edge()` reject non-hex IDs (`'begin'`, `'label'`, `'maps'`, uppercase) at registration. Pick fresh hex per node. See `./docs/reference/id-format.md`.
+1. **Node IDs MUST be 6-char lowercase hex** — `/^[0-9a-f]{6}$/`. `f.node()`, `.then()`, `f.edge()` reject non-hex IDs (`'begin'`, `'label'`, `'maps'`, uppercase) at registration. Generate each id at random (`openssl rand -hex 3`); never copy an example id from these docs and never write a pattern like `a1b2c3` or `aa11bb`. See `./docs/reference/id-format.md`.
 2. **Subflow node ID = `subflows/<id>.ts` filename, exactly.** Both must be 6-hex. The Designer's "enter subflow" UX depends on the match.
 3. **`f.addDependency(namespace, version)` is validated against the live package index.** `version` must be concrete (`'latest'` is rejected) and must exist in the package's published `versions` list. `namespace` must exist in `https://packages.robomotion.io/stable/index.json`. Run `robomotion get packages <ns>` or `robomotion describe package <ns>` to resolve real versions before calling `addDependency`. Never invent a version.
 4. **Terminal nodes (`Debug`, `Log`, `Stop`, `GoTo`, `End`, `WaitGroup.Done`) have 0 outputs** — wire TO them via `f.edge()`, never `.then()` from them.

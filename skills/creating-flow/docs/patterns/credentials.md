@@ -90,20 +90,20 @@ Do NOT emit `optCredentials` with placeholder/empty vault values (`{ vaultId: '_
 
 ```typescript
 // WRONG — placeholder credentials on an unprotected file → validation error
-f.node('a1b2c3', 'Core.Excel.Open', 'Open Excel', {
+f.node('b83f17', 'Core.Excel.Open', 'Open Excel', {
   inPath: Custom('/data/report.xlsx'),
   optCredentials: Credential({ vaultId: '_', itemId: '_' }),   // remove this
   outFileDescriptor: Message('excel_fd')
 });
 
 // CORRECT — no password needed: omit optCredentials entirely
-f.node('a1b2c3', 'Core.Excel.Open', 'Open Excel', {
+f.node('b83f17', 'Core.Excel.Open', 'Open Excel', {
   inPath: Custom('/data/report.xlsx'),
   outFileDescriptor: Message('excel_fd')
 });
 
 // CORRECT — password-protected file: real vault reference
-f.node('a1b2c3', 'Core.Excel.Open', 'Open Excel', {
+f.node('b83f17', 'Core.Excel.Open', 'Open Excel', {
   inPath: Custom('/data/secret.xlsx'),
   optCredentials: Credential({ vaultId: 'vault-uuid', itemId: 'item-uuid' }),
   outFileDescriptor: Message('excel_fd')

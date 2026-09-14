@@ -10,7 +10,7 @@ Global system variables available in all flows via `global.get()`. Use these to 
 
 ```typescript
 // Step 1: Function node resolves system variable
-f.node('a1b2c3', 'Core.Programming.Function', 'Setup Paths', {
+f.node('3f7b28', 'Core.Programming.Function', 'Setup Paths', {
   func: `msg.excelPath = global.get('$Home$') + '/output.xlsx'; return msg;`
 })
 // Step 2: Next node reads from msg
