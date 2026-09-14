@@ -17,14 +17,16 @@ contract, the part an agent reads before it touches a tool.
   "tools": {
     "submit_request": {
       "description": "Submit a leave request for the person asking. Ask for the dates if they are not given; the reason is optional.",
+      "read_only": false,
       "idempotent": false
     },
     "decide_request": {
       "description": "Approve or deny one pending request. Confirm the decision in one line before doing it.",
+      "read_only": false,
       "destructive": true
     },
     "list_requests": { "read_only": true },
-    "purge_archive": { "enabled": false }
+    "purge_archive": { "read_only": false, "enabled": false }
   },
   "assistant": {
     "enabled": true,
@@ -55,6 +57,11 @@ contract, the part an agent reads before it touches a tool.
 - **One sentence per tool**, about *when* to use it and what to ask for first. The
   `app.json` description says what the action does for the UI; this one says how an agent
   should reach for it.
+- **Every tool says `read_only`, true or false.** `true` means the action only reads and
+  changes nothing; `false` means it changes something. It is required on every tool,
+  including one with `enabled: false`: `validate_app` fails a tool without it, and fails
+  a generated hook that no longer matches it. Run `robomotion app codegen` again after
+  writing or changing it.
 - **Hints are honest.** `read_only` for pure reads, `destructive` for anything that
   cannot be undone (deleting, sending, paying, deciding), `idempotent` when calling twice
   is harmless. Clients confirm destructive calls and may retry idempotent ones.
