@@ -504,6 +504,27 @@ const approve = useApproveInvoice();
 />
 ```
 
+**A button on every row.** Everything in `rowActions` goes into the row's "More" menu, and nothing else: the person has to open the menu to find it. When they ask for a button beside each row by name - "a Cancel button on every booking", "Return next to each item" - the menu is not what they asked for. Render it as a column, and keep a destructive one behind `ConfirmDialog` as above:
+
+```tsx
+const [cancelling, setCancelling] = useState<Booking | null>(null);
+<DataTable
+  columns={[
+    { key: "date", header: "Date" },
+    { key: "name", header: "Name" },
+    { key: "cancel", header: "", render: (row) => (
+      <Button size="sm" variant="secondary" onClick={() => setCancelling(row)}>Cancel</Button>
+    ) },
+  ]}
+  source={{ action: listBookings }}
+/>
+<ConfirmDialog open={cancelling !== null} onClose={() => setCancelling(null)}
+  title="Cancel this booking?" confirmLabel="Cancel it" danger
+  action={cancelBooking} params={() => ({ id: cancelling?.id })} />
+```
+
+`rowActions` is for the things nobody asked to see on every row - export this one, copy its link. A button that only navigates goes in a column the same way, with `navigate(...)` in its `onClick`.
+
 **The robot has it and there is too much of it.** `source={{ action }}` turns the same table into a paged one: it asks the flow for one page at a time, and the filter box and the sortable headers go with the question instead of running in the browser. Reach for this whenever the rows live in a system the flow queries - a database, a spreadsheet, an API with paging - which is where everything an app remembers between visits lives.
 
 ```tsx
@@ -572,6 +593,22 @@ async function importRows() {
   table.current?.refresh();
 }
 ```
+
+**Loading a screen.** Only a table with `source={{ action }}` asks for its rows by itself, on mount. Every other screen that shows an answer - a detail page, a row of counters, a dropdown fed by a list - has to ask when it opens, in ONE effect, and `validate_app`'s `screen-loads` check names each one that does not:
+
+```tsx
+// RIGHT - asked on open; the person sees their data without pressing anything.
+const summary = useGetSummary();
+const customers = useListCustomers();
+useEffect(() => { void summary.run({}); void customers.run({}); }, []);
+
+// WRONG - run only after an add, so the screen opens empty over rows that are there.
+async function onAdd() { await addCustomer.run(draft); await customers.run({}); }
+```
+
+A form that creates a record must bring the list that shows it up to date. When that list is a `DataTable` on the same screen, the kit does it: the form announces its write when it settles and the table asks again. Anywhere else - a list you render yourself, a dropdown, a counter - run the read again after the `await` of your own `run`, never before it, or hand the table a `tableRef` and call `refresh()` as above.
+
+A date and a time typed in two inputs are one value to the contract. Join them before `run` (a template such as `${date}T${time}:00`, or whatever shape `app.json` declares) - a form that sends `date` and `time` as two fields to an action that wants `starts_at` is refused by the input check and the person sees nothing happen.
 
 **Ticking a run of rows and doing one thing to all of them.** `selectable` puts a tick box on every row, and `rowKey` becomes required when you use it - the selection belongs to RECORDS, not to row positions, and without a key turning the page silently reassigns the ticks to different rows. `bulkActions` are the buttons that appear above the table once something is ticked. **Never build a checkbox column and an array of ticked ids by hand**: that is where the page-turning bugs live.
 

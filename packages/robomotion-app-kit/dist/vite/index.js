@@ -3,8 +3,93 @@ import { createRequire } from "module";
 import { readFileSync } from "fs";
 import { isAbsolute, join, resolve } from "path";
 import { pathToFileURL } from "url";
+
+// src/vite/heal.ts
+function createHealer(deps) {
+  var targets = {};
+  var order = [];
+  var timer = null;
+  var inFlight = false;
+  var until = 0;
+  var stop = function() {
+    if (timer !== null) {
+      deps.clearInterval(timer);
+      timer = null;
+    }
+  };
+  var tick = function() {
+    if (deps.hasDrawn()) {
+      stop();
+      return;
+    }
+    if (deps.now() > until) {
+      stop();
+      return;
+    }
+    if (inFlight) return;
+    inFlight = true;
+    var pending = order.slice();
+    Promise.all(
+      pending.map(function(u) {
+        return deps.fetch(u, { cache: "no-store" }).then(
+          function(r) {
+            return !!(r && r.ok);
+          },
+          function() {
+            return false;
+          }
+        );
+      })
+    ).then(
+      function(oks) {
+        inFlight = false;
+        for (var i = 0; i < oks.length; i++) if (!oks[i]) return;
+        if (deps.hasDrawn()) {
+          stop();
+          return;
+        }
+        stop();
+        deps.reload();
+      },
+      function() {
+        inFlight = false;
+      }
+    );
+  };
+  var watch = function(url) {
+    if (!url || targets[url]) return;
+    targets[url] = true;
+    order.push(url);
+    until = deps.now() + deps.forMs;
+    if (timer === null) timer = deps.setInterval(tick, deps.everyMs);
+  };
+  return {
+    noteFailure: function(id) {
+      watch(deps.urlFor(id));
+    },
+    watchUrl: function(url) {
+      watch(typeof url === "string" && url ? url : null);
+    },
+    watching: function() {
+      return order.slice();
+    },
+    stop
+  };
+}
+function healUrlFor(id, baseURI) {
+  if (!id || typeof id !== "string" || id.charAt(0) !== "/") return null;
+  if (id.indexOf("\0") >= 0 || id.indexOf("/@id/") >= 0) return null;
+  try {
+    return new URL("@fs" + id, baseURI).toString();
+  } catch (e) {
+    return null;
+  }
+}
+
+// src/vite/index.ts
+var DEFAULT_CONTRACT = "../app.json";
 function loadContract(root, contractPath) {
-  const candidates = contractPath ? [isAbsolute(contractPath) ? contractPath : resolve(root, contractPath)] : [resolve(root, "app.json"), resolve(root, "../app.json")];
+  const candidates = contractPath ? [isAbsolute(contractPath) ? contractPath : resolve(root, contractPath)] : [resolve(root, DEFAULT_CONTRACT), resolve(root, "app.json")];
   for (const candidate of candidates) {
     try {
       return JSON.parse(readFileSync(candidate, "utf-8"));
@@ -191,34 +276,54 @@ function bridgeScript(screens) {
     try { sessionStorage.setItem(HEAL_KEY, String(n + 1)); } catch (e) {}
     try { location.reload(); } catch (e) { /* a locked-down frame cannot heal itself */ }
   };
-  // Vite's err.id is the module's absolute path on disk; /@fs/ is how the dev
-  // server serves any such path, transforming it the same way an import would.
-  var healUrlFor = function (id) {
-    if (!id || typeof id !== "string" || id.charAt(0) !== "/") return null;
-    try { return new URL("@fs" + id, document.baseURI).toString(); } catch (e) { return null; }
-  };
-  var healTarget = null;
-  var healTimer = 0;
-  var healUntil = 0;
-  var pollUntilServed = function () {
-    healTimer = 0;
-    if (drawn || hasDrawn()) return;           // came back on its own
-    if (!healTarget || Date.now() > healUntil) return;
-    var target = healTarget;
-    fetch(target, { cache: "no-store" }).then(function (r) {
-      if (r.ok) { selfHealReload(); return; }  // fixed on disk; nobody reloaded us
-      if (!healTimer) healTimer = setTimeout(pollUntilServed, HEAL_EVERY_MS);
-    }).catch(function () {
-      if (!healTimer) healTimer = setTimeout(pollUntilServed, HEAL_EVERY_MS);
-    });
-  };
-  var healWhenServed = function (id) {
-    var url = healUrlFor(id);
-    if (!url) return;
-    healTarget = url;                           // the newest failure is the one to watch
-    healUntil = Date.now() + HEAL_FOR_MS;
-    if (!healTimer) healTimer = setTimeout(pollUntilServed, HEAL_EVERY_MS);
-  };
+  // The state machine lives in heal.ts (tested on its own) and is embedded
+  // here verbatim: a set of failing modules that only grows, one interval
+  // guarded by an in-flight flag, a reload only when every one of them
+  // serves (issue 251).
+  var healUrlFor = ${healUrlFor.toString()};
+  var createHealer = ${createHealer.toString()};
+  var healer = createHealer({
+    fetch: function (u, init) { return fetch(u, init); },
+    reload: selfHealReload,
+    hasDrawn: function () { return drawn || hasDrawn(); },
+    now: Date.now,
+    setInterval: function (fn, ms) { return setInterval(fn, ms); },
+    clearInterval: function (h) { clearInterval(h); },
+    urlFor: function (id) { return healUrlFor(id, document.baseURI); },
+    everyMs: HEAL_EVERY_MS,
+    forMs: HEAL_FOR_MS,
+  });
+  var healWhenServed = function (id) { healer.noteFailure(id); };
+  // A fresh document whose own <script type=module> answered 500 raises no
+  // vite:error at all - the failure happened before any module ran. When
+  // the placeholder is still up a few seconds after boot and nothing is
+  // being watched, the module script is probed once and, if it does not
+  // serve, watched like any other failure.
+  var HEAL_BOOT_MS = 5000;
+  setTimeout(function () {
+    if (drawn || hasDrawn() || healer.watching().length > 0) return;
+    var s = document.querySelector('script[type="module"][src]');
+    var src = s && s.src;
+    if (!src) return;
+    fetch(src, { cache: "no-store" }).then(function (r) {
+      if (!r.ok) healer.watchUrl(src);
+    }).catch(function () { healer.watchUrl(src); });
+  }, HEAL_BOOT_MS);
+
+  // The host answers a stale backend (issue 262): while it restarts the
+  // robot's side the banner shows "Updating" instead of a Reload that cannot
+  // help, and reloads once the host says the backend matches the screens.
+  // Carried into the page as DOM events the kit's banner listens for.
+  window.addEventListener("message", function (e) {
+    if (!embedded || e.source !== window.parent) return;
+    var d = e && e.data;
+    if (!d || typeof d !== "object" || typeof d.type !== "string") return;
+    if (d.type === "rm-backend-updating") {
+      try { window.dispatchEvent(new CustomEvent("rm:backend-updating", { detail: {} })); } catch (err) {}
+    } else if (d.type === "rm-backend-updated") {
+      try { window.dispatchEvent(new CustomEvent("rm:backend-updated", { detail: { ok: !!d.ok, message: d.message || "" } })); } catch (err) {}
+    }
+  });
 
   var watchForRecovery = function () {
     if (recoveryTimer) clearTimeout(recoveryTimer);
@@ -402,8 +507,14 @@ function bridgePlugin(options = {}) {
      * on; and the Build panel shows its own plain banner over the frame.
      * The overlay was the only part of that chain written for a developer.
      */
-    config() {
-      return { server: { hmr: { overlay: false } } };
+    config(userConfig) {
+      const root2 = userConfig.root ? resolve(userConfig.root) : process.cwd();
+      return {
+        server: {
+          hmr: { overlay: false },
+          fs: { allow: [resolve(root2, "..")] }
+        }
+      };
     },
     configResolved(config) {
       root = config.root;

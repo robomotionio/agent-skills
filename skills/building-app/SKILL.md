@@ -625,6 +625,7 @@ exactly once, so check for it before you save.
    holds in your closing summary**: nobody asked what it cost, so do not
    volunteer "2 of your 4 robot slots in use". Say what it costs only if they
    ask, and then say "robots", not "slots".
+6c. **A screen asks for what it shows when it opens, and a row button is a column.** A table with `source={{ action }}` loads itself; every other list, counter or detail runs its read in one `useEffect` on open, and a form that adds a record refetches the list that shows it. A button the person asked for on every row is rendered as a column, not folded into the table's "More" menu. Both are under `DataTable` in `./docs/app-kit-reference.md` ("Loading a screen", "A button on every row").
 7. **`validate_app`.** Fix until clean. It compiles both projects against the contract, checks the schema, and checks the dependency allowlist.
 8. **Offer to publish.** Never publish unasked. When the person says yes, `publish_app`.
 
