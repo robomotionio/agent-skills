@@ -184,7 +184,7 @@ f.node('4a9e12', 'Core.Browser.Open', 'Open Browser', {
   outBrowserId: Message('browser_id')
 });
 // ... navigate to the download control ...
-f.node('a1b2c3', 'Core.Browser.ClickElement', 'Download', {
+f.node('d61c9a', 'Core.Browser.ClickElement', 'Download', {
   inPageId: Message('page_id'),
   inSelector: Custom('<xpath you explored for the download control>'),
   delayAfter: 5   // seconds AFTER the click — let the file finish writing to disk

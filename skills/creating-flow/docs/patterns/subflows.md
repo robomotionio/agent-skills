@@ -44,7 +44,7 @@ library.create('FLOW_ID', 'My Library', (f) => {
     .then('d7e8f9', 'Core.Programming.Function', 'Process', {
       func: `msg.result = msg.input.toUpperCase(); return msg;`
     })
-    .then('a1b2c3', 'Core.Flow.End', 'End', { sfPort: 0 });
+    .then('5e90d4', 'Core.Flow.End', 'End', { sfPort: 0 });
 });
 ```
 
@@ -64,7 +64,7 @@ flows/<flow-name>/
 ```
 
 **Key Points:**
-- Each subflow has a unique 6-char hex filename (e.g., `7dbafc.ts`)
+- Each subflow has a unique, random 6-char hex filename: run `openssl rand -hex 3` for it. The names above are examples; never reuse them (see `../reference/id-format.md`)
 - The SubFlow node's ID in the parent flow IS the subflow identifier — no separate `subflow` property needed
 - CLI auto-discovers subflows in `subflows/*.ts` and merges them into the output
 

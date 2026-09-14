@@ -531,6 +531,18 @@ away** is `exportable`, which asks the SAME paged action with `limit: 0`
 ("no paging: all of them"), so an export costs no second action at all. Never
 hand-roll a checkbox column, a ticked-ids array or a CSV string in a screen.
 
+**A moment in time is stored as a number: `Date.now()`, milliseconds since
+1970, in an `INTEGER` column.** Never as a string you put into a package
+node's `{{{template}}}`. Many packages (the database ones among them) read a
+message value that looks like an ISO date as a date, and write it back in
+their own format: `2026-09-14T11:25:14Z` goes in and `09/14/2026 11:25:14`
+lands in the table, UTC with the zone gone, so every screen shows it hours off
+for anyone not on UTC. A number has no format to lose, sorts correctly and
+the screen turns it into the person's own time with `new Date(ms)`. When the
+time is taken inside SQL instead, keep the zone in it
+(`strftime('%Y-%m-%dT%H:%M:%fZ','now')` in SQLite). A calendar date with no
+time of day (a due date, a birthday) stays a plain `YYYY-MM-DD` string.
+
 **When a change has to reach a screen that is not asking, emit an event.**
 `App Emit Event` plus `useEvent` on the screen: a decision somebody else made, a
 long job finishing, a number crossing its limit. A table re-asks by itself after
@@ -929,3 +941,8 @@ Format a date for the person's own locale, never by hand:
 `new Date(iso).toLocaleDateString(undefined, { dateStyle: "medium" })` (and
 `toLocaleString` when the time matters). A hand-built `M/D/YYYY` reads as
 the wrong day to most of the world, and a raw ISO string reads as nothing.
+`new Date(value)` is only right when the value carries its zone: epoch
+milliseconds, or an ISO string ending in `Z` or `+03:00`. A string with no
+zone (`09/14/2026 11:25:14`, `2026-09-14 11:25:14`) is read as the viewer's
+local time, which is the wrong time whenever the flow wrote UTC. Store times
+as the section on remembering something says, and the screen stays right.
