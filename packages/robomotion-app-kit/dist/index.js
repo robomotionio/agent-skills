@@ -3312,6 +3312,7 @@ var cva = (base2, config) => (props) => {
 };
 
 // src/action.ts
+import { announceWriteDone, onWriteDone } from "@robomotion/apps-runtime/react";
 function resolveParams(params, event) {
   return typeof params === "function" ? params(event) : params;
 }
@@ -3322,21 +3323,8 @@ function joinNames(names) {
   }
   return out.length ? out.join(" ") : void 0;
 }
-var actionDoneListeners = /* @__PURE__ */ new Set();
-function announceActionDone(name) {
-  for (const listen of [...actionDoneListeners]) {
-    try {
-      listen(name);
-    } catch {
-    }
-  }
-}
-function onActionDone(listen) {
-  actionDoneListeners.add(listen);
-  return () => {
-    actionDoneListeners.delete(listen);
-  };
-}
+var announceActionDone = announceWriteDone;
+var onActionDone = onWriteDone;
 function runAction(action, params) {
   return Promise.resolve(action.run(params)).then(
     (value) => {
@@ -8349,7 +8337,7 @@ function DataTable(props) {
     setRemoteLoading(true);
     setRemoteError(null);
     try {
-      const reply = await action.run(req);
+      const reply = await action.run(req, { refreshOnWrite: false });
       if (mine !== seq.current) return;
       const failure = reply === void 0 ? action.error : void 0;
       if (failure) {
@@ -8537,7 +8525,7 @@ function DataTable(props) {
           offset: 0,
           limit: 0
         };
-        const reply = await actionRef.current.run(req);
+        const reply = await actionRef.current.run(req, { refreshOnWrite: false });
         out = readPageReply(reply, req).rows;
       } else {
         out = sorted;

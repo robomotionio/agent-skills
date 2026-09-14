@@ -822,7 +822,12 @@ var AppClient = class {
     if (status === "waiting" || status === "disconnected") {
       this.connection.set("robot_offline");
       this.failInFlight(
-        new AppError("robot_offline", "The robot for this app is not connected.", true)
+        new AppError(
+          "robot_offline",
+          "The robot dropped out while this was being done. Check whether it went through before trying again.",
+          true,
+          { sent: true }
+        )
       );
       void this.reconnectIfRobotChanged();
     }
