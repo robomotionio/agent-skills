@@ -33,7 +33,9 @@ function useMaybeAppClient() {
   return useContext(AppContext);
 }
 var writeDoneListeners = /* @__PURE__ */ new Set();
+var writeEpoch = 0;
 function announceWriteDone(name) {
+  writeEpoch += 1;
   for (const listen of [...writeDoneListeners]) {
     try {
       listen(name);
@@ -47,6 +49,66 @@ function onWriteDone(listen) {
     writeDoneListeners.delete(listen);
   };
 }
+function callKey(params, opts) {
+  const seen = /* @__PURE__ */ new Set();
+  const norm = (v) => {
+    if (v === null || typeof v !== "object") {
+      if (typeof v === "function" || typeof v === "symbol" || typeof v === "bigint") throw new Error("uncomparable");
+      return v;
+    }
+    if (seen.has(v)) throw new Error("cycle");
+    const proto = Object.getPrototypeOf(v);
+    if (!Array.isArray(v) && proto !== Object.prototype && proto !== null) throw new Error("uncomparable");
+    seen.add(v);
+    const out = Array.isArray(v) ? v.map(norm) : Object.fromEntries(
+      Object.keys(v).sort().map((k) => [k, norm(v[k])])
+    );
+    seen.delete(v);
+    return out;
+  };
+  try {
+    return JSON.stringify([norm(params), opts?.timeoutMs ?? null, opts?.refreshOnWrite ?? null]);
+  } catch {
+    return null;
+  }
+}
+var LOOP_LIMIT = 10;
+var LOOP_WINDOW_MS = 3e4;
+var LoopBrake = class {
+  constructor(name) {
+    this.name = name;
+  }
+  name;
+  key = null;
+  starts = [];
+  epoch = -1;
+  tripped = false;
+  error;
+  /** Notes a send of `key`. True when it must not be sent. */
+  note(key, now = Date.now()) {
+    if (key !== this.key) {
+      this.key = key;
+      this.starts = [];
+      this.tripped = false;
+      this.error = void 0;
+      this.epoch = writeEpoch;
+    }
+    if (this.tripped) return true;
+    if (this.epoch !== writeEpoch) {
+      this.epoch = writeEpoch;
+      this.starts = [];
+    }
+    this.starts = this.starts.filter((t) => now - t < LOOP_WINDOW_MS);
+    this.starts.push(now);
+    if (this.starts.length <= LOOP_LIMIT) return false;
+    this.tripped = true;
+    const message = `This screen asked for "${this.name}" with the same values more than ${LOOP_LIMIT} times in ${LOOP_WINDOW_MS / 1e3} seconds by itself, so it is no longer being sent. The screen asks for the same thing in a loop: check its effect dependencies - use [] to ask when the screen opens, or the values that should ask again (an id), never the action hook object or a function made during render.`;
+    this.error = new AppError("internal", message, false);
+    tagAction(this.error, this.name);
+    console.error(`[apps-runtime] ${message}`);
+    return true;
+  }
+};
 function useAction(name, hookOpts) {
   const app = useAppClient();
   const [data, setData] = useState(void 0);
@@ -56,11 +118,21 @@ function useAction(name, hookOpts) {
   const abortRef = useRef(null);
   const aliveRef = useRef(true);
   const runSeqRef = useRef(0);
+  const pendingAbortRef = useRef(null);
   useEffect(() => {
+    if (pendingAbortRef.current !== null) {
+      clearTimeout(pendingAbortRef.current);
+      pendingAbortRef.current = null;
+    }
     aliveRef.current = true;
     return () => {
       aliveRef.current = false;
-      abortRef.current?.abort();
+      pendingAbortRef.current = setTimeout(() => {
+        pendingAbortRef.current = null;
+        if (aliveRef.current) return;
+        inflightRef.current = null;
+        abortRef.current?.abort();
+      }, 0);
     };
   }, []);
   useEffect(() => {
@@ -68,7 +140,12 @@ function useAction(name, hookOpts) {
     noteHookUse(key, 1);
     return () => noteHookUse(key, -1);
   }, [name]);
+  const inflightRef = useRef(null);
+  const brakeRef = useRef(null);
+  if (!brakeRef.current) brakeRef.current = new LoopBrake(name);
+  const brake = brakeRef.current;
   const cancel = useCallback(() => {
+    inflightRef.current = null;
     abortRef.current?.abort();
   }, []);
   const lastCallRef = useRef(null);
@@ -102,6 +179,37 @@ function useAction(name, hookOpts) {
     });
   }, [name, readOnly]);
   const run = useCallback(
+    (params, opts) => {
+      const key = callKey(params, opts);
+      const out = inflightRef.current;
+      if (key !== null && out && out.key === key) {
+        lastCallRef.current = { params, opts };
+        return out.promise;
+      }
+      if (key !== null && brake.note(key)) {
+        if (brake.error && errorRef.current !== brake.error && aliveRef.current) {
+          setError(brake.error);
+          setLoading(false);
+          loadingRef.current = false;
+        }
+        return Promise.resolve(void 0);
+      }
+      const promise = send(params, opts);
+      if (key !== null) {
+        const entry = { key, promise };
+        inflightRef.current = entry;
+        const clear = () => {
+          if (inflightRef.current === entry) inflightRef.current = null;
+        };
+        promise.then(clear, clear);
+      }
+      return promise;
+    },
+    // send and brake are stable for the hook's life (refs / created once).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [app, name]
+  );
+  const send = useCallback(
     async (params, opts) => {
       lastCallRef.current = { params, opts };
       loadingRef.current = true;
@@ -270,8 +378,12 @@ function useAssistant() {
 }
 export {
   AppProvider,
+  LOOP_LIMIT,
+  LOOP_WINDOW_MS,
+  LoopBrake,
   announceWriteDone,
   bindAction,
+  callKey,
   markGesture,
   onWriteDone,
   shouldRetryOnReconnect,
