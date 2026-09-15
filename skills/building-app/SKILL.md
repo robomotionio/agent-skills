@@ -75,7 +75,8 @@ One project, one folder, one save. The layout:
 | `robomotion app create "<name>"` | creates the app on the flow in this folder; in an EMPTY folder it also creates the flow and checks it out here. Pulls the seeded `app/`, places the packages, installs. |
 | `robomotion app sync` | for an app that already exists: pull, place the packages, install |
 | `robomotion app codegen` (from `app/`) | regenerates both typed clients from `app.json` and prints the contract hash |
-| `robomotion app dev` | runs the screens on localhost and prints the address. Start it in the background; it keeps running. |
+| `robomotion app dev` | runs the screens and prints two addresses: localhost, and the app's preview address - the one Robomotion's Build view shows, so the person can watch the same live screens from the Designer while you work. Start it in the background; it keeps running. |
+| `robomotion app link` | a link that opens the preview in any browser, for members of the workspace (it expires in minutes; the browser keeps the preview after that) |
 | `robomotion app validate` | every check: schema, `tsc` on both halves, contract hash, the flow's wiring, the kit rules |
 | `git add -A && git commit -m "..." && git push` | the save, at the project root - screens and flow together |
 | `robomotion app robot` | gives the app its own robot (only after the person said yes) |
@@ -246,7 +247,7 @@ Narrate progress with the task list, in the person's language ("Design the revie
 
    It fills fields by their labels, presses buttons by their words, then prints the screen's text, the page's console errors, and every step the robot ran meanwhile. Check every line of `request-checks.md` against what the screen shows - reading a screen is not checking it. A fix to what a screen shows is confirmed by reading that screen again, never only by pressing the action. Fix any mismatch, save, restart when the flow changed, try again. Take away the records your tries made before you hand over, through the app's own delete.
 
-8. **Hand over, honestly.** Say what the app does and what to press, in the person's words; give them the local address; say nothing about ids, files or test data unless something was left behind. **Offer to publish; never publish unasked.** When they say yes, `robomotion app publish`.
+8. **Hand over, honestly.** Say what the app does and what to press, in the person's words; give them a link from `robomotion app link` (it opens anywhere, and the app also shows in Robomotion's Build view), or the local address when they are on this computer; say nothing about ids, files or test data unless something was left behind. **Offer to publish; never publish unasked.** When they say yes, `robomotion app publish`.
 
 ### The flow side, exactly
 
