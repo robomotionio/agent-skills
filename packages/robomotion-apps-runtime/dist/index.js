@@ -531,7 +531,7 @@ var AppClient = class {
       apiUrl: this.apiUrl,
       appId: this.instance?.appId ?? "",
       instanceId: this.instance?.id ?? "",
-      userId: this.identity().userId,
+      userId: this.identity().userId || this.viewer.current?.userId || "",
       sessionId: this.identity().sessionId,
       fetchFn: this.fetchFn
     }));
