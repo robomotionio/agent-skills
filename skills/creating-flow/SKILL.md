@@ -148,7 +148,7 @@ Full step-by-step: **`./docs/workflow.md`**. Outline:
 
 If invoked in **direct mode** ("Write main.ts for X", "Generate a flow that does Y"), skip 0-2 and jump to 3.
 
-**Browser caveat:** if code changed after the initial exploration (different selectors, new actions), re-verify selectors against the live page before saving. Selectors are owned by Step 3, not a post-save step.
+**Browser caveat:** if code changed after the initial exploration (different selectors, new actions), re-verify selectors against the live page before saving. Selectors are owned by Step 3, not a post-save step. **And close the exploration browser the moment exploring ends** - whichever tool opened it (robomotion-browser-mcp, a Playwright MCP) - before writing the flow; never leave it open while the flow is built or run. The robot opens its own.
 
 ## Canonical example (simple chain)
 

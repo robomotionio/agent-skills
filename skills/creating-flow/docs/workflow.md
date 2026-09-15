@@ -102,6 +102,8 @@ Two ways to explore, in order of preference:
 1. **Invoke the `exploring-browser` skill** via `Skill(skill="exploring-browser", args="login to <url>")`. It uses `mcp__browser__*` directly, records a sequence with resolved XPaths, and returns JSON you convert to SDK code.
 2. **Call `mcp__browser__*` tools inline.** Minimum sequence: `browser_open` → `browser_navigate` → `browser_snapshot` → action tools → `browser_snapshot` after every page change → `browser_close` to get the recorded sequence JSON.
 
+**Exploring ends with the browser closed - whichever browser you explored with.** `browser_close` on robomotion-browser-mcp, `browser_close` on a Playwright MCP, anything else you opened: closed BEFORE the first line of flow code is written, never left open while the flow is built, validated or run. The person sees a browser sitting on the search page next to the robot's own browser and cannot tell which is which (Faik, 2026-09-15: "when the explore phase is over browsers MUST be closed"). The robot opens its own browser when the flow runs; the exploration one has no further use.
+
 > **Load schemas before the first call.** In Claude Code, `mcp__browser__*` tools are *deferred* — only their names are in the catalog until you pull schemas via `ToolSearch`. Invoking one cold sends empty/malformed JSON over stdio, which crashes `robomotion-browser-mcp` and blacklists ALL browser tools for the session. Before your first `browser_*` call:
 >
 > ```
