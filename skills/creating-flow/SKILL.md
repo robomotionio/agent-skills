@@ -17,6 +17,7 @@ The SDK enforces these. Violations throw at `robomotion validate` / `build` with
 4. **Terminal nodes (`Debug`, `Log`, `Stop`, `GoTo`, `End`, `WaitGroup.Done`) have 0 outputs** — wire TO them via `f.edge()`, never `.then()` from them.
 5. **Every `Core.Flow.GoTo` references a `Core.Flow.Label` id that exists in the same flow file.**
 6. **A flow file is a declaration the Flow Designer can READ, not a program only Bun can run.** The Designer parses `main.ts` and each `subflows/*.ts` statically, one file at a time, draws what it understood, and **regenerates the whole file from the canvas on every save** - whatever it could not read is gone from git after the person's first save. So: the ONE import is `@robomotion/sdk`; every node is a literal `f.node()` / `.then()` / `f.edge()` written inside the `create` callback (no helper functions, no loops, no `.map()`); every prop is a literal, an array/object of literals, a scope helper over one, or a string built from **same-file** `const`s with a template, `+` or `[..].join('\n')`; no spreads (`{ ...SHARED }`), no shorthand props, no imported helpers in a `func`. A shared helper string is declared again in each file that uses it. `robomotion validate` refuses the rest with "the Flow Designer cannot read it". Full table: `./docs/reference/project-format.md`.
+7. **The program is the flow; a Function node is glue code, written only where necessary, and written for a person to read.** We do write code, but only where a step needs it: a Function shapes `msg` for the next node. The work goes into nodes: **SQL lives in the SQL node** with `{{{field}}}` placeholders, never string-built in JavaScript; a rule the person would name is its own Function with `outputs: 2`; formatting is the screen's job; there is no helper library, and never one pasted into every node. The code is formatted: one statement per line, blocks on their own lines, indented, blank lines between parts. No line limit - a long Function that does one thing and reads top to bottom is fine. `robomotion validate` refuses crammed code ("several statements on one line", "a whole block on one line") and the same block opening three or more Functions. Where each urge belongs: `./docs/reference/function-nodes.md`.
 
 ## Required First Line
 
@@ -59,6 +60,7 @@ Map an error symptom to the doc that fixes it. When `validate_flow` fails, look 
 | `version '<v>' is not published for <ns>` | Wrong version pinned | Pick from `available_versions` returned by validator |
 | `Cannot chain from node (outputs=0)` | `.then()` after `Debug`/`Log`/`Stop`/`GoTo`/`End` | Wire TO terminals via `f.edge()`, never FROM them |
 | `the Flow Designer cannot read it` (an import, a spread, a helper, a value "not a const declared in this file") | The file is a program, not a declaration (hard rule 6) | Inline: one `@robomotion/sdk` import, nodes written in the callback, same-file `const`s, no spreads. `./docs/reference/project-format.md` |
+| `several statements on one line` / `a whole block on one line` / `the same block opens N Function nodes` | Code not written for a person, or a helper library pasted into the steps (hard rule 7) | Format it (one statement per line, blocks on their own lines); SQL into the SQL node with `{{{field}}}`; one Function per rule; formatting on the screen. `./docs/reference/function-nodes.md` |
 | `Invalid input port 0. Node has 0 input(s)` on a Label | Wired into `Core.Flow.Label` (Label has 0 inputs in some pspecs) | Use `Core.Flow.GoTo` with `optNodes.ids: [<labelId>]` to jump to the Label |
 | `Vault has to be selected` at runtime | Missing `optCredentials` on `Core.Vault.GetItem` | `./docs/patterns/credentials.md` |
 | `Property 'optCredentials' requires vault credentials but has empty/placeholder values` | An OPTIONAL credential prop (e.g. `Core.Excel.Open` for password-protected files) set with `_`/blank placeholders | Omit `optCredentials` entirely unless you have a real vault reference — `./docs/patterns/credentials.md` |
@@ -106,6 +108,7 @@ References:
 | Imports (every scope helper + example) | `./docs/reference/imports.md` |
 | Node ID format (the hex rule) | `./docs/reference/id-format.md` |
 | The project format both the Designer and the CLI can read and save (hard rule 6) | `./docs/reference/project-format.md` |
+| Function nodes: glue code written only where necessary, formatted for a person; where each urge belongs (hard rule 7) | `./docs/reference/function-nodes.md` |
 | System variables (`$Home$`, `$TempDir$`) | `./docs/reference/system-variables.md` |
 | Node naming (wrong → correct) | `./docs/reference/node-naming.md` |
 | Credential categories (field layouts) | `./docs/reference/credential-categories.md` |

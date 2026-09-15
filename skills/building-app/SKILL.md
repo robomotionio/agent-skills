@@ -607,6 +607,44 @@ relative `Data Source=app.db` either: the robot runs the package inside its
 own versioned folder, so that file is lost on the next package update and
 the app starts over empty. The validator refuses the relative form.
 
+**The SQL is written in the SQL node, in SQL.** `Robomotion.SQLite.Query` /
+`NonQuery` take the statement in their `func` property with `{{{field}}}`
+placeholders filled from `msg`:
+
+```typescript
+.then('a4b005', 'Core.Programming.Function', 'What was asked', {
+  func: `var p = msg.params || {};
+msg.filter = '%' + String(p.filter || '') + '%';
+msg.offset = Number(p.offset) || 0;
+msg.limit = Number(p.limit) || 25;
+return msg;` })
+.then('a4b006', 'Robomotion.SQLite.Query', 'Read the page', {
+  optConnectionString: Message('db'), outResult: Message('page'),
+  func: `SELECT v.id, v.name, v.email, v.terms_days,
+       (SELECT COUNT(*) FROM invoices i WHERE i.vendor_id = v.id AND i.status = 'waiting') AS waiting
+FROM vendors v
+WHERE v.name LIKE '{{{filter}}}' OR v.email LIKE '{{{filter}}}'
+ORDER BY v.name COLLATE NOCASE
+LIMIT {{{limit}}} OFFSET {{{offset}}}` })
+.then('a4b007', 'Core.Programming.Function', 'Hand the page over', {
+  func: `msg.result = { rows: msg.page.rows, total: msg.page.rows.length };
+return msg;` })
+```
+
+Never a `q()` that quotes values, never a `WHERE` built by concatenation,
+never `rowsOf()` / `vendorOf()` shapers, never a `money()` or `pad()` in the
+flow (the screen formats), and never a block of helper functions at the top
+of every Function node. The program is the flow; a Function is glue code,
+written only where a step needs it, and formatted for a person (one
+statement per line, blocks on their own lines). `robomotion validate`
+refuses crammed code and the same block opening three or more Functions;
+the rule and the table of where each urge belongs is `creating-flow` hard
+rule 7 and its `docs/reference/function-nodes.md`. Reason: an app whose
+fifty-three Function nodes each began with fourteen helper functions, one
+crammed line each, was a minified JavaScript program wearing a flow's
+clothes; the person who opened one node to change a line could not find
+the line.
+
 So there is no storage half of the contract. **A screen reads stored data the
 way it reads anything else: by calling an ACTION**, and the flow answers it
 out of the database. Reason: the flow is the side that holds the credentials,
