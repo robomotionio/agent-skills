@@ -16,6 +16,7 @@ The SDK enforces these. Violations throw at `robomotion validate` / `build` with
 3. **`f.addDependency(namespace, version)` is validated against the live package index.** `version` must be concrete (`'latest'` is rejected) and must exist in the package's published `versions` list. `namespace` must exist in `https://packages.robomotion.io/stable/index.json`. Run `robomotion get packages <ns>` or `robomotion describe package <ns>` to resolve real versions before calling `addDependency`. Never invent a version.
 4. **Terminal nodes (`Debug`, `Log`, `Stop`, `GoTo`, `End`, `WaitGroup.Done`) have 0 outputs** — wire TO them via `f.edge()`, never `.then()` from them.
 5. **Every `Core.Flow.GoTo` references a `Core.Flow.Label` id that exists in the same flow file.**
+6. **A flow file is a declaration the Flow Designer can READ, not a program only Bun can run.** The Designer parses `main.ts` and each `subflows/*.ts` statically, one file at a time, draws what it understood, and **regenerates the whole file from the canvas on every save** - whatever it could not read is gone from git after the person's first save. So: the ONE import is `@robomotion/sdk`; every node is a literal `f.node()` / `.then()` / `f.edge()` written inside the `create` callback (no helper functions, no loops, no `.map()`); every prop is a literal, an array/object of literals, a scope helper over one, or a string built from **same-file** `const`s with a template, `+` or `[..].join('\n')`; no spreads (`{ ...SHARED }`), no shorthand props, no imported helpers in a `func`. A shared helper string is declared again in each file that uses it. `robomotion validate` refuses the rest with "the Flow Designer cannot read it". Full table: `./docs/reference/project-format.md`.
 
 ## Required First Line
 
@@ -57,6 +58,7 @@ Map an error symptom to the doc that fixes it. When `validate_flow` fails, look 
 | `package '<ns>' not found in repository` | Hallucinated namespace | `robomotion get packages <kw>` → use the real namespace |
 | `version '<v>' is not published for <ns>` | Wrong version pinned | Pick from `available_versions` returned by validator |
 | `Cannot chain from node (outputs=0)` | `.then()` after `Debug`/`Log`/`Stop`/`GoTo`/`End` | Wire TO terminals via `f.edge()`, never FROM them |
+| `the Flow Designer cannot read it` (an import, a spread, a helper, a value "not a const declared in this file") | The file is a program, not a declaration (hard rule 6) | Inline: one `@robomotion/sdk` import, nodes written in the callback, same-file `const`s, no spreads. `./docs/reference/project-format.md` |
 | `Invalid input port 0. Node has 0 input(s)` on a Label | Wired into `Core.Flow.Label` (Label has 0 inputs in some pspecs) | Use `Core.Flow.GoTo` with `optNodes.ids: [<labelId>]` to jump to the Label |
 | `Vault has to be selected` at runtime | Missing `optCredentials` on `Core.Vault.GetItem` | `./docs/patterns/credentials.md` |
 | `Property 'optCredentials' requires vault credentials but has empty/placeholder values` | An OPTIONAL credential prop (e.g. `Core.Excel.Open` for password-protected files) set with `_`/blank placeholders | Omit `optCredentials` entirely unless you have a real vault reference — `./docs/patterns/credentials.md` |
@@ -103,6 +105,7 @@ References:
 |---|---|
 | Imports (every scope helper + example) | `./docs/reference/imports.md` |
 | Node ID format (the hex rule) | `./docs/reference/id-format.md` |
+| The project format both the Designer and the CLI can read and save (hard rule 6) | `./docs/reference/project-format.md` |
 | System variables (`$Home$`, `$TempDir$`) | `./docs/reference/system-variables.md` |
 | Node naming (wrong → correct) | `./docs/reference/node-naming.md` |
 | Credential categories (field layouts) | `./docs/reference/credential-categories.md` |

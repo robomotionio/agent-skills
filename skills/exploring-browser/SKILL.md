@@ -110,7 +110,7 @@ input[name='email']
 ## Available Tools
 
 ### Lifecycle
-- `browser_open` - Launch browser (headless, stealth, viewport options)
+- `browser_open` - Launch browser (pass `headless: false` so the person can watch; stealth, viewport options)
 - `browser_close` - Close browser and return flow sequence JSON
 
 ### Navigation
