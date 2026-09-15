@@ -128,12 +128,17 @@ For schemas, examples, and package docs, use the `robomotion` CLI (it's already 
 
 Full step-by-step: **`./docs/workflow.md`**. Outline:
 
+0a. **The project.** A flow is a folder: `main.ts` at its root, a git checkout of the flow's own repository, signed in. When there is none yet, make it, in the folder the person wants it under:
+
+    robomotion create flow "<short human name>"
+
+   It makes the folder (a slug of the name, or `--dir <path>`), signs it in when it is not (a code and a link the person approves in their browser; run it in the background, it waits for the approval; `--workspace <host>` when they named one), creates the flow on the server and checks it out there. Then `cd` into it. An existing checkout (a `git clone` from the flow's Home card) needs nothing; if `robomotion auth whoami` says not logged in, `robomotion auth login --workspace <host>` in it.
 0. **Gather requirements** (interactive only) — credentials (commit to a vault-item pick, don't quiz the user; **never ask for the secret itself** — `vault_picker`, or ask them to add it to Vault first: `./docs/patterns/credentials.md`), URLs, files, iteration, error handling.
 1. **Discover** — `robomotion search`, `robomotion get nodes`, `robomotion docs <namespace>` (MANDATORY for every non-`Core.*` package).
 2. **Plan** — output plan as chat text, then `AskUserQuestion(["Build it", "Modify plan"])`.
 3. **Write** — read 1-2 relevant `./docs/patterns/*.md`, verify property names with `robomotion describe node`, then `Write` `main.ts` (and any `subflows/<id>.ts`). For browser flows: explore live first.
 4. **Validate** — call `validate_flow` MCP tool. Pspec-checks AND dependency-checks. MUST run BEFORE save.
-5. **Save** — `save_flow` if registered (Designer / pi); else `git commit && git push` from inside the flow dir. **This is the terminal step.** Stop here and report success — do NOT chain into running the flow. Running is a separate user request handled by the `running-flow` skill.
+5. **Save** — `save_flow` if registered (Designer / pi); else `git add -A && git commit -m "..." && git push` from inside the flow dir (the checkout `robomotion create flow` made pushes with no setup). **This is the terminal step.** Stop here and report success — do NOT chain into running the flow. Running is a separate user request handled by the `running-flow` skill.
 
 If invoked in **direct mode** ("Write main.ts for X", "Generate a flow that does Y"), skip 0-2 and jump to 3.
 

@@ -26,10 +26,12 @@ Start with `creating-flow` if you're new — it bundles the full Robomotion 101 
 #    `robomotion-browser-mcp` from https://robomotion.io/downloads and
 #    put them on your PATH.
 
-# 2. Sign in, in the project folder: a code and a link, approved in your browser.
-#    The login is kept in that project's .robomotion/session.json, so each
-#    project can use its own workspace.
-robomotion auth login --workspace <your-workspace-host>
+# 2. Start a project. Each makes its own folder and signs it in on first use:
+#    a code and a link, approved in your browser. The login is kept in that
+#    project's .robomotion/session.json, so each project can use its own workspace.
+robomotion create app "<name>"      # screens in front of a flow (main.ts at the root, screens under app/)
+robomotion create flow "<name>"     # a flow alone
+#    (an existing checkout: `robomotion auth login --workspace <your-workspace-host>` inside it)
 
 # 3. Install the skills. In Claude Code, as a plugin - this also adds the app
 #    hand-over check (a Stop hook that holds a hand-over until the app was
@@ -62,9 +64,10 @@ Both binaries are **required** and must be on `PATH`. Install from [robomotion.i
 A `git clone` of a flow is the whole project: if the flow backs an app, its screens are under `app/` in the same checkout. From a terminal the `robomotion app` verbs do the rest, one per job:
 
 ```
-robomotion app create "<name>"          # create the app on the flow in this folder (an empty folder gets a new flow); installs
+robomotion create app "<name>"          # a new project folder: the flow, the app, the seeded app/, installed; signs in first if needed
+robomotion app create "<name>"          # the same in place, on an existing flow checkout with no app yet
 robomotion app sync                     # pull, place the packages, install
-robomotion app dev                      # run the screens on localhost
+robomotion app dev                      # run the screens on localhost and at the app's preview address (the Designer's Build view shows them)
 robomotion app validate                 # the same checks as the Build view's validate_app
 robomotion app publish                  # build the screens, create a flow version, publish the app from it
 robomotion app robot                    # give the app its own robot (token kept in .robomotion/robot.json)
@@ -78,6 +81,17 @@ robomotion app status | logs [-f]       # where things stand; the app robot's ou
 From a terminal or Claude Code the agent presses the buttons, uses the app in a headless browser and reads the screens itself (`skills/building-app/SKILL.md`, "The loop"); under Robomotion's Build with AI a harness does part of that (`skills/building-app/docs/build-view.md`). The Claude Code plugin's stop check holds a hand-over that skipped a step.
 
 Saving is `git commit && git push` at the project root, the same as for a flow.
+
+### Flows from a terminal
+
+```
+robomotion create flow "<name>"         # a new project folder with the flow checked out; signs in first if needed
+robomotion validate                     # check main.ts
+robomotion run --robot <name>           # run it on one of your robots and follow its events (the robot is remembered)
+robomotion logs --last [-f]             # the events of the last run, again
+```
+
+The two dev loops differ in one thing: an app is used through its screens (a browser, `robomotion app try`) with the robot log beside it; a flow has no screens, so the robot's event log is the only oracle.
 
 ## Usage
 

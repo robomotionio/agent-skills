@@ -72,7 +72,8 @@ One project, one folder, one save. The layout:
 | Command | Does |
 |---|---|
 | `robomotion auth login --workspace <host>` | signs THIS PROJECT in (the login is kept in `.robomotion/session.json` at the project root, never committed): a code and a link, approved in the person's browser. Each project folder has its own login, so several assistants can build apps in different workspaces side by side. Run `robomotion auth whoami` in the project folder first; if it says not logged in, see step 0 - you run the login, the person only approves it. Never ask for a key. |
-| `robomotion app create "<name>"` | creates the app on the flow in this folder; in an EMPTY folder it also creates the flow and checks it out here. Pulls the seeded `app/`, places the packages, installs. |
+| `robomotion create app "<name>"` | the start of a NEW app: makes the project folder (a slug of the name; `--dir <path>` to choose), signs it in when it is not (the browser approval below; `--workspace <host>` when the person named one), creates the flow and the app, pulls the seeded `app/`, places the packages, installs. Then `cd` into it. |
+| `robomotion app create "<name>"` | the same, in place, on an EXISTING flow checkout (a `git clone` from its Home card) that has no app yet. |
 | `robomotion app sync` | for an app that already exists: pull, place the packages, install |
 | `robomotion app codegen` (from `app/`) | regenerates both typed clients from `app.json` and prints the contract hash |
 | `robomotion app dev` | runs the screens and prints two addresses: localhost, and the app's preview address - the one Robomotion's Build view shows, so the person can watch the same live screens from the Designer while you work. Start it in the background; it keeps running. |
@@ -95,13 +96,15 @@ Results come on stdout; progress and complaints on stderr.
 
 Narrate progress with the task list, in the person's language ("Design the review screen", "Teach the robot to read invoices") - never internal steps ("run typegen", "start dev server"). Ask questions with the question tool (AskUserQuestion in Claude Code), one per turn, with short options.
 
-0. **Sign-in, then create.** `robomotion auth whoami` in the project folder (for a new app, the empty folder it will be made in). When it says not logged in, ask which workspace in one short question (the full host, like `acme.robomotion.io`) unless the person already said, then **run the login yourself, in the background** - it waits for the approval, so a foreground run would hold your turn:
+0. **Create the project.** A new app starts with one command, in the folder the person wants the project under (never inside another project):
 
-    cd <project folder> && robomotion auth login --workspace <host>
+    robomotion create app "<short human name>"
 
-   It opens the person's browser on the approval page and prints a short code. Tell them in one sentence: "A Robomotion sign-in page has opened in your browser - approve it (the code is XXXX-XXXX)." Carry on when the command finishes, then `robomotion auth whoami` again.
+   **Run it in the background**: when the folder is not signed in yet, it opens the person's browser on the approval page, prints a short code, and waits for the approval - a foreground run would hold your turn. Tell them in one sentence: "A Robomotion sign-in page has opened in your browser - approve it (the code is XXXX-XXXX)." Which workspace: the one their browser is signed in to, so ask nothing - unless the person named one, then pass `--workspace <host>` (the full host, like `acme.robomotion.io`). When it returns, `cd` into the folder it made (it says which); everything after runs there, and the folder's own `.robomotion/session.json` is its login.
 
-   **Only if that fails** - the output says no browser was opened (a server with no desktop, a remote shell) or the person says nothing opened - run it with `--no-browser` instead and guide them: give the address and the code it prints, to open in any browser where they are signed in to Robomotion. Then `robomotion app create "<short human name>"` - in an empty folder it makes the flow too. Never write app or flow files before it has returned: there is nothing to write into until then. Continuing an existing app: `robomotion app sync`.
+   **Only if the sign-in cannot open a browser** - the output says no browser was opened (a server with no desktop, a remote shell) or the person says nothing opened - run it again with `--no-browser` and guide them: give the address and the code it prints, to open in any browser where they are signed in to Robomotion.
+
+   Never write app or flow files before the command has returned: there is nothing to write into until then. An existing flow checkout that has no app yet: `robomotion app create "<name>"` inside it (same sign-in rule, `robomotion auth whoami` first). Continuing an existing app: `robomotion app sync`.
 
 0b. **Clarify - at most 3 questions, total.** ONE question per turn. Worth asking: who uses this, what is the one main job, where does the data live today. Never ask about technology, hosting, colours or frameworks. If the request already answers a question, don't ask it.
 
@@ -253,7 +256,7 @@ Narrate progress with the task list, in the person's language ("Design the revie
 
    It fills fields by their labels, presses buttons by their words, then prints the screen's text, the page's console errors, and every step the robot ran meanwhile. Check every line of `request-checks.md` against what the screen shows - reading a screen is not checking it. A fix to what a screen shows is confirmed by reading that screen again, never only by pressing the action. Fix any mismatch, save, restart when the flow changed, try again. Take away the records your tries made before you hand over, through the app's own delete.
 
-8. **Hand over, honestly.** Say what the app does and what to press, in the person's words; give them a link from `robomotion app link` (it opens anywhere, and the app also shows in Robomotion's Build view), or the local address when they are on this computer; say nothing about ids, files or test data unless something was left behind. **Offer to publish; never publish unasked.** When they say yes, `robomotion app publish`.
+8. **Hand over, honestly.** Say what the app does and what to press, in the person's words; give them a link from `robomotion app link` (it opens anywhere), or the local address when they are on this computer; and tell them they can also open it in Robomotion: opening the flow there opens Build with AI with the app, and while `robomotion app dev` is running the screens show in its panel. Save first (`git add -A && git commit && git push`) so what they open is what you built. Say nothing about ids, files or test data unless something was left behind. **Offer to publish; never publish unasked.** When they say yes, `robomotion app publish`.
 
 ### The flow side, exactly
 
@@ -703,7 +706,7 @@ exactly once, so check for it before you save.
 
 ## Stay inside your own app, and use the tools
 
-The project is the folder `robomotion app create` ran in: `main.ts`, `app.json`, `subflows/` at its root, the screens under `app/`. Work only in it.
+The project is the folder `robomotion create app` made (or `robomotion app create` ran in): `main.ts`, `app.json`, `subflows/` at its root, the screens under `app/`. Work only in it.
 
 - **Your shell starts in the FLOW's folder, not the app's, and every command
   starts there again.** A `cd` in one command does not carry to the next, so

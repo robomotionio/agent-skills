@@ -13,6 +13,16 @@ If the user says "Write main.ts for X" or "Generate a flow that does Y", skip St
 3. Call `validate_flow` — fix errors and re-validate.
 4. Then call `save_flow` to persist. Without it, the Designer canvas does not update. **Stop here** — do not run the flow.
 
+## Step 0a: The project folder
+
+Every flow lives in its own folder, a git checkout of the flow's repository, signed in to one workspace. Three cases:
+
+- **Nothing yet**: in the folder the person wants the project under, `robomotion create flow "<short human name>"`. It makes the folder (a slug of the name; `--dir <path>` to choose), signs it in when it is not - the device sign-in: a code and a link, approved in the person's browser, so run it **in the background** (it waits for the approval) and tell them in one sentence that a Robomotion sign-in page opened - creates the flow on the server, checks it out into the folder with a `main.ts` naming the flow, commits and pushes. Pass `--workspace <host>` (the full host, `acme.robomotion.io`) when the person named one; otherwise the workspace their browser is signed in to is the one. Then `cd` into the folder: every later command runs there.
+- **An existing checkout** (a `git clone` from the flow's Home card): work in it. `robomotion auth whoami` there; if it says not logged in, `robomotion auth login --workspace <host>` (in the background, same approval).
+- **A flow that backs an app**: the `building-app` skill, `robomotion create app` - the same folder with the screens under `app/`.
+
+Never write `main.ts` before the folder exists: `flow.create()` needs the flow id the server gave, and `create flow` wrote it into `main.ts` for you. Keep that id.
+
 ## Step 0: Gather requirements (interactive)
 
 1. **Credentials** — API keys, passwords. Use `robomotion get vaults`, then `robomotion get vault-items <vault-id>`. Pick the best match by service/item name and put it in the plan. Let the user *correct* the choice if you picked wrong. Do NOT pepper them with `AskUserQuestion` option buttons.
@@ -126,7 +136,7 @@ save_flow({
 
 Do NOT say "you can now see the updated flow on your canvas" without a successful `save_flow` in this turn.
 
-If `save_flow` is NOT registered (pure CLI / Claude Code context), use `git commit` + `git push` from inside `<flow-dir>` instead — the per-project git remote is what the Designer pulls from.
+If `save_flow` is NOT registered (pure CLI / Claude Code context), use `git add -A && git commit -m "..." && git push` from inside `<flow-dir>` instead — the per-project git remote is what the Designer pulls from. A checkout `robomotion create flow` made pushes with no setup (git asks the CLI for the login).
 
 An app project is the same folder with its screens under `app/`: one `save_flow` (or one `git push`) at the root saves both halves. See the `building-app` skill.
 
