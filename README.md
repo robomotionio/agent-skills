@@ -33,18 +33,27 @@ robomotion create app "<name>"      # screens in front of a flow (main.ts at the
 robomotion create flow "<name>"     # a flow alone
 #    (an existing checkout: `robomotion auth login --workspace <your-workspace-host>` inside it)
 
-# 3. Install the skills. In Claude Code, as a plugin - this also adds the app
-#    hand-over check (a Stop hook that holds a hand-over until the app was
-#    validated, its buttons pressed and its screens read):
-#      /plugin marketplace add robomotionio/agent-skills
-#      /plugin install robomotion@robomotion
-#    Or copy the skills alone into your project's .claude/skills directory:
-npx skills add robomotionio/agent-skills -a claude-code -s '*' -y
+# 3. Install the skills into the project, from inside its folder. One command
+#    puts the skills under .claude/skills/, wires the `robomotion-browser-mcp`
+#    server into .mcp.json (REQUIRED for exploring-browser and
+#    reversing-network), and adds the app hand-over check (a Stop hook that
+#    holds a hand-over until the app was validated, its buttons pressed and
+#    its screens read) to .claude/settings.json. Run it again to update.
+robomotion skills install
+```
 
-# 3. Wire up the `robomotion-browser-mcp` server — REQUIRED for the
-#    exploring-browser and reversing-network skills.
+Other ways to get the same skills:
+
+```bash
+# As a Claude Code plugin (skills + hand-over check, no per-project files):
+#   /plugin marketplace add robomotionio/agent-skills
+#   /plugin install robomotion@robomotion
+# With the skills catalog CLI, skills only:
+npx skills add robomotionio/agent-skills -a claude-code -s '*' -y
 curl -LO https://raw.githubusercontent.com/robomotionio/agent-skills/main/.mcp.json
 ```
+
+Using Codex instead? `robomotion skills install -a codex` puts the skills under `.agents/skills/`. The `.mcp.json` server and the hand-over hook are Claude Code formats and are written only for Claude Code.
 
 Only installing a subset? `npx skills add` supports per-skill installation — check `npx skills --help`.
 
