@@ -99,7 +99,9 @@ Narrate progress with the task list, in the person's language ("Design the revie
 
     cd <project folder> && robomotion auth login --workspace <host>
 
-   It opens the person's browser on the approval page and prints a short code. Tell them in one sentence: "A Robomotion sign-in page has opened in your browser - approve it (the code is XXXX-XXXX)." Read the code from the command's output; if no browser could be opened, give them the address it printed as well. Carry on when the command finishes, then `robomotion auth whoami` again. Then `robomotion app create "<short human name>"` - in an empty folder it makes the flow too. Never write app or flow files before it has returned: there is nothing to write into until then. Continuing an existing app: `robomotion app sync`.
+   It opens the person's browser on the approval page and prints a short code. Tell them in one sentence: "A Robomotion sign-in page has opened in your browser - approve it (the code is XXXX-XXXX)." Carry on when the command finishes, then `robomotion auth whoami` again.
+
+   **Only if that fails** - the output says no browser was opened (a server with no desktop, a remote shell) or the person says nothing opened - run it with `--no-browser` instead and guide them: give the address and the code it prints, to open in any browser where they are signed in to Robomotion. Then `robomotion app create "<short human name>"` - in an empty folder it makes the flow too. Never write app or flow files before it has returned: there is nothing to write into until then. Continuing an existing app: `robomotion app sync`.
 
 0b. **Clarify - at most 3 questions, total.** ONE question per turn. Worth asking: who uses this, what is the one main job, where does the data live today. Never ask about technology, hosting, colours or frameworks. If the request already answers a question, don't ask it.
 
