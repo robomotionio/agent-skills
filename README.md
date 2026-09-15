@@ -39,7 +39,7 @@ robomotion create flow "<name>"     # a flow alone
 #    reversing-network), and adds the app hand-over check (a Stop hook that
 #    holds a hand-over until the app was validated, its buttons pressed and
 #    its screens read) to .claude/settings.json. Run it again to update.
-robomotion skill install
+robomotion skills install
 ```
 
 Other ways to get the same skills:
@@ -53,7 +53,7 @@ npx skills add robomotionio/agent-skills -a claude-code -s '*' -y
 curl -LO https://raw.githubusercontent.com/robomotionio/agent-skills/main/.mcp.json
 ```
 
-Using Codex instead? `robomotion skill install -a codex` puts the skills under `.agents/skills/`. The `.mcp.json` server and the hand-over hook are Claude Code formats and are written only for Claude Code.
+Using Codex instead? `robomotion skills install -a codex` puts the skills under `.agents/skills/`. The `.mcp.json` server and the hand-over hook are Claude Code formats and are written only for Claude Code.
 
 Only installing a subset? `npx skills add` supports per-skill installation — check `npx skills --help`.
 
