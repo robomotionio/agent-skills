@@ -71,7 +71,7 @@ One project, one folder, one save. The layout:
 
 | Command | Does |
 |---|---|
-| `robomotion auth login --workspace <host>` | signs THIS PROJECT in (the login is kept in `.robomotion/session.json` at the project root, never committed): a code and a link, approved in the person's browser. Each project folder has its own login, so several assistants can build apps in different workspaces side by side. Run `robomotion auth whoami` in the project folder first; if it says not logged in, ask the person which workspace (the full host, like `acme.robomotion.io`) and to run the login there (in Claude Code: type `! robomotion auth login --workspace <host>`). Never ask for a key. |
+| `robomotion auth login --workspace <host>` | signs THIS PROJECT in (the login is kept in `.robomotion/session.json` at the project root, never committed): a code and a link, approved in the person's browser. Each project folder has its own login, so several assistants can build apps in different workspaces side by side. Run `robomotion auth whoami` in the project folder first; if it says not logged in, see step 0 - you run the login, the person only approves it. Never ask for a key. |
 | `robomotion app create "<name>"` | creates the app on the flow in this folder; in an EMPTY folder it also creates the flow and checks it out here. Pulls the seeded `app/`, places the packages, installs. |
 | `robomotion app sync` | for an app that already exists: pull, place the packages, install |
 | `robomotion app codegen` (from `app/`) | regenerates both typed clients from `app.json` and prints the contract hash |
@@ -95,7 +95,11 @@ Results come on stdout; progress and complaints on stderr.
 
 Narrate progress with the task list, in the person's language ("Design the review screen", "Teach the robot to read invoices") - never internal steps ("run typegen", "start dev server"). Ask questions with the question tool (AskUserQuestion in Claude Code), one per turn, with short options.
 
-0. **Sign-in, then create.** `robomotion auth whoami` in the project folder (for a new app, the empty folder it will be made in). Then `robomotion app create "<short human name>"` - in an empty folder it makes the flow too. Never write app or flow files before it has returned: there is nothing to write into until then. Continuing an existing app: `robomotion app sync`.
+0. **Sign-in, then create.** `robomotion auth whoami` in the project folder (for a new app, the empty folder it will be made in). When it says not logged in, ask which workspace in one short question (the full host, like `acme.robomotion.io`) unless the person already said, then **run the login yourself, in the background** - it waits for the approval, so a foreground run would hold your turn:
+
+    cd <project folder> && robomotion auth login --workspace <host>
+
+   It opens the person's browser on the approval page and prints a short code. Tell them in one sentence: "A Robomotion sign-in page has opened in your browser - approve it (the code is XXXX-XXXX)." Read the code from the command's output; if no browser could be opened, give them the address it printed as well. Carry on when the command finishes, then `robomotion auth whoami` again. Then `robomotion app create "<short human name>"` - in an empty folder it makes the flow too. Never write app or flow files before it has returned: there is nothing to write into until then. Continuing an existing app: `robomotion app sync`.
 
 0b. **Clarify - at most 3 questions, total.** ONE question per turn. Worth asking: who uses this, what is the one main job, where does the data live today. Never ask about technology, hosting, colours or frameworks. If the request already answers a question, don't ask it.
 
