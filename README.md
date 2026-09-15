@@ -26,8 +26,10 @@ Start with `creating-flow` if you're new — it bundles the full Robomotion 101 
 #    `robomotion-browser-mcp` from https://robomotion.io/downloads and
 #    put them on your PATH.
 
-# 2. Log in once (asks for your API key without showing it; every command uses it)
-robomotion auth login
+# 2. Sign in, in the project folder: a code and a link, approved in your browser.
+#    The login is kept in that project's .robomotion/session.json, so each
+#    project can use its own workspace.
+robomotion auth login --workspace <your-workspace-host>
 
 # 3. Install the skills. In Claude Code, as a plugin - this also adds the app
 #    hand-over check (a Stop hook that holds a hand-over until the app was
