@@ -514,6 +514,12 @@ a `Label`.** Name the GoTo after where it goes ("Say Why"), so the row still
 reads left to right and nothing is hidden. `Core.Flow.Goto` with a lowercase T
 is not a registered type - the capital in `GoTo` is load-bearing.
 
+The same holds inside one action when its chain is too long for its row. End the
+row with a `GoTo` and start the next row with a `Label`; never draw a wire back
+across the canvas. On a node with several exits, put each exit's target at the
+height of its port: ports are drawn top to bottom in index order. Layout detail is
+in the `creating-flow` skill's `docs/patterns/comments-and-layout.md`.
+
 An action that calls a website uses `Core.Net.HttpRequest`, which is not in this
 package and is the one node worth naming here so you do not spend a search
 round on it.

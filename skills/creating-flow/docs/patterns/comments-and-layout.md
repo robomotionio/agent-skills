@@ -93,6 +93,56 @@ Get a first pass from the layout tool, then **hand-tune** (group into phases, ad
 boxes, color loop cards, set the camera). Regenerate screenshots and check the result visually —
 the layout is only "done" once it renders cleanly.
 
+## A long wire is a `GoTo` and a `Label`
+
+Good placement shortens most wires. Three kinds stay long however the nodes are placed, and
+each one is drawn diagonally across everything between its two ends:
+
+1. **A row that wraps.** A chain too long for one row stops at the right edge and carries on
+   at the left of the next row. The wire between them runs backwards across the whole canvas.
+2. **A far exit.** A branch that ends somewhere else in the flow: a shared error responder, a
+   "close the browser and stop", a rejoin after the special cases (`branches.md`).
+3. **A late entry.** The first way into a loop, or into a band, from a node in another band.
+
+End the near side with a `Core.Flow.GoTo` and put a `Core.Flow.Label` in front of the far
+node. A GoTo has no outgoing wire, so the long edge is gone rather than drawn shorter.
+- **Several GoTos may jump to one Label.** A sign-in's *done* exit and the loop's own
+  back-edge can both land on `Next Order`.
+- **Nothing is wired into a Label.** A GoTo is how you arrive.
+- **The rule of thumb**, as in `branches.md`: more than about two rows of travel, or any wire
+  that runs backwards across a row, is a GoTo.
+- **Name each GoTo after where it goes** (`Start the Orders`, `Go To Close`), so a row still
+  reads left to right.
+
+**Try placement first.** A node that follows another belongs right after it, in the same row.
+In one template, moving a sign-in step from the start of row 2 to the end of row 1, after the
+node that feeds it, turned a canvas-wide backwards wire into a one-column hop.
+
+**A multi-port node fans out in port order.** Output ports are drawn top to bottom in index
+order. The Designer numbers them from 1 on the canvas; code counts from 0. Put each port's
+target at its port's height:
+- When a three-port node's middle port and bottom port go to different places, put the middle
+  one's target above-right and the bottom one's below-right. The two wires then never cross.
+- When one exit skips the next node in the row (an error port jumping past the step that
+  checks the success), set the skipped node half a row lower. The skipping wire then passes
+  over it, not through it.
+
+```ts
+// The first band ends with the sign-in ('8e5bb3', a Browser Act: ports 0 continue in step
+// mode · 1 needs a person · 2 done). Its two exits jump instead of crossing the canvas.
+f.node('db694e', 'Core.Flow.GoTo', 'Go To Close', { optNodes: { ids: ['fd7e35'], type: 'goto', all: false } });
+f.node('c3348f', 'Core.Flow.GoTo', 'Start the Orders', { optNodes: { ids: ['17f2ef'], type: 'goto', all: false } });
+f.edge('8e5bb3', 1, 'db694e', 0);   // needs a person → the GoTo placed above-right
+f.edge('8e5bb3', 2, 'c3348f', 0);   // done           → the GoTo placed below-right
+
+// Each later band starts at its Label.
+f.node('17f2ef', 'Core.Flow.Label', 'Next Order', {});         // → the loop's ForEach
+f.node('fd7e35', 'Core.Flow.Label', 'Close the Browser', {});  // → Close Chrome → Stop
+```
+
+On the canvas a GoTo or Label card (150 × 36) is shorter than the node beside it (47), so nudge
+it about **+6** in `y` to keep its wire level.
+
 ## Sizing the group boxes (designer units)
 
 A phase box must fully enclose its nodes with consistent padding. Compute each node's rectangle
