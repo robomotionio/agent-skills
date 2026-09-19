@@ -417,8 +417,17 @@ there is nothing to look up in `creating-flow` for it:
     .then('e7f2a8', 'Robomotion.Apps.RespondError', 'Tell Them The Problem', {
       optRetryable: true,
       inMessage: Message('error.message'),
+      continueOnError: true,
     });
 ```
+
+**`continueOnError: true` on that answer step is not optional.** The Catch
+takes EVERY step's failure, its own answer step's included. A failure on a
+path that is not an app call - the start-up, a background job after its
+`{ id }` was answered - has no call to answer, so `App Respond Error` fails
+too, the Catch catches that, and it goes round for ever: the log fills with
+`unknown call_id` and the robot answers no button at all (Steal Ads,
+2026-09-19, a start-up step that failed once).
 
 `Catch` is a second trigger beside your `App Action` nodes (a separate
 `f.node(...)` chain, never `.then()`ed after anything), `optNodes` as written
