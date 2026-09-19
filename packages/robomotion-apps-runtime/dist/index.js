@@ -1,5 +1,6 @@
 import {
   AppError,
+  LiveReader,
   bindAction,
   currentCause,
   installInspector,
@@ -11,7 +12,7 @@ import {
   setCause,
   splitLinkKey,
   tagAction
-} from "./chunk-NQW7S5BP.js";
+} from "./chunk-4IJJAWQH.js";
 
 // src/files.ts
 function encodeArtifactId(addr) {
@@ -36,10 +37,19 @@ function decodeArtifactId(artifactId) {
     return null;
   }
 }
+var FILE_URL_TTL_MS = 60 * 60 * 1e3;
+var FILE_URL_REFRESH_EARLY_MS = 5 * 60 * 1e3;
 var FilesApi = class {
   ctx;
-  constructor(ctx) {
+  // Preview URLs by artifact_id. A wall of 700 thumbnails re-rendering must
+  // not ask the API 700 times, and two <Image>s of one file must share one
+  // request - so both the answers and the questions still out are kept.
+  previewCache = /* @__PURE__ */ new Map();
+  previewInflight = /* @__PURE__ */ new Map();
+  now;
+  constructor(ctx, now = Date.now) {
     this.ctx = ctx;
+    this.now = now;
   }
   /**
    * Upload one browser File and get back a FileRef to pass in action params.
@@ -85,15 +95,64 @@ var FilesApi = class {
       throw new AppError("internal", "The upload could not be confirmed.", true);
     }
     onProgress?.(100);
-    return {
+    const ref = {
       artifact_id: encodeArtifactId({ f: file.name, s: sessionId, u: userId, v: version }),
       name: file.name,
       size: file.size,
       mime
     };
+    if (opts.isPublic && typeof confirm.public_url === "string" && confirm.public_url) {
+      ref.url = confirm.public_url;
+    }
+    return ref;
   }
-  /** Resolve a FileRef to a short-lived download URL. */
-  async downloadUrl(ref) {
+  /** Resolve a FileRef to a short-lived download URL (the browser saves the file). */
+  downloadUrl(ref) {
+    return this.signedUrl(ref, false);
+  }
+  /**
+   * Resolve a FileRef to a URL the page can SHOW: an <img>, a <video>, a PDF
+   * in a frame. Same signed link as downloadUrl without the
+   * Content-Disposition that forces a save.
+   *
+   * Answers are remembered until five minutes before the signature runs out
+   * (the API signs for an hour), and equal questions asked together share one
+   * request. `force` skips the memory, for a URL the browser has just been
+   * refused with.
+   */
+  previewUrl(ref, opts = {}) {
+    if (ref.url) return Promise.resolve(ref.url);
+    const key = ref.artifact_id;
+    if (!opts.force) {
+      const hit = this.previewCache.get(key);
+      if (hit && hit.staleAt > this.now()) return Promise.resolve(hit.url);
+      const out = this.previewInflight.get(key);
+      if (out) return out;
+    }
+    const asked = this.signedUrl(ref, true).then(
+      (url) => {
+        this.previewCache.set(key, { url, staleAt: this.now() + FILE_URL_TTL_MS - FILE_URL_REFRESH_EARLY_MS });
+        if (this.previewInflight.get(key) === asked) this.previewInflight.delete(key);
+        return url;
+      },
+      (err) => {
+        if (this.previewInflight.get(key) === asked) this.previewInflight.delete(key);
+        throw err;
+      }
+    );
+    this.previewInflight.set(key, asked);
+    return asked;
+  }
+  /** When a remembered preview URL stops being used, or undefined if none is held. */
+  previewStaleAt(ref) {
+    return this.previewCache.get(ref.artifact_id)?.staleAt;
+  }
+  /** Forget remembered preview URLs: one file's, or all of them. */
+  forgetPreview(ref) {
+    if (ref) this.previewCache.delete(ref.artifact_id);
+    else this.previewCache.clear();
+  }
+  async signedUrl(ref, preview) {
     const { apiUrl, appId, instanceId, userId, sessionId, fetchFn } = this.ctx();
     const addr = decodeArtifactId(ref.artifact_id) ?? {
       f: ref.name,
@@ -110,6 +169,7 @@ var FilesApi = class {
       filename: addr.f,
       version: String(addr.v)
     });
+    if (preview) params.set("preview", "true");
     const res = await fetchFn(`${apiUrl}/v1/artifacts.download-url?${params.toString()}`, {
       credentials: "include"
     });
@@ -1400,7 +1460,10 @@ export {
   AppClient,
   AppError,
   ConnectionInfo,
+  FILE_URL_REFRESH_EARLY_MS,
+  FILE_URL_TTL_MS,
   FilesApi,
+  LiveReader,
   ViewerInfo,
   aesGcmDecrypt,
   aesGcmEncrypt,

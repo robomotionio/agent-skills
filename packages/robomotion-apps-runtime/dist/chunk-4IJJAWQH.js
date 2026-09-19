@@ -1129,6 +1129,121 @@ function installLinks(options = {}) {
   return installed2;
 }
 
+// src/live.ts
+var defaultIsDone = (data) => typeof data === "object" && data !== null && data.done === true;
+var LiveReader = class {
+  state = {
+    data: void 0,
+    error: void 0,
+    loading: true,
+    refreshing: false,
+    done: false
+  };
+  opts;
+  pollMs;
+  minIntervalMs;
+  isDone;
+  unsubscribes = [];
+  timer = null;
+  timerAt = 0;
+  inflight = false;
+  // An event that lands while a read is out: that read may have been answered
+  // before the change, so one more is owed.
+  dirty = false;
+  lastStart = 0;
+  started = false;
+  stopped = false;
+  constructor(opts) {
+    this.opts = opts;
+    this.pollMs = opts.pollMs ?? 5e3;
+    this.minIntervalMs = opts.minIntervalMs ?? 500;
+    this.isDone = opts.isDone ?? defaultIsDone;
+  }
+  get current() {
+    return this.state;
+  }
+  start() {
+    if (this.started || this.stopped) return;
+    this.started = true;
+    for (const name of this.opts.events) {
+      this.unsubscribes.push(
+        this.opts.subscribe(name, (payload) => {
+          if (this.stopped) return;
+          this.opts.onEvent?.(name, payload);
+          this.request();
+        })
+      );
+    }
+    void this.read();
+  }
+  stop() {
+    this.stopped = true;
+    for (const off of this.unsubscribes) off();
+    this.unsubscribes = [];
+    this.clearTimer();
+  }
+  /** Ask now, whatever the timers say. The person pressed Refresh, or the socket came back. */
+  refresh() {
+    if (this.stopped) return;
+    if (this.inflight) {
+      this.dirty = true;
+      return;
+    }
+    void this.read();
+  }
+  /** Something changed: ask soon, but not sooner than the floor allows. */
+  request() {
+    if (this.inflight) {
+      this.dirty = true;
+      return;
+    }
+    const wait = Math.max(0, this.lastStart + this.minIntervalMs - Date.now());
+    this.schedule(wait);
+  }
+  schedule(ms) {
+    const at = Date.now() + ms;
+    if (this.timer !== null && this.timerAt <= at) return;
+    this.clearTimer();
+    this.timerAt = at;
+    this.timer = setTimeout(() => {
+      this.timer = null;
+      void this.read();
+    }, ms);
+  }
+  clearTimer() {
+    if (this.timer !== null) clearTimeout(this.timer);
+    this.timer = null;
+  }
+  set(patch) {
+    this.state = { ...this.state, ...patch };
+    if (!this.stopped) this.opts.onChange(this.state);
+  }
+  async read() {
+    if (this.stopped || this.inflight) return;
+    this.clearTimer();
+    this.inflight = true;
+    this.dirty = false;
+    this.lastStart = Date.now();
+    this.set({ refreshing: true });
+    try {
+      const data = await this.opts.read();
+      if (this.stopped) return;
+      this.set({ data, error: void 0, loading: false, refreshing: false, done: this.isDone(data) });
+    } catch (error) {
+      if (this.stopped) return;
+      this.set({ error, loading: false, refreshing: false });
+    } finally {
+      this.inflight = false;
+    }
+    if (this.stopped) return;
+    if (this.dirty) {
+      this.request();
+      return;
+    }
+    if (this.pollMs > 0 && !this.state.done) this.schedule(this.pollMs);
+  }
+};
+
 export {
   AppError,
   isAppError,
@@ -1142,6 +1257,7 @@ export {
   setCause,
   currentCause,
   markGesture,
-  installLinks
+  installLinks,
+  LiveReader
 };
-//# sourceMappingURL=chunk-NQW7S5BP.js.map
+//# sourceMappingURL=chunk-4IJJAWQH.js.map

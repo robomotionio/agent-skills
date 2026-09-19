@@ -1,8 +1,8 @@
 import * as react from 'react';
 import { ReactNode } from 'react';
-import { A as AppClient, a as AppError } from '../links-DY-_SxdO.js';
-export { k as bindAction, t as markGesture } from '../links-DY-_SxdO.js';
-import { b as ActionProgress, d as ConnectionState, j as FileUploadOptions, F as FileRef, V as Viewer } from '../types-BOvW7G1-.js';
+import { A as AppClient, a as AppError } from '../links-64_FaaHK.js';
+export { m as bindAction, v as markGesture } from '../links-64_FaaHK.js';
+import { b as ActionProgress, d as ConnectionState, j as FileUploadOptions, F as FileRef, V as Viewer } from '../types-BAJsXo2R.js';
 
 interface AppProviderProps {
     app: AppClient;
@@ -126,6 +126,80 @@ interface UseFileUploadResult {
 }
 /** Upload files over /v1/artifacts.* and get FileRefs back. */
 declare function useFileUpload(): UseFileUploadResult;
+interface UseFileUrlResult {
+    /** A URL the page can show, once there is one. */
+    url: string | undefined;
+    /** True while the URL is being asked for. */
+    loading: boolean;
+    error: AppError | undefined;
+    /** Ask for a fresh URL, for one the browser was just refused with. */
+    refresh: () => void;
+}
+/**
+ * A FileRef as something an <img> can point at.
+ *
+ * A file the robot saved or a person uploaded has no address of its own, only
+ * a signed link that lasts an hour. This asks for one (through
+ * `app.files.previewUrl`, which remembers answers and shares questions, so a
+ * wall of pictures costs one request per file and a re-render costs none) and
+ * hands it over when it lands. A public file's permanent `url` is used as it
+ * is. Outside an AppProvider - the kit's playground, a test - it resolves
+ * nothing and says so with `url: undefined`, rather than throwing.
+ */
+declare function useFileUrl(ref: FileRef | null | undefined): UseFileUrlResult;
+interface UseLiveOptions<TParams = unknown, TData = unknown> {
+    /** Event names that mean "what you are showing is old": each one re-reads. */
+    events: string[];
+    /** Params for the read action. A change of params starts over. */
+    params?: TParams;
+    /** Re-read anyway after this long with no event. 0 turns it off. Default 5000. */
+    pollMs?: number;
+    /** Never re-read more often than this, however many events arrive. Default 500. */
+    minIntervalMs?: number;
+    /** True when the answer is final and polling can stop. Default: `data.done === true`. */
+    isDone?: (data: TData) => boolean;
+    /** False to hold off, e.g. until there is an id to ask about. Default true. */
+    enabled?: boolean;
+    timeoutMs?: number;
+    /** Sees each event before the re-read: for a hint to animate, never for state to keep. */
+    onEvent?: (event: string, payload: unknown) => void;
+}
+interface UseLiveResult<TData = unknown> {
+    /** The latest answer; stays on screen while a newer one is fetched or fails. */
+    data: TData | undefined;
+    error: AppError | undefined;
+    /** True until the first answer or failure. */
+    loading: boolean;
+    /** True while any read is out. */
+    refreshing: boolean;
+    /** True once the answer said it was final. */
+    done: boolean;
+    /** Ask now. */
+    refresh: () => void;
+    /** The action name, so a kit widget can stamp the link. */
+    name: string;
+}
+/**
+ * Keep a read action's answer current while the robot works.
+ *
+ * Events are not buffered: a page that reloads in the middle of a run hears
+ * none of what it missed, and a screen that counts events is wrong from then
+ * on. The state belongs to the robot. So a live view is a READ - `getRun`,
+ * `listQueue` - and this hook keeps asking it at the right moments: when the
+ * screen opens, when one of `events` arrives (a burst of them is one
+ * question, at most one per `minIntervalMs`), when nothing has been heard for
+ * `pollMs`, and when the connection comes back. It stops by itself when the
+ * answer has `done: true`.
+ *
+ *   const run = useLive<{ id: string }, RunView>("getRun", {
+ *     params: { id }, events: ["runProgress", "adAnalyzed", "runFinished"],
+ *   });
+ *
+ * The action must be one that changes nothing: it is asked many times.
+ */
+declare function useLive<TParams = unknown, TData = unknown>(action: string | {
+    name: string;
+}, opts: UseLiveOptions<TParams, TData>): UseLiveResult<TData>;
 interface AssistantMessage {
     id: string;
     role: "user" | "assistant";
@@ -153,4 +227,4 @@ interface UseAssistantResult {
  */
 declare function useAssistant(): UseAssistantResult;
 
-export { AppProvider, type AppProviderProps, type AssistantMessage, LOOP_LIMIT, LOOP_WINDOW_MS, LoopBrake, type RunOptions, type UseActionOptions, type UseActionResult, type UseAssistantResult, type UseConnectionResult, type UseFileUploadResult, announceWriteDone, callKey, onWriteDone, shouldRetryOnReconnect, useAction, useAppClient, useAssistant, useConnection, useEvent, useFileUpload, useMaybeAppClient, useViewer };
+export { AppProvider, type AppProviderProps, type AssistantMessage, LOOP_LIMIT, LOOP_WINDOW_MS, LoopBrake, type RunOptions, type UseActionOptions, type UseActionResult, type UseAssistantResult, type UseConnectionResult, type UseFileUploadResult, type UseFileUrlResult, type UseLiveOptions, type UseLiveResult, announceWriteDone, callKey, onWriteDone, shouldRetryOnReconnect, useAction, useAppClient, useAssistant, useConnection, useEvent, useFileUpload, useFileUrl, useLive, useMaybeAppClient, useViewer };

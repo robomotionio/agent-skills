@@ -1,4 +1,4 @@
-import { j as FileUploadOptions, F as FileRef, d as ConnectionState, V as Viewer, i as CreateAppOptions, C as CallOptions, c as AppErrorCode } from './types-BOvW7G1-.js';
+import { j as FileUploadOptions, F as FileRef, d as ConnectionState, V as Viewer, i as CreateAppOptions, C as CallOptions, c as AppErrorCode } from './types-BAJsXo2R.js';
 
 /**
  * File transfer over the existing /v1/artifacts.* REST endpoints
@@ -23,6 +23,9 @@ interface ArtifactAddress {
 }
 declare function encodeArtifactId(addr: ArtifactAddress): string;
 declare function decodeArtifactId(artifactId: string): ArtifactAddress | null;
+/** How long the API signs a download URL for, and how early we stop trusting one. */
+declare const FILE_URL_TTL_MS: number;
+declare const FILE_URL_REFRESH_EARLY_MS: number;
 interface FilesContext {
     apiUrl: string;
     appId: string;
@@ -33,14 +36,35 @@ interface FilesContext {
 }
 declare class FilesApi {
     private readonly ctx;
-    constructor(ctx: () => FilesContext);
+    private readonly previewCache;
+    private readonly previewInflight;
+    private readonly now;
+    constructor(ctx: () => FilesContext, now?: () => number);
     /**
      * Upload one browser File and get back a FileRef to pass in action params.
      * Three steps: presigned upload URL, PUT the bytes to S3, confirm.
      */
     upload(file: File, opts?: FileUploadOptions): Promise<FileRef>;
-    /** Resolve a FileRef to a short-lived download URL. */
+    /** Resolve a FileRef to a short-lived download URL (the browser saves the file). */
     downloadUrl(ref: FileRef): Promise<string>;
+    /**
+     * Resolve a FileRef to a URL the page can SHOW: an <img>, a <video>, a PDF
+     * in a frame. Same signed link as downloadUrl without the
+     * Content-Disposition that forces a save.
+     *
+     * Answers are remembered until five minutes before the signature runs out
+     * (the API signs for an hour), and equal questions asked together share one
+     * request. `force` skips the memory, for a URL the browser has just been
+     * refused with.
+     */
+    previewUrl(ref: FileRef, opts?: {
+        force?: boolean;
+    }): Promise<string>;
+    /** When a remembered preview URL stops being used, or undefined if none is held. */
+    previewStaleAt(ref: FileRef): number | undefined;
+    /** Forget remembered preview URLs: one file's, or all of them. */
+    forgetPreview(ref?: FileRef): void;
+    private signedUrl;
     private postJson;
 }
 
@@ -368,4 +392,4 @@ declare function markGesture(el: Element | null | undefined): void;
  */
 declare function installLinks(options?: InstallLinksOptions): LinksHandle;
 
-export { AppClient as A, ConnectionInfo as C, FilesApi as F, type InstallLinksOptions as I, type LinkHandler as L, ViewerInfo as V, AppError as a, type ArtifactAddress as b, type AssistantTurnHandle as c, type AssistantTurnHandlers as d, type LinkKind as e, type LinkMode as f, type LinkNamespace as g, type LinkSite as h, type LinkState as i, type LinksHandle as j, bindAction as k, createApp as l, currentCause as m, decodeArtifactId as n, encodeArtifactId as o, installLinks as p, isAppError as q, linkKey as r, lookupTag as s, markGesture as t, splitLinkKey as u, tagAction as v };
+export { AppClient as A, ConnectionInfo as C, FILE_URL_REFRESH_EARLY_MS as F, type InstallLinksOptions as I, type LinkHandler as L, ViewerInfo as V, AppError as a, type ArtifactAddress as b, type AssistantTurnHandle as c, type AssistantTurnHandlers as d, FILE_URL_TTL_MS as e, FilesApi as f, type LinkKind as g, type LinkMode as h, type LinkNamespace as i, type LinkSite as j, type LinkState as k, type LinksHandle as l, bindAction as m, createApp as n, currentCause as o, decodeArtifactId as p, encodeArtifactId as q, installLinks as r, isAppError as s, linkKey as t, lookupTag as u, markGesture as v, splitLinkKey as w, tagAction as x };

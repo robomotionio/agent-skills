@@ -33,6 +33,12 @@ interface FileRef {
     name: string;
     size: number;
     mime: string;
+    /**
+     * A permanent address, present only on a PUBLIC artifact (an upload with
+     * `isPublic`, or App Save File with "Public" on). Private files have none:
+     * resolve them with `app.files.previewUrl(ref)` / `useFileUrl(ref)`.
+     */
+    url?: string;
 }
 /** protocol.md section 4.3. Every code carries an explicit retryable flag. */
 type AppErrorCode = "invalid_params" | "unknown_action" | "contract_mismatch" | "robot_offline" | "queue_full" | "timeout" | "cancelled" | "concurrency_rejected" | "internal";
