@@ -1,11 +1,12 @@
 import {
   AppError,
+  LiveReader,
   bindAction,
   linkKey,
   markGesture,
   noteHookUse,
   tagAction
-} from "../chunk-NQW7S5BP.js";
+} from "../chunk-4IJJAWQH.js";
 
 // src/react/index.ts
 import {
@@ -330,6 +331,120 @@ function useFileUpload() {
   );
   return { upload, uploading, progress, error };
 }
+function useFileUrl(ref) {
+  const app = useMaybeAppClient();
+  const key = ref?.artifact_id ?? "";
+  const fixed = ref?.url;
+  const [state, setState] = useState({
+    key,
+    loading: !!app && !!key && !fixed
+  });
+  const [nonce, setNonce] = useState(0);
+  const forceRef = useRef(false);
+  const refRef = useRef(ref);
+  refRef.current = ref;
+  useEffect(() => {
+    const target = refRef.current;
+    if (!app || !target || !key || fixed) return;
+    let alive = true;
+    const force = forceRef.current;
+    forceRef.current = false;
+    setState((s) => s.key === key ? { ...s, loading: true, error: void 0 } : { key, loading: true });
+    app.files.previewUrl(target, { force }).then(
+      (url) => {
+        if (alive) setState({ key, url, loading: false });
+      },
+      (e) => {
+        if (!alive) return;
+        const error = e instanceof AppError ? e : new AppError("internal", String(e), true);
+        setState({ key, error, loading: false });
+      }
+    );
+    return () => {
+      alive = false;
+    };
+  }, [app, key, fixed, nonce]);
+  const refresh = useCallback(() => {
+    forceRef.current = true;
+    setNonce((n) => n + 1);
+  }, []);
+  if (fixed) return { url: fixed, loading: false, error: void 0, refresh };
+  const mine = state.key === key;
+  return {
+    url: mine ? state.url : void 0,
+    loading: mine ? state.loading : !!app && !!key,
+    error: mine ? state.error : void 0,
+    refresh
+  };
+}
+function useLive(action, opts) {
+  const app = useAppClient();
+  const name = typeof action === "string" ? action : action.name;
+  const enabled = opts.enabled !== false;
+  const paramsKey = callKey(opts.params) ?? "";
+  const eventsKey = opts.events.join("\n");
+  const pollMs = opts.pollMs;
+  const minIntervalMs = opts.minIntervalMs;
+  const timeoutMs = opts.timeoutMs;
+  const latest = useRef(opts);
+  latest.current = opts;
+  const readerRef = useRef(null);
+  const [state, setState] = useState({
+    data: void 0,
+    error: void 0,
+    loading: enabled,
+    refreshing: false,
+    done: false
+  });
+  useEffect(() => {
+    const key = linkKey("action", name);
+    noteHookUse(key, 1);
+    return () => noteHookUse(key, -1);
+  }, [name]);
+  useEffect(() => {
+    if (!enabled) return;
+    const reader = new LiveReader({
+      read: async () => {
+        const result = await app.call(name, latest.current.params, { timeoutMs });
+        tagAction(result, name);
+        return result;
+      },
+      subscribe: (event, cb) => app.on(event, cb),
+      events: eventsKey ? eventsKey.split("\n") : [],
+      pollMs,
+      minIntervalMs,
+      isDone: (data) => latest.current.isDone ? latest.current.isDone(data) : liveDoneDefault(data),
+      onEvent: (event, payload) => latest.current.onEvent?.(event, payload),
+      onChange: setState
+    });
+    readerRef.current = reader;
+    setState(reader.current);
+    reader.start();
+    const offConnection = app.connection.onChange((s) => {
+      if (s === "ready") reader.refresh();
+    });
+    return () => {
+      offConnection();
+      reader.stop();
+      if (readerRef.current === reader) readerRef.current = null;
+    };
+  }, [app, name, enabled, paramsKey, eventsKey, pollMs, minIntervalMs, timeoutMs]);
+  const refresh = useCallback(() => readerRef.current?.refresh(), []);
+  const error = state.error === void 0 ? void 0 : state.error instanceof AppError ? state.error : new AppError("internal", String(state.error), true);
+  if (error) tagAction(error, name);
+  return {
+    data: state.data,
+    error,
+    loading: enabled && state.loading,
+    refreshing: state.refreshing,
+    done: state.done,
+    refresh,
+    name
+  };
+}
+function liveDoneDefault(data) {
+  return typeof data === "object" && data !== null && data.done === true;
+}
 function useAssistant() {
   const app = useAppClient();
   const { state } = useConnection();
@@ -393,6 +508,8 @@ export {
   useConnection,
   useEvent,
   useFileUpload,
+  useFileUrl,
+  useLive,
   useMaybeAppClient,
   useViewer
 };

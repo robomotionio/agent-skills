@@ -1,7 +1,7 @@
 import { ClassValue } from 'clsx';
 import * as react from 'react';
 import { CSSProperties, SVGAttributes, ReactNode, HTMLAttributes, ButtonHTMLAttributes, MouseEvent, InputHTMLAttributes, MutableRefObject, FormHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
-import { ConnectionState, ContractSchema, FileRef, AppError } from '@robomotion/apps-runtime';
+import { ConnectionState, FileRef, ContractSchema, AppError } from '@robomotion/apps-runtime';
 import * as class_variance_authority_types from 'class-variance-authority/types';
 import { VariantProps } from 'class-variance-authority';
 
@@ -35,6 +35,8 @@ declare const tk: {
     readonly bgSidebar: "bg-[color:oklch(var(--rm-sidebar))]";
     readonly bgSidebarAccent: "bg-[color:oklch(var(--rm-sidebar-accent))]";
     readonly bgForeground: "bg-[color:oklch(var(--rm-foreground))]";
+    readonly bgBackgroundSoft: "bg-[color:oklch(var(--rm-background)/0.15)]";
+    readonly borderForeground: "border-[color:oklch(var(--rm-foreground))]";
     readonly bgBorder: "bg-[color:oklch(var(--rm-border))]";
     readonly bgInput: "bg-[color:oklch(var(--rm-input))]";
     readonly fg: "text-[color:oklch(var(--rm-foreground))]";
@@ -42,6 +44,7 @@ declare const tk: {
     readonly fgCard: "text-[color:oklch(var(--rm-card-foreground))]";
     readonly fgPopover: "text-[color:oklch(var(--rm-popover-foreground))]";
     readonly fgBackground: "text-[color:oklch(var(--rm-background))]";
+    readonly fgBackgroundMuted: "text-[color:oklch(var(--rm-background)/0.7)]";
     readonly fgPrimary: "text-[color:oklch(var(--rm-primary))]";
     readonly fgOnPrimary: "text-[color:oklch(var(--rm-primary-foreground))]";
     readonly fgSecondary: "text-[color:oklch(var(--rm-secondary-foreground))]";
@@ -167,7 +170,7 @@ declare function useTheme(): AppTheme;
  */
 declare function useThemeBridge(): void;
 
-declare const ICON_NAMES: readonly ["home", "layout-dashboard", "list", "table", "kanban", "calendar", "calendar-days", "calendar-clock", "calendar-check", "clock", "inbox", "mail", "mail-open", "mail-check", "message-square", "message-circle", "bell", "settings", "sliders-horizontal", "search", "filter", "filter-x", "menu", "panel-left", "panel-left-close", "log-in", "log-out", "plus", "minus", "x", "check", "check-check", "pencil", "trash-2", "copy", "save", "refresh-cw", "rotate-cw", "undo-2", "redo-2", "play", "pause", "square", "send", "reply", "forward", "upload", "download", "cloud-upload", "import", "paperclip", "printer", "share-2", "external-link", "link", "unlink", "eye", "eye-off", "maximize-2", "minimize-2", "grip-vertical", "power", "arrow-up", "arrow-down", "arrow-left", "arrow-right", "arrow-up-right", "arrow-down-right", "arrow-up-down", "chevron-up", "chevron-down", "chevron-left", "chevron-right", "chevrons-up-down", "chevrons-left", "chevrons-right", "trending-up", "trending-down", "circle-check", "circle-x", "circle-alert", "circle-help", "circle-minus", "circle-plus", "triangle-alert", "info", "circle", "circle-dot", "loader", "loader-circle", "hourglass", "timer", "history", "archive", "flag", "pin", "star", "heart", "bookmark", "tag", "tags", "hash", "at-sign", "lightbulb", "target", "award", "user", "users", "user-plus", "user-check", "user-x", "contact", "building-2", "briefcase", "handshake", "shield", "shield-check", "lock", "lock-open", "key", "folder", "folder-open", "file", "file-text", "file-plus", "file-check", "file-spreadsheet", "file-down", "file-up", "clipboard", "clipboard-check", "image", "database", "server", "layers", "box", "package", "shopping-cart", "credit-card", "receipt", "wallet", "banknote", "coins", "dollar-sign", "percent", "calculator", "truck", "map-pin", "map", "globe", "phone", "landmark", "gift", "megaphone", "chart-bar", "chart-line", "chart-pie", "chart-column", "activity", "zap", "sparkles", "bot", "cpu", "sun", "moon", "monitor", "smartphone", "wifi", "wifi-off", "plug", "qr-code", "scan", "languages", "ellipsis", "ellipsis-vertical", "list-checks", "layout-grid", "columns-3", "rows-3"];
+declare const ICON_NAMES: readonly ["home", "layout-dashboard", "list", "table", "kanban", "calendar", "calendar-days", "calendar-clock", "calendar-check", "clock", "inbox", "mail", "mail-open", "mail-check", "message-square", "message-circle", "bell", "settings", "sliders-horizontal", "search", "filter", "filter-x", "menu", "panel-left", "panel-left-close", "log-in", "log-out", "plus", "minus", "x", "check", "check-check", "pencil", "trash-2", "copy", "save", "refresh-cw", "rotate-cw", "undo-2", "redo-2", "play", "pause", "square", "send", "reply", "forward", "upload", "download", "cloud-upload", "import", "paperclip", "printer", "share-2", "external-link", "link", "unlink", "eye", "eye-off", "maximize-2", "minimize-2", "grip-vertical", "power", "arrow-up", "arrow-down", "arrow-left", "arrow-right", "arrow-up-right", "arrow-down-right", "arrow-up-down", "chevron-up", "chevron-down", "chevron-left", "chevron-right", "chevrons-up-down", "chevrons-left", "chevrons-right", "trending-up", "trending-down", "circle-check", "circle-x", "circle-alert", "circle-help", "circle-minus", "circle-plus", "triangle-alert", "info", "circle", "circle-dot", "loader", "loader-circle", "hourglass", "timer", "history", "archive", "flag", "pin", "star", "heart", "bookmark", "tag", "tags", "hash", "at-sign", "lightbulb", "target", "award", "user", "users", "user-plus", "user-check", "user-x", "contact", "building-2", "briefcase", "handshake", "shield", "shield-check", "lock", "lock-open", "key", "folder", "folder-open", "file", "file-text", "file-plus", "file-check", "file-spreadsheet", "file-down", "file-up", "clipboard", "clipboard-check", "image", "database", "server", "layers", "box", "package", "shopping-cart", "credit-card", "receipt", "wallet", "banknote", "coins", "dollar-sign", "percent", "calculator", "truck", "map-pin", "map", "globe", "phone", "landmark", "gift", "megaphone", "chart-bar", "chart-line", "chart-pie", "chart-column", "activity", "zap", "sparkles", "bot", "cpu", "sun", "moon", "monitor", "smartphone", "wifi", "wifi-off", "plug", "qr-code", "scan", "languages", "ellipsis", "ellipsis-vertical", "list-checks", "layout-grid", "columns-3", "rows-3", "columns-2", "image-off", "images", "crop", "scaling", "zoom-in", "zoom-out", "chevrons-left-right", "mouse-pointer-2", "square-dashed", "move-up-right", "pen-line", "brush", "eraser", "message-circle-plus", "circle-dashed"];
 type IconName = (typeof ICON_NAMES)[number];
 
 type IconSize = 12 | 14 | 16 | 18 | 20 | 24 | 28 | 32;
@@ -723,9 +726,128 @@ interface StatProps {
     loading?: boolean;
     /** Draw it inside a Card. Default true; false to place it in your own. */
     card?: boolean;
+    /**
+     * Count to a new value instead of swapping to it, for a number that changes
+     * while it is watched. Needs a `value` that is a number; it is then grouped
+     * for the person's locale ("1,234").
+     */
+    animate?: boolean;
+    /**
+     * "inverted" fills the tile with the foreground colour and writes on it in
+     * the background colour: the one figure on the row the eye should land on.
+     * The change keeps its arrow and its sign and gives up its green and red,
+     * which do not hold their contrast on a filled tile in both themes.
+     */
+    emphasis?: "default" | "inverted";
     className?: string;
 }
-declare function Stat({ label, value, unit, delta, deltaLabel, upIsGood, trend, icon, loading, card, className, }: StatProps): react.JSX.Element;
+declare function Stat({ label, value, unit, delta, deltaLabel, upIsGood, trend, icon, loading, card, animate, emphasis, className, }: StatProps): react.JSX.Element;
+
+interface AnimatedNumberProps {
+    /** The number to show. A change counts from what is showing to this. */
+    value: number;
+    /** How long a change takes. Default 600. 0 swaps without counting. */
+    durationMs?: number;
+    /** Intl.NumberFormat options: `{ style: "percent" }`, `{ maximumFractionDigits: 1 }`. */
+    format?: Intl.NumberFormatOptions;
+    /** BCP 47 locale. Default: the person's own. */
+    locale?: string;
+    className?: string;
+}
+declare function AnimatedNumber({ value, durationMs, format, locale, className }: AnimatedNumberProps): react.JSX.Element;
+
+type MeterTone = "default" | "success" | "warning" | "danger";
+interface MeterProps {
+    /** What is being measured: "Confidence", "Storage used". */
+    label: ReactNode;
+    /** The reading: 0 to 1, or 0 to `max` when `max` is given. */
+    value: number;
+    /** The top of the scale. Default 1. */
+    max?: number;
+    /**
+     * Draw the track as this many cells instead of one bar, for a reading that
+     * comes in steps: `value={2} max={3} segments={3}` fills two cells of three.
+     */
+    segments?: number;
+    /** What the reading means. Default "default", the accent. */
+    tone?: MeterTone;
+    /**
+     * The reading is a weak one - a low-confidence guess. Drawn hatched, and
+     * said after the value to a screen reader.
+     */
+    uncertain?: boolean;
+    /** How `uncertain` is put into words. Default "low confidence". */
+    uncertainLabel?: string;
+    /** The reading in words, beside the label: "Urgency", "2 of 3", "High". */
+    valueLabel?: ReactNode;
+    /** On the far right, usually the figure: "86%". */
+    trailing?: ReactNode;
+    /** Default "md". */
+    size?: "sm" | "md";
+    className?: string;
+}
+declare function Meter({ label, value, max, segments, tone, uncertain, uncertainLabel, valueLabel, trailing, size, className, }: MeterProps): react.JSX.Element;
+
+interface BarListItem {
+    /** Stable identity; what `onSelect` and `selectedKey` go by. */
+    key: string;
+    label: ReactNode;
+    value: number;
+    /** Any CSS colour for this row's bar. Default: the accent. */
+    color?: string;
+    /** Makes the row a link. */
+    href?: string;
+}
+interface BarListProps {
+    items: BarListItem[];
+    /** The value a full-width bar stands for. Default: the largest value in `items`. */
+    max?: number;
+    /** "desc" ranks largest first. "none" keeps the order given. Default "desc". */
+    sort?: "desc" | "asc" | "none";
+    /** Show only the first N, with a "Show all" toggle under them. */
+    limit?: number;
+    /** The figure at the end of each row. Default: the number, grouped for the locale. */
+    formatValue?: (value: number, item: BarListItem) => ReactNode;
+    /** Makes each row a button. */
+    onSelect?: (item: BarListItem) => void;
+    /** The row that is picked, drawn stronger. */
+    selectedKey?: string;
+    /** Slide rows to their new places when the ranking changes. */
+    animate?: boolean;
+    /**
+     * Where the rows came from, so the Build view can link the list to its
+     * step. A link only: BarList never fetches, the rows come in `items`.
+     */
+    source?: AnyDataSource;
+    /** Shown when there are no items. */
+    emptyState?: ReactNode;
+    /** Accessible name for the list. */
+    label?: string;
+    className?: string;
+}
+declare function BarList({ items, max, sort, limit, formatValue, onSelect, selectedKey, animate, source, emptyState, label, className, }: BarListProps): react.JSX.Element;
+
+type ProgressStepStatus = "pending" | "active" | "done" | "failed" | "skipped";
+interface ProgressStep {
+    /** Stable identity. */
+    key: string;
+    /** The step's name: "Scan", "Checking the totals". */
+    label: string;
+    status: ProgressStepStatus;
+    /** A quieter line under the name: a count, a duration, what went wrong. */
+    detail?: ReactNode;
+}
+interface ProgressStepsProps {
+    steps: ProgressStep[];
+    /** Default "horizontal". "vertical" suits a narrow panel or long details. */
+    orientation?: "horizontal" | "vertical";
+    /** Accessible name for the rail. Default "Progress". */
+    label?: string;
+    /** The words for each status, for an app that is not in English. */
+    statusLabels?: Partial<Record<ProgressStepStatus, string>>;
+    className?: string;
+}
+declare function ProgressSteps({ steps, orientation, label, statusLabels, className, }: ProgressStepsProps): react.JSX.Element;
 
 interface StepperProps {
     /** Controlled step index. */
@@ -833,6 +955,224 @@ interface AvatarGroupProps extends HTMLAttributes<HTMLDivElement> {
 /** A row of overlapping faces, with "+N" for the ones that did not fit. */
 declare function AvatarGroup({ max, size, children, className, ...props }: AvatarGroupProps): react.JSX.Element;
 
+type ImageAspect = "auto" | "1:1" | "4:3" | "3:4" | "4:5" | "3:2" | "2:3" | "16:9" | "9:16" | number;
+declare const RADIUS: {
+    readonly none: "rounded-none";
+    readonly sm: "rounded-[calc(var(--rm-radius)_-_0.25rem)]";
+    readonly md: "rounded-[calc(var(--rm-radius)_-_0.125rem)]";
+    readonly lg: "rounded-[var(--rm-radius)]";
+};
+interface ImageProps {
+    /** A URL or a data URL. */
+    src?: string;
+    /**
+     * A file the robot saved (App Save File) or a person uploaded. It is turned
+     * into a link by the runtime and renewed if the link has run out. Needs an
+     * AppProvider above; `src` wins when both are given.
+     */
+    file?: FileRef | null;
+    /**
+     * A tiny preview, usually a data URL of a few hundred bytes that came with
+     * the row. Shown blurred, filling the box, until the real picture loads.
+     */
+    placeholder?: string;
+    /** What the picture shows, for someone who cannot see it. "" for decoration. */
+    alt: string;
+    /**
+     * The box's shape, fixed before the picture loads so nothing jumps. A ratio
+     * name, or width / height as a number. Default "auto": the picture's own.
+     */
+    aspect?: ImageAspect;
+    /** "cover" fills the box and crops; "contain" shows all of it. Default "cover". */
+    fit?: "cover" | "contain";
+    /** Corner rounding. Default "md". */
+    radius?: keyof typeof RADIUS;
+    /** Press to open it full screen. */
+    zoomable?: boolean;
+    /** Shown under the picture in the full-screen viewer. */
+    caption?: ReactNode;
+    /** "lazy" waits until it is near the viewport. Default "lazy". */
+    loading?: "lazy" | "eager";
+    /**
+     * "anonymous" asks for the picture in a way a canvas may read back. Only
+     * for a server known to allow it: one that does not shows nothing at all.
+     */
+    crossOrigin?: "anonymous" | "use-credentials";
+    /** In place of the "no picture" tile when it cannot be shown. */
+    fallback?: ReactNode;
+    onLoad?: (size: {
+        width: number;
+        height: number;
+    }) => void;
+    onError?: () => void;
+    className?: string;
+    style?: CSSProperties;
+}
+declare function Image({ src, file, placeholder, alt, aspect, fit, radius, zoomable, caption, loading, crossOrigin, fallback, onLoad, onError, className, style, }: ImageProps): react.JSX.Element;
+
+interface LightboxItem {
+    /** Stable identity; falls back to the index. */
+    key?: string;
+    src?: string;
+    /** A robot-saved or uploaded file; resolved the way Image resolves it. */
+    file?: FileRef | null;
+    alt: string;
+    /** Shown under the picture. */
+    caption?: ReactNode;
+}
+interface LightboxProps {
+    open: boolean;
+    /** Called on Escape, on the veil, and on the close button. */
+    onClose: () => void;
+    /** The pictures, in the order Previous and Next walk them. */
+    items: LightboxItem[];
+    /** Which one is showing. Omit to let the viewer keep track itself. */
+    index?: number;
+    /** Where to start when `index` is not controlled. Default 0. */
+    defaultIndex?: number;
+    onIndexChange?: (index: number) => void;
+    /** Buttons for the header - Download, Use this one - given the picture showing. */
+    actions?: ReactNode | ((item: LightboxItem, index: number) => ReactNode);
+    className?: string;
+}
+declare function Lightbox({ open, onClose, items, index, defaultIndex, onIndexChange, actions, className, }: LightboxProps): react.JSX.Element | null;
+
+type Point = [number, number];
+/** x, y, width, height. */
+type Rect = [number, number, number, number];
+
+type MarkKind = "pin" | "box" | "arrow" | "freehand" | "brush";
+type MarkTool = "select" | MarkKind;
+interface Mark {
+    /** Stable identity. */
+    id: string;
+    /** Its number, as shown on the picture and in the list: 1, 2, 3 in order. */
+    n: number;
+    kind: MarkKind;
+    /** pin: where it points. Fractions of the picture, [x, y]. */
+    at?: Point;
+    /** box: [x, y, width, height], fractions of the picture. */
+    rect?: Rect;
+    /** arrow: [tail, tip]. freehand and brush: the stroke. Fractions of the picture. */
+    points?: Point[];
+    /** brush: the stroke's width as a fraction of the picture's WIDTH. */
+    width?: number;
+    /** What the person said about it. */
+    note?: string;
+    /** "danger" draws it in the destructive colour: remove this, this is wrong. */
+    tone?: "default" | "danger";
+}
+interface ExportAnnotatedOptions {
+    /** Longest edge of the output in pixels; the picture is scaled down to fit. Default 2048. */
+    maxSize?: number;
+    /** Default "image/png". */
+    type?: "image/png" | "image/jpeg";
+    /** Leave the numbers out. Default false. */
+    hideNumbers?: boolean;
+}
+interface ExportMaskOptions {
+    /** Which marks are regions. Default ["brush", "box"]. A freehand stroke counts as a closed outline. */
+    kinds?: MarkKind[];
+    /** Soften the edge by this many pixels of the OUTPUT. Default 0. */
+    feather?: number;
+    /** Grow every region by this many pixels of the output. Default 0. */
+    dilate?: number;
+    /**
+     * Default false: the picture is opaque and the regions are cut out of it
+     * (alpha 0 = "edit here", the convention image models use). True swaps
+     * them: the regions are opaque on a transparent sheet.
+     */
+    invert?: boolean;
+    /** Longest edge of the output. Default: the picture's own size. */
+    maxSize?: number;
+}
+interface ImageMarkupHandle {
+    /** The picture with the marks burned in, in a fixed colour a model can be told to look for. */
+    exportAnnotated(opts?: ExportAnnotatedOptions): Promise<Blob>;
+    /** A PNG the size of the picture whose alpha says where the regions are. */
+    exportMask(opts?: ExportMaskOptions): Promise<Blob>;
+    /** The picture's own size in pixels; zeros until it has loaded. */
+    naturalSize(): {
+        width: number;
+        height: number;
+    };
+}
+interface ImageMarkupProps {
+    /** A URL or a data URL. */
+    src?: string;
+    /** A robot-saved or uploaded file; resolved the way Image resolves it. */
+    file?: FileRef | null;
+    alt: string;
+    /** The marks. The screen owns them; this component never keeps a copy. */
+    marks: Mark[];
+    /** Called with the whole new list: once per finished stroke, move or edit. */
+    onMarksChange: (marks: Mark[]) => void;
+    /** What a press on the picture does. */
+    tool: MarkTool;
+    /** Give this to get the built-in tool bar; without it the screen picks the tool itself. */
+    onToolChange?: (tool: MarkTool) => void;
+    /** The tools offered, in order. Default: all six. */
+    tools?: MarkTool[];
+    /** Show the marks and nothing else: no drawing, no moving, no tool bar. */
+    readOnly?: boolean;
+    /** Number the marks on the picture. Default true. */
+    numbered?: boolean;
+    selectedId?: string;
+    onSelect?: (id: string | undefined) => void;
+    /** Stop adding at this many. */
+    maxMarks?: number;
+    /** Open the note box as soon as a mark is placed. Default false. */
+    noteOnCreate?: boolean;
+    /** "danger" for marks that mean "take this away". New marks get it. Default "default". */
+    tone?: "default" | "danger";
+    /** Brush width for new strokes, as a fraction of the picture's width. Default 0.06. */
+    brushWidth?: number;
+    /** Ctrl/Cmd+Z on the picture, and an Undo button in the tool bar. Pair with useMarkHistory. */
+    onUndo?: () => void;
+    onRedo?: () => void;
+    canUndo?: boolean;
+    canRedo?: boolean;
+    /** The picture is never taller than this. Any CSS length. Default "70vh". */
+    maxHeight?: number | string;
+    className?: string;
+}
+declare const ImageMarkup: react.ForwardRefExoticComponent<ImageMarkupProps & react.RefAttributes<ImageMarkupHandle>>;
+interface MarkListProps {
+    /** The same list ImageMarkup is given. */
+    marks: Mark[];
+    onMarksChange: (marks: Mark[]) => void;
+    selectedId?: string;
+    onSelect?: (id: string | undefined) => void;
+    /** Notes as text, nothing to press. */
+    readOnly?: boolean;
+    notePlaceholder?: string;
+    /** Shown when nothing has been marked. */
+    emptyState?: ReactNode;
+    className?: string;
+}
+/**
+ * The marks as a numbered list with a note beside each: the half of "point
+ * and say something" that is the saying. Bound to the same `marks` as the
+ * picture, so a screen never builds the list itself.
+ */
+declare function MarkList({ marks, onMarksChange, selectedId, onSelect, readOnly, notePlaceholder, emptyState, className, }: MarkListProps): react.JSX.Element;
+interface MarkHistory {
+    marks: Mark[];
+    /** Give this to ImageMarkup and MarkList as onMarksChange. */
+    setMarks: (next: Mark[]) => void;
+    undo: () => void;
+    redo: () => void;
+    canUndo: boolean;
+    canRedo: boolean;
+    /** Start over, forgetting what could be undone: a new picture, an accepted edit. */
+    reset: (marks?: Mark[]) => void;
+}
+/**
+ * `marks` with undo and redo. One finished stroke is one step; a note being
+ * typed is one step for the whole sentence, not one per letter.
+ */
+declare function useMarkHistory(initial?: Mark[], limit?: number): MarkHistory;
+
 interface ThreadMessage {
     /** Stable identity; falls back to the index. */
     id?: string;
@@ -851,14 +1191,19 @@ interface ThreadMessage {
 }
 interface ThreadProps {
     messages: ThreadMessage[];
-    /** Called with what was typed. */
-    onSend?: (text: string) => void;
+    /** Called with what was typed, and with the uploaded files when `attachments` is on. */
+    onSend?: (text: string, files?: FileRef[]) => void;
     /**
      * The action a send runs (the object from useAction), called with
-     * `params(text)` or `{ text }`. The composer is linked to its step.
+     * `params(text)` or `{ text }` - `params(text, files)` or `{ text, files }`
+     * when `attachments` is on. The composer is linked to its step.
      */
     action?: ActionLike;
-    params?: (text: string) => unknown;
+    params?: (text: string, files?: FileRef[]) => unknown;
+    /** Let people attach files to a message. See Composer. Needs an AppProvider. */
+    attachments?: ComposerAttachments;
+    /** Something beside Send: a quality picker, a model select. See Composer. */
+    controls?: ReactNode;
     placeholder?: string;
     /** True while an answer is on its way. Defaults to the action's own state. */
     busy?: boolean;
@@ -871,25 +1216,144 @@ interface ThreadProps {
     sendLabel?: string;
     className?: string;
 }
-declare function Thread({ messages, onSend, action, params, placeholder, busy, emptyState, height, readOnly, sendLabel, className, }: ThreadProps): react.JSX.Element;
+declare function Thread({ messages, onSend, action, params, attachments, controls, placeholder, busy, emptyState, height, readOnly, sendLabel, className, }: ThreadProps): react.JSX.Element;
 interface MessageProps {
     message: ThreadMessage;
     className?: string;
 }
 /** One message. Exported so a screen can lay out its own list. */
 declare function Message({ message, className }: MessageProps): react.JSX.Element;
+/** `true`, or what may be attached and how many. */
+type ComposerAttachments = boolean | {
+    /** Accept filter, same syntax as the native input: "image/*", ".pdf,.png". */
+    accept?: string;
+    /** The most files one message may carry. Default 8. */
+    max?: number;
+};
 interface ComposerProps {
-    onSend?: (text: string) => void;
+    /** Called with what was typed, and with the uploaded files when `attachments` is on. */
+    onSend?: (text: string, files?: FileRef[]) => void;
+    /**
+     * The action a send runs (the object from useAction): `params(text)` or
+     * `{ text }`, and with `attachments` on `params(text, files)` or
+     * `{ text, files }`.
+     */
     action?: ActionLike;
-    params?: (text: string) => unknown;
+    params?: (text: string, files?: FileRef[]) => unknown;
     placeholder?: string;
+    /** True while an answer is on its way. Defaults to the action's own state. */
     busy?: boolean;
     disabled?: boolean;
     sendLabel?: string;
+    /**
+     * Let people attach files: a paperclip, paste, or a drop on the box. Each
+     * file is uploaded as it is added and travels as a FileRef, never as bytes
+     * in the params. A message may then be files with no text. Needs an
+     * AppProvider above it; without `attachments` the composer needs none.
+     */
+    attachments?: ComposerAttachments;
+    /** Something between the box and Send: a quality picker, a model select. */
+    controls?: ReactNode;
     className?: string;
 }
 /** The write-and-send box. Exported for a screen that lays out its own thread. */
-declare function Composer({ onSend, action, params, placeholder, busy, disabled, sendLabel, className, }: ComposerProps): react.JSX.Element;
+declare function Composer(props: ComposerProps): react.JSX.Element;
+
+interface ImageGridItem {
+    /** Stable identity; what `selectedKey` and `selection` refer to. */
+    key: string;
+    /** A URL or a data URL. */
+    src?: string;
+    /** A robot-saved or uploaded file, resolved the way Image resolves it. */
+    file?: FileRef | null;
+    /** A tiny blurred preview shown until the picture loads. */
+    placeholder?: string;
+    /** What the picture shows; also the tile's accessible name. */
+    alt: string;
+    /** A line under the tile. Not drawn in the "mosaic" density. */
+    caption?: string;
+    /** Something over the top-left corner: a Badge, a rank, a status. */
+    badge?: ReactNode;
+    /** Draw it faded: filtered out, not yet processed, superseded. */
+    dimmed?: boolean;
+}
+type ImageGridColumns = number | {
+    base: number;
+    md?: number;
+    lg?: number;
+};
+interface ImageGridProps {
+    /** The pictures. With an action `source` the grid fetches its own and this is ignored. */
+    items?: ImageGridItem[];
+    /** "grid" wraps into rows; "strip" is one row that scrolls sideways. Default "grid". */
+    layout?: "grid" | "strip";
+    /** Columns, 1 to 8: one number, or a number per breakpoint. Defaults follow `density`. */
+    columns?: ImageGridColumns;
+    /** How tight: "mosaic" is a wall with hairline gaps and no captions. Default "comfortable". */
+    density?: "mosaic" | "compact" | "comfortable";
+    /** The shape of every tile. Default "1:1". */
+    aspect?: ImageAspect;
+    /** The one chosen tile (single choice). */
+    selectedKey?: string;
+    /** Called when a tile is pressed, or Enter is pressed on it. */
+    onSelect?: (item: ImageGridItem) => void;
+    /** Several can be ticked; `selection` and `onSelectionChange` carry them. */
+    selectable?: boolean;
+    /** The ticked keys, when `selectable`. */
+    selection?: string[];
+    onSelectionChange?: (keys: string[]) => void;
+    /**
+     * Shrink the tiles until every one of them fits the box, with no scrolling.
+     * The box needs a height of its own: give one through `className` ("h-96").
+     */
+    fill?: boolean;
+    /** How many there will be. Empty slots are drawn up to it, so the wall fills as items arrive. */
+    total?: number;
+    /** The newest N items (the last N) fade in. */
+    highlightNew?: number;
+    /**
+     * `{ name }` tags the items with the action they came from. `{ action,
+     * pageSize }` makes the grid fetch its own: it calls the action with a
+     * PageRequest and reads `{ rows, total }`, where each row is an ImageGridItem.
+     */
+    source?: AnyDataSource;
+    /** Shown when there is nothing. A string becomes the kit's empty state. */
+    emptyState?: ReactNode;
+    /** The listbox's accessible name. Default "Pictures". */
+    label?: string;
+    className?: string;
+}
+declare function ImageGrid({ items: given, layout, columns, density, aspect, selectedKey, onSelect, selectable, selection, onSelectionChange, fill, total, highlightNew, source, emptyState, label, className, }: ImageGridProps): react.JSX.Element;
+
+interface ImageCompareSide {
+    /** A URL or a data URL. */
+    src?: string;
+    /** A robot-saved or uploaded file, resolved the way Image resolves it. */
+    file?: FileRef | null;
+    /** What the picture shows. */
+    alt: string;
+    /** The word on its chip. Default "Before" / "After". */
+    label?: string;
+}
+interface ImageCompareProps {
+    /** The earlier picture: on the left of the divider, and what "hold" reveals. */
+    before: ImageCompareSide;
+    /** The later picture: on the right of the divider, and what "hold" shows at rest. */
+    after: ImageCompareSide;
+    /** How they are compared. Default "slider". */
+    mode?: "slider" | "hold" | "side-by-side";
+    /** The shape of the box. Default "4:3". Both pictures are fitted into it. */
+    aspect?: ImageAspect;
+    /** "contain" shows all of each picture; "cover" fills the box and crops. Default "contain". */
+    fit?: "cover" | "contain";
+    /** Where the divider is, 0 (all after) to 1 (all before). Omit to let the component keep it. */
+    position?: number;
+    /** Where it starts when `position` is not controlled. Default 0.5. */
+    defaultPosition?: number;
+    onPositionChange?: (position: number) => void;
+    className?: string;
+}
+declare function ImageCompare({ before, after, mode, aspect, fit, position, defaultPosition, onPositionChange, className, }: ImageCompareProps): react.JSX.Element;
 
 interface DataTableColumn<T> {
     /** Property key on the row; also the default sort/filter accessor, and the `sort.key` a paged action is asked for. */
@@ -1596,6 +2060,28 @@ interface GridProps extends HTMLAttributes<HTMLDivElement> {
 }
 /** Responsive grid layout. */
 declare function Grid({ className, gap, cols, mdCols, lgCols, ...props }: GridProps): react.JSX.Element;
+interface ScrollRowProps extends Omit<HTMLAttributes<HTMLDivElement>, "aria-label"> {
+    /** What the row holds, for someone who cannot see it: "Ads to review". */
+    label: string;
+    gap?: Gap;
+    /** Stop on an item's edge rather than wherever the scroll ended. */
+    snap?: boolean;
+    /** Previous / next buttons over the ends, while there is more that way. Default true. */
+    arrows?: boolean;
+    /** Fade the end there is more beyond. Default true. */
+    fade?: boolean;
+}
+/**
+ * One row that scrolls sideways: a strip of cards, a line of chips, the
+ * versions of a picture.
+ *
+ * A row with `overflow-x-auto` on it works and tells nobody: nothing says
+ * there is more to the right, a mouse without a sideways wheel cannot get to
+ * it, and neither can a keyboard. This fades the end that has more beyond it
+ * (a mask, so it works over any background), puts a button there, and takes
+ * focus itself so Left, Right, Home and End move it.
+ */
+declare function ScrollRow({ label, gap, snap, arrows, fade, className, children, onKeyDown, ...props }: ScrollRowProps): react.JSX.Element;
 
 interface ConnectionBannerProps {
     /**
@@ -1617,4 +2103,4 @@ interface AssistantWidgetProps {
 }
 declare function AssistantWidget({ title, placeholder, className }: AssistantWidgetProps): react.JSX.Element | null;
 
-export { Accordion, AccordionItem, type AccordionItemProps, type AccordionProps, type ActionDataSource, type ActionLike, Alert, type AlertProps, type AlertVariant, type AnyDataSource, AppShell, type AppShellNavItem, type AppShellProps, type AppTheme, AssistantWidget, type AssistantWidgetProps, Avatar, AvatarGroup, type AvatarGroupProps, type AvatarProps, Badge, type BadgeProps, type BadgeVariant, type BreadcrumbItem, Breadcrumbs, type BreadcrumbsProps, Button, type ButtonProps, Calendar, type CalendarEvent, type CalendarProps, Card, CardBody, CardFooter, CardHeader, type CardHeaderProps, type CardProps, Chart, type ChartDatum, type ChartPoint, type ChartProps, type ChartSeries, Checkbox, type CheckboxProps, Combobox, type ComboboxProps, Composer, type ComposerProps, ConfirmDialog, type ConfirmDialogProps, ConnectionBanner, type ConnectionBannerProps, CopyButton, type CopyButtonProps, DEFAULT_ACCENT, DataTable, type DataTableApi, type DataTableBulkAction, type DataTableBulkCallbackAction, type DataTableBulkLinkedAction, type DataTableColumn, type DataTableProps, type DataTableRowAction, type DataTableRowCallbackAction, type DataTableRowLinkedAction, type DataTableSelection, type DataTableSource, DatePicker, type DatePickerProps, type DateRange, DateRangePicker, type DateRangePickerProps, type DateRangePreset, type DescriptionItem, DescriptionList, type DescriptionListProps, Dialog, type DialogProps, Drawer, type DrawerProps, EmptyState, type EmptyStateProps, ErrorState, type ErrorStateProps, Field, FieldArray, type FieldArrayProps, type FieldProps, FileUpload, type FileUploadProps, Form, type FormProps, type FormValues, Grid, type GridProps, ICON_NAMES, Icon, type IconName, type IconProps, type IconSize, JsonInput, type JsonInputProps, JsonView, type JsonViewProps, Kanban, KanbanCard, type KanbanCardProps, KanbanColumn, type KanbanColumnProps, type KanbanMove, type KanbanProps, Kbd, type KbdProps, Markdown, type MarkdownProps, Menu, MenuItem, type MenuItemDef, type MenuItemProps, type MenuProps, Message, type MessageProps, type NamedDataSource, NumberInput, type NumberInputProps, PageHeader, type PageHeaderProps, type PageReply, type PageRequest, Pagination, type PaginationProps, type ParamsOf, Popover, type PopoverProps, Progress, type ProgressProps, RadioGroup, type RadioGroupProps, Rating, type RatingProps, Row, type RowProps, Screen, type ScreenProps, SearchInput, type SearchInputProps, SegmentedControl, type SegmentedControlProps, type SegmentedOption, Select, type SelectOption, type SelectProps, Separator, type SeparatorProps, Skeleton, type SkeletonProps, Slider, type SliderProps, Sparkline, type SparklineProps, Spinner, Stack, type StackProps, Stat, type StatProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, Step, type StepProps, Stepper, type StepperProps, Switch, type SwitchProps, Tab, TabPanel, type TabPanelProps, type TabProps, Tabs, type TabsProps, TagInput, type TagInputProps, TextArea, type TextAreaProps, TextInput, type TextInputProps, ThemeToggle, type ThemeToggleProps, Thread, type ThreadMessage, type ThreadProps, TimePicker, type TimePickerProps, Timeline, TimelineItem, type TimelineItemProps, type TimelineProps, Toast, type ToastOptions, type ToastProps, Toolbar, type ToolbarProps, Tooltip, type TooltipProps, type UseToastResult, accentStyle, applyAccent, applyTheme, cn, dismissToast, ensureTokens, focusRing, inputBase, renderIcon, resolveIconName, setTheme, textStyles, tk, toast, useFormValues, useTheme, useThemeBridge, useToast };
+export { Accordion, AccordionItem, type AccordionItemProps, type AccordionProps, type ActionDataSource, type ActionLike, Alert, type AlertProps, type AlertVariant, AnimatedNumber, type AnimatedNumberProps, type AnyDataSource, AppShell, type AppShellNavItem, type AppShellProps, type AppTheme, AssistantWidget, type AssistantWidgetProps, Avatar, AvatarGroup, type AvatarGroupProps, type AvatarProps, Badge, type BadgeProps, type BadgeVariant, BarList, type BarListItem, type BarListProps, type BreadcrumbItem, Breadcrumbs, type BreadcrumbsProps, Button, type ButtonProps, Calendar, type CalendarEvent, type CalendarProps, Card, CardBody, CardFooter, CardHeader, type CardHeaderProps, type CardProps, Chart, type ChartDatum, type ChartPoint, type ChartProps, type ChartSeries, Checkbox, type CheckboxProps, Combobox, type ComboboxProps, Composer, type ComposerAttachments, type ComposerProps, ConfirmDialog, type ConfirmDialogProps, ConnectionBanner, type ConnectionBannerProps, CopyButton, type CopyButtonProps, DEFAULT_ACCENT, DataTable, type DataTableApi, type DataTableBulkAction, type DataTableBulkCallbackAction, type DataTableBulkLinkedAction, type DataTableColumn, type DataTableProps, type DataTableRowAction, type DataTableRowCallbackAction, type DataTableRowLinkedAction, type DataTableSelection, type DataTableSource, DatePicker, type DatePickerProps, type DateRange, DateRangePicker, type DateRangePickerProps, type DateRangePreset, type DescriptionItem, DescriptionList, type DescriptionListProps, Dialog, type DialogProps, Drawer, type DrawerProps, EmptyState, type EmptyStateProps, ErrorState, type ErrorStateProps, type ExportAnnotatedOptions, type ExportMaskOptions, Field, FieldArray, type FieldArrayProps, type FieldProps, FileUpload, type FileUploadProps, Form, type FormProps, type FormValues, Grid, type GridProps, ICON_NAMES, Icon, type IconName, type IconProps, type IconSize, Image, type ImageAspect, ImageCompare, type ImageCompareProps, type ImageCompareSide, ImageGrid, type ImageGridColumns, type ImageGridItem, type ImageGridProps, ImageMarkup, type ImageMarkupHandle, type ImageMarkupProps, type ImageProps, JsonInput, type JsonInputProps, JsonView, type JsonViewProps, Kanban, KanbanCard, type KanbanCardProps, KanbanColumn, type KanbanColumnProps, type KanbanMove, type KanbanProps, Kbd, type KbdProps, Lightbox, type LightboxItem, type LightboxProps, type Mark, type MarkHistory, type MarkKind, MarkList, type MarkListProps, type MarkTool, Markdown, type MarkdownProps, Menu, MenuItem, type MenuItemDef, type MenuItemProps, type MenuProps, Message, type MessageProps, Meter, type MeterProps, type MeterTone, type NamedDataSource, NumberInput, type NumberInputProps, PageHeader, type PageHeaderProps, type PageReply, type PageRequest, Pagination, type PaginationProps, type ParamsOf, Popover, type PopoverProps, Progress, type ProgressProps, type ProgressStep, type ProgressStepStatus, ProgressSteps, type ProgressStepsProps, RadioGroup, type RadioGroupProps, Rating, type RatingProps, Row, type RowProps, Screen, type ScreenProps, ScrollRow, type ScrollRowProps, SearchInput, type SearchInputProps, SegmentedControl, type SegmentedControlProps, type SegmentedOption, Select, type SelectOption, type SelectProps, Separator, type SeparatorProps, Skeleton, type SkeletonProps, Slider, type SliderProps, Sparkline, type SparklineProps, Spinner, Stack, type StackProps, Stat, type StatProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, Step, type StepProps, Stepper, type StepperProps, Switch, type SwitchProps, Tab, TabPanel, type TabPanelProps, type TabProps, Tabs, type TabsProps, TagInput, type TagInputProps, TextArea, type TextAreaProps, TextInput, type TextInputProps, ThemeToggle, type ThemeToggleProps, Thread, type ThreadMessage, type ThreadProps, TimePicker, type TimePickerProps, Timeline, TimelineItem, type TimelineItemProps, type TimelineProps, Toast, type ToastOptions, type ToastProps, Toolbar, type ToolbarProps, Tooltip, type TooltipProps, type UseToastResult, accentStyle, applyAccent, applyTheme, cn, dismissToast, ensureTokens, focusRing, inputBase, renderIcon, resolveIconName, setTheme, textStyles, tk, toast, useFormValues, useMarkHistory, useTheme, useThemeBridge, useToast };

@@ -47,14 +47,16 @@ import {
   Accordion, AccordionItem, Menu, MenuItem, Tooltip,
   Chart, Kanban, KanbanColumn, KanbanCard, Calendar, Timeline, TimelineItem,
   Avatar, AvatarGroup, Thread, Message, Composer, Markdown, JsonView,
-  Stack, Row, Grid, cn, accentStyle, focusRing, inputBase, DEFAULT_ACCENT,
+  Image, ImageGrid, Lightbox, ImageCompare, ImageMarkup, MarkList, useMarkHistory,
+  Meter, BarList, AnimatedNumber, ProgressSteps,
+  Stack, Row, Grid, ScrollRow, cn, accentStyle, focusRing, inputBase, DEFAULT_ACCENT,
   tk, textStyles, ICON_NAMES, setTheme, useTheme,
 } from "@robomotion/app-kit";
 
 // Everything that reaches the robot. NONE of these are in the kit.
 import {
   AppProvider, useAppClient, useMaybeAppClient,
-  useAction, useEvent, useConnection, useFileUpload,
+  useAction, useEvent, useConnection, useFileUpload, useFileUrl, useLive,
   bindAction, markGesture,
 } from "@robomotion/apps-runtime/react";
 ```
@@ -298,9 +300,48 @@ One number said properly: what it is, what it is now, whether that is better or 
 
 `trend` is a plain list of recent numbers, oldest first, drawn as a small line under the value; `icon` puts a kit icon in a tinted chip in the corner (`icon="clock"` for hours saved). `loading` shows a placeholder instead of a misleading zero.
 
+On a live dashboard give it a NUMBER and `animate`: the value rolls from the last one to the new one (and jumps when the person asks for reduced motion; a screen reader only ever hears the final value). `emphasis="inverted"` is the filled tile for the one or two headline numbers at the top of a page - do not invert a whole row.
+
+```tsx
+<Stat label="Collected" value={run.collected} animate emphasis="inverted" />
+```
+
 ### `Sparkline`
 
 The trend line on its own, for a table cell or a record page: `<Sparkline values={row.last_30_days} />`. No axes, no labels; the number beside it says what it is.
+
+### `Meter`
+
+One value against a scale, as a labelled bar: a confidence, a quota, a score. `segments` draws the scale as cells, which is how a 0-3 score reads (`value={2} max={3} segments={3}`). `uncertain` hatches the bar and says "low confidence" to a screen reader - use it when the number is a guess, not to colour a bad number (that is `tone="danger"`). **Never hand-build a bar out of two divs.**
+
+```tsx
+<Meter label="Hook strength" value={2} max={3} segments={3} valueLabel="2 of 3" />
+<Meter label="Confidence" value={a.confidence} trailing={pct(a.confidence)} uncertain={a.confidence < 0.6} />
+```
+
+### `BarList`
+
+A ranking: the top referrers, the most common error types, how many of each category. Sorted biggest first unless told otherwise, `limit` with a "Show all" toggle, `onSelect` makes each row a button (a filter, a drill-down), `animate` slides rows into their new places when the counts change under a live view. Prefer it to a bar `Chart` whenever the labels are words.
+
+```tsx
+<BarList label="Hooks" items={hooks.map((h) => ({ key: h.id, label: h.name, value: h.count }))} limit={6} animate onSelect={(i) => setFilter(i.key)} />
+```
+
+### `AnimatedNumber`
+
+The rolling number `Stat animate` uses, on its own for a sentence or a table cell: `<AnimatedNumber value={spend} format={{ style: "currency", currency: "USD" }} />`.
+
+### `ProgressSteps`
+
+What the robot is doing, step by step: Fetch · Read · Match · File. It is a STATUS rail - nobody presses it; `Stepper` is the wizard a person walks through. Each step is `pending`, `active`, `done`, `failed` or `skipped`; the active one is announced when it changes. Feed it from `progress.data` while the call runs and from the result when it lands.
+
+```tsx
+<ProgressSteps label="Import" steps={[
+  { key: "fetch", label: "Fetch", status: "done", detail: "12 files" },
+  { key: "read", label: "Read", status: "active" },
+  { key: "file", label: "File", status: "pending" },
+]} />
+```
 
 ### `Alert`
 
@@ -479,7 +520,7 @@ A rule between two things, in the kit's border colour. `label="or"` puts words i
 
 ### `DataTable`
 
-Columns, rows, sort, filter, empty state, row actions, pagination - all built in. This is the workhorse of three of the four archetypes, and **never re-implement sorting or paging in the screen**. A row action that runs an action is written as `{ label, action, params }` with `params` built from the row; one that only navigates keeps `onSelect`.
+Columns, rows, sort, filter, empty state, row actions, pagination - all built in. This is the workhorse of most archetypes, and **never re-implement sorting or paging in the screen**. A row action that runs an action is written as `{ label, action, params }` with `params` built from the row; one that only navigates keeps `onSelect`.
 
 There are two ways to feed it, and picking the wrong one is the difference between a table that works and a table that stalls on the tenth thousand row.
 
@@ -825,6 +866,75 @@ useEvent<Note>("noteAdded", (n) => setMessages((m) => [...m, { id: n.id, author:
 
 Enter sends and Shift+Enter starts a new line. Pass `readOnly` for a history with nothing to add.
 
+`attachments` lets the person add files (a paperclip button, paste or drop): each one uploads as soon as it is added and travels as a `FileRef`, Send waits for any upload still out, and the call becomes `{ text, files }` (`params(text, files)` when given). `{ accept: "image/*", max: 3 }` narrows it. `controls` puts your own small control - a quality `Select`, a model picker - left of Send. Both need an `AppProvider` (every app has one); without `attachments` nothing changes.
+
+```tsx
+<Composer attachments={{ accept: "image/*" }} controls={<Select aria-label="Quality" value={q} onChange={setQ} options={QUALITIES} />}
+  action={edit} params={(text, files) => ({ versionId, instruction: text, attachments: files })} />
+```
+
+## Pictures
+
+### `Image`
+
+Every picture on a screen - a product photo, a scanned receipt, a screenshot the robot took. **Never write `<img>`.** It keeps the picture's shape from the first frame (`aspect`), shows a grey placeholder or a tiny blurred preview (`placeholder`, a data URL of a few hundred bytes that came with the row) until the real one lands, shows a quiet "no picture" tile instead of the browser's broken glyph, and `zoomable` opens it full screen.
+
+A file the robot saved (App Save File) or a person uploaded is a `FileRef`, not a URL: pass it as `file` and the kit turns it into a link (and renews the link if it has run out). Never call `downloadUrl` yourself to feed an image.
+
+```tsx
+<Image file={ad.image} placeholder={ad.thumb} alt={ad.headline} aspect="4:5" zoomable />
+<Image src={product.photo_url} alt={product.name} aspect="1:1" fit="contain" />
+```
+
+### `ImageGrid`
+
+Many pictures: a gallery, a picker, a wall that fills as the robot works, a strip of versions. Arrow keys move, Enter picks; `selectable` ticks several. `layout="strip"` is one row that scrolls sideways. `fill` shrinks the tiles until every one fits the box with no scrolling (give the box a height: `className="h-96"`), and `total` draws the empty slots still to come - the two together are the "whole category at once" wall. `highlightNew` fades the newest in. `source={{ action, pageSize }}` makes it fetch its own pages (`{ rows, total }`, each row an `ImageGridItem`).
+
+```tsx
+<ImageGrid label="Ads" items={ads.map((a) => ({ key: a.id, src: a.thumb, alt: a.brand }))} fill total={run.total} highlightNew={4} density="mosaic" className="h-80" />
+<ImageGrid label="Versions" layout="strip" aspect="4:5" items={versions} selectedKey={current} onSelect={(v) => setCurrent(v.key)} />
+```
+
+### `Lightbox`
+
+The full-screen viewer `Image zoomable` opens, for a screen that opens it itself - over a whole set, with Previous/Next. Wheel and pinch zoom, drag pans; the keyboard has all of it (arrows, + - 0, Home/End, Escape). `actions` puts buttons in its header.
+
+```tsx
+<Lightbox open={open} onClose={() => setOpen(false)} items={photos} defaultIndex={i} actions={(p) => <Button size="sm" onClick={() => use(p)}>Use this</Button>} />
+```
+
+### `ImageCompare`
+
+Before and after: a slider over the two, `mode="hold"` (show "before" while pressed), or `"side-by-side"`. The slider is a real slider from the keyboard.
+
+```tsx
+<ImageCompare before={{ file: v.previous, alt: "Before" }} after={{ file: v.current, alt: "After" }} />
+```
+
+### `ImageMarkup` / `MarkList` / `useMarkHistory`
+
+Point at parts of a picture and say something about each: a defect on an inspection photo, the part of a design to redo, the button in a screenshot that does nothing. Pin, box, arrow, freehand and a wide brush for painting a region; every gesture has a key (Enter on the picture places the current tool's mark at the centre; Tab walks the marks; arrows move one, Alt+arrows resize, Delete removes, Enter writes its note). **Drawing is never hand-rolled** - no `<canvas>`, no `<svg>`, no pointer handlers of your own.
+
+`marks` is data the screen owns, every coordinate a fraction (0-1) of the picture, so it means the same on any screen and on the robot. Keep it in `useMarkHistory()` for undo/redo, and put `MarkList` beside it - the numbered notes, bound to the same list. When a model must read the marks, rasterise them in the browser through the handle and upload the result: `exportAnnotated()` burns them into a copy in magenta (`#FF00FF`, never your accent - the reader is a model), `exportMask()` is a PNG whose transparent part is the painted region.
+
+```tsx
+const history = useMarkHistory();
+const markup = useRef<ImageMarkupHandle>(null);
+const { upload } = useFileUpload();
+const [tool, setTool] = useState<MarkTool>("box");
+
+<ImageMarkup ref={markup} file={version.image} alt="Current version" tool={tool} onToolChange={setTool}
+  marks={history.marks} onMarksChange={history.setMarks}
+  onUndo={history.undo} onRedo={history.redo} canUndo={history.canUndo} canRedo={history.canRedo} />
+<MarkList marks={history.marks} onMarksChange={history.setMarks} />
+
+const send = async (text: string) => {
+  const annotated = await upload(new File([await markup.current!.exportAnnotated()], "annotated.png", { type: "image/png" }));
+  await edit.run({ versionId, marks: history.marks, annotatedFile: annotated, instruction: text });
+  history.reset();
+};
+```
+
 ### `Markdown`
 
 Markdown the robot produced - a summary, a written-up report - rendered as prose rather than printed as a wall of asterisks. It sanitises what it renders, which is why text that came back from a website or a document goes here and never into `dangerouslySetInnerHTML`.
@@ -1048,6 +1158,16 @@ Layout without hand-rolled flex classes. `Stack` for vertical, `Row` for horizon
 </Grid>
 ```
 
+### `ScrollRow`
+
+A row that scrolls sideways - review cards, a strip of chips - with the ends fading and arrow buttons while there is more that way; the row itself takes Left/Right/Home/End. `label` names it. **Never write `overflow-x-auto` for this.**
+
+```tsx
+<ScrollRow label="Waiting for review" gap={3} snap>
+  {queue.map((q) => <ReviewCard key={q.id} item={q} />)}
+</ScrollRow>
+```
+
 ## Action links
 
 The Build view shows a small badge on every widget that leads somewhere in the flow and jumps from it to the step that runs (and back). You get that for free by using `action` on `Button`, `FileUpload` and `Form`, and by handing tables their rows straight from an action hook's `.data`. Two helpers cover anything custom; the generated action hooks carry `name`, which is what they read. Never write `data-rm-*` attributes by hand.
@@ -1075,7 +1195,7 @@ Screens talk to the robot ONLY through these. Never `app.call` in a screen, neve
 
 ```tsx
 import {
-  AppProvider, useAction, useEvent, useConnection, useFileUpload,
+  AppProvider, useAction, useEvent, useConnection, useFileUpload, useFileUrl, useLive,
   bindAction, markGesture,
 } from "@robomotion/apps-runtime/react";
 ```
@@ -1086,6 +1206,15 @@ import {
 | `useEvent(name, cb)` | subscribes for the component's lifetime | toasts and refreshes when the robot announces something |
 | `useConnection()` | `{ state, robotOnline }` | anything that must react to `"connecting" \| "ready" \| "offline" \| "robot_offline" \| "contract_mismatch"` |
 | `useFileUpload()` | `{ upload, uploading, progress, error }` | getting a `FileRef` to pass into an action |
+| `useFileUrl(ref)` | `{ url, loading, error, refresh }` | a `FileRef` as a URL, for the rare custom surface. `Image` and the picture components already do this - never call it to feed them |
+| `useLive(action, { events, params?, pollMs? })` | `{ data, error, loading, refreshing, done, refresh, name }` | anything the robot is still changing: a run's counters, a queue. Asks the read action on open, again when one of `events` arrives (a burst is one question), by the clock when nothing is heard, and stops polling at `done: true` |
+
+**Events are not buffered.** A page that reloads mid-run hears none of what it missed, so never keep a count by adding events up in state. The robot keeps the state (SQLite), a read action returns it, and `useLive` keeps that read current:
+
+```tsx
+const run = useLive<{ id: string }, RunView>("getRun", { params: { id }, events: ["runProgress", "runFinished"] });
+<Stat label="Analysed" value={run.data?.analyzed ?? 0} animate />
+```
 
 `data` and `error` are mutually exclusive, and only the latest `run` writes
 either: a failure clears the previous answer, a success clears the previous
@@ -1153,7 +1282,25 @@ StatusBadge: { status: "ok"|"warn"|"error"|"pending", children?: ReactNode }
 Stat:        { label: ReactNode, value: ReactNode, unit?: ReactNode,
                delta?: number /* percent */, deltaLabel?: ReactNode,
                upIsGood?: boolean /* default true */, trend?: number[] /* oldest first */,
-               icon?: IconName | ReactNode, loading?: boolean, card?: boolean /* default true */ }
+               icon?: IconName | ReactNode, loading?: boolean, card?: boolean /* default true */,
+               animate?: boolean /* a number value rolls to its new value */,
+               emphasis?: "default"|"inverted" }
+AnimatedNumber: { value: number, durationMs?: number /* default 600 */,
+               format?: Intl.NumberFormatOptions, locale?: string }
+Meter:       { label: ReactNode, value: number /* 0-1, or 0-max */, max?: number,
+               segments?: number /* draw the scale as this many cells */,
+               tone?: "default"|"success"|"warning"|"danger", uncertain?: boolean,
+               uncertainLabel?: string /* default "low confidence" */,
+               valueLabel?: ReactNode, trailing?: ReactNode, size?: "sm"|"md" }
+BarList:     { items: { key: string; label: ReactNode; value: number; color?: string; href?: string }[],
+               max?: number, sort?: "desc"|"asc"|"none" /* default "desc" */,
+               limit?: number /* then "Show all" */, formatValue?: (v: number, item) => ReactNode,
+               onSelect?: (item) => void, selectedKey?: string, animate?: boolean,
+               source?: DataTableSource, emptyState?: ReactNode, label?: string }
+ProgressSteps: { steps: { key: string; label: string;
+                          status: "pending"|"active"|"done"|"failed"|"skipped"; detail?: ReactNode }[],
+               orientation?: "horizontal"|"vertical" /* default "horizontal" */, label?: string,
+               statusLabels?: Partial<Record<status, string>> }
 Sparkline:   { values: number[], width?: number /* 120 */, height?: number /* 28 */,
                area?: boolean /* default true */, color?: string, label?: string }
 Alert:       { variant?: "info"|"success"|"warning"|"error" /* default "info" */,
@@ -1325,12 +1472,66 @@ Thread:       { messages: ThreadMessage[], onSend?: (text: string) => void,
                 placeholder?: string, busy?: boolean, emptyState?: ReactNode,
                 height?: number /* default 360 */, readOnly?: boolean, sendLabel?: string }
 Message:      { message: ThreadMessage }
-Composer:     { onSend?: (text: string) => void, action?: ActionLike,
-                params?: (text: string) => unknown, placeholder?: string,
-                busy?: boolean, disabled?: boolean, sendLabel?: string }
+Composer:     { onSend?: (text: string, files?: FileRef[]) => void, action?: ActionLike,
+                params?: (text: string, files?: FileRef[]) => unknown, placeholder?: string,
+                busy?: boolean, disabled?: boolean, sendLabel?: string,
+                attachments?: boolean | { accept?: string; max?: number /* default 8 */ },
+                controls?: ReactNode /* left of Send */ }
+                /* Thread takes attachments and controls too, and passes them down */
 
 ThreadMessage: { body: string /* markdown */, id?: string, author?: string, avatarUrl?: string,
                  at?: string, own?: boolean, streaming?: boolean }
+
+Image:        { alt: string, src?: string, file?: FileRef | null /* src wins */,
+                placeholder?: string /* tiny data URL, shown blurred */,
+                aspect?: "auto"|"1:1"|"4:3"|"3:4"|"4:5"|"3:2"|"2:3"|"16:9"|"9:16"|number /* default "auto" */,
+                fit?: "cover"|"contain" /* default "cover" */, radius?: "none"|"sm"|"md"|"lg" /* default "md" */,
+                zoomable?: boolean, caption?: ReactNode, loading?: "lazy"|"eager" /* default "lazy" */,
+                crossOrigin?: "anonymous"|"use-credentials", fallback?: ReactNode,
+                onLoad?: (size: { width; height }) => void, onError?: () => void }
+ImageGrid:    { items?: ImageGridItem[], layout?: "grid"|"strip" /* default "grid" */,
+                columns?: number | { base: number; md?: number; lg?: number } /* 1-8 */,
+                density?: "mosaic"|"compact"|"comfortable" /* default "comfortable" */,
+                aspect?: Image["aspect"] /* default "1:1" */,
+                selectedKey?: string, onSelect?: (item: ImageGridItem) => void,
+                selectable?: boolean, selection?: string[], onSelectionChange?: (keys: string[]) => void,
+                fill?: boolean /* the box needs a height */, total?: number, highlightNew?: number,
+                source?: DataTableSource, emptyState?: ReactNode, label?: string /* default "Pictures" */ }
+ImageGridItem: { key: string, alt: string, src?: string, file?: FileRef | null, placeholder?: string,
+                 caption?: string, badge?: ReactNode, dimmed?: boolean }
+Lightbox:     { open: boolean, onClose: () => void,
+                items: { key?: string; src?: string; file?: FileRef | null; alt: string; caption?: ReactNode }[],
+                index?: number, defaultIndex?: number, onIndexChange?: (i: number) => void,
+                actions?: ReactNode | ((item, index: number) => ReactNode) }
+ImageCompare: { before: { src?: string; file?: FileRef | null; alt: string; label?: string },
+                after: /* the same */, mode?: "slider"|"hold"|"side-by-side" /* default "slider" */,
+                aspect?: Image["aspect"] /* default "4:3" */, fit?: "cover"|"contain" /* default "contain" */,
+                position?: number /* 0-1 */, defaultPosition?: number /* 0.5 */,
+                onPositionChange?: (p: number) => void }
+ImageMarkup:  { alt: string, src?: string, file?: FileRef | null,
+                marks: Mark[], onMarksChange: (marks: Mark[]) => void,
+                tool: "select"|"pin"|"box"|"arrow"|"freehand"|"brush",
+                onToolChange?: (tool) => void /* gives it its own tool bar */, tools?: MarkTool[],
+                readOnly?: boolean, numbered?: boolean /* default true */,
+                selectedId?: string, onSelect?: (id?: string) => void, maxMarks?: number,
+                noteOnCreate?: boolean, tone?: "default"|"danger" /* for new marks */,
+                brushWidth?: number /* fraction of the width, default 0.06 */,
+                onUndo?: () => void, onRedo?: () => void, canUndo?: boolean, canRedo?: boolean,
+                maxHeight?: number | string /* default "70vh" */, ref?: Ref<ImageMarkupHandle> }
+ImageMarkupHandle: { exportAnnotated(opts?: { maxSize?: number /* 2048 */; type?: "image/png"|"image/jpeg";
+                                             hideNumbers?: boolean }): Promise<Blob>,
+                     exportMask(opts?: { kinds?: MarkKind[] /* ["brush","box"] */; feather?: number;
+                                         dilate?: number; invert?: boolean; maxSize?: number }): Promise<Blob>,
+                     naturalSize(): { width: number; height: number } }
+Mark:         { id: string, n: number /* 1, 2, 3 in order */, kind: "pin"|"box"|"arrow"|"freehand"|"brush",
+                at?: [x, y] /* pin */, rect?: [x, y, w, h] /* box */,
+                points?: [x, y][] /* arrow: [tail, tip]; freehand, brush: the stroke */,
+                width?: number /* brush */, note?: string, tone?: "default"|"danger" }
+                /* every coordinate is a fraction of the picture, 0-1 */
+MarkList:     { marks: Mark[], onMarksChange: (marks: Mark[]) => void,
+                selectedId?: string, onSelect?: (id?: string) => void, readOnly?: boolean,
+                notePlaceholder?: string, emptyState?: ReactNode }
+useMarkHistory(initial?: Mark[]): { marks, setMarks, undo, redo, canUndo, canRedo, reset(marks?) }
 
 Markdown:   { children?: string, streaming?: boolean }
 JsonView:   { value: unknown, maxDepth?: number /* default 2 */, copyable?: boolean,
@@ -1406,6 +1607,8 @@ Stack: { gap?: Gap /* default 4 */, align?: Align }
 Row:   { gap?: Gap, align?: Align /* default "center" */,
          justify?: "start"|"center"|"end"|"between", wrap?: boolean }
 Grid:  { gap?: Gap, cols?: 1|2|3|4|6 /* default 1 */, mdCols?: 1|2|3|4|6, lgCols?: 1|2|3|4|6 }
+ScrollRow: { label: string, gap?: Gap, snap?: boolean, arrows?: boolean /* default true */,
+             fade?: boolean /* default true */ }
 ```
 
 **Helpers**
@@ -1451,7 +1654,9 @@ Charts and machines: `chart-bar`, `chart-line`, `chart-pie`, `chart-column`, `ac
 
 Devices and theme: `sun`, `moon`, `monitor`, `smartphone`, `wifi`, `wifi-off`, `plug`, `qr-code`, `scan`, `languages`.
 
-Layout: `ellipsis`, `ellipsis-vertical`, `list-checks`, `layout-grid`, `columns-3`, `rows-3`.
+Layout: `ellipsis`, `ellipsis-vertical`, `list-checks`, `layout-grid`, `columns-3`, `rows-3`, `columns-2`.
+
+Pictures and marking them up: `image-off`, `images`, `crop`, `scaling`, `zoom-in`, `zoom-out`, `chevrons-left-right`, `mouse-pointer-2`, `square-dashed`, `move-up-right`, `pen-line`, `brush`, `eraser`, `message-circle-plus`, `circle-dashed`.
 
 ## A form runs its action once
 

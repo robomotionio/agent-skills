@@ -2570,6 +2570,8 @@ var tk = {
   bgSidebar: "bg-[color:oklch(var(--rm-sidebar))]",
   bgSidebarAccent: "bg-[color:oklch(var(--rm-sidebar-accent))]",
   bgForeground: "bg-[color:oklch(var(--rm-foreground))]",
+  bgBackgroundSoft: "bg-[color:oklch(var(--rm-background)/0.15)]",
+  borderForeground: "border-[color:oklch(var(--rm-foreground))]",
   bgBorder: "bg-[color:oklch(var(--rm-border))]",
   bgInput: "bg-[color:oklch(var(--rm-input))]",
   fg: "text-[color:oklch(var(--rm-foreground))]",
@@ -2577,6 +2579,7 @@ var tk = {
   fgCard: "text-[color:oklch(var(--rm-card-foreground))]",
   fgPopover: "text-[color:oklch(var(--rm-popover-foreground))]",
   fgBackground: "text-[color:oklch(var(--rm-background))]",
+  fgBackgroundMuted: "text-[color:oklch(var(--rm-background)/0.7)]",
   fgPrimary: "text-[color:oklch(var(--rm-primary))]",
   fgOnPrimary: "text-[color:oklch(var(--rm-primary-foreground))]",
   fgSecondary: "text-[color:oklch(var(--rm-secondary-foreground))]",
@@ -2941,7 +2944,23 @@ var ICON_DATA = {
   "list-checks": [["path", { "d": "m3 17 2 2 4-4" }], ["path", { "d": "m3 7 2 2 4-4" }], ["path", { "d": "M13 6h8" }], ["path", { "d": "M13 12h8" }], ["path", { "d": "M13 18h8" }]],
   "layout-grid": [["rect", { "width": "7", "height": "7", "x": "3", "y": "3", "rx": "1" }], ["rect", { "width": "7", "height": "7", "x": "14", "y": "3", "rx": "1" }], ["rect", { "width": "7", "height": "7", "x": "14", "y": "14", "rx": "1" }], ["rect", { "width": "7", "height": "7", "x": "3", "y": "14", "rx": "1" }]],
   "columns-3": [["rect", { "width": "18", "height": "18", "x": "3", "y": "3", "rx": "2" }], ["path", { "d": "M9 3v18" }], ["path", { "d": "M15 3v18" }]],
-  "rows-3": [["rect", { "width": "18", "height": "18", "x": "3", "y": "3", "rx": "2" }], ["path", { "d": "M21 9H3" }], ["path", { "d": "M21 15H3" }]]
+  "rows-3": [["rect", { "width": "18", "height": "18", "x": "3", "y": "3", "rx": "2" }], ["path", { "d": "M21 9H3" }], ["path", { "d": "M21 15H3" }]],
+  "columns-2": [["rect", { "width": "18", "height": "18", "x": "3", "y": "3", "rx": "2" }], ["path", { "d": "M12 3v18" }]],
+  "image-off": [["line", { "x1": "2", "x2": "22", "y1": "2", "y2": "22" }], ["path", { "d": "M10.41 10.41a2 2 0 1 1-2.83-2.83" }], ["line", { "x1": "13.5", "x2": "6", "y1": "13.5", "y2": "21" }], ["line", { "x1": "18", "x2": "21", "y1": "12", "y2": "15" }], ["path", { "d": "M3.59 3.59A1.99 1.99 0 0 0 3 5v14a2 2 0 0 0 2 2h14c.55 0 1.052-.22 1.41-.59" }], ["path", { "d": "M21 15V5a2 2 0 0 0-2-2H9" }]],
+  "images": [["path", { "d": "M18 22H4a2 2 0 0 1-2-2V6" }], ["path", { "d": "m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18" }], ["circle", { "cx": "12", "cy": "8", "r": "2" }], ["rect", { "width": "16", "height": "16", "x": "6", "y": "2", "rx": "2" }]],
+  "crop": [["path", { "d": "M6 2v14a2 2 0 0 0 2 2h14" }], ["path", { "d": "M18 22V8a2 2 0 0 0-2-2H2" }]],
+  "scaling": [["path", { "d": "M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" }], ["path", { "d": "M14 15H9v-5" }], ["path", { "d": "M16 3h5v5" }], ["path", { "d": "M21 3 9 15" }]],
+  "zoom-in": [["circle", { "cx": "11", "cy": "11", "r": "8" }], ["line", { "x1": "21", "x2": "16.65", "y1": "21", "y2": "16.65" }], ["line", { "x1": "11", "x2": "11", "y1": "8", "y2": "14" }], ["line", { "x1": "8", "x2": "14", "y1": "11", "y2": "11" }]],
+  "zoom-out": [["circle", { "cx": "11", "cy": "11", "r": "8" }], ["line", { "x1": "21", "x2": "16.65", "y1": "21", "y2": "16.65" }], ["line", { "x1": "8", "x2": "14", "y1": "11", "y2": "11" }]],
+  "chevrons-left-right": [["path", { "d": "m9 7-5 5 5 5" }], ["path", { "d": "m15 7 5 5-5 5" }]],
+  "mouse-pointer-2": [["path", { "d": "M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z" }]],
+  "square-dashed": [["path", { "d": "M5 3a2 2 0 0 0-2 2" }], ["path", { "d": "M19 3a2 2 0 0 1 2 2" }], ["path", { "d": "M21 19a2 2 0 0 1-2 2" }], ["path", { "d": "M5 21a2 2 0 0 1-2-2" }], ["path", { "d": "M9 3h1" }], ["path", { "d": "M9 21h1" }], ["path", { "d": "M14 3h1" }], ["path", { "d": "M14 21h1" }], ["path", { "d": "M3 9v1" }], ["path", { "d": "M21 9v1" }], ["path", { "d": "M3 14v1" }], ["path", { "d": "M21 14v1" }]],
+  "move-up-right": [["path", { "d": "M13 5H19V11" }], ["path", { "d": "M19 5L5 19" }]],
+  "pen-line": [["path", { "d": "M12 20h9" }], ["path", { "d": "M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z" }]],
+  "brush": [["path", { "d": "m9.06 11.9 8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08" }], ["path", { "d": "M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z" }]],
+  "eraser": [["path", { "d": "m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21" }], ["path", { "d": "M22 21H7" }], ["path", { "d": "m5 11 9 9" }]],
+  "message-circle-plus": [["path", { "d": "M7.9 20A9 9 0 1 0 4 16.1L2 22Z" }], ["path", { "d": "M8 12h8" }], ["path", { "d": "M12 8v8" }]],
+  "circle-dashed": [["path", { "d": "M10.1 2.182a10 10 0 0 1 3.8 0" }], ["path", { "d": "M13.9 21.818a10 10 0 0 1-3.8 0" }], ["path", { "d": "M17.609 3.721a10 10 0 0 1 2.69 2.7" }], ["path", { "d": "M2.182 13.9a10 10 0 0 1 0-3.8" }], ["path", { "d": "M20.279 17.609a10 10 0 0 1-2.7 2.69" }], ["path", { "d": "M21.818 10.1a10 10 0 0 1 0 3.8" }], ["path", { "d": "M3.721 6.391a10 10 0 0 1 2.7-2.69" }], ["path", { "d": "M6.391 20.279a10 10 0 0 1-2.69-2.7" }]]
 };
 
 // src/icons/names.ts
@@ -3134,7 +3153,24 @@ var ICON_NAMES = [
   "list-checks",
   "layout-grid",
   "columns-3",
-  "rows-3"
+  "rows-3",
+  "columns-2",
+  // Pictures and marking them up
+  "image-off",
+  "images",
+  "crop",
+  "scaling",
+  "zoom-in",
+  "zoom-out",
+  "chevrons-left-right",
+  "mouse-pointer-2",
+  "square-dashed",
+  "move-up-right",
+  "pen-line",
+  "brush",
+  "eraser",
+  "message-circle-plus",
+  "circle-dashed"
 ];
 var ICON_ALIASES = {
   "alert-circle": "circle-alert",
@@ -3258,7 +3294,7 @@ import {
   useCallback as useCallback2,
   useEffect as useEffect6,
   useLayoutEffect as useLayoutEffect3,
-  useMemo,
+  useMemo as useMemo2,
   useState as useState5
 } from "react";
 
@@ -3695,12 +3731,26 @@ function usePresence(open) {
     }
   };
 }
+function prefersReducedMotion() {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
+  try {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  } catch {
+    return false;
+  }
+}
+function canAnimate(el) {
+  if (!el || typeof requestAnimationFrame !== "function" || prefersReducedMotion()) return false;
+  const r = el.getBoundingClientRect();
+  return r.width > 0 || r.height > 0;
+}
 
 // src/components/dialog.tsx
 import {
   useCallback,
   useEffect as useEffect4,
   useId,
+  useMemo,
   useRef as useRef2,
   useState as useState3
 } from "react";
@@ -3715,13 +3765,30 @@ function focusableIn(root) {
 }
 var scrollLocks = 0;
 function useOverlay(open, onClose) {
-  const panelRef = useRef2(null);
+  const [panel, setPanel] = useState3(null);
+  const panelRef = useMemo(() => {
+    let current = null;
+    return {
+      get current() {
+        return current;
+      },
+      set current(el) {
+        if (el === current) return;
+        current = el;
+        setPanel(el);
+      }
+    };
+  }, []);
   const openerRef = useRef2(null);
+  useEffect4(() => {
+    if (!open || !panel) return;
+    if (panel.contains(document.activeElement)) return;
+    const first = focusableIn(panel)[0] ?? panel;
+    first.focus();
+  }, [open, panel]);
   useEffect4(() => {
     if (!open) return;
     openerRef.current = document.activeElement ?? null;
-    const first = focusableIn(panelRef.current)[0] ?? panelRef.current;
-    first?.focus();
     scrollLocks += 1;
     const previousOverflow = document.body.style.overflow;
     if (scrollLocks === 1) document.body.style.overflow = "hidden";
@@ -4189,7 +4256,7 @@ function AppShell({
   useEffect6(() => {
     setMenuOpen(false);
   }, [activePath]);
-  const ctx = useMemo(
+  const ctx = useMemo2(
     () => ({ onNavigate, activePath, layout, collapsed: layout === "sidebar" && collapsed }),
     [onNavigate, activePath, layout, collapsed]
   );
@@ -4759,7 +4826,7 @@ function SegmentedControl({ options, value, onChange, label, size: size3 = "md",
 import { useId as useId6 } from "react";
 
 // src/components/chart.tsx
-import { useId as useId5, useMemo as useMemo2, useState as useState7 } from "react";
+import { useId as useId5, useMemo as useMemo3, useState as useState7 } from "react";
 
 // src/measure.ts
 import { useEffect as useEffect7, useRef as useRef3, useState as useState6 } from "react";
@@ -4900,7 +4967,7 @@ function Chart({
   const id = useId5();
   const fmt = formatValue ?? ((v) => v.toLocaleString());
   const linkAttrs = source ? sourceLinkAttrs(source) : {};
-  const plot = useMemo2(
+  const plot = useMemo3(
     () => buildPlot(data, series, xKind, title ?? "Value"),
     [data, series, xKind, title]
   );
@@ -4910,7 +4977,7 @@ function Chart({
   const n = plot.series.length;
   const round3 = kind === "pie" || kind === "donut";
   const showLegend = legend ?? (round3 || n > 1);
-  const fmtX = useMemo2(() => {
+  const fmtX = useMemo3(() => {
     if (formatX) return formatX;
     if (!plot.times) return (x) => String(x);
     return (x) => {
@@ -7479,8 +7546,59 @@ function Tooltip2({ content, side = "top", className, children }) {
   );
 }
 
+// src/components/animated-number.tsx
+import { useMemo as useMemo4, useRef as useRef8, useState as useState14 } from "react";
+import { Fragment as Fragment7, jsx as jsx28, jsxs as jsxs26 } from "react/jsx-runtime";
+function decimalsOf(n) {
+  if (!Number.isFinite(n)) return 0;
+  const s = String(n);
+  const dot = s.indexOf(".");
+  return dot < 0 || s.includes("e") ? 0 : Math.min(3, s.length - dot - 1);
+}
+function AnimatedNumber({ value, durationMs = 600, format, locale, className }) {
+  const formatKey = format ? JSON.stringify(format) : "";
+  const formatter = useMemo4(() => new Intl.NumberFormat(locale, format), [locale, formatKey]);
+  const elRef = useRef8(null);
+  const [frame, setFrame] = useState14(null);
+  const shown = useRef8(value);
+  useIsoLayoutEffect(() => {
+    const from = shown.current;
+    const to = value;
+    if (from === to || durationMs <= 0 || !Number.isFinite(from) || !Number.isFinite(to) || !canAnimate(elRef.current)) {
+      shown.current = to;
+      setFrame(null);
+      return;
+    }
+    const places = 10 ** Math.max(decimalsOf(from), decimalsOf(to));
+    let raf = 0;
+    let start;
+    setFrame(from);
+    const tick = (t) => {
+      if (start === void 0) start = t;
+      const p = Math.min(1, (t - start) / durationMs);
+      if (p >= 1) {
+        shown.current = to;
+        setFrame(null);
+        return;
+      }
+      const eased = 1 - (1 - p) ** 3;
+      const v = Math.round((from + (to - from) * eased) * places) / places;
+      shown.current = v;
+      setFrame(v);
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value, durationMs]);
+  const final = formatter.format(value);
+  return /* @__PURE__ */ jsx28("span", { ref: elRef, "data-rm-animated-number": "", className: cn("tabular-nums", className), children: frame === null ? final : /* @__PURE__ */ jsxs26(Fragment7, { children: [
+    /* @__PURE__ */ jsx28("span", { "aria-hidden": "true", children: formatter.format(frame) }),
+    /* @__PURE__ */ jsx28("span", { className: "sr-only", children: final })
+  ] }) });
+}
+
 // src/components/skeleton.tsx
-import { jsx as jsx28 } from "react/jsx-runtime";
+import { jsx as jsx29 } from "react/jsx-runtime";
 var base = cn("animate-pulse", tk.bgMuted);
 function Skeleton({
   variant = "text",
@@ -7492,7 +7610,7 @@ function Skeleton({
   ...props
 }) {
   if (variant === "text" && lines > 1) {
-    return /* @__PURE__ */ jsx28("div", { className: cn("flex flex-col gap-2", className), "aria-hidden": "true", style, ...props, children: Array.from({ length: lines }, (_, i) => /* @__PURE__ */ jsx28(
+    return /* @__PURE__ */ jsx29("div", { className: cn("flex flex-col gap-2", className), "aria-hidden": "true", style, ...props, children: Array.from({ length: lines }, (_, i) => /* @__PURE__ */ jsx29(
       "div",
       {
         className: cn(base, "h-4", tk.radiusSm),
@@ -7501,7 +7619,7 @@ function Skeleton({
       i
     )) });
   }
-  return /* @__PURE__ */ jsx28(
+  return /* @__PURE__ */ jsx29(
     "div",
     {
       "aria-hidden": "true",
@@ -7520,7 +7638,7 @@ function Skeleton({
 }
 
 // src/components/stat.tsx
-import { jsx as jsx29, jsxs as jsxs26 } from "react/jsx-runtime";
+import { jsx as jsx30, jsxs as jsxs27 } from "react/jsx-runtime";
 var wholeNumber = new Intl.NumberFormat(void 0, { maximumFractionDigits: 1 });
 function Stat({
   label,
@@ -7533,58 +7651,351 @@ function Stat({
   icon,
   loading = false,
   card = true,
+  animate = false,
+  emphasis = "default",
   className
 }) {
+  const inverted = emphasis === "inverted";
   const good = delta !== void 0 && delta !== 0 && delta > 0 === upIsGood;
   const flat = delta === void 0 || delta === 0;
-  const deltaClass = flat ? tk.fgMuted : good ? tk.fgSuccess : tk.fgDestructive;
-  const body = /* @__PURE__ */ jsxs26("div", { className: cn("min-w-0 text-left", card ? "px-5 py-4" : void 0, !card && className), children: [
-    /* @__PURE__ */ jsxs26("div", { className: "flex items-start gap-3", children: [
-      /* @__PURE__ */ jsxs26("div", { className: "min-w-0 flex-1", children: [
-        /* @__PURE__ */ jsx29("div", { className: cn("truncate", textStyles.muted), children: label }),
-        loading ? /* @__PURE__ */ jsx29(Skeleton, { variant: "text", lines: 1, width: "60%", className: "mt-3 h-6" }) : /* @__PURE__ */ jsxs26("div", { className: cn("mt-1", textStyles.stat), children: [
-          value,
-          unit !== void 0 && /* @__PURE__ */ jsx29("span", { className: cn("ml-1 text-base font-normal tracking-normal", tk.fgMuted), children: unit })
-        ] })
-      ] }),
-      icon !== void 0 && /* @__PURE__ */ jsx29(
-        "div",
+  const quiet = inverted ? tk.fgBackgroundMuted : tk.fgMuted;
+  const deltaClass = inverted ? tk.fgBackground : flat ? tk.fgMuted : good ? tk.fgSuccess : tk.fgDestructive;
+  const surface = inverted ? cn(tk.bgForeground, tk.borderForeground, tk.fgBackground) : void 0;
+  const body = /* @__PURE__ */ jsxs27(
+    "div",
+    {
+      "data-rm-stat-emphasis": inverted ? "inverted" : void 0,
+      className: cn("min-w-0 text-left", card ? "px-5 py-4" : void 0, !card && inverted && cn("px-5 py-4", tk.radius, surface), !card && className),
+      children: [
+        /* @__PURE__ */ jsxs27("div", { className: "flex items-start gap-3", children: [
+          /* @__PURE__ */ jsxs27("div", { className: "min-w-0 flex-1", children: [
+            /* @__PURE__ */ jsx30("div", { className: cn("truncate", textStyles.muted, inverted && quiet), children: label }),
+            loading ? /* @__PURE__ */ jsx30(Skeleton, { variant: "text", lines: 1, width: "60%", className: "mt-3 h-6" }) : /* @__PURE__ */ jsxs27("div", { className: cn("mt-1", textStyles.stat, inverted && tk.fgBackground), children: [
+              animate && typeof value === "number" ? /* @__PURE__ */ jsx30(AnimatedNumber, { value }) : value,
+              unit !== void 0 && /* @__PURE__ */ jsx30("span", { className: cn("ml-1 text-base font-normal tracking-normal", quiet), children: unit })
+            ] })
+          ] }),
+          icon !== void 0 && /* @__PURE__ */ jsx30(
+            "div",
+            {
+              "aria-hidden": "true",
+              className: cn(
+                "flex h-9 w-9 shrink-0 items-center justify-center rounded-full",
+                inverted ? cn(tk.bgBackgroundSoft, tk.fgBackground) : cn(tk.bgPrimarySoft, tk.fgPrimary)
+              ),
+              children: renderIcon(icon, 18)
+            }
+          )
+        ] }),
+        delta !== void 0 && !loading && /* @__PURE__ */ jsxs27("div", { className: "mt-2 flex items-center gap-1 text-sm", children: [
+          /* @__PURE__ */ jsx30(
+            Icon,
+            {
+              name: delta === 0 ? "minus" : delta > 0 ? "arrow-up" : "arrow-down",
+              size: 14,
+              strokeWidth: 2.5,
+              className: deltaClass
+            }
+          ),
+          /* @__PURE__ */ jsxs27("span", { className: cn("font-medium tabular-nums", deltaClass), children: [
+            delta > 0 ? "+" : "",
+            wholeNumber.format(delta),
+            "%"
+          ] }),
+          /* @__PURE__ */ jsx30("span", { className: cn("truncate", quiet), children: deltaLabel })
+        ] }),
+        trend && trend.length > 1 && !loading && /* @__PURE__ */ jsx30(Sparkline, { values: trend, className: "mt-3" })
+      ]
+    }
+  );
+  return card ? /* @__PURE__ */ jsx30(Card, { className: cn(surface, className), children: body }) : body;
+}
+
+// src/components/meter.tsx
+import { useId as useId10 } from "react";
+import { jsx as jsx31, jsxs as jsxs28 } from "react/jsx-runtime";
+var TONE2 = {
+  default: tk.bgPrimary,
+  success: tk.bgSuccess,
+  warning: tk.bgWarning,
+  danger: tk.bgDestructive
+};
+var TRACK = {
+  sm: "h-1.5",
+  md: "h-2"
+};
+var TEXT = {
+  sm: "text-xs",
+  md: "text-sm"
+};
+var HATCH = "bg-[image:repeating-linear-gradient(135deg,transparent_0_3px,oklch(var(--rm-muted))_3px_6px)]";
+function Meter({
+  label,
+  value,
+  max: max2 = 1,
+  segments,
+  tone = "default",
+  uncertain = false,
+  uncertainLabel = "low confidence",
+  valueLabel,
+  trailing,
+  size: size3 = "md",
+  className
+}) {
+  const id = useId10();
+  const top = Number.isFinite(max2) && max2 > 0 ? max2 : 1;
+  const now = Number.isFinite(value) ? Math.min(top, Math.max(0, value)) : 0;
+  const fraction = now / top;
+  const cells = segments !== void 0 && segments >= 1 ? Math.floor(segments) : 0;
+  const filled = Math.round(fraction * cells);
+  const said = typeof valueLabel === "string" || typeof valueLabel === "number" ? String(valueLabel) : typeof trailing === "string" || typeof trailing === "number" ? String(trailing) : cells > 0 ? `${filled} of ${cells}` : `${Math.round(fraction * 100)}%`;
+  const fill = cn("h-full", TONE2[tone], uncertain && HATCH);
+  return /* @__PURE__ */ jsxs28("div", { "data-rm-meter": "", "data-tone": tone, "data-uncertain": uncertain || void 0, className: cn("w-full text-left", className), children: [
+    /* @__PURE__ */ jsxs28("div", { className: cn("mb-1 flex items-baseline justify-between gap-2", TEXT[size3]), children: [
+      /* @__PURE__ */ jsx31("span", { id: `${id}-label`, className: cn("min-w-0 truncate", tk.fgMuted), children: label }),
+      (valueLabel !== void 0 || trailing !== void 0) && /* @__PURE__ */ jsxs28("span", { className: "flex shrink-0 items-baseline gap-2", children: [
+        valueLabel !== void 0 && /* @__PURE__ */ jsx31("span", { className: cn("font-medium", tk.fg), children: valueLabel }),
+        trailing !== void 0 && /* @__PURE__ */ jsx31("span", { className: cn("tabular-nums", tk.fgMuted), children: trailing })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsx31(
+      "div",
+      {
+        role: "meter",
+        "aria-labelledby": `${id}-label`,
+        "aria-valuemin": 0,
+        "aria-valuemax": top,
+        "aria-valuenow": now,
+        "aria-valuetext": uncertain ? `${said}, ${uncertainLabel}` : said,
+        className: cn("w-full", TRACK[size3], cells > 0 ? "flex gap-0.5" : cn("overflow-hidden rounded-full", tk.bgMuted)),
+        children: cells > 0 ? Array.from({ length: cells }, (_, i) => /* @__PURE__ */ jsx31(
+          "span",
+          {
+            "data-rm-meter-cell": i < filled ? "on" : "off",
+            className: cn("h-full flex-1 overflow-hidden rounded-full", tk.bgMuted),
+            children: i < filled && /* @__PURE__ */ jsx31("span", { className: cn("block", fill) })
+          },
+          i
+        )) : /* @__PURE__ */ jsx31(
+          "div",
+          {
+            "data-rm-meter-fill": "",
+            className: cn("rounded-full transition-[width] duration-300", fill),
+            style: { width: `${fraction * 100}%` }
+          }
+        )
+      }
+    )
+  ] });
+}
+
+// src/components/bar-list.tsx
+import { useRef as useRef9, useState as useState15 } from "react";
+import { Fragment as Fragment8, jsx as jsx32, jsxs as jsxs29 } from "react/jsx-runtime";
+var grouped = new Intl.NumberFormat();
+function BarList({
+  items: items2,
+  max: max2,
+  sort = "desc",
+  limit,
+  formatValue,
+  onSelect,
+  selectedKey,
+  animate = false,
+  source,
+  emptyState = "Nothing to show yet.",
+  label,
+  className
+}) {
+  const [expanded, setExpanded] = useState15(false);
+  const ranked = sort === "none" ? items2 : [...items2].sort((a, b) => sort === "asc" ? a.value - b.value : b.value - a.value);
+  const capped = limit !== void 0 && limit > 0 && ranked.length > limit;
+  const shown = capped && !expanded ? ranked.slice(0, limit) : ranked;
+  const top = max2 !== void 0 && max2 > 0 ? max2 : Math.max(0, ...items2.map((i) => Number.isFinite(i.value) ? i.value : 0));
+  const rowEls = useRef9(/* @__PURE__ */ new Map());
+  const tops = useRef9(/* @__PURE__ */ new Map());
+  const order2 = shown.map((i) => i.key).join("\n");
+  useIsoLayoutEffect(() => {
+    const before = tops.current;
+    const after = /* @__PURE__ */ new Map();
+    for (const [key, el] of rowEls.current) after.set(key, el.offsetTop);
+    tops.current = after;
+    if (!animate) return;
+    for (const [key, el] of rowEls.current) {
+      const was = before.get(key);
+      const is = after.get(key);
+      if (was === void 0 || is === void 0 || was === is || !canAnimate(el)) continue;
+      el.style.transition = "none";
+      el.style.transform = `translateY(${was - is}px)`;
+      requestAnimationFrame(() => {
+        el.style.transition = "transform 320ms cubic-bezier(0.16, 1, 0.3, 1)";
+        el.style.transform = "";
+      });
+    }
+  }, [order2, animate]);
+  if (items2.length === 0) {
+    return /* @__PURE__ */ jsx32("div", { "data-rm-bar-list": "", ...source ? sourceLinkAttrs(source) : {}, className: cn("py-6 text-center text-sm", tk.fgMuted, className), children: emptyState });
+  }
+  return /* @__PURE__ */ jsxs29("div", { "data-rm-bar-list": "", ...source ? sourceLinkAttrs(source) : {}, className: cn("text-left", className), children: [
+    /* @__PURE__ */ jsx32("ol", { role: "list", "aria-label": label, className: "flex flex-col gap-1", children: shown.map((item) => {
+      const share = top > 0 && Number.isFinite(item.value) ? Math.min(1, Math.max(0, item.value / top)) : 0;
+      const selected = selectedKey === item.key;
+      const inner = /* @__PURE__ */ jsxs29(Fragment8, { children: [
+        /* @__PURE__ */ jsx32(
+          "span",
+          {
+            "aria-hidden": "true",
+            "data-rm-bar": "",
+            className: cn(
+              "absolute inset-y-0 left-0 transition-[width,opacity] duration-300",
+              tk.radiusSm,
+              tk.bgPrimary,
+              selected ? "opacity-40" : "opacity-20"
+            ),
+            style: { width: `${share * 100}%`, backgroundColor: item.color }
+          }
+        ),
+        /* @__PURE__ */ jsx32("span", { className: cn("relative min-w-0 flex-1 truncate", selected && "font-medium"), children: item.label }),
+        /* @__PURE__ */ jsx32("span", { className: cn("relative shrink-0 tabular-nums", selected ? tk.fg : tk.fgMuted), children: formatValue ? formatValue(item.value, item) : grouped.format(item.value) })
+      ] });
+      const rowClass = cn(
+        "relative flex w-full items-center gap-3 px-2 py-1.5 text-left text-sm",
+        tk.radiusSm,
+        tk.fg
+      );
+      const pressable = cn(rowClass, "transition-colors", tk.hoverBgMutedHalf, focusRing);
+      return /* @__PURE__ */ jsx32(
+        "li",
+        {
+          "data-rm-bar-row": item.key,
+          ref: (el) => {
+            if (el) rowEls.current.set(item.key, el);
+            else rowEls.current.delete(item.key);
+          },
+          children: item.href ? /* @__PURE__ */ jsx32("a", { href: item.href, "aria-current": selected ? "true" : void 0, onClick: () => onSelect?.(item), className: pressable, children: inner }) : onSelect ? /* @__PURE__ */ jsx32("button", { type: "button", "aria-pressed": selected, onClick: () => onSelect(item), className: pressable, children: inner }) : /* @__PURE__ */ jsx32("div", { className: rowClass, children: inner })
+        },
+        item.key
+      );
+    }) }),
+    capped && /* @__PURE__ */ jsx32(
+      "button",
+      {
+        type: "button",
+        "aria-expanded": expanded,
+        onClick: () => setExpanded((e) => !e),
+        className: cn("mt-2 px-2 py-1 text-xs font-medium", tk.radiusSm, tk.fgMuted, tk.hoverFg, focusRing),
+        children: expanded ? "Show fewer" : `Show all ${ranked.length}`
+      }
+    )
+  ] });
+}
+
+// src/components/progress-steps.tsx
+import { useEffect as useEffect11, useRef as useRef10, useState as useState16 } from "react";
+import { Fragment as Fragment9, jsx as jsx33, jsxs as jsxs30 } from "react/jsx-runtime";
+var STATUS_WORDS = {
+  pending: "Waiting",
+  active: "In progress",
+  done: "Done",
+  failed: "Failed",
+  skipped: "Skipped"
+};
+var MARKER = {
+  pending: cn(tk.fgFaint),
+  active: cn("border-2", tk.borderPrimary, tk.bgCard, tk.fgPrimary),
+  done: cn(tk.bgPrimary, tk.fgOnPrimary),
+  failed: cn(tk.bgDestructive, tk.fgOnDestructive),
+  skipped: cn("border border-dashed", tk.borderInput, tk.fgMuted)
+};
+var LABEL = {
+  pending: tk.fgMuted,
+  active: cn("font-semibold", tk.fg),
+  done: tk.fg,
+  failed: cn("font-semibold", tk.fgDestructive),
+  skipped: cn("line-through", tk.fgFaint)
+};
+function ProgressSteps({
+  steps,
+  orientation = "horizontal",
+  label = "Progress",
+  statusLabels,
+  className
+}) {
+  const words = { ...STATUS_WORDS, ...statusLabels };
+  const vertical = orientation === "vertical";
+  const speaking = steps.filter((s) => s.status === "active" || s.status === "failed").map((s) => `${s.key}
+${s.status}`).join("\n\n");
+  const spoken = useRef10(speaking);
+  const [announcement, setAnnouncement] = useState16("");
+  useEffect11(() => {
+    if (spoken.current === speaking) return;
+    const before = new Set(spoken.current.split("\n\n"));
+    spoken.current = speaking;
+    const fresh = steps.filter(
+      (s) => (s.status === "active" || s.status === "failed") && !before.has(`${s.key}
+${s.status}`)
+    );
+    if (fresh.length > 0) setAnnouncement(fresh.map((s) => `${s.label}: ${words[s.status]}`).join(". "));
+  }, [speaking]);
+  return /* @__PURE__ */ jsxs30("div", { "data-rm-progress-steps": "", "data-orientation": orientation, className: cn("text-left", className), children: [
+    /* @__PURE__ */ jsx33("ol", { role: "list", "aria-label": label, className: cn("flex", vertical ? "flex-col" : "items-start"), children: steps.map((step, i) => {
+      const last = i === steps.length - 1;
+      const rail = cn(step.status === "done" ? tk.bgPrimary : tk.bgBorder);
+      const marker = /* @__PURE__ */ jsxs30(
+        "span",
         {
           "aria-hidden": "true",
-          className: cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-full", tk.bgPrimarySoft, tk.fgPrimary),
-          children: renderIcon(icon, 18)
+          "data-rm-step-marker": "",
+          className: cn("flex h-6 w-6 shrink-0 items-center justify-center rounded-full", MARKER[step.status]),
+          children: [
+            step.status === "done" && /* @__PURE__ */ jsx33(Icon, { name: "check", size: 14, strokeWidth: 3 }),
+            step.status === "active" && /* @__PURE__ */ jsx33(Icon, { name: "loader-circle", size: 14, strokeWidth: 2.5, className: "animate-spin" }),
+            step.status === "failed" && /* @__PURE__ */ jsx33(Icon, { name: "x", size: 14, strokeWidth: 3 }),
+            step.status === "skipped" && /* @__PURE__ */ jsx33(Icon, { name: "minus", size: 14 }),
+            step.status === "pending" && /* @__PURE__ */ jsx33(Icon, { name: "circle-dashed", size: 24, strokeWidth: 1.5 })
+          ]
         }
-      )
-    ] }),
-    delta !== void 0 && !loading && /* @__PURE__ */ jsxs26("div", { className: "mt-2 flex items-center gap-1 text-sm", children: [
-      /* @__PURE__ */ jsx29(
-        Icon,
+      );
+      const text = /* @__PURE__ */ jsxs30("span", { className: "block min-w-0", children: [
+        /* @__PURE__ */ jsx33("span", { className: cn("block truncate text-sm", LABEL[step.status]), children: step.label }),
+        /* @__PURE__ */ jsx33("span", { className: "sr-only", children: `(${words[step.status]})` }),
+        step.detail !== void 0 && /* @__PURE__ */ jsx33("span", { className: cn("block text-xs", tk.fgMuted), children: step.detail })
+      ] });
+      return /* @__PURE__ */ jsx33(
+        "li",
         {
-          name: delta === 0 ? "minus" : delta > 0 ? "arrow-up" : "arrow-down",
-          size: 14,
-          strokeWidth: 2.5,
-          className: deltaClass
-        }
-      ),
-      /* @__PURE__ */ jsxs26("span", { className: cn("font-medium tabular-nums", deltaClass), children: [
-        delta > 0 ? "+" : "",
-        wholeNumber.format(delta),
-        "%"
-      ] }),
-      /* @__PURE__ */ jsx29("span", { className: cn("truncate", tk.fgMuted), children: deltaLabel })
-    ] }),
-    trend && trend.length > 1 && !loading && /* @__PURE__ */ jsx29(Sparkline, { values: trend, className: "mt-3" })
+          "data-rm-step": step.key,
+          "data-status": step.status,
+          "aria-current": step.status === "active" ? "step" : void 0,
+          className: vertical ? "flex min-w-0 gap-3" : cn("flex min-w-0 flex-col gap-1.5", !last && "flex-1"),
+          children: vertical ? /* @__PURE__ */ jsxs30(Fragment9, { children: [
+            /* @__PURE__ */ jsxs30("span", { className: "flex flex-col items-center", children: [
+              marker,
+              !last && /* @__PURE__ */ jsx33("span", { "aria-hidden": "true", className: cn("my-1 w-px flex-1", rail) })
+            ] }),
+            /* @__PURE__ */ jsx33("span", { className: cn("min-w-0 pt-0.5", !last && "pb-4"), children: text })
+          ] }) : /* @__PURE__ */ jsxs30(Fragment9, { children: [
+            /* @__PURE__ */ jsxs30("span", { className: "flex items-center", children: [
+              marker,
+              !last && /* @__PURE__ */ jsx33("span", { "aria-hidden": "true", className: cn("mx-2 h-px flex-1", rail) })
+            ] }),
+            /* @__PURE__ */ jsx33("span", { className: "min-w-0 pr-2", children: text })
+          ] })
+        },
+        step.key
+      );
+    }) }),
+    /* @__PURE__ */ jsx33("span", { "data-rm-progress-announce": "", "aria-live": "polite", className: "sr-only", children: announcement })
   ] });
-  return card ? /* @__PURE__ */ jsx29(Card, { className, children: body }) : body;
 }
 
 // src/components/stepper.tsx
 import {
   Children as Children4,
   isValidElement as isValidElement4,
-  useState as useState14
+  useState as useState17
 } from "react";
-import { jsx as jsx30, jsxs as jsxs27 } from "react/jsx-runtime";
+import { jsx as jsx34, jsxs as jsxs31 } from "react/jsx-runtime";
 function Stepper({
   value,
   defaultValue: defaultValue2 = 0,
@@ -7601,9 +8012,9 @@ function Stepper({
   const items2 = Children4.toArray(children);
   const steps = items2.filter((c) => isValidElement4(c) && c.type === Step);
   const rest = items2.filter((c) => !(isValidElement4(c) && c.type === Step));
-  const [ownValue, setOwnValue] = useState14(defaultValue2);
+  const [ownValue, setOwnValue] = useState17(defaultValue2);
   const current = Math.max(0, Math.min(value ?? ownValue, Math.max(0, steps.length - 1)));
-  const [furthest, setFurthest] = useState14(current);
+  const [furthest, setFurthest] = useState17(current);
   if (current > furthest) setFurthest(current);
   const go = (next) => {
     const clamped = Math.max(0, Math.min(next, steps.length - 1));
@@ -7612,13 +8023,13 @@ function Stepper({
     onChange?.(clamped);
   };
   const last = current >= steps.length - 1;
-  return /* @__PURE__ */ jsxs27("div", { className: cn("text-left", className), children: [
-    /* @__PURE__ */ jsx30("ol", { "aria-label": label, className: "flex flex-wrap items-center gap-x-2 gap-y-2", children: steps.map((child, i) => {
+  return /* @__PURE__ */ jsxs31("div", { className: cn("text-left", className), children: [
+    /* @__PURE__ */ jsx34("ol", { "aria-label": label, className: "flex flex-wrap items-center gap-x-2 gap-y-2", children: steps.map((child, i) => {
       const props = isValidElement4(child) ? child.props : { title: "" };
       const state = i < current ? "done" : i === current ? "current" : "todo";
       const reachable = nonLinear || i <= furthest;
-      return /* @__PURE__ */ jsxs27("li", { className: "flex items-center gap-2", children: [
-        /* @__PURE__ */ jsxs27(
+      return /* @__PURE__ */ jsxs31("li", { className: "flex items-center gap-2", children: [
+        /* @__PURE__ */ jsxs31(
           "button",
           {
             type: "button",
@@ -7631,7 +8042,7 @@ function Stepper({
               focusRing
             ),
             children: [
-              /* @__PURE__ */ jsx30(
+              /* @__PURE__ */ jsx34(
                 "span",
                 {
                   "aria-hidden": "true",
@@ -7641,22 +8052,22 @@ function Stepper({
                     state === "current" && cn("border-2", tk.borderPrimary, tk.fgPrimary, tk.bgCard),
                     state === "todo" && cn(tk.border, tk.fgMuted, tk.bgCard)
                   ),
-                  children: state === "done" ? /* @__PURE__ */ jsx30(Icon, { name: "check", size: 14, strokeWidth: 3 }) : i + 1
+                  children: state === "done" ? /* @__PURE__ */ jsx34(Icon, { name: "check", size: 14, strokeWidth: 3 }) : i + 1
                 }
               ),
-              /* @__PURE__ */ jsxs27("span", { className: "min-w-0", children: [
-                /* @__PURE__ */ jsxs27("span", { className: cn("block text-sm font-medium", state === "current" ? tk.fg : tk.fgMuted), children: [
+              /* @__PURE__ */ jsxs31("span", { className: "min-w-0", children: [
+                /* @__PURE__ */ jsxs31("span", { className: cn("block text-sm font-medium", state === "current" ? tk.fg : tk.fgMuted), children: [
                   props.title,
-                  props.optional && /* @__PURE__ */ jsx30("span", { className: cn("ml-1 text-xs font-normal", tk.fgFaint), children: "(optional)" })
+                  props.optional && /* @__PURE__ */ jsx34("span", { className: cn("ml-1 text-xs font-normal", tk.fgFaint), children: "(optional)" })
                 ] }),
-                props.description !== void 0 && /* @__PURE__ */ jsx30("span", { className: cn("block text-xs", tk.fgMuted), children: props.description })
+                props.description !== void 0 && /* @__PURE__ */ jsx34("span", { className: cn("block text-xs", tk.fgMuted), children: props.description })
               ] })
             ]
           }
         ),
         i < steps.length - 1 && // The segment behind a finished step is drawn in the accent,
         // so the rail reads as "this far, and no further".
-        /* @__PURE__ */ jsx30(
+        /* @__PURE__ */ jsx34(
           "span",
           {
             "aria-hidden": "true",
@@ -7665,27 +8076,27 @@ function Stepper({
         )
       ] }, i);
     }) }),
-    /* @__PURE__ */ jsx30("div", { className: "mt-4", children: steps[current] }),
-    controls && steps.length > 1 && /* @__PURE__ */ jsxs27("div", { className: "mt-5 flex items-center gap-2", children: [
-      /* @__PURE__ */ jsx30(Button, { variant: "secondary", disabled: current === 0, onClick: () => go(current - 1), children: backLabel }),
-      !last && /* @__PURE__ */ jsx30(Button, { disabled: nextDisabled, onClick: () => go(current + 1), children: nextLabel })
+    /* @__PURE__ */ jsx34("div", { className: "mt-4", children: steps[current] }),
+    controls && steps.length > 1 && /* @__PURE__ */ jsxs31("div", { className: "mt-5 flex items-center gap-2", children: [
+      /* @__PURE__ */ jsx34(Button, { variant: "secondary", disabled: current === 0, onClick: () => go(current - 1), children: backLabel }),
+      !last && /* @__PURE__ */ jsx34(Button, { disabled: nextDisabled, onClick: () => go(current + 1), children: nextLabel })
     ] }),
     rest
   ] });
 }
 function Step({ className, children }) {
-  return /* @__PURE__ */ jsx30("div", { className: cn("text-left", className), children });
+  return /* @__PURE__ */ jsx34("div", { className: cn("text-left", className), children });
 }
 
 // src/components/accordion.tsx
 import {
   createContext as createContext4,
   useContext as useContext5,
-  useId as useId10,
-  useRef as useRef8,
-  useState as useState15
+  useId as useId11,
+  useRef as useRef11,
+  useState as useState18
 } from "react";
-import { jsx as jsx31, jsxs as jsxs28 } from "react/jsx-runtime";
+import { jsx as jsx35, jsxs as jsxs32 } from "react/jsx-runtime";
 var AccordionContext = createContext4(null);
 function Accordion({
   type = "multiple",
@@ -7695,10 +8106,10 @@ function Accordion({
   className,
   children
 }) {
-  const baseId = useId10();
-  const [ownValue, setOwnValue] = useState15(defaultValue2 ?? []);
+  const baseId = useId11();
+  const [ownValue, setOwnValue] = useState18(defaultValue2 ?? []);
   const open = value ?? ownValue;
-  const rootRef = useRef8(null);
+  const rootRef = useRef11(null);
   const set = (next) => {
     if (value === void 0) setOwnValue(next);
     onChange?.(next);
@@ -7727,7 +8138,7 @@ function Accordion({
     else next = headers.length - 1;
     headers[next]?.focus();
   };
-  return /* @__PURE__ */ jsx31(AccordionContext.Provider, { value: ctx, children: /* @__PURE__ */ jsx31(
+  return /* @__PURE__ */ jsx35(AccordionContext.Provider, { value: ctx, children: /* @__PURE__ */ jsx35(
     "div",
     {
       ref: rootRef,
@@ -7750,8 +8161,8 @@ function AccordionItem({
   const open = ctx?.isOpen(value) ?? false;
   const headerId = `${ctx?.baseId ?? "acc"}-h-${value}`;
   const panelId = `${ctx?.baseId ?? "acc"}-p-${value}`;
-  return /* @__PURE__ */ jsxs28("div", { className, children: [
-    /* @__PURE__ */ jsx31("h3", { className: "m-0", children: /* @__PURE__ */ jsxs28(
+  return /* @__PURE__ */ jsxs32("div", { className, children: [
+    /* @__PURE__ */ jsx35("h3", { className: "m-0", children: /* @__PURE__ */ jsxs32(
       "button",
       {
         type: "button",
@@ -7767,7 +8178,7 @@ function AccordionItem({
           focusRing
         ),
         children: [
-          /* @__PURE__ */ jsx31(
+          /* @__PURE__ */ jsx35(
             Icon,
             {
               name: "chevron-down",
@@ -7775,17 +8186,17 @@ function AccordionItem({
               className: cn("transition-transform", tk.fgMuted, open && "rotate-180")
             }
           ),
-          /* @__PURE__ */ jsxs28("span", { className: "min-w-0 flex-1", children: [
-            /* @__PURE__ */ jsx31("span", { className: cn("block text-sm font-medium", tk.fg), children: title }),
-            description !== void 0 && /* @__PURE__ */ jsx31("span", { className: cn("mt-0.5 block text-xs", tk.fgMuted), children: description })
+          /* @__PURE__ */ jsxs32("span", { className: "min-w-0 flex-1", children: [
+            /* @__PURE__ */ jsx35("span", { className: cn("block text-sm font-medium", tk.fg), children: title }),
+            description !== void 0 && /* @__PURE__ */ jsx35("span", { className: cn("mt-0.5 block text-xs", tk.fgMuted), children: description })
           ] }),
-          meta !== void 0 && /* @__PURE__ */ jsx31("span", { className: "shrink-0 text-xs", children: meta })
+          meta !== void 0 && /* @__PURE__ */ jsx35("span", { className: "shrink-0 text-xs", children: meta })
         ]
       }
     ) }),
     open && // The grid wrapper is what the stylesheet animates (grid-template-rows
     // from 0fr to 1fr); the inner box clips the content while it grows.
-    /* @__PURE__ */ jsx31("div", { className: "grid", "data-rm-anim": "collapse", "data-state": "open", children: /* @__PURE__ */ jsx31(
+    /* @__PURE__ */ jsx35("div", { className: "grid", "data-rm-anim": "collapse", "data-state": "open", children: /* @__PURE__ */ jsx35(
       "div",
       {
         id: panelId,
@@ -7802,14 +8213,14 @@ function AccordionItem({
 import { Children as Children5 } from "react";
 
 // src/components/status-badge.tsx
-import { jsx as jsx32 } from "react/jsx-runtime";
+import { jsx as jsx36 } from "react/jsx-runtime";
 var VARIANT = {
   ok: "success",
   warn: "warning",
   error: "danger",
   pending: "neutral"
 };
-var LABEL = {
+var LABEL2 = {
   ok: "OK",
   warn: "Warning",
   error: "Error",
@@ -7819,34 +8230,34 @@ function statusDotClass(status) {
   return badgeDotClass(VARIANT[status]);
 }
 function StatusBadge({ status, children, ...props }) {
-  return /* @__PURE__ */ jsx32(Badge, { variant: VARIANT[status], dot: true, ...props, children: children ?? LABEL[status] });
+  return /* @__PURE__ */ jsx36(Badge, { variant: VARIANT[status], dot: true, ...props, children: children ?? LABEL2[status] });
 }
 
 // src/components/timeline.tsx
-import { jsx as jsx33, jsxs as jsxs29 } from "react/jsx-runtime";
+import { jsx as jsx37, jsxs as jsxs33 } from "react/jsx-runtime";
 function Timeline({ children, className, ...props }) {
   const items2 = Children5.toArray(children);
-  return /* @__PURE__ */ jsx33("ol", { className: cn("relative text-left", className), ...props, children: items2.map((child, i) => /* @__PURE__ */ jsxs29("li", { className: "relative pb-5 pl-6 last:pb-0", children: [
-    i < items2.length - 1 && /* @__PURE__ */ jsx33("span", { "aria-hidden": "true", className: cn("absolute left-[5px] top-3 h-full w-px", tk.bgBorder) }),
+  return /* @__PURE__ */ jsx37("ol", { className: cn("relative text-left", className), ...props, children: items2.map((child, i) => /* @__PURE__ */ jsxs33("li", { className: "relative pb-5 pl-6 last:pb-0", children: [
+    i < items2.length - 1 && /* @__PURE__ */ jsx37("span", { "aria-hidden": "true", className: cn("absolute left-[5px] top-3 h-full w-px", tk.bgBorder) }),
     child
   ] }, i)) });
 }
 function TimelineItem({ at, title, body, status = "pending", by, className, children }) {
-  return /* @__PURE__ */ jsxs29("div", { className: cn("min-w-0", className), children: [
-    /* @__PURE__ */ jsx33(
+  return /* @__PURE__ */ jsxs33("div", { className: cn("min-w-0", className), children: [
+    /* @__PURE__ */ jsx37(
       "span",
       {
         "aria-hidden": "true",
         className: cn("absolute left-0 top-1.5 h-2.5 w-2.5 rounded-full ring-4", tk.ringCard, statusDotClass(status))
       }
     ),
-    /* @__PURE__ */ jsxs29("div", { className: "flex flex-wrap items-baseline gap-x-2 gap-y-0.5", children: [
-      /* @__PURE__ */ jsx33("span", { className: cn("text-sm font-medium", tk.fg), children: title }),
-      at !== void 0 && /* @__PURE__ */ jsx33("span", { className: cn("text-xs", tk.fgMuted), children: formatAt(at) })
+    /* @__PURE__ */ jsxs33("div", { className: "flex flex-wrap items-baseline gap-x-2 gap-y-0.5", children: [
+      /* @__PURE__ */ jsx37("span", { className: cn("text-sm font-medium", tk.fg), children: title }),
+      at !== void 0 && /* @__PURE__ */ jsx37("span", { className: cn("text-xs", tk.fgMuted), children: formatAt(at) })
     ] }),
-    body !== void 0 && /* @__PURE__ */ jsx33("div", { className: cn("mt-0.5 text-sm", tk.fgMuted), children: body }),
-    by !== void 0 && /* @__PURE__ */ jsx33("div", { className: "mt-1.5 flex items-center gap-2 text-xs", children: by }),
-    children !== void 0 && /* @__PURE__ */ jsx33("div", { className: "mt-2", children })
+    body !== void 0 && /* @__PURE__ */ jsx37("div", { className: cn("mt-0.5 text-sm", tk.fgMuted), children: body }),
+    by !== void 0 && /* @__PURE__ */ jsx37("div", { className: "mt-1.5 flex items-center gap-2 text-xs", children: by }),
+    children !== void 0 && /* @__PURE__ */ jsx37("div", { className: "mt-2", children })
   ] });
 }
 function formatAt(at) {
@@ -7863,7 +8274,7 @@ function formatAt(at) {
 
 // src/components/avatar.tsx
 import { Children as Children6 } from "react";
-import { Fragment as Fragment7, jsx as jsx34, jsxs as jsxs30 } from "react/jsx-runtime";
+import { Fragment as Fragment10, jsx as jsx38, jsxs as jsxs34 } from "react/jsx-runtime";
 var SIZES3 = {
   xs: "h-6 w-6 text-[10px]",
   sm: "h-8 w-8 text-xs",
@@ -7878,7 +8289,7 @@ var RING = {
 };
 function Avatar({ name, src, size: size3 = "md", fallback, className, ...props }) {
   const label = name?.trim() || "Unknown person";
-  return /* @__PURE__ */ jsx34(
+  return /* @__PURE__ */ jsx38(
     "span",
     {
       title: name || void 0,
@@ -7894,9 +8305,9 @@ function Avatar({ name, src, size: size3 = "md", fallback, className, ...props }
         // A picture that 404s must leave the initials showing rather than the
         // browser's broken-image glyph, so the initials are painted behind it
         // and the <img> simply hides itself when it cannot load.
-        /* @__PURE__ */ jsxs30(Fragment7, { children: [
-          /* @__PURE__ */ jsx34("span", { "aria-hidden": "true", className: "absolute inset-0 flex items-center justify-center", children: fallback ?? initials(label) }),
-          /* @__PURE__ */ jsx34(
+        /* @__PURE__ */ jsxs34(Fragment10, { children: [
+          /* @__PURE__ */ jsx38("span", { "aria-hidden": "true", className: "absolute inset-0 flex items-center justify-center", children: fallback ?? initials(label) }),
+          /* @__PURE__ */ jsx38(
             "img",
             {
               src,
@@ -7908,7 +8319,7 @@ function Avatar({ name, src, size: size3 = "md", fallback, className, ...props }
             }
           )
         ] })
-      ) : /* @__PURE__ */ jsx34("span", { "aria-label": label, role: "img", children: fallback ?? initials(label) })
+      ) : /* @__PURE__ */ jsx38("span", { "aria-label": label, role: "img", children: fallback ?? initials(label) })
     }
   );
 }
@@ -7916,9 +8327,9 @@ function AvatarGroup({ max: max2 = 4, size: size3 = "sm", children, className, .
   const all = Children6.toArray(children);
   const shown = all.slice(0, max2);
   const extra = all.length - shown.length;
-  return /* @__PURE__ */ jsxs30("div", { className: cn("flex items-center", className), ...props, children: [
-    shown.map((child, i) => /* @__PURE__ */ jsx34("span", { className: cn("rounded-full", tk.ringCard, i === 0 ? "ml-0 ring-2" : RING[size3]), children: child }, i)),
-    extra > 0 && /* @__PURE__ */ jsxs30(
+  return /* @__PURE__ */ jsxs34("div", { className: cn("flex items-center", className), ...props, children: [
+    shown.map((child, i) => /* @__PURE__ */ jsx38("span", { className: cn("rounded-full", tk.ringCard, i === 0 ? "ml-0 ring-2" : RING[size3]), children: child }, i)),
+    extra > 0 && /* @__PURE__ */ jsxs34(
       "span",
       {
         className: cn(
@@ -7944,17 +8355,1648 @@ function initials(name) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-// src/components/thread.tsx
+// src/components/image.tsx
+import { useEffect as useEffect13, useRef as useRef13, useState as useState20 } from "react";
+
+// src/image-source.ts
+import { useFileUrl } from "@robomotion/apps-runtime/react";
+function useImageSource(src, file) {
+  const resolved = useFileUrl(src ? void 0 : file);
+  return {
+    url: src || resolved.url,
+    resolving: !src && resolved.loading,
+    failed: !src && !!resolved.error,
+    refresh: resolved.refresh,
+    fromFile: !src && !!file
+  };
+}
+
+// src/components/lightbox.tsx
 import {
-  useEffect as useEffect11,
-  useRef as useRef9,
-  useState as useState16
+  useCallback as useCallback5,
+  useEffect as useEffect12,
+  useRef as useRef12,
+  useState as useState19
+} from "react";
+import { jsx as jsx39, jsxs as jsxs35 } from "react/jsx-runtime";
+var VEIL = "bg-[color:oklch(0.16_0.01_260/0.94)]";
+var ON_VEIL = "text-[color:oklch(1_0_0/0.92)]";
+var ON_VEIL_MUTED = "text-[color:oklch(1_0_0/0.64)]";
+var VEIL_CONTROL = "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[color:oklch(1_0_0/0.8)] transition-colors hover:bg-[color:oklch(1_0_0/0.14)] hover:text-[color:oklch(1_0_0)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:oklch(1_0_0/0.9)] disabled:cursor-not-allowed disabled:opacity-30";
+var MIN_SCALE = 1;
+var MAX_SCALE = 8;
+var FIT = { scale: 1, x: 0, y: 0 };
+function Lightbox({
+  open,
+  onClose,
+  items: items2,
+  index,
+  defaultIndex = 0,
+  onIndexChange,
+  actions,
+  className
+}) {
+  const { panelRef, onKeyDown: overlayKeyDown } = useOverlay(open, onClose);
+  const presence = usePresence(open);
+  const [own, setOwn] = useState19(defaultIndex);
+  const count = items2.length;
+  const at = clamp2(index ?? own, 0, Math.max(0, count - 1));
+  const item = items2[at];
+  const [view, setView] = useState19(FIT);
+  const viewRef = useRef12(view);
+  viewRef.current = view;
+  const stageRef = useRef12(null);
+  useEffect12(() => {
+    setView(FIT);
+  }, [at, open]);
+  useEffect12(() => {
+    if (open && index === void 0) setOwn(clamp2(defaultIndex, 0, Math.max(0, count - 1)));
+  }, [open]);
+  const go = useCallback5(
+    (next) => {
+      if (count === 0) return;
+      const to = clamp2(next, 0, count - 1);
+      if (to === at) return;
+      if (index === void 0) setOwn(to);
+      onIndexChange?.(to);
+    },
+    [at, count, index, onIndexChange]
+  );
+  const zoomAbout = useCallback5((factor, px = 0, py = 0) => {
+    setView((v) => {
+      const scale = clamp2(v.scale * factor, MIN_SCALE, MAX_SCALE);
+      if (scale === MIN_SCALE) return FIT;
+      const k = scale / v.scale;
+      return { scale, x: px - (px - v.x) * k, y: py - (py - v.y) * k };
+    });
+  }, []);
+  const pan = useCallback5((dx, dy) => {
+    setView((v) => v.scale <= MIN_SCALE ? v : { ...v, x: v.x + dx, y: v.y + dy });
+  }, []);
+  useEffect12(() => {
+    const stage = stageRef.current;
+    if (!open || !stage) return;
+    const onWheel = (e) => {
+      e.preventDefault();
+      const r = stage.getBoundingClientRect();
+      zoomAbout(Math.exp(-e.deltaY * 15e-4), e.clientX - r.left - r.width / 2, e.clientY - r.top - r.height / 2);
+    };
+    stage.addEventListener("wheel", onWheel, { passive: false });
+    return () => stage.removeEventListener("wheel", onWheel);
+  }, [open, zoomAbout, presence.present]);
+  const pointers = useRef12(/* @__PURE__ */ new Map());
+  const [dragging, setDragging] = useState19(false);
+  useEffect12(() => {
+    if (!dragging) return;
+    const held = pointers.current;
+    const onMove = (e) => {
+      const prev = held.get(e.pointerId);
+      if (!prev) return;
+      const stage = stageRef.current;
+      if (held.size === 1) {
+        pan(e.clientX - prev.x, e.clientY - prev.y);
+      } else if (held.size === 2 && stage) {
+        const other = Array.from(held.entries()).find(([id]) => id !== e.pointerId)?.[1];
+        if (other) {
+          const before = Math.hypot(prev.x - other.x, prev.y - other.y);
+          const after = Math.hypot(e.clientX - other.x, e.clientY - other.y);
+          const r = stage.getBoundingClientRect();
+          const cx2 = (e.clientX + other.x) / 2 - r.left - r.width / 2;
+          const cy = (e.clientY + other.y) / 2 - r.top - r.height / 2;
+          if (before > 0) zoomAbout(after / before, cx2, cy);
+        }
+      }
+      held.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    };
+    const onUp = (e) => {
+      held.delete(e.pointerId);
+      if (held.size === 0) setDragging(false);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+      held.clear();
+    };
+  }, [dragging, pan, zoomAbout]);
+  const onPointerDown = (e) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    setDragging(true);
+  };
+  const onKeyDown = (e) => {
+    const zoomed2 = viewRef.current.scale > MIN_SCALE;
+    const step = e.shiftKey ? 240 : 60;
+    switch (e.key) {
+      case "ArrowLeft":
+        e.preventDefault();
+        if (zoomed2) pan(step, 0);
+        else go(at - 1);
+        return;
+      case "ArrowRight":
+        e.preventDefault();
+        if (zoomed2) pan(-step, 0);
+        else go(at + 1);
+        return;
+      case "ArrowUp":
+        if (zoomed2) {
+          e.preventDefault();
+          pan(0, step);
+        }
+        return;
+      case "ArrowDown":
+        if (zoomed2) {
+          e.preventDefault();
+          pan(0, -step);
+        }
+        return;
+      case "Home":
+        e.preventDefault();
+        go(0);
+        return;
+      case "End":
+        e.preventDefault();
+        go(count - 1);
+        return;
+      case "+":
+      case "=":
+        e.preventDefault();
+        zoomAbout(1.5);
+        return;
+      case "-":
+      case "_":
+        e.preventDefault();
+        zoomAbout(1 / 1.5);
+        return;
+      case "0":
+        e.preventDefault();
+        setView(FIT);
+        return;
+      default:
+        overlayKeyDown(e);
+    }
+  };
+  if (!presence.present || !item) return null;
+  const zoomed = view.scale > MIN_SCALE;
+  const extra = typeof actions === "function" ? actions(item, at) : actions;
+  return /* @__PURE__ */ jsx39(OverlayPortal, { children: /* @__PURE__ */ jsxs35(
+    "div",
+    {
+      ref: (el) => {
+        panelRef.current = el;
+        presence.ref(el);
+      },
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-label": item.alt || "Picture viewer",
+      tabIndex: -1,
+      onKeyDown,
+      "data-rm-lightbox": "",
+      "data-rm-anim": "fade",
+      "data-state": presence.state,
+      className: cn("fixed inset-0 z-50 flex flex-col outline-none", VEIL, ON_VEIL, className),
+      children: [
+        /* @__PURE__ */ jsxs35("div", { className: "flex items-center gap-1 px-3 py-2", children: [
+          /* @__PURE__ */ jsx39("span", { "aria-live": "polite", className: cn("min-w-0 flex-1 truncate px-1 text-sm tabular-nums", ON_VEIL_MUTED), children: count > 1 ? `${at + 1} / ${count}` : "" }),
+          extra !== void 0 && /* @__PURE__ */ jsx39("div", { className: "flex items-center gap-2 pr-2", children: extra }),
+          /* @__PURE__ */ jsx39(VeilButton, { icon: "zoom-out", label: "Zoom out", disabled: !zoomed, onClick: () => zoomAbout(1 / 1.5) }),
+          /* @__PURE__ */ jsx39(VeilButton, { icon: "zoom-in", label: "Zoom in", disabled: view.scale >= MAX_SCALE, onClick: () => zoomAbout(1.5) }),
+          /* @__PURE__ */ jsx39(VeilButton, { icon: "x", label: "Close", onClick: onClose })
+        ] }),
+        /* @__PURE__ */ jsxs35("div", { className: "relative flex min-h-0 flex-1 items-center", children: [
+          count > 1 && /* @__PURE__ */ jsx39(
+            VeilButton,
+            {
+              icon: "chevron-left",
+              label: "Previous picture",
+              disabled: at === 0,
+              onClick: () => go(at - 1),
+              className: "absolute left-2 z-10 sm:left-4"
+            }
+          ),
+          /* @__PURE__ */ jsx39(
+            "div",
+            {
+              ref: stageRef,
+              "data-rm-lightbox-stage": "",
+              onPointerDown,
+              onDoubleClick: (e) => {
+                const r = e.currentTarget.getBoundingClientRect();
+                if (zoomed) setView(FIT);
+                else zoomAbout(2.5, e.clientX - r.left - r.width / 2, e.clientY - r.top - r.height / 2);
+              },
+              onClick: (e) => {
+                if (e.target === e.currentTarget && !zoomed) onClose();
+              },
+              className: cn(
+                "flex h-full w-full touch-none select-none items-center justify-center overflow-hidden px-12 sm:px-16",
+                zoomed ? dragging ? "cursor-grabbing" : "cursor-grab" : "cursor-zoom-in"
+              ),
+              children: /* @__PURE__ */ jsx39(Slide, { item, view, moving: dragging }, item.key ?? at)
+            }
+          ),
+          count > 1 && /* @__PURE__ */ jsx39(
+            VeilButton,
+            {
+              icon: "chevron-right",
+              label: "Next picture",
+              disabled: at === count - 1,
+              onClick: () => go(at + 1),
+              className: "absolute right-2 z-10 sm:right-4"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsx39("div", { className: cn("min-h-[2.5rem] px-4 pb-3 pt-2 text-center text-sm", ON_VEIL_MUTED), children: item.caption })
+      ]
+    }
+  ) });
+}
+function Slide({ item, view, moving }) {
+  const { url, failed, resolving } = useImageSource(item.src, item.file);
+  const [broken, setBroken] = useState19(false);
+  if (broken || failed || !url && !resolving) {
+    return /* @__PURE__ */ jsx39("span", { role: "img", "aria-label": item.alt ? `${item.alt} (picture unavailable)` : "Picture unavailable", children: /* @__PURE__ */ jsx39(Icon, { name: "image-off", size: 32, strokeWidth: 1.5 }) });
+  }
+  if (!url) return /* @__PURE__ */ jsx39(Icon, { name: "loader-circle", size: 24, className: "animate-spin", label: "Loading" });
+  return /* @__PURE__ */ jsx39(
+    "img",
+    {
+      src: url,
+      alt: item.alt,
+      draggable: false,
+      onError: () => setBroken(true),
+      style: { transform: `translate(${view.x}px, ${view.y}px) scale(${view.scale})` },
+      className: cn("max-h-full max-w-full object-contain", !moving && "transition-transform duration-150 ease-out")
+    }
+  );
+}
+function VeilButton({
+  icon,
+  label,
+  onClick,
+  disabled,
+  className
+}) {
+  return /* @__PURE__ */ jsx39("button", { type: "button", "aria-label": label, title: label, disabled, onClick, className: cn(VEIL_CONTROL, className), children: /* @__PURE__ */ jsx39(Icon, { name: icon, size: 20 }) });
+}
+function clamp2(n, lo, hi) {
+  return Math.min(hi, Math.max(lo, n));
+}
+
+// src/components/image.tsx
+import { Fragment as Fragment11, jsx as jsx40, jsxs as jsxs36 } from "react/jsx-runtime";
+var ASPECT = {
+  auto: "",
+  "1:1": "aspect-square",
+  "4:3": "aspect-[4/3]",
+  "3:4": "aspect-[3/4]",
+  "4:5": "aspect-[4/5]",
+  "3:2": "aspect-[3/2]",
+  "2:3": "aspect-[2/3]",
+  "16:9": "aspect-video",
+  "9:16": "aspect-[9/16]"
+};
+var RADIUS = {
+  none: "rounded-none",
+  sm: tk.radiusSm,
+  md: tk.radiusMd,
+  lg: tk.radius
+};
+function Image({
+  src,
+  file,
+  placeholder,
+  alt,
+  aspect = "auto",
+  fit = "cover",
+  radius = "md",
+  zoomable = false,
+  caption,
+  loading = "lazy",
+  crossOrigin,
+  fallback,
+  onLoad,
+  onError,
+  className,
+  style
+}) {
+  const { url, resolving, failed, refresh, fromFile } = useImageSource(src, file);
+  const [status, setStatus] = useState20(url ? "loading" : "idle");
+  const [open, setOpen] = useState20(false);
+  const imgRef = useRef13(null);
+  const retried = useRef13(false);
+  useEffect13(() => {
+    setStatus(url ? "loading" : "idle");
+    const el = imgRef.current;
+    if (url && el && el.complete && el.naturalWidth > 0) setStatus("loaded");
+  }, [url]);
+  useEffect13(() => {
+    retried.current = false;
+  }, [file?.artifact_id, src]);
+  const handleLoad = (e) => {
+    setStatus("loaded");
+    onLoad?.({ width: e.currentTarget.naturalWidth, height: e.currentTarget.naturalHeight });
+  };
+  const handleError = () => {
+    if (fromFile && !retried.current) {
+      retried.current = true;
+      refresh();
+      return;
+    }
+    setStatus("error");
+    onError?.();
+  };
+  const broken = status === "error" || failed || !url && !resolving;
+  const waiting = !broken && status !== "loaded";
+  const auto = aspect === "auto";
+  const ratioStyle = typeof aspect === "number" && aspect > 0 ? { aspectRatio: String(aspect) } : void 0;
+  const fitClass = fit === "contain" ? "object-contain" : "object-cover";
+  return /* @__PURE__ */ jsxs36(
+    "span",
+    {
+      "data-rm-image": "",
+      "data-state": broken ? "error" : status === "loaded" ? "loaded" : "loading",
+      className: cn(
+        "relative block overflow-hidden",
+        tk.bgMuted,
+        RADIUS[radius],
+        typeof aspect === "string" ? ASPECT[aspect] : void 0,
+        // With no shape of its own the box needs some height to show the
+        // placeholder in; the picture replaces it when it lands.
+        auto && status !== "loaded" && "min-h-[6rem]",
+        className
+      ),
+      style: { ...ratioStyle, ...style },
+      children: [
+        waiting && !placeholder && /* @__PURE__ */ jsx40(Skeleton, { variant: "rect", className: "absolute inset-0 h-full w-full rounded-none" }),
+        waiting && placeholder && /* @__PURE__ */ jsx40(
+          "img",
+          {
+            src: placeholder,
+            alt: "",
+            "aria-hidden": "true",
+            "data-rm-image-placeholder": "",
+            className: cn("absolute inset-0 h-full w-full scale-110 blur-md", fitClass)
+          }
+        ),
+        url && !broken && /* @__PURE__ */ jsx40(
+          "img",
+          {
+            ref: imgRef,
+            src: url,
+            alt,
+            loading,
+            decoding: "async",
+            crossOrigin,
+            draggable: false,
+            onLoad: handleLoad,
+            onError: handleError,
+            className: cn(
+              "transition-opacity duration-300",
+              auto ? "relative block h-auto w-full" : cn("absolute inset-0 h-full w-full", fitClass),
+              status === "loaded" ? "opacity-100" : "opacity-0"
+            )
+          }
+        ),
+        broken && (fallback !== void 0 ? /* @__PURE__ */ jsx40("span", { className: "absolute inset-0 flex items-center justify-center", children: fallback }) : /* @__PURE__ */ jsx40(
+          "span",
+          {
+            role: "img",
+            "aria-label": alt ? `${alt} (picture unavailable)` : "Picture unavailable",
+            className: cn("absolute inset-0 flex items-center justify-center", tk.fgFaint),
+            children: /* @__PURE__ */ jsx40(Icon, { name: "image-off", size: 24, strokeWidth: 1.5 })
+          }
+        )),
+        zoomable && !broken && /* @__PURE__ */ jsxs36(Fragment11, { children: [
+          /* @__PURE__ */ jsx40(
+            "button",
+            {
+              type: "button",
+              "aria-label": alt ? `View ${alt} full screen` : "View full screen",
+              onClick: () => setOpen(true),
+              className: cn("absolute inset-0 cursor-zoom-in", RADIUS[radius], focusRing, "focus-visible:ring-inset focus-visible:ring-offset-0")
+            }
+          ),
+          /* @__PURE__ */ jsx40(
+            Lightbox,
+            {
+              open,
+              onClose: () => setOpen(false),
+              items: [{ src: url, alt, caption }]
+            }
+          )
+        ] })
+      ]
+    }
+  );
+}
+
+// src/components/image-markup.tsx
+import {
+  forwardRef as forwardRef5,
+  useCallback as useCallback6,
+  useEffect as useEffect14,
+  useImperativeHandle,
+  useRef as useRef14,
+  useState as useState21
 } from "react";
 
+// src/geometry.ts
+function clamp01(n) {
+  return n < 0 ? 0 : n > 1 ? 1 : n;
+}
+function clampPoint(p) {
+  return [clamp01(p[0]), clamp01(p[1])];
+}
+function rectFromCorners(a, b) {
+  const x = Math.min(a[0], b[0]);
+  const y = Math.min(a[1], b[1]);
+  return [x, y, Math.abs(a[0] - b[0]), Math.abs(a[1] - b[1])];
+}
+function distance(a, b) {
+  return Math.hypot(a[0] - b[0], a[1] - b[1]);
+}
+function distanceToSegment(p, a, b) {
+  const dx = b[0] - a[0];
+  const dy = b[1] - a[1];
+  const len2 = dx * dx + dy * dy;
+  if (len2 === 0) return distance(p, a);
+  const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / len2));
+  return distance(p, [a[0] + t * dx, a[1] + t * dy]);
+}
+function simplifyPath(points, epsilon) {
+  const n = points.length;
+  if (n <= 2 || epsilon <= 0) return points.slice();
+  const keep = new Uint8Array(n);
+  keep[0] = 1;
+  keep[n - 1] = 1;
+  const stack = [[0, n - 1]];
+  while (stack.length > 0) {
+    const [first, last] = stack.pop();
+    let worst = 0;
+    let at = -1;
+    for (let i = first + 1; i < last; i++) {
+      const d = distanceToSegment(points[i], points[first], points[last]);
+      if (d > worst) {
+        worst = d;
+        at = i;
+      }
+    }
+    if (at !== -1 && worst > epsilon) {
+      keep[at] = 1;
+      stack.push([first, at], [at, last]);
+    }
+  }
+  const out = [];
+  for (let i = 0; i < n; i++) if (keep[i]) out.push(points[i]);
+  return out;
+}
+function boundsOf(points) {
+  if (points.length === 0) return [0, 0, 0, 0];
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (const [x, y] of points) {
+    if (x < minX) minX = x;
+    if (y < minY) minY = y;
+    if (x > maxX) maxX = x;
+    if (y > maxY) maxY = y;
+  }
+  return [minX, minY, maxX - minX, maxY - minY];
+}
+function translateWithin(points, dx, dy) {
+  const [x, y, w, h] = boundsOf(points);
+  const mx = Math.max(-x, Math.min(1 - (x + w), dx));
+  const my = Math.max(-y, Math.min(1 - (y + h), dy));
+  return points.map(([px, py]) => [px + mx, py + my]);
+}
+
+// src/components/image-markup.tsx
+import { Fragment as Fragment12, jsx as jsx41, jsxs as jsxs37 } from "react/jsx-runtime";
+var MARK_EXPORT_COLOR = "#FF00FF";
+var ALL_TOOLS = ["select", "pin", "box", "arrow", "freehand", "brush"];
+var TOOL_META = {
+  select: { icon: "mouse-pointer-2", label: "Select and move" },
+  pin: { icon: "map-pin", label: "Pin" },
+  box: { icon: "square-dashed", label: "Box" },
+  arrow: { icon: "move-up-right", label: "Arrow" },
+  freehand: { icon: "pen-line", label: "Draw" },
+  brush: { icon: "brush", label: "Paint a region" }
+};
+var KIND_LABEL = {
+  pin: "Pin",
+  box: "Box",
+  arrow: "Arrow",
+  freehand: "Drawing",
+  brush: "Region"
+};
+var TONE_STROKE = {
+  default: "oklch(var(--rm-primary))",
+  danger: "oklch(var(--rm-destructive))"
+};
+var TONE_WASH = {
+  default: "oklch(var(--rm-primary) / 0.1)",
+  danger: "oklch(var(--rm-destructive) / 0.1)"
+};
+var TONE_PAINT = {
+  default: "oklch(var(--rm-primary) / 0.38)",
+  danger: "oklch(var(--rm-destructive) / 0.38)"
+};
+var HALO = "oklch(1 0 0 / 0.9)";
+var BADGE_TONE = {
+  default: cn(tk.bgPrimary, tk.fgOnPrimary),
+  danger: cn(tk.bgDestructive, tk.fgOnDestructive)
+};
+var HIT_PIN = 14;
+var HIT_LINE = 8;
+var HIT_HANDLE = 11;
+var ARROW_HEAD = 13;
+var MIN_BOX = 0.012;
+var MIN_ARROW = 0.02;
+var NUDGE = 0.01;
+var SIMPLIFY = 25e-4;
+function renumberMarks(marks) {
+  return marks.map((m, i) => m.n === i + 1 ? m : { ...m, n: i + 1 });
+}
+function markAnchor(m) {
+  if (m.kind === "pin" && m.at) return m.at;
+  if (m.kind === "box" && m.rect) return [m.rect[0], m.rect[1]];
+  if (m.points && m.points.length > 0) return m.points[0];
+  return [0.5, 0.5];
+}
+function moveMark(m, dx, dy) {
+  if (m.kind === "pin" && m.at) return { ...m, at: clampPoint([m.at[0] + dx, m.at[1] + dy]) };
+  if (m.kind === "box" && m.rect) {
+    const [x, y, w, h] = m.rect;
+    return { ...m, rect: [clampTo(x + dx, 0, 1 - w), clampTo(y + dy, 0, 1 - h), w, h] };
+  }
+  if (m.points) return { ...m, points: translateWithin(m.points, dx, dy) };
+  return m;
+}
+function resizeMark(m, dx, dy) {
+  if (m.kind === "box" && m.rect) {
+    const [x, y, w, h] = m.rect;
+    return { ...m, rect: [x, y, clampTo(w + dx, MIN_BOX, 1 - x), clampTo(h + dy, MIN_BOX, 1 - y)] };
+  }
+  if (m.kind === "arrow" && m.points && m.points.length === 2) {
+    return { ...m, points: [clampPoint([m.points[0][0] + dx, m.points[0][1] + dy]), m.points[1]] };
+  }
+  if (m.kind === "brush") {
+    const grow = dx !== 0 ? dx : -dy;
+    return { ...m, width: clampTo((m.width ?? 0.06) + grow, 0.01, 0.5) };
+  }
+  return m;
+}
+function dragHandle(origin, handle, p) {
+  if (origin.kind === "box" && origin.rect) {
+    const [x, y, w, h] = origin.rect;
+    const fixed = handle === "nw" ? [x + w, y + h] : handle === "ne" ? [x, y + h] : handle === "sw" ? [x + w, y] : [x, y];
+    const r = rectFromCorners(fixed, clampPoint(p));
+    return { ...origin, rect: [r[0], r[1], Math.max(r[2], MIN_BOX), Math.max(r[3], MIN_BOX)] };
+  }
+  if (origin.kind === "arrow" && origin.points && origin.points.length === 2) {
+    const q = clampPoint(p);
+    return { ...origin, points: handle === "from" ? [q, origin.points[1]] : [origin.points[0], q] };
+  }
+  return origin;
+}
+function handlesOf(m) {
+  if (m.kind === "box" && m.rect) {
+    const [x, y, w, h] = m.rect;
+    return [
+      { id: "nw", at: [x, y] },
+      { id: "ne", at: [x + w, y] },
+      { id: "sw", at: [x, y + h] },
+      { id: "se", at: [x + w, y + h] }
+    ];
+  }
+  if (m.kind === "arrow" && m.points && m.points.length === 2) {
+    return [
+      { id: "from", at: m.points[0] },
+      { id: "to", at: m.points[1] }
+    ];
+  }
+  return [];
+}
+function hitTestMarks(marks, p, w, h) {
+  const px = (q) => [q[0] * w, q[1] * h];
+  const at = px(p);
+  for (let i = marks.length - 1; i >= 0; i--) {
+    const m = marks[i];
+    if (m.kind === "pin" && m.at) {
+      if (distance(at, px(m.at)) <= HIT_PIN) return m;
+    } else if (m.kind === "box" && m.rect) {
+      const [x, y, rw, rh] = m.rect;
+      const pad = 4;
+      if (at[0] >= x * w - pad && at[0] <= (x + rw) * w + pad && at[1] >= y * h - pad && at[1] <= (y + rh) * h + pad) return m;
+    } else if (m.points && m.points.length > 0) {
+      const reach = m.kind === "brush" ? Math.max(HIT_LINE, (m.width ?? 0.06) * w / 2) : HIT_LINE;
+      const pts = m.points.map(px);
+      if (pts.length === 1 && distance(at, pts[0]) <= reach) return m;
+      for (let k = 1; k < pts.length; k++) {
+        if (distanceToSegment(at, pts[k - 1], pts[k]) <= reach) return m;
+      }
+    }
+  }
+  return void 0;
+}
+function arrowHead(from, to, size3) {
+  const dx = to[0] - from[0];
+  const dy = to[1] - from[1];
+  const len = Math.hypot(dx, dy) || 1;
+  const ux = dx / len;
+  const uy = dy / len;
+  const bx = to[0] - ux * size3;
+  const by = to[1] - uy * size3;
+  const half = size3 * 0.55;
+  return [to, [bx - uy * half, by + ux * half], [bx + uy * half, by - ux * half]];
+}
+function clampTo(n, lo, hi) {
+  return Math.min(Math.max(n, lo), Math.max(lo, hi));
+}
+var markSeq = 0;
+function newMarkId() {
+  markSeq += 1;
+  return `m${Date.now().toString(36)}${markSeq.toString(36)}`;
+}
+function centreMark(kind, brushWidth) {
+  switch (kind) {
+    case "pin":
+      return { kind, at: [0.5, 0.5] };
+    case "box":
+      return { kind, rect: [0.35, 0.35, 0.3, 0.3] };
+    case "arrow":
+      return { kind, points: [[0.32, 0.68], [0.5, 0.5]] };
+    case "freehand":
+      return { kind, points: [[0.4, 0.5], [0.6, 0.5]] };
+    case "brush":
+      return { kind, points: [[0.42, 0.5], [0.58, 0.5]], width: brushWidth };
+  }
+}
+var ImageMarkup = forwardRef5(function ImageMarkup2({
+  src,
+  file,
+  alt,
+  marks,
+  onMarksChange,
+  tool,
+  onToolChange,
+  tools = ALL_TOOLS,
+  readOnly = false,
+  numbered = true,
+  selectedId,
+  onSelect,
+  maxMarks,
+  noteOnCreate = false,
+  tone = "default",
+  brushWidth = 0.06,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo,
+  maxHeight = "70vh",
+  className
+}, ref) {
+  const { url, resolving, failed, refresh, fromFile } = useImageSource(src, file);
+  const { ref: boxRef, width: vw0, height: vh0 } = useMeasure();
+  const vw = vw0 || 1e3;
+  const vh = vh0 || 1e3;
+  const imgRef = useRef14(null);
+  const [broken, setBroken] = useState21(false);
+  const retried = useRef14(false);
+  useEffect14(() => {
+    setBroken(false);
+    retried.current = false;
+  }, [url]);
+  const controlled = selectedId !== void 0 || onSelect !== void 0;
+  const [ownSelected, setOwnSelected] = useState21(void 0);
+  const selected = controlled ? selectedId : ownSelected;
+  const select = useCallback6(
+    (id) => {
+      if (!controlled) setOwnSelected(id);
+      onSelect?.(id);
+    },
+    [controlled, onSelect]
+  );
+  const [gesture, setGesture] = useState21(null);
+  const [draft, setDraft] = useState21(null);
+  const [editing, setEditing] = useState21(null);
+  const [said, setSaid] = useState21("");
+  const live = useRef14({ marks, draft, gesture, tone, brushWidth });
+  live.current = { marks, draft, gesture, tone, brushWidth };
+  const stroke = useRef14([]);
+  const badges = useRef14(/* @__PURE__ */ new Map());
+  const full = maxMarks !== void 0 && marks.length >= maxMarks;
+  const toPoint = useCallback6(
+    (clientX, clientY) => {
+      const r = boxRef.current?.getBoundingClientRect();
+      if (!r || r.width === 0 || r.height === 0) return null;
+      return [clamp01((clientX - r.left) / r.width), clamp01((clientY - r.top) / r.height)];
+    },
+    [boxRef]
+  );
+  const screenSize = useCallback6(() => {
+    const r = boxRef.current?.getBoundingClientRect();
+    return { w: r?.width || vw, h: r?.height || vh };
+  }, [boxRef, vw, vh]);
+  const commit = useCallback6(
+    (next, message) => {
+      onMarksChange(next);
+      if (message) setSaid(message);
+    },
+    [onMarksChange]
+  );
+  const addMark = useCallback6(
+    (shape) => {
+      const current2 = live.current.marks;
+      if (maxMarks !== void 0 && current2.length >= maxMarks) {
+        setSaid(`No more than ${maxMarks} marks.`);
+        return;
+      }
+      const mark = { ...shape, id: newMarkId(), n: current2.length + 1 };
+      if (live.current.tone === "danger") mark.tone = "danger";
+      commit([...current2, mark], `${KIND_LABEL[mark.kind]} ${mark.n} added`);
+      select(mark.id);
+      if (noteOnCreate) setEditing(mark.id);
+    },
+    [commit, maxMarks, noteOnCreate, select]
+  );
+  const removeMark = useCallback6(
+    (id) => {
+      const current2 = live.current.marks;
+      const gone = current2.find((m) => m.id === id);
+      if (!gone) return;
+      commit(renumberMarks(current2.filter((m) => m.id !== id)), `${KIND_LABEL[gone.kind]} ${gone.n} removed`);
+      select(void 0);
+      setEditing(null);
+      boxRef.current?.focus();
+    },
+    [boxRef, commit, select]
+  );
+  const replaceMark = useCallback6(
+    (next) => {
+      commit(live.current.marks.map((m) => m.id === next.id ? next : m));
+    },
+    [commit]
+  );
+  useEffect14(() => {
+    if (!gesture) return;
+    const onMove = (e) => {
+      const p = toPoint(e.clientX, e.clientY);
+      if (!p) return;
+      if (gesture.type === "draw") {
+        const base2 = { id: "draft", n: live.current.marks.length + 1, tone: live.current.tone };
+        if (gesture.kind === "box") {
+          setDraft({ ...base2, kind: "box", rect: rectFromCorners(gesture.start, p) });
+        } else if (gesture.kind === "arrow") {
+          setDraft({ ...base2, kind: "arrow", points: [gesture.start, p] });
+        } else {
+          stroke.current.push(p);
+          setDraft({
+            ...base2,
+            kind: gesture.kind,
+            points: stroke.current.slice(),
+            width: gesture.kind === "brush" ? live.current.brushWidth : void 0
+          });
+        }
+      } else if (gesture.type === "move") {
+        setDraft(moveMark(gesture.origin, p[0] - gesture.start[0], p[1] - gesture.start[1]));
+      } else {
+        setDraft(dragHandle(gesture.origin, gesture.handle, p));
+      }
+    };
+    const onUp = () => {
+      const d = live.current.draft;
+      setGesture(null);
+      setDraft(null);
+      if (!d) return;
+      if (gesture.type !== "draw") {
+        replaceMark(d);
+        return;
+      }
+      const { id: _id, n: _n, tone: _tone, ...shape } = d;
+      if (d.kind === "box" && d.rect && (d.rect[2] < MIN_BOX || d.rect[3] < MIN_BOX)) return;
+      if (d.kind === "arrow" && d.points && distance(d.points[0], d.points[1]) < MIN_ARROW) return;
+      if ((d.kind === "freehand" || d.kind === "brush") && d.points) {
+        shape.points = simplifyPath(d.points, SIMPLIFY);
+      }
+      addMark(shape);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+    };
+  }, [gesture, toPoint, addMark, replaceMark]);
+  const onPointerDown = (e) => {
+    if (readOnly || e.pointerType === "mouse" && e.button !== 0) return;
+    if (e.target.closest("[data-rm-mark-control]")) return;
+    const p = toPoint(e.clientX, e.clientY);
+    if (!p) return;
+    setEditing(null);
+    if (tool === "select") {
+      const { w, h } = screenSize();
+      const current2 = marks.find((m) => m.id === selected);
+      if (current2) {
+        const grabbed = handlesOf(current2).find((hd) => distance([hd.at[0] * w, hd.at[1] * h], [p[0] * w, p[1] * h]) <= HIT_HANDLE);
+        if (grabbed) {
+          e.preventDefault();
+          setGesture({ type: "handle", id: current2.id, handle: grabbed.id, origin: current2 });
+          return;
+        }
+      }
+      const hit = hitTestMarks(marks, p, w, h);
+      select(hit?.id);
+      if (hit) {
+        e.preventDefault();
+        setGesture({ type: "move", id: hit.id, start: p, origin: hit });
+      }
+      return;
+    }
+    if (full) {
+      setSaid(`No more than ${maxMarks} marks.`);
+      return;
+    }
+    e.preventDefault();
+    if (tool === "pin") {
+      addMark({ kind: "pin", at: p });
+      return;
+    }
+    stroke.current = [p];
+    setGesture({ type: "draw", kind: tool, start: p });
+    if (tool === "freehand" || tool === "brush") {
+      setDraft({
+        id: "draft",
+        n: marks.length + 1,
+        kind: tool,
+        points: [p],
+        width: tool === "brush" ? brushWidth : void 0,
+        tone
+      });
+    }
+  };
+  const cancelGesture = () => {
+    setGesture(null);
+    setDraft(null);
+    stroke.current = [];
+  };
+  const onBoxKeyDown = (e) => {
+    if (readOnly) return;
+    const mod = e.ctrlKey || e.metaKey;
+    if (mod && e.key.toLowerCase() === "z") {
+      e.preventDefault();
+      if (e.shiftKey) onRedo?.();
+      else onUndo?.();
+      return;
+    }
+    if (mod && e.key.toLowerCase() === "y") {
+      e.preventDefault();
+      onRedo?.();
+      return;
+    }
+    if (e.key === "Escape" && gesture) {
+      e.preventDefault();
+      e.stopPropagation();
+      cancelGesture();
+      return;
+    }
+    if (e.key === "Enter" && e.target === e.currentTarget && tool !== "select") {
+      e.preventDefault();
+      addMark(centreMark(tool, brushWidth));
+    }
+  };
+  const onBadgeKeyDown = (m) => (e) => {
+    if (readOnly) return;
+    const step = e.shiftKey ? NUDGE * 10 : NUDGE;
+    const delta = {
+      ArrowLeft: [-step, 0],
+      ArrowRight: [step, 0],
+      ArrowUp: [0, -step],
+      ArrowDown: [0, step]
+    };
+    const d = delta[e.key];
+    if (d) {
+      e.preventDefault();
+      e.stopPropagation();
+      replaceMark(e.altKey ? resizeMark(m, d[0], d[1]) : moveMark(m, d[0], d[1]));
+      return;
+    }
+    if (e.key === "Delete" || e.key === "Backspace") {
+      e.preventDefault();
+      e.stopPropagation();
+      removeMark(m.id);
+      return;
+    }
+    if (e.key === "Enter") {
+      e.preventDefault();
+      e.stopPropagation();
+      setEditing(m.id);
+    }
+  };
+  useImperativeHandle(
+    ref,
+    () => ({
+      naturalSize: () => ({
+        width: imgRef.current?.naturalWidth ?? 0,
+        height: imgRef.current?.naturalHeight ?? 0
+      }),
+      exportAnnotated: async (opts = {}) => {
+        if (!url) throw new Error("There is no picture to export yet.");
+        const loaded = await loadForCanvas(url);
+        try {
+          const { width, height } = fitWithin(loaded.width, loaded.height, opts.maxSize ?? 2048);
+          const canvas = makeCanvas(width, height);
+          const ctx = context2d(canvas);
+          paintAnnotated(ctx, loaded.image, live.current.marks, width, height, { hideNumbers: opts.hideNumbers });
+          return await canvasBlob(canvas, opts.type ?? "image/png");
+        } finally {
+          loaded.release();
+        }
+      },
+      exportMask: async (opts = {}) => {
+        let width = imgRef.current?.naturalWidth ?? 0;
+        let height = imgRef.current?.naturalHeight ?? 0;
+        if (!width || !height) throw new Error("The picture has not loaded, so its mask has no size yet.");
+        if (opts.maxSize) ({ width, height } = fitWithin(width, height, opts.maxSize));
+        const canvas = makeCanvas(width, height);
+        paintMask(context2d(canvas), () => context2d(makeCanvas(width, height)), live.current.marks, width, height, opts);
+        return canvasBlob(canvas, "image/png");
+      }
+    }),
+    [url]
+  );
+  const shown = draft && draft.id !== "draft" ? marks.map((m) => m.id === draft.id ? draft : m) : marks;
+  const drawing = draft && draft.id === "draft" ? draft : null;
+  const current = shown.find((m) => m.id === selected);
+  const unavailable = broken || failed || !url && !resolving;
+  return /* @__PURE__ */ jsxs37("div", { className: cn("flex flex-col gap-2 text-left", className), "data-rm-image-markup": "", children: [
+    onToolChange && !readOnly && /* @__PURE__ */ jsxs37("div", { role: "toolbar", "aria-label": "Markup tools", className: cn("flex flex-wrap items-center gap-1 border p-1", tk.radius, tk.border, tk.bgCard), children: [
+      tools.map((t) => /* @__PURE__ */ jsx41(
+        ToolButton,
+        {
+          icon: TOOL_META[t].icon,
+          label: TOOL_META[t].label,
+          pressed: tool === t,
+          onClick: () => onToolChange(t)
+        },
+        t
+      )),
+      /* @__PURE__ */ jsx41("span", { "aria-hidden": "true", className: cn("mx-1 h-5 w-px", tk.bgBorder) }),
+      /* @__PURE__ */ jsx41(
+        ToolButton,
+        {
+          icon: "plus",
+          label: tool === "select" ? "Pick a tool to add a mark" : `Add ${TOOL_META[tool].label.toLowerCase()} at the centre`,
+          disabled: tool === "select" || full,
+          onClick: () => tool !== "select" && addMark(centreMark(tool, brushWidth))
+        }
+      ),
+      /* @__PURE__ */ jsx41(ToolButton, { icon: "trash-2", label: "Remove the selected mark", disabled: !selected, onClick: () => selected && removeMark(selected) }),
+      (onUndo || onRedo) && /* @__PURE__ */ jsxs37(Fragment12, { children: [
+        /* @__PURE__ */ jsx41("span", { "aria-hidden": "true", className: cn("mx-1 h-5 w-px", tk.bgBorder) }),
+        /* @__PURE__ */ jsx41(ToolButton, { icon: "undo-2", label: "Undo", disabled: canUndo === false || !onUndo, onClick: () => onUndo?.() }),
+        /* @__PURE__ */ jsx41(ToolButton, { icon: "redo-2", label: "Redo", disabled: canRedo === false || !onRedo, onClick: () => onRedo?.() })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsxs37(
+      "div",
+      {
+        ref: boxRef,
+        role: "group",
+        "aria-label": alt ? `Marks on ${alt}` : "Marks on the picture",
+        "aria-describedby": void 0,
+        tabIndex: readOnly ? void 0 : 0,
+        "data-rm-markup-canvas": "",
+        "data-tool": tool,
+        onPointerDown,
+        onKeyDown: onBoxKeyDown,
+        className: cn(
+          "relative inline-block max-w-full select-none self-start overflow-hidden leading-none",
+          tk.radiusMd,
+          tk.bgMuted,
+          !readOnly && "touch-none",
+          !readOnly && (tool === "select" ? gesture ? "cursor-grabbing" : "cursor-default" : "cursor-crosshair"),
+          !readOnly && focusRing
+        ),
+        children: [
+          unavailable ? /* @__PURE__ */ jsx41(
+            "span",
+            {
+              role: "img",
+              "aria-label": alt ? `${alt} (picture unavailable)` : "Picture unavailable",
+              className: cn("flex h-48 w-72 max-w-full items-center justify-center", tk.fgFaint),
+              children: /* @__PURE__ */ jsx41(Icon, { name: "image-off", size: 24, strokeWidth: 1.5 })
+            }
+          ) : !url ? /* @__PURE__ */ jsx41(Skeleton, { variant: "rect", className: "h-48 w-72 max-w-full rounded-none" }) : /* @__PURE__ */ jsx41(
+            "img",
+            {
+              ref: imgRef,
+              src: url,
+              alt,
+              draggable: false,
+              onError: () => {
+                if (fromFile && !retried.current) {
+                  retried.current = true;
+                  refresh();
+                } else setBroken(true);
+              },
+              style: { maxHeight },
+              className: "block h-auto w-auto max-w-full"
+            }
+          ),
+          !unavailable && url && /* @__PURE__ */ jsxs37(
+            "svg",
+            {
+              "aria-hidden": "true",
+              viewBox: `0 0 ${vw} ${vh}`,
+              preserveAspectRatio: "none",
+              className: "pointer-events-none absolute inset-0 h-full w-full",
+              children: [
+                shown.map((m) => /* @__PURE__ */ jsx41(MarkShape, { mark: m, vw, vh, selected: m.id === selected }, m.id)),
+                drawing && /* @__PURE__ */ jsx41(MarkShape, { mark: drawing, vw, vh, selected: false }),
+                current && !readOnly && tool === "select" && handlesOf(current).map((hd) => /* @__PURE__ */ jsx41(
+                  "circle",
+                  {
+                    cx: hd.at[0] * vw,
+                    cy: hd.at[1] * vh,
+                    r: 5,
+                    style: { fill: HALO, stroke: TONE_STROKE[current.tone ?? "default"], strokeWidth: 2 }
+                  },
+                  hd.id
+                ))
+              ]
+            }
+          ),
+          !unavailable && url && shown.map((m) => {
+            const [ax, ay] = markAnchor(m);
+            const isSelected = m.id === selected;
+            return /* @__PURE__ */ jsx41(
+              "button",
+              {
+                ref: (el) => {
+                  badges.current.set(m.id, el);
+                },
+                type: "button",
+                "data-rm-mark": m.id,
+                "data-rm-mark-control": "",
+                "aria-label": `${KIND_LABEL[m.kind]} ${m.n}${m.note ? `: ${m.note}` : ""}`,
+                "aria-pressed": isSelected,
+                tabIndex: readOnly ? -1 : 0,
+                onFocus: () => select(m.id),
+                onClick: () => select(m.id),
+                onDoubleClick: () => !readOnly && setEditing(m.id),
+                onKeyDown: onBadgeKeyDown(m),
+                style: { left: `${ax * 100}%`, top: `${ay * 100}%` },
+                className: cn(
+                  "absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full text-[11px] font-semibold leading-none tabular-nums ring-2 ring-[color:oklch(1_0_0/0.9)] transition-transform",
+                  numbered ? "h-6 min-w-[1.5rem] px-1" : "h-3.5 w-3.5",
+                  BADGE_TONE[m.tone ?? "default"],
+                  tk.shadowMd,
+                  isSelected && "scale-125",
+                  focusRing
+                ),
+                children: numbered ? m.n : null
+              },
+              m.id
+            );
+          }),
+          editing && (() => {
+            const m = shown.find((x) => x.id === editing);
+            if (!m) return null;
+            const [ax, ay] = markAnchor(m);
+            return /* @__PURE__ */ jsx41(
+              NoteBox,
+              {
+                label: `Note for ${KIND_LABEL[m.kind].toLowerCase()} ${m.n}`,
+                initial: m.note ?? "",
+                x: ax,
+                y: ay,
+                onDone: (text) => {
+                  setEditing(null);
+                  if (text !== void 0 && text !== (m.note ?? "")) replaceMark({ ...m, note: text || void 0 });
+                  badges.current.get(m.id)?.focus();
+                }
+              },
+              m.id
+            );
+          })()
+        ]
+      }
+    ),
+    /* @__PURE__ */ jsx41("span", { "aria-live": "polite", className: "sr-only", children: said })
+  ] });
+});
+function MarkShape({ mark, vw, vh, selected }) {
+  const t = mark.tone ?? "default";
+  const colour = TONE_STROKE[t];
+  const weight = selected ? 3 : 2;
+  const line = { fill: "none", strokeLinecap: "round", strokeLinejoin: "round" };
+  const px = (p) => `${p[0] * vw},${p[1] * vh}`;
+  if (mark.kind === "box" && mark.rect) {
+    const [x, y, w, h] = mark.rect;
+    const box = { x: x * vw, y: y * vh, width: w * vw, height: h * vh, rx: 3 };
+    return /* @__PURE__ */ jsxs37("g", { "data-rm-mark-shape": mark.id, children: [
+      /* @__PURE__ */ jsx41("rect", { ...box, style: { ...line, stroke: HALO, strokeWidth: weight + 3 } }),
+      /* @__PURE__ */ jsx41("rect", { ...box, style: { ...line, fill: TONE_WASH[t], stroke: colour, strokeWidth: weight } })
+    ] });
+  }
+  if (mark.kind === "arrow" && mark.points && mark.points.length === 2) {
+    const from = [mark.points[0][0] * vw, mark.points[0][1] * vh];
+    const to = [mark.points[1][0] * vw, mark.points[1][1] * vh];
+    const head = arrowHead(from, to, ARROW_HEAD).map((p) => `${p[0]},${p[1]}`).join(" ");
+    return /* @__PURE__ */ jsxs37("g", { "data-rm-mark-shape": mark.id, children: [
+      /* @__PURE__ */ jsx41("line", { x1: from[0], y1: from[1], x2: to[0], y2: to[1], style: { ...line, stroke: HALO, strokeWidth: weight + 3 } }),
+      /* @__PURE__ */ jsx41("polygon", { points: head, style: { fill: HALO, stroke: HALO, strokeWidth: 3, strokeLinejoin: "round" } }),
+      /* @__PURE__ */ jsx41("line", { x1: from[0], y1: from[1], x2: to[0], y2: to[1], style: { ...line, stroke: colour, strokeWidth: weight } }),
+      /* @__PURE__ */ jsx41("polygon", { points: head, style: { fill: colour } })
+    ] });
+  }
+  if ((mark.kind === "freehand" || mark.kind === "brush") && mark.points && mark.points.length > 0) {
+    const pts = mark.points.length === 1 ? [mark.points[0], mark.points[0]] : mark.points;
+    const d = pts.map(px).join(" ");
+    if (mark.kind === "brush") {
+      const wide = Math.max(4, (mark.width ?? 0.06) * vw);
+      return /* @__PURE__ */ jsxs37("g", { "data-rm-mark-shape": mark.id, children: [
+        /* @__PURE__ */ jsx41("polyline", { points: d, style: { ...line, stroke: TONE_PAINT[t], strokeWidth: wide } }),
+        selected && /* @__PURE__ */ jsx41("polyline", { points: d, style: { ...line, stroke: colour, strokeWidth: 1.5, strokeDasharray: "4 4" } })
+      ] });
+    }
+    return /* @__PURE__ */ jsxs37("g", { "data-rm-mark-shape": mark.id, children: [
+      /* @__PURE__ */ jsx41("polyline", { points: d, style: { ...line, stroke: HALO, strokeWidth: weight + 3 } }),
+      /* @__PURE__ */ jsx41("polyline", { points: d, style: { ...line, stroke: colour, strokeWidth: weight } })
+    ] });
+  }
+  return null;
+}
+function ToolButton({
+  icon,
+  label,
+  pressed,
+  disabled,
+  onClick
+}) {
+  return /* @__PURE__ */ jsx41(
+    "button",
+    {
+      type: "button",
+      "aria-label": label,
+      title: label,
+      "aria-pressed": pressed,
+      disabled,
+      onClick,
+      className: cn(
+        "inline-flex h-8 w-8 items-center justify-center",
+        ghostControl,
+        pressed && cn(tk.bgPrimarySoft, tk.fgPrimary),
+        focusRing
+      ),
+      children: /* @__PURE__ */ jsx41(Icon, { name: icon, size: 16 })
+    }
+  );
+}
+function NoteBox({
+  label,
+  initial,
+  x,
+  y,
+  onDone
+}) {
+  const [text, setText] = useState21(initial);
+  const inputRef = useRef14(null);
+  const done = useRef14(false);
+  useEffect14(() => {
+    inputRef.current?.focus();
+    inputRef.current?.select();
+  }, []);
+  const finish = (value) => {
+    if (done.current) return;
+    done.current = true;
+    onDone(value);
+  };
+  return /* @__PURE__ */ jsx41(
+    "div",
+    {
+      "data-rm-mark-control": "",
+      style: {
+        left: x > 0.6 ? void 0 : `calc(${x * 100}% + 1rem)`,
+        right: x > 0.6 ? `calc(${(1 - x) * 100}% + 1rem)` : void 0,
+        top: y > 0.8 ? void 0 : `calc(${y * 100}% - 1rem)`,
+        bottom: y > 0.8 ? `calc(${(1 - y) * 100}% - 1rem)` : void 0
+      },
+      className: "absolute z-10 w-56 max-w-[70%]",
+      children: /* @__PURE__ */ jsx41(
+        "input",
+        {
+          ref: inputRef,
+          value: text,
+          "aria-label": label,
+          placeholder: "Say what this is about",
+          onChange: (e) => setText(e.target.value),
+          onBlur: () => finish(text.trim()),
+          onKeyDown: (e) => {
+            e.stopPropagation();
+            if (e.key === "Enter") {
+              e.preventDefault();
+              finish(text.trim());
+            } else if (e.key === "Escape") {
+              e.preventDefault();
+              finish(void 0);
+            }
+          },
+          className: cn(inputBase, tk.shadowLg, "leading-normal")
+        }
+      )
+    }
+  );
+}
+function MarkList({
+  marks,
+  onMarksChange,
+  selectedId,
+  onSelect,
+  readOnly = false,
+  notePlaceholder = "Say what this is about",
+  emptyState = "Nothing marked yet.",
+  className
+}) {
+  if (marks.length === 0) {
+    return /* @__PURE__ */ jsx41("div", { className: cn("py-4 text-left", textStyles.muted, className), children: emptyState });
+  }
+  const swap = (i, j) => {
+    const next = marks.slice();
+    [next[i], next[j]] = [next[j], next[i]];
+    onMarksChange(renumberMarks(next));
+  };
+  return /* @__PURE__ */ jsx41("ol", { "data-rm-mark-list": "", className: cn("flex flex-col gap-1 text-left", className), children: marks.map((m, i) => {
+    const isSelected = m.id === selectedId;
+    return /* @__PURE__ */ jsxs37(
+      "li",
+      {
+        "data-rm-mark-row": m.id,
+        "aria-current": isSelected || void 0,
+        onClick: () => onSelect?.(m.id),
+        className: cn(
+          "flex items-center gap-2 border px-2 py-1.5",
+          tk.radiusMd,
+          isSelected ? cn(tk.borderPrimary, tk.selectedBgPrimarySoft) : cn("border-transparent", tk.hoverBgMutedHalf)
+        ),
+        children: [
+          /* @__PURE__ */ jsx41(
+            "span",
+            {
+              "aria-hidden": "true",
+              className: cn(
+                "flex h-6 min-w-[1.5rem] shrink-0 items-center justify-center rounded-full px-1 text-[11px] font-semibold tabular-nums",
+                BADGE_TONE[m.tone ?? "default"]
+              ),
+              children: m.n
+            }
+          ),
+          /* @__PURE__ */ jsx41(Icon, { name: TOOL_META[m.kind].icon, size: 14, className: cn("shrink-0", tk.fgMuted), label: KIND_LABEL[m.kind] }),
+          readOnly ? /* @__PURE__ */ jsx41("span", { className: cn("min-w-0 flex-1 text-sm", m.note ? tk.fg : tk.fgMuted), children: m.note || "No note" }) : /* @__PURE__ */ jsx41(
+            "input",
+            {
+              value: m.note ?? "",
+              placeholder: notePlaceholder,
+              "aria-label": `Note for ${KIND_LABEL[m.kind].toLowerCase()} ${m.n}`,
+              onFocus: () => onSelect?.(m.id),
+              onChange: (e) => onMarksChange(marks.map((x) => x.id === m.id ? { ...x, note: e.target.value || void 0 } : x)),
+              className: cn(inputBase, "min-w-0 flex-1 py-1 shadow-none")
+            }
+          ),
+          !readOnly && /* @__PURE__ */ jsxs37("span", { className: "flex shrink-0 items-center", children: [
+            /* @__PURE__ */ jsx41(RowButton, { icon: "arrow-up", label: `Move mark ${m.n} up`, disabled: i === 0, onClick: () => swap(i, i - 1) }),
+            /* @__PURE__ */ jsx41(
+              RowButton,
+              {
+                icon: "arrow-down",
+                label: `Move mark ${m.n} down`,
+                disabled: i === marks.length - 1,
+                onClick: () => swap(i, i + 1)
+              }
+            ),
+            /* @__PURE__ */ jsx41(
+              RowButton,
+              {
+                icon: "trash-2",
+                label: `Remove mark ${m.n}`,
+                onClick: () => {
+                  onMarksChange(renumberMarks(marks.filter((x) => x.id !== m.id)));
+                  if (isSelected) onSelect?.(void 0);
+                }
+              }
+            )
+          ] })
+        ]
+      },
+      m.id
+    );
+  }) });
+}
+function RowButton({
+  icon,
+  label,
+  disabled,
+  onClick
+}) {
+  return /* @__PURE__ */ jsx41(
+    "button",
+    {
+      type: "button",
+      "aria-label": label,
+      title: label,
+      disabled,
+      onClick: (e) => {
+        e.stopPropagation();
+        onClick();
+      },
+      className: cn("inline-flex h-7 w-7 items-center justify-center", ghostControl, focusRing),
+      children: /* @__PURE__ */ jsx41(Icon, { name: icon, size: 14 })
+    }
+  );
+}
+function noteEditOf(a, b) {
+  if (a.length !== b.length) return null;
+  let edited = null;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] === b[i]) continue;
+    if (a[i].id !== b[i].id) return null;
+    const { note: noteA, ...restA } = a[i];
+    const { note: noteB, ...restB } = b[i];
+    if (JSON.stringify(restA) !== JSON.stringify(restB)) return null;
+    if ((noteA ?? "") === (noteB ?? "")) continue;
+    if (edited) return null;
+    edited = a[i].id;
+  }
+  return edited;
+}
+function useMarkHistory(initial = [], limit = 100) {
+  const [state, setState] = useState21({ past: [], present: initial, future: [] });
+  const latest = useRef14(state);
+  const typing = useRef14(null);
+  const apply = useCallback6((next) => {
+    latest.current = next;
+    setState(next);
+  }, []);
+  const setMarks = useCallback6(
+    (next) => {
+      const s = latest.current;
+      if (next === s.present) return;
+      const edited = noteEditOf(s.present, next);
+      const now = Date.now();
+      const same = edited !== null && typing.current?.id === edited && now - typing.current.at < 1500;
+      typing.current = edited !== null ? { id: edited, at: now } : null;
+      apply(
+        same ? { ...s, present: next, future: [] } : { past: [...s.past, s.present].slice(-limit), present: next, future: [] }
+      );
+    },
+    [apply, limit]
+  );
+  const undo = useCallback6(() => {
+    typing.current = null;
+    const s = latest.current;
+    if (s.past.length === 0) return;
+    apply({ past: s.past.slice(0, -1), present: s.past[s.past.length - 1], future: [s.present, ...s.future] });
+  }, [apply]);
+  const redo = useCallback6(() => {
+    typing.current = null;
+    const s = latest.current;
+    if (s.future.length === 0) return;
+    apply({ past: [...s.past, s.present], present: s.future[0], future: s.future.slice(1) });
+  }, [apply]);
+  const reset = useCallback6(
+    (marks = []) => {
+      typing.current = null;
+      apply({ past: [], present: marks, future: [] });
+    },
+    [apply]
+  );
+  return {
+    marks: state.present,
+    setMarks,
+    undo,
+    redo,
+    canUndo: state.past.length > 0,
+    canRedo: state.future.length > 0,
+    reset
+  };
+}
+function tracePath(ctx, pts, w, h) {
+  ctx.beginPath();
+  pts.forEach(([x, y], i) => i === 0 ? ctx.moveTo(x * w, y * h) : ctx.lineTo(x * w, y * h));
+  if (pts.length === 1) ctx.lineTo(pts[0][0] * w, pts[0][1] * h);
+}
+function paintAnnotated(ctx, image, marks, w, h, opts = {}) {
+  if (image) ctx.drawImage(image, 0, 0, w, h);
+  const unit = Math.max(w, h);
+  const weight = Math.max(3, Math.round(unit / 260));
+  const halo = weight + Math.max(2, Math.round(weight * 0.8));
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  const strokeTwice = (trace) => {
+    trace();
+    ctx.strokeStyle = "#FFFFFF";
+    ctx.lineWidth = halo;
+    ctx.stroke();
+    trace();
+    ctx.strokeStyle = MARK_EXPORT_COLOR;
+    ctx.lineWidth = weight;
+    ctx.stroke();
+  };
+  for (const m of marks) {
+    if (m.kind === "brush" && m.points && m.points.length > 0) {
+      ctx.save();
+      ctx.globalAlpha = 0.4;
+      ctx.strokeStyle = MARK_EXPORT_COLOR;
+      ctx.lineWidth = Math.max(weight, (m.width ?? 0.06) * w);
+      tracePath(ctx, m.points, w, h);
+      ctx.stroke();
+      ctx.restore();
+    } else if (m.kind === "freehand" && m.points && m.points.length > 0) {
+      const pts = m.points;
+      strokeTwice(() => tracePath(ctx, pts, w, h));
+    } else if (m.kind === "box" && m.rect) {
+      const [x, y, rw, rh] = m.rect;
+      strokeTwice(() => {
+        ctx.beginPath();
+        ctx.rect(x * w, y * h, rw * w, rh * h);
+      });
+    } else if (m.kind === "arrow" && m.points && m.points.length === 2) {
+      const from = [m.points[0][0] * w, m.points[0][1] * h];
+      const to = [m.points[1][0] * w, m.points[1][1] * h];
+      strokeTwice(() => {
+        ctx.beginPath();
+        ctx.moveTo(from[0], from[1]);
+        ctx.lineTo(to[0], to[1]);
+      });
+      const head = arrowHead(from, to, weight * 5);
+      const traceHead = () => {
+        ctx.beginPath();
+        ctx.moveTo(head[0][0], head[0][1]);
+        ctx.lineTo(head[1][0], head[1][1]);
+        ctx.lineTo(head[2][0], head[2][1]);
+        ctx.closePath();
+      };
+      traceHead();
+      ctx.strokeStyle = "#FFFFFF";
+      ctx.lineWidth = halo - weight;
+      ctx.stroke();
+      ctx.fillStyle = MARK_EXPORT_COLOR;
+      ctx.fill();
+    }
+  }
+  const r = Math.max(11, Math.round(unit / 64));
+  for (const m of marks) {
+    const [ax, ay] = markAnchor(m);
+    const cx2 = clampTo(ax * w, r, w - r);
+    const cy = clampTo(ay * h, r, h - r);
+    if (opts.hideNumbers && m.kind !== "pin") continue;
+    ctx.beginPath();
+    ctx.arc(cx2, cy, opts.hideNumbers ? r * 0.55 : r, 0, Math.PI * 2);
+    ctx.fillStyle = MARK_EXPORT_COLOR;
+    ctx.fill();
+    ctx.strokeStyle = "#FFFFFF";
+    ctx.lineWidth = Math.max(2, Math.round(r / 5));
+    ctx.stroke();
+    if (opts.hideNumbers) continue;
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = `700 ${Math.round(r * 1.15)}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(String(m.n), cx2, cy + r * 0.06);
+  }
+}
+function paintMask(ctx, scratch, marks, w, h, opts = {}) {
+  const kinds = opts.kinds ?? ["brush", "box"];
+  const dilate = Math.max(0, opts.dilate ?? 0);
+  const feather = Math.max(0, opts.feather ?? 0);
+  const regions = scratch();
+  regions.clearRect(0, 0, w, h);
+  regions.fillStyle = "#000000";
+  regions.strokeStyle = "#000000";
+  regions.lineCap = "round";
+  regions.lineJoin = "round";
+  for (const m of marks) {
+    if (!kinds.includes(m.kind)) continue;
+    if (m.kind === "brush" && m.points && m.points.length > 0) {
+      regions.lineWidth = Math.max(1, (m.width ?? 0.06) * w) + dilate * 2;
+      tracePath(regions, m.points, w, h);
+      regions.stroke();
+    } else if (m.kind === "box" && m.rect) {
+      const [x, y, rw, rh] = m.rect;
+      regions.fillRect(x * w - dilate, y * h - dilate, rw * w + dilate * 2, rh * h + dilate * 2);
+    } else if (m.kind === "freehand" && m.points && m.points.length > 2) {
+      tracePath(regions, m.points, w, h);
+      regions.closePath();
+      regions.fill();
+      if (dilate > 0) {
+        regions.lineWidth = dilate * 2;
+        regions.stroke();
+      }
+    } else if (m.kind === "pin" && m.at) {
+      regions.beginPath();
+      regions.arc(m.at[0] * w, m.at[1] * h, Math.max(w, h) * 0.04 + dilate, 0, Math.PI * 2);
+      regions.fill();
+    } else if (m.kind === "arrow" && m.points && m.points.length === 2) {
+      regions.lineWidth = Math.max(w, h) * 0.02 + dilate * 2;
+      tracePath(regions, m.points, w, h);
+      regions.stroke();
+    }
+  }
+  ctx.clearRect(0, 0, w, h);
+  if (!opts.invert) {
+    ctx.globalCompositeOperation = "source-over";
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(0, 0, w, h);
+    ctx.globalCompositeOperation = "destination-out";
+  }
+  if (feather > 0 && "filter" in ctx) ctx.filter = `blur(${feather}px)`;
+  ctx.drawImage(regions.canvas, 0, 0, w, h);
+  if ("filter" in ctx) ctx.filter = "none";
+  ctx.globalCompositeOperation = "source-over";
+}
+function fitWithin(width, height, maxSize) {
+  const longest = Math.max(width, height);
+  if (!maxSize || longest <= maxSize) return { width, height };
+  const k = maxSize / longest;
+  return { width: Math.max(1, Math.round(width * k)), height: Math.max(1, Math.round(height * k)) };
+}
+function makeCanvas(width, height) {
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  return canvas;
+}
+function context2d(canvas) {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("This browser cannot draw to a canvas, so the picture cannot be exported.");
+  return ctx;
+}
+function canvasBlob(canvas, type) {
+  return new Promise((resolve, reject) => {
+    try {
+      canvas.toBlob(
+        (blob) => blob ? resolve(blob) : reject(new Error("The picture could not be encoded.")),
+        type,
+        type === "image/jpeg" ? 0.92 : void 0
+      );
+    } catch {
+      reject(new Error(TAINTED));
+    }
+  });
+}
+var TAINTED = "The picture's server does not let this page read it back, so it cannot be exported. Show it from a file the robot saved, or from a data URL.";
+function loadElement(url, crossOrigin) {
+  return new Promise((resolve, reject) => {
+    const el = document.createElement("img");
+    if (crossOrigin) el.crossOrigin = "anonymous";
+    el.onload = () => resolve(el);
+    el.onerror = () => reject(new Error("The picture could not be loaded for export."));
+    el.src = url;
+  });
+}
+async function loadForCanvas(url) {
+  const local = url.startsWith("data:") || url.startsWith("blob:");
+  try {
+    const image = await loadElement(url, !local);
+    return { image, width: image.naturalWidth, height: image.naturalHeight, release: () => void 0 };
+  } catch {
+    if (local) throw new Error("The picture could not be loaded for export.");
+  }
+  let objectUrl2;
+  try {
+    const res = await fetch(url, { mode: "cors" });
+    if (!res.ok) throw new Error(String(res.status));
+    objectUrl2 = URL.createObjectURL(await res.blob());
+    const image = await loadElement(objectUrl2, false);
+    const held = objectUrl2;
+    return { image, width: image.naturalWidth, height: image.naturalHeight, release: () => URL.revokeObjectURL(held) };
+  } catch {
+    if (objectUrl2) URL.revokeObjectURL(objectUrl2);
+    throw new Error(TAINTED);
+  }
+}
+
+// src/components/thread.tsx
+import {
+  useCallback as useCallback7,
+  useEffect as useEffect15,
+  useRef as useRef15,
+  useState as useState22
+} from "react";
+import { useFileUpload } from "@robomotion/apps-runtime/react";
+
 // src/components/empty-state.tsx
-import { jsx as jsx35, jsxs as jsxs31 } from "react/jsx-runtime";
+import { jsx as jsx42, jsxs as jsxs38 } from "react/jsx-runtime";
 function EmptyState({ icon = "inbox", title, description, action, className, ...props }) {
-  return /* @__PURE__ */ jsxs31(
+  return /* @__PURE__ */ jsxs38(
     "div",
     {
       className: cn(
@@ -7965,7 +10007,7 @@ function EmptyState({ icon = "inbox", title, description, action, className, ...
       ),
       ...props,
       children: [
-        /* @__PURE__ */ jsx35(
+        /* @__PURE__ */ jsx42(
           "div",
           {
             "aria-hidden": "true",
@@ -7973,16 +10015,16 @@ function EmptyState({ icon = "inbox", title, description, action, className, ...
             children: renderIcon(icon, 24)
           }
         ),
-        /* @__PURE__ */ jsx35("h3", { className: textStyles.cardTitle, children: title }),
-        description !== void 0 && /* @__PURE__ */ jsx35("p", { className: cn("max-w-sm", textStyles.muted), children: description }),
-        action !== void 0 && /* @__PURE__ */ jsx35("div", { className: "mt-3", children: action })
+        /* @__PURE__ */ jsx42("h3", { className: textStyles.cardTitle, children: title }),
+        description !== void 0 && /* @__PURE__ */ jsx42("p", { className: cn("max-w-sm", textStyles.muted), children: description }),
+        action !== void 0 && /* @__PURE__ */ jsx42("div", { className: "mt-3", children: action })
       ]
     }
   );
 }
 
 // src/components/markdown.tsx
-import { jsx as jsx36 } from "react/jsx-runtime";
+import { jsx as jsx43 } from "react/jsx-runtime";
 var prose = cn(
   "text-sm leading-relaxed",
   tk.fg,
@@ -8004,16 +10046,18 @@ var prose = cn(
   "[&_hr]:my-4 [&_hr]:border-[color:oklch(var(--rm-border))]"
 );
 function Markdown({ children, streaming = false, className }) {
-  return /* @__PURE__ */ jsx36("div", { className: cn(prose, "text-left", className), children: /* @__PURE__ */ jsx36(Xa, { mode: "streaming", isAnimating: streaming, children: children ?? "" }) });
+  return /* @__PURE__ */ jsx43("div", { className: cn(prose, "text-left", className), children: /* @__PURE__ */ jsx43(Xa, { mode: "streaming", isAnimating: streaming, children: children ?? "" }) });
 }
 
 // src/components/thread.tsx
-import { jsx as jsx37, jsxs as jsxs32 } from "react/jsx-runtime";
+import { Fragment as Fragment13, jsx as jsx44, jsxs as jsxs39 } from "react/jsx-runtime";
 function Thread({
   messages,
   onSend,
   action,
   params,
+  attachments,
+  controls,
   placeholder,
   busy,
   emptyState = "Nothing here yet.",
@@ -8022,15 +10066,15 @@ function Thread({
   sendLabel,
   className
 }) {
-  const listRef = useRef9(null);
+  const listRef = useRef15(null);
   const count = messages.length;
   const lastBody = messages[count - 1]?.body;
-  useEffect11(() => {
+  useEffect15(() => {
     const el = listRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [count, lastBody]);
-  return /* @__PURE__ */ jsxs32("div", { className: cn("flex flex-col text-left", className), children: [
-    /* @__PURE__ */ jsx37(
+  return /* @__PURE__ */ jsxs39("div", { className: cn("flex flex-col text-left", className), children: [
+    /* @__PURE__ */ jsx44(
       "div",
       {
         ref: listRef,
@@ -8042,17 +10086,19 @@ function Thread({
         children: count === 0 ? (
           // A string is the title of the kit's own empty state; an element is
           // a screen's own design and goes in as it is.
-          typeof emptyState === "string" ? /* @__PURE__ */ jsx37(EmptyState, { icon: "message-square", title: emptyState, className: "py-8" }) : emptyState
-        ) : messages.map((m, i) => /* @__PURE__ */ jsx37(Message, { message: m }, m.id ?? i))
+          typeof emptyState === "string" ? /* @__PURE__ */ jsx44(EmptyState, { icon: "message-square", title: emptyState, className: "py-8" }) : emptyState
+        ) : messages.map((m, i) => /* @__PURE__ */ jsx44(Message, { message: m }, m.id ?? i))
       }
     ),
-    !readOnly && /* @__PURE__ */ jsx37(
+    !readOnly && /* @__PURE__ */ jsx44(
       Composer,
       {
         className: "mt-3",
         onSend,
         action,
         params,
+        attachments,
+        controls,
         placeholder,
         busy,
         sendLabel
@@ -8062,14 +10108,14 @@ function Thread({
 }
 function Message({ message, className }) {
   const { author, avatarUrl, at, body, own, streaming } = message;
-  return /* @__PURE__ */ jsxs32("div", { className: cn("flex items-start gap-2.5", own && "flex-row-reverse", className), children: [
-    /* @__PURE__ */ jsx37(Avatar, { size: "sm", name: author, src: avatarUrl, className: "mt-0.5" }),
-    /* @__PURE__ */ jsxs32("div", { className: cn("min-w-0 max-w-[85%]", own && "text-right"), children: [
-      /* @__PURE__ */ jsxs32("div", { className: cn("flex items-baseline gap-2 text-xs", tk.fgMuted, own && "flex-row-reverse"), children: [
-        /* @__PURE__ */ jsx37("span", { className: cn("font-medium", tk.fg), children: author ?? "The robot" }),
-        at !== void 0 && /* @__PURE__ */ jsx37("span", { children: formatAt2(at) })
+  return /* @__PURE__ */ jsxs39("div", { className: cn("flex items-start gap-2.5", own && "flex-row-reverse", className), children: [
+    /* @__PURE__ */ jsx44(Avatar, { size: "sm", name: author, src: avatarUrl, className: "mt-0.5" }),
+    /* @__PURE__ */ jsxs39("div", { className: cn("min-w-0 max-w-[85%]", own && "text-right"), children: [
+      /* @__PURE__ */ jsxs39("div", { className: cn("flex items-baseline gap-2 text-xs", tk.fgMuted, own && "flex-row-reverse"), children: [
+        /* @__PURE__ */ jsx44("span", { className: cn("font-medium", tk.fg), children: author ?? "The robot" }),
+        at !== void 0 && /* @__PURE__ */ jsx44("span", { children: formatAt2(at) })
       ] }),
-      /* @__PURE__ */ jsx37(
+      /* @__PURE__ */ jsx44(
         "div",
         {
           className: cn(
@@ -8077,13 +10123,20 @@ function Message({ message, className }) {
             tk.radius,
             own ? cn(tk.bgPrimary, tk.fgOnPrimary) : cn(tk.bgMuted, tk.fg)
           ),
-          children: /* @__PURE__ */ jsx37(Markdown, { streaming, className: own ? tk.fgOnPrimary : void 0, children: body })
+          children: /* @__PURE__ */ jsx44(Markdown, { streaming, className: own ? tk.fgOnPrimary : void 0, children: body })
         }
       )
     ] })
   ] });
 }
-function Composer({
+function Composer(props) {
+  if (props.attachments) {
+    const config = props.attachments === true ? {} : props.attachments;
+    return /* @__PURE__ */ jsx44(AttachmentTray, { accept: config.accept, max: config.max ?? 8, children: (tray) => /* @__PURE__ */ jsx44(ComposerBox, { ...props, tray }) });
+  }
+  return /* @__PURE__ */ jsx44(ComposerBox, { ...props, tray: null });
+}
+function ComposerBox({
   onSend,
   action,
   params,
@@ -8091,17 +10144,28 @@ function Composer({
   busy,
   disabled,
   sendLabel = "Send",
-  className
+  controls,
+  className,
+  tray
 }) {
-  const [text, setText] = useState16("");
+  const [text, setText] = useState22("");
   const working = busy ?? action?.loading ?? false;
+  const uploading = tray?.uploading ?? false;
+  const files = tray?.ready ?? NO_FILES;
+  const empty = text.trim() === "" && files.length === 0;
   const send = () => {
     const body = text.trim();
-    if (!body || working || disabled) return;
+    if (empty || working || disabled || uploading) return;
     setText("");
-    onSend?.(body);
+    if (!tray) {
+      onSend?.(body);
+      if (action) void runAction(action, params ? params(body) : { text: body }).catch(() => void 0);
+      return;
+    }
+    tray.clear();
+    onSend?.(body, files);
     if (action) {
-      void runAction(action, params ? params(body) : { text: body }).catch(() => void 0);
+      void runAction(action, params ? params(body, files) : { text: body, files }).catch(() => void 0);
     }
   };
   const onKeyDown = (e) => {
@@ -8110,8 +10174,20 @@ function Composer({
       send();
     }
   };
-  return /* @__PURE__ */ jsxs32("div", { className: cn("flex items-end gap-2", className), children: [
-    /* @__PURE__ */ jsx37(
+  const row = /* @__PURE__ */ jsxs39("div", { className: cn("flex items-end gap-2", !tray && className), children: [
+    tray && /* @__PURE__ */ jsx44(
+      "button",
+      {
+        type: "button",
+        "aria-label": "Attach a file",
+        title: "Attach a file",
+        disabled: disabled || tray.full,
+        onClick: tray.browse,
+        className: cn("flex h-[38px] w-9 shrink-0 items-center justify-center", ghostControl, focusRing),
+        children: /* @__PURE__ */ jsx44(Icon, { name: "paperclip", size: 18 })
+      }
+    ),
+    /* @__PURE__ */ jsx44(
       "textarea",
       {
         rows: 1,
@@ -8120,22 +10196,204 @@ function Composer({
         disabled,
         onChange: (e) => setText(e.target.value),
         onKeyDown,
+        onPaste: tray?.onPaste,
+        onDrop: tray?.onDrop,
+        onDragOver: tray?.onDragOver,
         "aria-label": placeholder,
         className: cn(inputBase, "max-h-40 min-h-[38px] resize-y py-2", focusRing)
       }
     ),
-    /* @__PURE__ */ jsx37(
+    controls !== void 0 && /* @__PURE__ */ jsx44("div", { "data-rm-composer-controls": "", className: "flex shrink-0 items-center gap-2", children: controls }),
+    /* @__PURE__ */ jsx44(
       Button,
       {
         onClick: send,
         loading: working,
-        disabled: disabled || text.trim() === "",
+        disabled: disabled || empty || uploading,
         icon: "send",
         "data-rm-action": action?.name,
         children: sendLabel
       }
     )
   ] });
+  if (!tray) return row;
+  return /* @__PURE__ */ jsxs39("div", { className: cn("flex flex-col gap-2", className), children: [
+    tray.list,
+    row,
+    tray.problem && /* @__PURE__ */ jsx44("p", { role: "alert", className: cn("text-xs font-medium", tk.fgDestructive), children: tray.problem })
+  ] });
+}
+var NO_FILES = [];
+var attachmentSeq = 0;
+function AttachmentTray({
+  accept,
+  max: max2,
+  children
+}) {
+  const { upload, error } = useFileUpload();
+  const [items2, setItems] = useState22([]);
+  const [problem, setProblem] = useState22(null);
+  const inputRef = useRef15(null);
+  const held = useRef15([]);
+  held.current = items2;
+  useEffect15(
+    () => () => {
+      for (const it of held.current) revoke(it.preview);
+    },
+    []
+  );
+  const patch = (id, change) => setItems((list) => list.map((it) => it.id === id ? { ...it, ...change } : it));
+  const add = useCallback7(
+    (picked) => {
+      if (picked.length === 0) return;
+      const wanted = picked.filter((f) => accepts(f, accept));
+      const room = Math.max(0, max2 - held.current.length);
+      const taken = wanted.slice(0, room);
+      if (wanted.length < picked.length) setProblem("That kind of file cannot be attached here.");
+      else if (taken.length < wanted.length) setProblem(`A message can carry ${max2} file${max2 === 1 ? "" : "s"} at most.`);
+      else setProblem(null);
+      if (taken.length === 0) return;
+      const fresh = taken.map((file) => ({
+        id: `att-${++attachmentSeq}`,
+        name: file.name,
+        preview: file.type.startsWith("image/") ? objectUrl(file) : void 0,
+        status: "uploading",
+        progress: 0,
+        file
+      }));
+      held.current = [...held.current, ...fresh];
+      setItems((list) => [...list, ...fresh.map(({ file: _file, ...chip2 }) => chip2)]);
+      for (const { id, file } of fresh) {
+        void upload(file, { onProgress: (pct) => patch(id, { progress: pct }) }).then(
+          (ref) => patch(id, ref ? { status: "done", progress: 100, ref } : { status: "error" })
+        );
+      }
+    },
+    [accept, max2, upload]
+  );
+  const remove = (id) => {
+    setItems((list) => {
+      revoke(list.find((it) => it.id === id)?.preview);
+      return list.filter((it) => it.id !== id);
+    });
+    setProblem(null);
+  };
+  const clear = () => {
+    for (const it of held.current) revoke(it.preview);
+    setItems([]);
+    setProblem(null);
+  };
+  const failed = items2.some((it) => it.status === "error");
+  const tray = {
+    ready: items2.flatMap((it) => it.status === "done" && it.ref ? [it.ref] : []),
+    uploading: items2.some((it) => it.status === "uploading"),
+    full: items2.length >= max2,
+    problem: problem ?? (failed ? error?.message ?? "A file could not be uploaded." : null),
+    browse: () => inputRef.current?.click(),
+    clear,
+    onPaste: (e) => {
+      const files = Array.from(e.clipboardData?.files ?? []);
+      if (files.length === 0) return;
+      e.preventDefault();
+      add(files);
+    },
+    onDrop: (e) => {
+      const files = Array.from(e.dataTransfer?.files ?? []);
+      if (files.length === 0) return;
+      e.preventDefault();
+      add(files);
+    },
+    onDragOver: (e) => {
+      if (Array.from(e.dataTransfer?.types ?? []).includes("Files")) e.preventDefault();
+    },
+    list: items2.length === 0 ? null : /* @__PURE__ */ jsx44("ul", { "aria-label": "Attachments", className: "m-0 flex list-none flex-wrap gap-2 p-0", children: items2.map((it) => /* @__PURE__ */ jsxs39(
+      "li",
+      {
+        "data-rm-attachment": it.status,
+        className: cn(
+          "flex max-w-[15rem] items-center gap-2 border py-1 pl-1 pr-1 text-xs",
+          tk.radiusMd,
+          tk.bgCard,
+          tk.fg,
+          it.status === "error" ? tk.borderDestructive : tk.border
+        ),
+        children: [
+          it.preview ? /* @__PURE__ */ jsx44("img", { src: it.preview, alt: "", className: cn("h-8 w-8 shrink-0 object-cover", tk.radiusSm) }) : /* @__PURE__ */ jsx44(
+            "span",
+            {
+              "aria-hidden": "true",
+              className: cn("flex h-8 w-8 shrink-0 items-center justify-center", tk.radiusSm, tk.bgMuted, tk.fgMuted),
+              children: /* @__PURE__ */ jsx44(Icon, { name: "file", size: 16 })
+            }
+          ),
+          /* @__PURE__ */ jsx44("span", { className: "min-w-0 flex-1 truncate", title: it.name, children: it.name }),
+          it.status === "uploading" && /* @__PURE__ */ jsxs39("span", { role: "status", "aria-label": `Uploading ${it.name}`, className: cn("flex items-center gap-1 tabular-nums", tk.fgMuted), children: [
+            /* @__PURE__ */ jsx44(Spinner, { className: "h-3.5 w-3.5" }),
+            Math.round(it.progress),
+            "%"
+          ] }),
+          it.status === "error" && /* @__PURE__ */ jsx44(Icon, { name: "circle-alert", size: 14, label: "Upload failed", className: tk.fgDestructive }),
+          /* @__PURE__ */ jsx44(
+            "button",
+            {
+              type: "button",
+              "aria-label": `Remove ${it.name}`,
+              onClick: () => remove(it.id),
+              className: cn("shrink-0 p-1", ghostControl, focusRing),
+              children: /* @__PURE__ */ jsx44(Icon, { name: "x", size: 14 })
+            }
+          )
+        ]
+      },
+      it.id
+    )) })
+  };
+  return /* @__PURE__ */ jsxs39(Fragment13, { children: [
+    /* @__PURE__ */ jsx44(
+      "input",
+      {
+        ref: inputRef,
+        type: "file",
+        multiple: max2 > 1,
+        accept,
+        className: "sr-only",
+        tabIndex: -1,
+        "aria-hidden": "true",
+        "data-rm-composer-file": "",
+        onChange: (e) => {
+          add(Array.from(e.target.files ?? []));
+          e.target.value = "";
+        }
+      }
+    ),
+    children(tray)
+  ] });
+}
+function accepts(file, accept) {
+  if (!accept) return true;
+  const rules = accept.split(",").map((r) => r.trim().toLowerCase()).filter(Boolean);
+  if (rules.length === 0) return true;
+  const name = file.name.toLowerCase();
+  const type = (file.type || "").toLowerCase();
+  return rules.some((rule) => {
+    if (rule.startsWith(".")) return name.endsWith(rule);
+    if (rule.endsWith("/*")) return type.startsWith(rule.slice(0, -1));
+    return type === rule;
+  });
+}
+function objectUrl(file) {
+  try {
+    return typeof URL !== "undefined" && typeof URL.createObjectURL === "function" ? URL.createObjectURL(file) : void 0;
+  } catch {
+    return void 0;
+  }
+}
+function revoke(url) {
+  if (!url) return;
+  try {
+    URL.revokeObjectURL(url);
+  } catch {
+  }
 }
 function formatAt2(at) {
   const ms = Date.parse(at);
@@ -8148,20 +10406,817 @@ function formatAt2(at) {
   });
 }
 
+// src/components/image-grid.tsx
+import {
+  useCallback as useCallback8,
+  useEffect as useEffect16,
+  useLayoutEffect as useLayoutEffect4,
+  useMemo as useMemo5,
+  useRef as useRef16,
+  useState as useState23
+} from "react";
+import { jsx as jsx45, jsxs as jsxs40 } from "react/jsx-runtime";
+var COLS = {
+  1: "grid-cols-1",
+  2: "grid-cols-2",
+  3: "grid-cols-3",
+  4: "grid-cols-4",
+  5: "grid-cols-5",
+  6: "grid-cols-6",
+  7: "grid-cols-7",
+  8: "grid-cols-8"
+};
+var MD_COLS = {
+  1: "md:grid-cols-1",
+  2: "md:grid-cols-2",
+  3: "md:grid-cols-3",
+  4: "md:grid-cols-4",
+  5: "md:grid-cols-5",
+  6: "md:grid-cols-6",
+  7: "md:grid-cols-7",
+  8: "md:grid-cols-8"
+};
+var LG_COLS = {
+  1: "lg:grid-cols-1",
+  2: "lg:grid-cols-2",
+  3: "lg:grid-cols-3",
+  4: "lg:grid-cols-4",
+  5: "lg:grid-cols-5",
+  6: "lg:grid-cols-6",
+  7: "lg:grid-cols-7",
+  8: "lg:grid-cols-8"
+};
+var DEFAULT_COLUMNS = {
+  mosaic: { base: 4, md: 6, lg: 8 },
+  compact: { base: 3, md: 4, lg: 6 },
+  comfortable: { base: 2, md: 3, lg: 4 }
+};
+var GAP = {
+  mosaic: "gap-0.5",
+  compact: "gap-2",
+  comfortable: "gap-4"
+};
+var GAP_PX = { mosaic: 2, compact: 8, comfortable: 16 };
+var STRIP_TILE = {
+  mosaic: "w-16",
+  compact: "w-24",
+  comfortable: "w-40"
+};
+var TILE_RADIUS = {
+  mosaic: "none",
+  compact: "sm",
+  comfortable: "md"
+};
+var OVERLAY_RADIUS = {
+  mosaic: "rounded-none",
+  compact: tk.radiusSm,
+  comfortable: tk.radiusMd
+};
+var WINDOW_ABOVE = 600;
+var OVERSCAN_ROWS = 4;
+function clampCols(n) {
+  if (n === void 0 || !Number.isFinite(n)) return void 0;
+  return Math.min(8, Math.max(1, Math.round(n)));
+}
+function ratioOf(aspect) {
+  if (typeof aspect === "number") return aspect > 0 ? aspect : 1;
+  if (aspect === "auto") return 1;
+  const [w, h] = aspect.split(":").map(Number);
+  return w > 0 && h > 0 ? w / h : 1;
+}
+function solveFill(count, width, height, gap, ratio) {
+  if (count <= 0 || width <= 0 || height <= 0) return { columns: 1, tile: 0 };
+  let best = { columns: 1, tile: 0 };
+  for (let c = 1; c <= count; c++) {
+    const rows = Math.ceil(count / c);
+    const byWidth = (width - gap * (c - 1)) / c;
+    const byHeight = (height - gap * (rows - 1)) / rows * ratio;
+    const tile = Math.floor(Math.min(byWidth, byHeight) * 100) / 100;
+    if (tile > best.tile) best = { columns: c, tile };
+    if (byWidth <= byHeight) break;
+  }
+  return best;
+}
+function ImageGrid({
+  items: given,
+  layout = "grid",
+  columns,
+  density = "comfortable",
+  aspect = "1:1",
+  selectedKey,
+  onSelect,
+  selectable = false,
+  selection,
+  onSelectionChange,
+  fill = false,
+  total,
+  highlightNew = 0,
+  source,
+  emptyState = "No pictures yet.",
+  label = "Pictures",
+  className
+}) {
+  const remote = useSourceItems(source);
+  const items2 = remote.active ? remote.items : given ?? [];
+  const count = items2.length;
+  const slots = Math.max(count, total ?? 0, remote.loading && count === 0 ? remote.pageSize || 8 : 0);
+  const strip = layout === "strip";
+  const filling = fill && !strip;
+  const interactive = selectable || !!onSelect;
+  const gapPx = GAP_PX[density];
+  const tileAspect = filling && aspect === "auto" ? "1:1" : aspect;
+  const { ref: boxRef, width, height, measured } = useMeasure();
+  const cols = useMemo5(() => {
+    const d = DEFAULT_COLUMNS[density];
+    if (typeof columns === "number") {
+      const n = clampCols(columns) ?? d.base;
+      return { base: n, md: void 0, lg: void 0 };
+    }
+    if (columns) {
+      return { base: clampCols(columns.base) ?? d.base, md: clampCols(columns.md), lg: clampCols(columns.lg) };
+    }
+    return d;
+  }, [columns, density]);
+  const solved = useMemo5(() => {
+    if (!filling) return null;
+    if (measured && width > 0 && height > 0) return solveFill(slots, width, height, gapPx, ratioOf(tileAspect));
+    return { columns: Math.max(1, Math.ceil(Math.sqrt(slots * ratioOf(tileAspect)))), tile: 0 };
+  }, [filling, measured, width, height, slots, gapPx, tileAspect]);
+  const columnsNow = useCallback8(() => {
+    if (strip) return 1;
+    if (solved) return solved.columns;
+    const box = boxRef.current;
+    const tiles = box ? Array.from(box.querySelectorAll("[data-rm-image-index]")) : [];
+    if (box && box.getBoundingClientRect().width > 0 && tiles.length > 1) {
+      const top = tiles[0].offsetTop;
+      const inRow = tiles.findIndex((t) => t.offsetTop !== top);
+      return inRow === -1 ? tiles.length : inRow;
+    }
+    return cols.base;
+  }, [strip, solved, cols.base, boxRef]);
+  const [active, setActive] = useState23(0);
+  const wantFocus = useRef16(false);
+  const anchor = useRef16(null);
+  const activeIndex = Math.min(active, Math.max(0, count - 1));
+  useLayoutEffect4(() => {
+    if (!wantFocus.current) return;
+    wantFocus.current = false;
+    const el = boxRef.current?.querySelector(`[data-rm-image-index="${activeIndex}"]`);
+    if (!el) return;
+    el.focus();
+    if (strip && typeof el.scrollIntoView === "function") {
+      el.scrollIntoView({ block: "nearest", inline: "nearest" });
+    }
+  }, [activeIndex, strip, boxRef]);
+  const focusTile = (index) => {
+    const next = Math.min(count - 1, Math.max(0, index));
+    wantFocus.current = true;
+    if (next === activeIndex) {
+      wantFocus.current = false;
+      boxRef.current?.querySelector(`[data-rm-image-index="${next}"]`)?.focus();
+      return;
+    }
+    setActive(next);
+  };
+  const chosen = useMemo5(() => new Set(selection ?? []), [selection]);
+  const toggle = (index, range) => {
+    const item = items2[index];
+    if (!item) return;
+    const next = new Set(chosen);
+    if (range && anchor.current !== null) {
+      const [lo, hi] = anchor.current < index ? [anchor.current, index] : [index, anchor.current];
+      for (let i = lo; i <= hi; i++) next.add(items2[i].key);
+    } else if (next.has(item.key)) {
+      next.delete(item.key);
+    } else {
+      next.add(item.key);
+    }
+    anchor.current = index;
+    onSelectionChange?.(items2.filter((it) => next.has(it.key)).map((it) => it.key));
+  };
+  const onTileClick = (index, e) => {
+    if (!interactive) return;
+    setActive(index);
+    if (selectable) toggle(index, e.shiftKey);
+    else onSelect?.(items2[index]);
+  };
+  const onKeyDown = (e) => {
+    if (!interactive || count === 0) return;
+    const per = columnsNow();
+    const i = activeIndex;
+    let to = null;
+    switch (e.key) {
+      case "ArrowRight":
+        to = i + 1;
+        break;
+      case "ArrowLeft":
+        to = i - 1;
+        break;
+      case "ArrowDown":
+        if (!strip) to = i + per < count ? i + per : i;
+        break;
+      case "ArrowUp":
+        if (!strip) to = i - per >= 0 ? i - per : i;
+        break;
+      case "Home":
+        to = e.ctrlKey || strip ? 0 : i - i % per;
+        break;
+      case "End":
+        to = e.ctrlKey || strip ? count - 1 : Math.min(count - 1, i - i % per + per - 1);
+        break;
+      case "PageDown":
+        if (!strip) to = Math.min(count - 1, i + per * 3);
+        break;
+      case "PageUp":
+        if (!strip) to = Math.max(0, i - per * 3);
+        break;
+      case " ":
+        e.preventDefault();
+        if (selectable) toggle(i, e.shiftKey);
+        else onSelect?.(items2[i]);
+        return;
+      case "Enter":
+        e.preventDefault();
+        if (onSelect) onSelect(items2[i]);
+        else if (selectable) toggle(i, false);
+        return;
+      case "a":
+      case "A":
+        if (selectable && (e.ctrlKey || e.metaKey)) {
+          e.preventDefault();
+          onSelectionChange?.(items2.map((it) => it.key));
+        }
+        return;
+      default:
+        return;
+    }
+    if (to === null) return;
+    e.preventDefault();
+    focusTile(to);
+  };
+  const windowing = !strip && !filling && measured && slots > WINDOW_ABOVE;
+  const [rowMetrics, setRowMetrics] = useState23(null);
+  const [visible, setVisible] = useState23(null);
+  useLayoutEffect4(() => {
+    if (!windowing) {
+      if (rowMetrics) setRowMetrics(null);
+      return;
+    }
+    const box = boxRef.current;
+    const first = box?.querySelector("[data-rm-image-index]");
+    if (!box || !first) return;
+    const h = first.getBoundingClientRect().height;
+    if (h <= 0) return;
+    const per = columnsNow();
+    const rowHeight = h + gapPx;
+    setRowMetrics((m) => m && m.per === per && Math.abs(m.rowHeight - rowHeight) < 0.5 ? m : { per, rowHeight });
+  }, [windowing, width, gapPx, density, aspect, cols.base, cols.md, cols.lg]);
+  useEffect16(() => {
+    if (!windowing || !rowMetrics) {
+      setVisible(null);
+      return;
+    }
+    const read = () => {
+      const box = boxRef.current;
+      if (!box) return;
+      const top = box.getBoundingClientRect().top;
+      const view = window.innerHeight || 0;
+      const first = Math.max(0, Math.floor(-top / rowMetrics.rowHeight) - OVERSCAN_ROWS);
+      const last = Math.max(first, Math.ceil((view - top) / rowMetrics.rowHeight) + OVERSCAN_ROWS);
+      setVisible((v) => v && v.first === first && v.last === last ? v : { first, last });
+    };
+    read();
+    window.addEventListener("scroll", read, true);
+    window.addEventListener("resize", read);
+    return () => {
+      window.removeEventListener("scroll", read, true);
+      window.removeEventListener("resize", read);
+    };
+  }, [windowing, rowMetrics, boxRef]);
+  if (slots === 0 && !remote.loading) {
+    return /* @__PURE__ */ jsx45("div", { "data-rm-image-grid": "", "data-rm-layout": layout, ...source ? sourceLinkAttrs(source) : {}, className, children: remote.error ? /* @__PURE__ */ jsx45("p", { role: "alert", className: cn("text-sm font-medium", tk.fgDestructive), children: remote.error }) : typeof emptyState === "string" ? /* @__PURE__ */ jsx45(EmptyState, { icon: "images", title: emptyState }) : emptyState });
+  }
+  const fresh = Math.max(0, Math.min(highlightNew, count));
+  const multi = selectable;
+  const cell = (index) => {
+    const item = items2[index];
+    if (!item) {
+      return /* @__PURE__ */ jsx45(
+        "div",
+        {
+          "aria-hidden": "true",
+          "data-rm-image-slot": "",
+          className: cn(strip && cn("shrink-0", STRIP_TILE[density])),
+          children: /* @__PURE__ */ jsx45(EmptySlot, { aspect: tileAspect, radius: OVERLAY_RADIUS[density] })
+        },
+        `slot-${index}`
+      );
+    }
+    const selected = multi ? chosen.has(item.key) : item.key === selectedKey;
+    const isNew = fresh > 0 && index >= count - fresh;
+    return /* @__PURE__ */ jsxs40(
+      "div",
+      {
+        role: interactive ? "option" : "listitem",
+        "aria-selected": interactive ? selected : void 0,
+        "aria-label": item.alt || item.caption || void 0,
+        tabIndex: interactive ? index === activeIndex ? 0 : -1 : void 0,
+        "data-rm-image-tile": item.key,
+        "data-rm-image-index": index,
+        "data-rm-anim": isNew ? "fade" : void 0,
+        "data-state": isNew ? "open" : void 0,
+        onClick: interactive ? (e) => onTileClick(index, e) : void 0,
+        onFocus: interactive ? () => setActive(index) : void 0,
+        className: cn(
+          "group relative min-w-0 text-left outline-none",
+          OVERLAY_RADIUS[density],
+          strip && cn("shrink-0 snap-start", STRIP_TILE[density]),
+          interactive && cn("cursor-pointer focus-visible:z-10", focusRing),
+          item.dimmed && "opacity-40"
+        ),
+        children: [
+          /* @__PURE__ */ jsxs40("span", { className: "relative block", children: [
+            /* @__PURE__ */ jsx45(
+              Image,
+              {
+                src: item.src,
+                file: item.file,
+                placeholder: item.placeholder,
+                alt: interactive ? "" : item.alt,
+                aspect: tileAspect,
+                radius: TILE_RADIUS[density]
+              }
+            ),
+            selected && /* @__PURE__ */ jsx45(
+              "span",
+              {
+                "aria-hidden": "true",
+                className: cn("pointer-events-none absolute inset-0 ring-2 ring-inset", tk.ring, OVERLAY_RADIUS[density])
+              }
+            ),
+            item.badge !== void 0 && /* @__PURE__ */ jsx45("span", { className: "pointer-events-none absolute left-1.5 top-1.5 z-[1] max-w-[calc(100%-0.75rem)]", children: item.badge }),
+            multi && /* @__PURE__ */ jsx45(
+              "span",
+              {
+                "aria-hidden": "true",
+                "data-rm-image-tick": "",
+                className: cn(
+                  "pointer-events-none absolute right-1.5 top-1.5 z-[1] flex h-5 w-5 items-center justify-center rounded-full border transition-opacity",
+                  selected ? cn(tk.bgPrimary, tk.fgOnPrimary, tk.borderPrimary) : cn(tk.bgCard, tk.borderInput, "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100")
+                ),
+                children: selected && /* @__PURE__ */ jsx45(Icon, { name: "check", size: 12, strokeWidth: 3 })
+              }
+            )
+          ] }),
+          item.caption && density !== "mosaic" && /* @__PURE__ */ jsx45("span", { className: cn("mt-1.5 block truncate", textStyles.caption), title: item.caption, children: item.caption })
+        ]
+      },
+      item.key
+    );
+  };
+  const cells = [];
+  if (windowing && rowMetrics && visible) {
+    const { per, rowHeight } = rowMetrics;
+    const rows = Math.ceil(slots / per);
+    const activeRow = Math.floor(activeIndex / per);
+    const ranges = [[visible.first, Math.min(rows - 1, visible.last)]];
+    if (interactive && (activeRow < ranges[0][0] - 1 || activeRow > ranges[0][1] + 1)) {
+      ranges.push([activeRow, activeRow]);
+      ranges.sort((a, b) => a[0] - b[0]);
+    } else if (interactive) {
+      ranges[0] = [Math.min(ranges[0][0], activeRow), Math.max(ranges[0][1], activeRow)];
+    }
+    let next = 0;
+    const spacer = (skipped, id) => {
+      if (skipped <= 0) return;
+      cells.push(
+        /* @__PURE__ */ jsx45(
+          "div",
+          {
+            "aria-hidden": "true",
+            "data-rm-image-spacer": "",
+            style: { gridColumn: "1 / -1", height: Math.max(0, skipped * rowHeight - gapPx) }
+          },
+          id
+        )
+      );
+    };
+    for (const [from, to] of ranges) {
+      if (from > rows - 1) break;
+      spacer(from - next, `gap-${next}`);
+      for (let i = from * per; i < Math.min(slots, (to + 1) * per); i++) cells.push(cell(i));
+      next = to + 1;
+    }
+    spacer(rows - next, "gap-end");
+  } else {
+    for (let i = 0; i < slots; i++) cells.push(cell(i));
+  }
+  const fillStyle = solved ? {
+    gridTemplateColumns: solved.tile > 0 ? `repeat(${solved.columns}, ${solved.tile}px)` : `repeat(${solved.columns}, minmax(0, 1fr))`,
+    justifyContent: "center",
+    alignContent: "center"
+  } : void 0;
+  return /* @__PURE__ */ jsxs40("div", { className: cn("text-left", filling && "flex min-h-0 flex-col", className), children: [
+    /* @__PURE__ */ jsx45(
+      "div",
+      {
+        ref: boxRef,
+        role: interactive ? "listbox" : "list",
+        "aria-label": label,
+        "aria-multiselectable": interactive && multi ? true : void 0,
+        "aria-orientation": interactive && strip ? "horizontal" : void 0,
+        "aria-busy": remote.loading || void 0,
+        "data-rm-image-grid": "",
+        "data-rm-layout": filling ? "fill" : layout,
+        "data-rm-density": density,
+        ...source ? sourceLinkAttrs(source) : {},
+        onKeyDown,
+        style: fillStyle,
+        className: cn(
+          GAP[density],
+          strip ? "flex snap-x overflow-x-auto pb-2" : cn("grid", !solved && cn(COLS[cols.base], cols.md && MD_COLS[cols.md], cols.lg && LG_COLS[cols.lg])),
+          filling && "min-h-0 w-full flex-1 overflow-hidden"
+        ),
+        children: cells
+      }
+    ),
+    remote.active && remote.hasMore && /* @__PURE__ */ jsx45("div", { className: "mt-3 flex justify-center", children: /* @__PURE__ */ jsx45(Button, { variant: "secondary", size: "sm", loading: remote.loading, onClick: remote.more, children: "Show more" }) }),
+    remote.active && remote.error && count > 0 && /* @__PURE__ */ jsx45("p", { role: "alert", className: cn("mt-2 text-sm font-medium", tk.fgDestructive), children: remote.error })
+  ] });
+}
+function EmptySlot({ aspect, radius }) {
+  return /* @__PURE__ */ jsx45(
+    "span",
+    {
+      className: cn("block w-full", tk.bgMutedHalf, radius),
+      style: { aspectRatio: String(ratioOf(aspect)) }
+    }
+  );
+}
+function useSourceItems(source) {
+  const active = !!source && isActionSource(source);
+  const action = active ? source.action : null;
+  const pageSize = active ? source.pageSize ?? 0 : 0;
+  const name = action?.name ?? "";
+  const actionRef = useRef16(action);
+  actionRef.current = action;
+  const [state, setState] = useState23({ items: [], total: void 0 });
+  const [loading, setLoading] = useState23(active);
+  const [error, setError] = useState23(null);
+  const [reload, setReload] = useState23(0);
+  const seq = useRef16(0);
+  const held = useRef16([]);
+  held.current = state.items;
+  const fetchPage = useCallback8(
+    async (offset3) => {
+      const run = actionRef.current;
+      if (!run) return;
+      const mine = ++seq.current;
+      const req = { filter: "", offset: offset3, limit: pageSize };
+      setLoading(true);
+      setError(null);
+      try {
+        const reply = await run.run(req, { refreshOnWrite: false });
+        if (mine !== seq.current) return;
+        if (reply === void 0) {
+          const reason = actionRef.current?.error;
+          if (reason) setError(reason instanceof Error ? reason.message : String(reason));
+          return;
+        }
+        const page = readPageReply(reply, req);
+        const rows = page.rows.filter((r) => r && typeof r.key === "string");
+        setState({ items: offset3 === 0 ? rows : [...held.current, ...rows], total: page.total });
+      } catch (e) {
+        if (mine === seq.current) setError(e instanceof Error ? e.message : String(e));
+      } finally {
+        if (mine === seq.current) setLoading(false);
+      }
+    },
+    [pageSize]
+  );
+  useEffect16(() => {
+    if (!active) return;
+    void fetchPage(0);
+  }, [active, name, fetchPage, reload]);
+  useEffect16(() => {
+    if (!active) return;
+    return onActionDone((writer) => {
+      if (writer && writer === actionRef.current?.name) return;
+      setReload((t) => t + 1);
+    });
+  }, [active]);
+  const hasMore = active && pageSize > 0 && state.total !== void 0 && state.items.length < state.total;
+  const more = useCallback8(() => {
+    if (!loading) void fetchPage(held.current.length);
+  }, [fetchPage, loading]);
+  return { active, items: state.items, pageSize, loading: active && loading, error, hasMore, more };
+}
+
+// src/components/image-compare.tsx
+import {
+  useEffect as useEffect17,
+  useRef as useRef17,
+  useState as useState24
+} from "react";
+import { Fragment as Fragment14, jsx as jsx46, jsxs as jsxs41 } from "react/jsx-runtime";
+var ASPECT2 = {
+  auto: "aspect-[4/3]",
+  "1:1": "aspect-square",
+  "4:3": "aspect-[4/3]",
+  "3:4": "aspect-[3/4]",
+  "4:5": "aspect-[4/5]",
+  "3:2": "aspect-[3/2]",
+  "2:3": "aspect-[2/3]",
+  "16:9": "aspect-video",
+  "9:16": "aspect-[9/16]"
+};
+var chip = cn(
+  "pointer-events-none absolute top-2 z-[2] border px-2 py-0.5 text-xs font-medium",
+  tk.radiusSm,
+  tk.border,
+  tk.bgCard,
+  tk.fg,
+  tk.shadowSm
+);
+function ImageCompare({
+  before,
+  after,
+  mode = "slider",
+  aspect = "4:3",
+  fit = "contain",
+  position,
+  defaultPosition = 0.5,
+  onPositionChange,
+  className
+}) {
+  const beforeLabel = before.label ?? "Before";
+  const afterLabel = after.label ?? "After";
+  if (mode === "side-by-side") {
+    return /* @__PURE__ */ jsx46(
+      "div",
+      {
+        "data-rm-image-compare": "side-by-side",
+        className: cn("grid grid-cols-1 gap-3 text-left sm:grid-cols-2", className),
+        children: [
+          { side: before, label: beforeLabel },
+          { side: after, label: afterLabel }
+        ].map(({ side, label }) => /* @__PURE__ */ jsxs41("figure", { className: "m-0 min-w-0", children: [
+          /* @__PURE__ */ jsx46(Image, { src: side.src, file: side.file, alt: side.alt, aspect, fit }),
+          /* @__PURE__ */ jsx46("figcaption", { className: cn("mt-1.5 text-xs font-medium", tk.fgMuted), children: label })
+        ] }, label))
+      }
+    );
+  }
+  return /* @__PURE__ */ jsx46(
+    Overlay,
+    {
+      before,
+      after,
+      beforeLabel,
+      afterLabel,
+      hold: mode === "hold",
+      aspect,
+      fit,
+      position,
+      defaultPosition,
+      onPositionChange,
+      className
+    }
+  );
+}
+function Overlay({
+  before,
+  after,
+  beforeLabel,
+  afterLabel,
+  hold,
+  aspect,
+  fit,
+  position,
+  defaultPosition,
+  onPositionChange,
+  className
+}) {
+  const a = useImageSource(before.src, before.file);
+  const b = useImageSource(after.src, after.file);
+  const boxRef = useRef17(null);
+  const [own, setOwn] = useState24(clamp012(defaultPosition));
+  const at = clamp012(position ?? own);
+  const [dragging, setDragging] = useState24(false);
+  const [held, setHeld] = useState24(false);
+  const move = (next) => {
+    const to = Math.round(clamp012(next) * 1e3) / 1e3;
+    if (position === void 0) setOwn(to);
+    onPositionChange?.(to);
+  };
+  const moveRef = useRef17(move);
+  moveRef.current = move;
+  useEffect17(() => {
+    if (!dragging) return;
+    let live = true;
+    const onMove = (e) => {
+      if (!live) return;
+      const r = boxRef.current?.getBoundingClientRect();
+      if (r && r.width > 0) moveRef.current((e.clientX - r.left) / r.width);
+    };
+    const finish = () => {
+      live = false;
+      setDragging(false);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", finish);
+    window.addEventListener("pointercancel", finish);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", finish);
+      window.removeEventListener("pointercancel", finish);
+    };
+  }, [dragging]);
+  useEffect17(() => {
+    if (!held) return;
+    const release = () => setHeld(false);
+    window.addEventListener("pointerup", release);
+    window.addEventListener("pointercancel", release);
+    window.addEventListener("blur", release);
+    return () => {
+      window.removeEventListener("pointerup", release);
+      window.removeEventListener("pointercancel", release);
+      window.removeEventListener("blur", release);
+    };
+  }, [held]);
+  const onSliderPointerDown = (e) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    e.preventDefault();
+    const r = e.currentTarget.getBoundingClientRect();
+    if (r.width > 0) move((e.clientX - r.left) / r.width);
+    setDragging(true);
+    e.currentTarget.querySelector('[role="slider"]')?.focus();
+  };
+  const onSliderKeyDown = (e) => {
+    const step = e.shiftKey ? 0.1 : 0.02;
+    switch (e.key) {
+      case "ArrowLeft":
+      case "ArrowDown":
+        move(at - step);
+        break;
+      case "ArrowRight":
+      case "ArrowUp":
+        move(at + step);
+        break;
+      case "PageDown":
+        move(at - 0.1);
+        break;
+      case "PageUp":
+        move(at + 0.1);
+        break;
+      case "Home":
+        move(0);
+        break;
+      case "End":
+        move(1);
+        break;
+      default:
+        return;
+    }
+    e.preventDefault();
+  };
+  const fitClass = fit === "cover" ? "object-cover" : "object-contain";
+  const picture = "absolute inset-0 h-full w-full select-none";
+  const pct = Math.round(at * 100);
+  const ratioStyle = typeof aspect === "number" && aspect > 0 ? { aspectRatio: String(aspect) } : void 0;
+  const missing = !a.url && !a.resolving && !b.url && !b.resolving;
+  const showBefore = hold ? held : true;
+  return /* @__PURE__ */ jsxs41(
+    "div",
+    {
+      ref: boxRef,
+      "data-rm-image-compare": hold ? "hold" : "slider",
+      "data-state": hold ? held ? "before" : "after" : void 0,
+      onPointerDown: hold ? void 0 : onSliderPointerDown,
+      style: ratioStyle,
+      className: cn(
+        "relative overflow-hidden text-left",
+        tk.radiusMd,
+        tk.bgMuted,
+        typeof aspect === "string" ? ASPECT2[aspect] : void 0,
+        !hold && "cursor-ew-resize touch-pan-y",
+        className
+      ),
+      children: [
+        missing && /* @__PURE__ */ jsx46(
+          "span",
+          {
+            role: "img",
+            "aria-label": "Pictures unavailable",
+            className: cn("absolute inset-0 flex items-center justify-center", tk.fgFaint),
+            children: /* @__PURE__ */ jsx46(Icon, { name: "image-off", size: 24, strokeWidth: 1.5 })
+          }
+        ),
+        hold ? /* @__PURE__ */ jsxs41(Fragment14, { children: [
+          b.url && /* @__PURE__ */ jsx46("img", { src: b.url, alt: held ? "" : after.alt, draggable: false, className: cn(picture, fitClass) }),
+          a.url && showBefore && /* @__PURE__ */ jsx46("img", { src: a.url, alt: before.alt, draggable: false, className: cn(picture, fitClass, tk.bgMuted) }),
+          /* @__PURE__ */ jsx46(
+            "button",
+            {
+              type: "button",
+              "aria-pressed": held,
+              "aria-label": `Hold to show ${beforeLabel.toLowerCase()}`,
+              onPointerDown: (e) => {
+                if (e.pointerType === "mouse" && e.button !== 0) return;
+                setHeld(true);
+              },
+              onKeyDown: (e) => {
+                if (e.key === " " || e.key === "Enter") {
+                  e.preventDefault();
+                  setHeld(true);
+                }
+              },
+              onKeyUp: (e) => {
+                if (e.key === " " || e.key === "Enter") setHeld(false);
+              },
+              onBlur: () => setHeld(false),
+              onContextMenu: (e) => e.preventDefault(),
+              className: cn(
+                "absolute inset-0 z-[1] cursor-pointer touch-pan-y select-none",
+                tk.radiusMd,
+                focusRing,
+                "focus-visible:ring-inset focus-visible:ring-offset-0"
+              )
+            }
+          ),
+          /* @__PURE__ */ jsx46("span", { "aria-live": "polite", "data-rm-image-compare-chip": "", className: cn(chip, "left-2"), children: held ? beforeLabel : afterLabel }),
+          /* @__PURE__ */ jsx46("span", { className: cn(chip, "bottom-2 right-2 top-auto", tk.fgMuted), children: "Hold to compare" })
+        ] }) : /* @__PURE__ */ jsxs41(Fragment14, { children: [
+          a.url && /* @__PURE__ */ jsx46("img", { src: a.url, alt: before.alt, draggable: false, className: cn(picture, fitClass) }),
+          b.url && /* @__PURE__ */ jsx46(
+            "img",
+            {
+              src: b.url,
+              alt: after.alt,
+              draggable: false,
+              "data-rm-image-compare-after": "",
+              style: { clipPath: `inset(0 0 0 ${at * 100}%)` },
+              className: cn(picture, fitClass, tk.bgMuted)
+            }
+          ),
+          /* @__PURE__ */ jsx46("span", { className: cn(chip, "left-2"), children: beforeLabel }),
+          /* @__PURE__ */ jsx46("span", { className: cn(chip, "right-2"), children: afterLabel }),
+          /* @__PURE__ */ jsx46(
+            "div",
+            {
+              "aria-hidden": "true",
+              className: cn("pointer-events-none absolute inset-y-0 z-[1] w-0.5 -translate-x-1/2", tk.bgCard, tk.shadowMd),
+              style: { left: `${at * 100}%` }
+            }
+          ),
+          /* @__PURE__ */ jsx46(
+            "div",
+            {
+              role: "slider",
+              tabIndex: 0,
+              "aria-label": `Divider between ${beforeLabel.toLowerCase()} and ${afterLabel.toLowerCase()}`,
+              "aria-orientation": "horizontal",
+              "aria-valuemin": 0,
+              "aria-valuemax": 100,
+              "aria-valuenow": pct,
+              "aria-valuetext": `${pct}% ${beforeLabel.toLowerCase()}`,
+              onKeyDown: onSliderKeyDown,
+              style: { left: `${at * 100}%` },
+              className: cn(
+                "absolute top-1/2 z-[2] flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border",
+                tk.border,
+                tk.bgCard,
+                tk.fg,
+                tk.shadowMd,
+                dragging ? "cursor-grabbing" : "cursor-grab",
+                focusRing
+              ),
+              children: /* @__PURE__ */ jsx46(Icon, { name: "chevrons-left-right", size: 16 })
+            }
+          )
+        ] })
+      ]
+    }
+  );
+}
+function clamp012(n) {
+  return Number.isFinite(n) ? Math.min(1, Math.max(0, n)) : 0.5;
+}
+
 // src/components/data-table.tsx
 import {
-  useCallback as useCallback5,
-  useEffect as useEffect13,
-  useMemo as useMemo3,
-  useRef as useRef10,
-  useState as useState18
+  useCallback as useCallback9,
+  useEffect as useEffect19,
+  useMemo as useMemo6,
+  useRef as useRef18,
+  useState as useState26
 } from "react";
 
 // src/components/error-state.tsx
-import { useEffect as useEffect12, useState as useState17 } from "react";
+import { useEffect as useEffect18, useState as useState25 } from "react";
 import { AppError } from "@robomotion/apps-runtime";
 import { useMaybeAppClient as useMaybeAppClient2 } from "@robomotion/apps-runtime/react";
-import { jsx as jsx38, jsxs as jsxs33 } from "react/jsx-runtime";
+import { jsx as jsx47, jsxs as jsxs42 } from "react/jsx-runtime";
 function plainMessage(raw) {
   let s = raw.replace(/\r/g, "");
   s = s.replace(/^[^\S\n]*at\s[^\n]*$/gm, "");
@@ -8202,8 +11257,8 @@ function looksLikeRefusal(error) {
 }
 function useSaidByTheBanner(error) {
   const app = useMaybeAppClient2();
-  const [state, setState] = useState17(app?.connection.state);
-  useEffect12(() => {
+  const [state, setState] = useState25(app?.connection.state);
+  useEffect18(() => {
     if (!app) return;
     setState(app.connection.state);
     return app.connection.onChange(setState);
@@ -8223,7 +11278,7 @@ function ErrorState({
   const retryable = error instanceof AppError ? error.retryable : true;
   const heading = title ?? defaultTitle(error);
   if (saidByTheBanner) return null;
-  return /* @__PURE__ */ jsxs33(
+  return /* @__PURE__ */ jsxs42(
     "div",
     {
       role: "alert",
@@ -8236,19 +11291,19 @@ function ErrorState({
       ),
       ...props,
       children: [
-        /* @__PURE__ */ jsxs33("div", { className: "flex items-center gap-2", children: [
-          /* @__PURE__ */ jsx38(Icon, { name: "circle-alert", size: 20, strokeWidth: 1.75, className: tk.fgDestructive }),
-          /* @__PURE__ */ jsx38("h3", { className: cn("text-sm font-semibold", tk.fg), children: heading })
+        /* @__PURE__ */ jsxs42("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ jsx47(Icon, { name: "circle-alert", size: 20, strokeWidth: 1.75, className: tk.fgDestructive }),
+          /* @__PURE__ */ jsx47("h3", { className: cn("text-sm font-semibold", tk.fg), children: heading })
         ] }),
-        /* @__PURE__ */ jsx38("p", { className: cn("text-sm", tk.fgMuted), children: messageOf(error) }),
-        onRetry && retryable && /* @__PURE__ */ jsx38(Button, { variant: "outline", size: "sm", icon: "refresh-cw", className: "mt-1", onClick: onRetry, children: retryLabel })
+        /* @__PURE__ */ jsx47("p", { className: cn("text-sm", tk.fgMuted), children: messageOf(error) }),
+        onRetry && retryable && /* @__PURE__ */ jsx47(Button, { variant: "outline", size: "sm", icon: "refresh-cw", className: "mt-1", onClick: onRetry, children: retryLabel })
       ]
     }
   );
 }
 
 // src/components/data-table.tsx
-import { jsx as jsx39, jsxs as jsxs34 } from "react/jsx-runtime";
+import { jsx as jsx48, jsxs as jsxs43 } from "react/jsx-runtime";
 function isLinkedAction(a) {
   return "action" in a && !!a.action;
 }
@@ -8290,35 +11345,35 @@ function DataTable(props) {
     exportable = false,
     exportFilename = "export.csv"
   } = props;
-  const [filter, setFilter] = useState18("");
-  const [sortKey, setSortKey] = useState18(null);
-  const [sortDir, setSortDir] = useState18("asc");
-  const [page, setPage] = useState18(0);
+  const [filter, setFilter] = useState26("");
+  const [sortKey, setSortKey] = useState26(null);
+  const [sortDir, setSortDir] = useState26("asc");
+  const [page, setPage] = useState26(0);
   const paged = !!source && isActionSource(source);
   const pagedAction = paged ? source.action : null;
   const actionName = pagedAction?.name ?? "";
-  const actionRef = useRef10(pagedAction);
+  const actionRef = useRef18(pagedAction);
   actionRef.current = pagedAction;
   const effPageSize = paged ? source.pageSize ?? pageSize : pageSize;
-  const [remote, setRemote] = useState18(null);
-  const [remoteLoading, setRemoteLoading] = useState18(false);
-  const [remoteError, setRemoteError] = useState18(null);
-  const [reloadTick, setReloadTick] = useState18(0);
-  const seq = useRef10(0);
-  const ownFetch = useRef10(false);
-  const superseded = useRef10(0);
-  const [askedFilter, setAskedFilter] = useState18("");
-  useEffect13(() => {
+  const [remote, setRemote] = useState26(null);
+  const [remoteLoading, setRemoteLoading] = useState26(false);
+  const [remoteError, setRemoteError] = useState26(null);
+  const [reloadTick, setReloadTick] = useState26(0);
+  const seq = useRef18(0);
+  const ownFetch = useRef18(false);
+  const superseded = useRef18(0);
+  const [askedFilter, setAskedFilter] = useState26("");
+  useEffect19(() => {
     if (!paged) return;
     const t = setTimeout(() => setAskedFilter(filter), 250);
     return () => clearTimeout(t);
   }, [filter, paged]);
   const paging = effPageSize > 0;
-  const inMemoryTotal = useRef10(0);
+  const inMemoryTotal = useRef18(0);
   const total = paged ? remote?.total ?? rows.length : inMemoryTotal.current;
   const pageCount = paging ? Math.max(1, Math.ceil(total / effPageSize)) : 1;
   const clampedPage = Math.min(page, pageCount - 1);
-  const fetchPage = useCallback5(async () => {
+  const fetchPage = useCallback9(async () => {
     const action = actionRef.current;
     if (!action) return;
     const req = {
@@ -8342,7 +11397,7 @@ function DataTable(props) {
       const failure = reply === void 0 ? action.error : void 0;
       if (failure) {
         setRemoteError(failure);
-        setRemote({ rows: [], total: 0 });
+        setRemote(null);
         return;
       }
       if (reply === void 0) {
@@ -8358,17 +11413,17 @@ function DataTable(props) {
     } catch (e) {
       if (mine !== seq.current) return;
       setRemoteError(e);
-      setRemote({ rows: [], total: 0 });
+      setRemote(null);
     } finally {
       if (mine === seq.current) setRemoteLoading(false);
     }
   }, [askedFilter, sortKey, sortDir, clampedPage, effPageSize]);
-  useEffect13(() => {
+  useEffect19(() => {
     if (!paged || !actionName) return;
     void fetchPage();
   }, [paged, actionName, fetchPage, reloadTick]);
-  const wasLoading = useRef10(false);
-  useEffect13(() => {
+  const wasLoading = useRef18(false);
+  useEffect19(() => {
     if (!paged) {
       wasLoading.current = false;
       return;
@@ -8380,20 +11435,20 @@ function DataTable(props) {
     }
     wasLoading.current = busy2;
   });
-  useEffect13(() => {
+  useEffect19(() => {
     if (!paged) return;
     return onActionDone((name) => {
       if (name && name === actionRef.current?.name) return;
       setReloadTick((t) => t + 1);
     });
   }, [paged]);
-  const refresh = useCallback5(() => {
+  const refresh = useCallback9(() => {
     const name = actionRef.current?.name;
     if (name) clearSourceFetches(name);
     setRemoteError(null);
     setReloadTick((t) => t + 1);
   }, []);
-  const filtered = useMemo3(() => {
+  const filtered = useMemo6(() => {
     if (paged) return NO_ROWS;
     const needle = filter.trim().toLowerCase();
     if (!needle) return rows;
@@ -8404,7 +11459,7 @@ function DataTable(props) {
       })
     );
   }, [paged, rows, columns, filter]);
-  const sorted = useMemo3(() => {
+  const sorted = useMemo6(() => {
     if (paged || !sortKey) return filtered;
     const col = columns.find((c) => c.key === sortKey);
     if (!col) return filtered;
@@ -8420,26 +11475,26 @@ function DataTable(props) {
   }, [paged, filtered, columns, sortKey, sortDir]);
   inMemoryTotal.current = sorted.length;
   const pageRows = paged ? remote?.rows ?? rows : paging ? sorted.slice(clampedPage * effPageSize, clampedPage * effPageSize + effPageSize) : sorted;
-  useEffect13(() => {
+  useEffect19(() => {
     if (page > pageCount - 1) setPage(pageCount - 1);
   }, [page, pageCount]);
-  const keyOf = useCallback5(
+  const keyOf = useCallback9(
     (row, index) => rowKey ? rowKey(row) : String(clampedPage * effPageSize + index),
     [rowKey, clampedPage, effPageSize]
   );
-  const [ownKeys, setOwnKeys] = useState18(defaultSelectedKeys ?? []);
-  const [allMatching, setAllMatching] = useState18(false);
+  const [ownKeys, setOwnKeys] = useState26(defaultSelectedKeys ?? []);
+  const [allMatching, setAllMatching] = useState26(false);
   const keys = selectedKeys ?? ownKeys;
-  const keySet = useMemo3(() => new Set(keys), [keys]);
-  const seen = useRef10(/* @__PURE__ */ new Map());
+  const keySet = useMemo6(() => new Set(keys), [keys]);
+  const seen = useRef18(/* @__PURE__ */ new Map());
   pageRows.forEach((row, i) => {
     if (selectable) seen.current.set(keyOf(row, i), row);
   });
-  const rowsFor = useCallback5(
+  const rowsFor = useCallback9(
     (list) => list.map((k) => seen.current.get(k)).filter((r) => r !== void 0),
     []
   );
-  const setKeys = useCallback5(
+  const setKeys = useCallback9(
     (next) => {
       if (selectedKeys === void 0) setOwnKeys(next);
       onSelectionChange?.(next, next.map((k) => seen.current.get(k)).filter((r) => r !== void 0));
@@ -8447,21 +11502,21 @@ function DataTable(props) {
     [selectedKeys, onSelectionChange]
   );
   const selectionCount = allMatching ? total : keys.length;
-  const selection = useMemo3(
+  const selection = useMemo6(
     () => allMatching ? { allMatching: true, filter, count: total } : { keys, rows: rowsFor(keys), filter, count: keys.length },
     [allMatching, keys, filter, total, rowsFor]
   );
-  const clearSelection = useCallback5(() => {
+  const clearSelection = useCallback9(() => {
     setAllMatching(false);
     if (selectedKeys === void 0) setOwnKeys([]);
     onSelectionChange?.([], []);
   }, [selectedKeys, onSelectionChange]);
-  useEffect13(() => {
+  useEffect19(() => {
     setAllMatching(false);
   }, [askedFilter, filter]);
-  const selectionRef = useRef10(selection);
+  const selectionRef = useRef18(selection);
   selectionRef.current = selection;
-  useEffect13(() => {
+  useEffect19(() => {
     if (!tableRef) return;
     tableRef.current = {
       refresh,
@@ -8473,7 +11528,7 @@ function DataTable(props) {
       tableRef.current = null;
     };
   }, [tableRef, refresh, clearSelection]);
-  const pageKeys = useMemo3(
+  const pageKeys = useMemo6(
     () => selectable ? pageRows.map((row, i) => keyOf(row, i)) : [],
     // pageRows is a fresh array every render; its contents are what matter.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -8497,7 +11552,7 @@ function DataTable(props) {
     }
     setKeys(sorted.map((row, i) => rowKey ? rowKey(row) : String(i)));
   };
-  const afterOwnWrite = useCallback5(() => {
+  const afterOwnWrite = useCallback9(() => {
     if (paged) setReloadTick((t) => t + 1);
     setAllMatching(false);
     if (selectedKeys === void 0) setOwnKeys([]);
@@ -8512,8 +11567,8 @@ function DataTable(props) {
     a.onSelect(sel);
   };
   const bulkNames = joinNames((bulkActions ?? []).map((a) => isLinkedBulk(a) ? a.action.name : void 0));
-  const [exporting, setExporting] = useState18(false);
-  const exportColumns = useMemo3(() => columns.filter((c) => !c.noExport), [columns]);
+  const [exporting, setExporting] = useState26(false);
+  const exportColumns = useMemo6(() => columns.filter((c) => !c.noExport), [columns]);
   const exportCsv = async () => {
     setExporting(true);
     try {
@@ -8551,18 +11606,18 @@ function DataTable(props) {
   const alignClass = (align) => align === "right" ? "text-right" : align === "center" ? "text-center" : "text-left";
   const busy = loading || remoteLoading;
   const showEmpty = !busy && pageRows.length === 0;
-  const linkAttrs = useMemo3(
+  const linkAttrs = useMemo6(
     () => source ? sourceLinkAttrs(source) : rowsLinkAttrs(rows),
     [rows, source]
   );
   const columnCount = columns.length + (rowActions?.length ? 1 : 0) + (selectable ? 1 : 0);
   const offerAllMatching = selectable && pageAllSelected && !allMatching && total > pageKeys.length && paging;
-  return /* @__PURE__ */ jsxs34("div", { className: cn("text-left", className), ...linkAttrs, children: [
-    (filterable || exportable) && /* @__PURE__ */ jsx39(
+  return /* @__PURE__ */ jsxs43("div", { className: cn("text-left", className), ...linkAttrs, children: [
+    (filterable || exportable) && /* @__PURE__ */ jsx48(
       Toolbar,
       {
         className: "mb-3",
-        end: exportable ? /* @__PURE__ */ jsx39(
+        end: exportable ? /* @__PURE__ */ jsx48(
           Button,
           {
             variant: "secondary",
@@ -8573,7 +11628,7 @@ function DataTable(props) {
             children: "Export CSV"
           }
         ) : void 0,
-        children: filterable && /* @__PURE__ */ jsx39(
+        children: filterable && /* @__PURE__ */ jsx48(
           SearchInput,
           {
             label: filterPlaceholder,
@@ -8587,7 +11642,7 @@ function DataTable(props) {
         )
       }
     ),
-    selectable && selectionCount > 0 && /* @__PURE__ */ jsxs34(
+    selectable && selectionCount > 0 && /* @__PURE__ */ jsxs43(
       "div",
       {
         role: "region",
@@ -8595,8 +11650,8 @@ function DataTable(props) {
         "data-rm-action": bulkNames,
         className: cn("mb-3 flex flex-wrap items-center gap-2 border px-3 py-2", tk.radius, mutedBar),
         children: [
-          /* @__PURE__ */ jsx39("span", { className: cn("text-sm font-medium", tk.fg), children: allMatching ? `All ${total} selected` : `${selectionCount} selected` }),
-          offerAllMatching && /* @__PURE__ */ jsxs34(
+          /* @__PURE__ */ jsx48("span", { className: cn("text-sm font-medium", tk.fg), children: allMatching ? `All ${total} selected` : `${selectionCount} selected` }),
+          offerAllMatching && /* @__PURE__ */ jsxs43(
             "button",
             {
               type: "button",
@@ -8608,8 +11663,8 @@ function DataTable(props) {
               ]
             }
           ),
-          /* @__PURE__ */ jsxs34("div", { className: "ml-auto flex flex-wrap items-center gap-2", children: [
-            (bulkActions ?? []).map((a) => /* @__PURE__ */ jsx39(
+          /* @__PURE__ */ jsxs43("div", { className: "ml-auto flex flex-wrap items-center gap-2", children: [
+            (bulkActions ?? []).map((a) => /* @__PURE__ */ jsx48(
               Button,
               {
                 size: "sm",
@@ -8622,15 +11677,15 @@ function DataTable(props) {
               },
               a.label
             )),
-            /* @__PURE__ */ jsx39(Button, { size: "sm", variant: "ghost", onClick: clearSelection, children: "Clear" })
+            /* @__PURE__ */ jsx48(Button, { size: "sm", variant: "ghost", onClick: clearSelection, children: "Clear" })
           ] })
         ]
       }
     ),
-    /* @__PURE__ */ jsx39("div", { className: cn("overflow-hidden", cardBase), children: /* @__PURE__ */ jsx39("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsxs34("table", { className: "w-full border-collapse text-sm", children: [
-      caption && /* @__PURE__ */ jsx39("caption", { className: "sr-only", children: caption }),
-      /* @__PURE__ */ jsx39("thead", { children: /* @__PURE__ */ jsxs34("tr", { className: cn("border-b", mutedBar), children: [
-        selectable && /* @__PURE__ */ jsx39("th", { scope: "col", className: "w-10 px-3 py-2.5", children: /* @__PURE__ */ jsx39(
+    /* @__PURE__ */ jsx48("div", { className: cn("overflow-hidden", cardBase), children: /* @__PURE__ */ jsx48("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsxs43("table", { className: "w-full border-collapse text-sm", children: [
+      caption && /* @__PURE__ */ jsx48("caption", { className: "sr-only", children: caption }),
+      /* @__PURE__ */ jsx48("thead", { children: /* @__PURE__ */ jsxs43("tr", { className: cn("border-b", mutedBar), children: [
+        selectable && /* @__PURE__ */ jsx48("th", { scope: "col", className: "w-10 px-3 py-2.5", children: /* @__PURE__ */ jsx48(
           TickBox,
           {
             label: "Select every row on this page",
@@ -8641,7 +11696,7 @@ function DataTable(props) {
         ) }),
         columns.map((col) => {
           const active = sortKey === col.key;
-          return /* @__PURE__ */ jsx39(
+          return /* @__PURE__ */ jsx48(
             "th",
             {
               scope: "col",
@@ -8652,7 +11707,7 @@ function DataTable(props) {
                 alignClass(col.align),
                 col.className
               ),
-              children: col.sortable ? /* @__PURE__ */ jsxs34(
+              children: col.sortable ? /* @__PURE__ */ jsxs43(
                 "button",
                 {
                   type: "button",
@@ -8665,7 +11720,7 @@ function DataTable(props) {
                   ),
                   children: [
                     col.header,
-                    /* @__PURE__ */ jsx39(SortIcon, { active, dir: sortDir })
+                    /* @__PURE__ */ jsx48(SortIcon, { active, dir: sortDir })
                   ]
                 }
               ) : col.header
@@ -8673,20 +11728,20 @@ function DataTable(props) {
             col.key
           );
         }),
-        rowActions && rowActions.length > 0 && /* @__PURE__ */ jsx39("th", { scope: "col", className: "w-12 px-3 py-2.5", children: /* @__PURE__ */ jsx39("span", { className: "sr-only", children: "Actions" }) })
+        rowActions && rowActions.length > 0 && /* @__PURE__ */ jsx48("th", { scope: "col", className: "w-12 px-3 py-2.5", children: /* @__PURE__ */ jsx48("span", { className: "sr-only", children: "Actions" }) })
       ] }) }),
-      /* @__PURE__ */ jsxs34("tbody", { children: [
+      /* @__PURE__ */ jsxs43("tbody", { children: [
         busy && // The shape of the rows that are coming, not a word in the
         // middle of an empty box; the word is still there for a
         // screen reader.
-        LOADING_ROWS.map((n) => /* @__PURE__ */ jsx39("tr", { className: cn("border-b last:border-b-0", tk.border), "aria-hidden": n > 0 || void 0, children: /* @__PURE__ */ jsxs34("td", { colSpan: columnCount, className: "px-3 py-3", children: [
-          n === 0 && /* @__PURE__ */ jsx39("span", { className: "sr-only", children: "Loading" }),
-          /* @__PURE__ */ jsx39(Skeleton, { variant: "text", width: n % 2 === 0 ? "70%" : "45%" })
+        LOADING_ROWS.map((n) => /* @__PURE__ */ jsx48("tr", { className: cn("border-b last:border-b-0", tk.border), "aria-hidden": n > 0 || void 0, children: /* @__PURE__ */ jsxs43("td", { colSpan: columnCount, className: "px-3 py-3", children: [
+          n === 0 && /* @__PURE__ */ jsx48("span", { className: "sr-only", children: "Loading" }),
+          /* @__PURE__ */ jsx48(Skeleton, { variant: "text", width: n % 2 === 0 ? "70%" : "45%" })
         ] }) }, n)),
         !busy && pageRows.map((row, i) => {
           const key = keyOf(row, i);
           const ticked = allMatching || keySet.has(key);
-          return /* @__PURE__ */ jsxs34(
+          return /* @__PURE__ */ jsxs43(
             "tr",
             {
               onClick: onRowClick ? () => onRowClick(row) : void 0,
@@ -8699,7 +11754,7 @@ function DataTable(props) {
                 ticked && tk.selectedBgPrimarySoft
               ),
               children: [
-                selectable && /* @__PURE__ */ jsx39("td", { className: "px-3 py-2.5", onClick: (e) => e.stopPropagation(), children: /* @__PURE__ */ jsx39(
+                selectable && /* @__PURE__ */ jsx48("td", { className: "px-3 py-2.5", onClick: (e) => e.stopPropagation(), children: /* @__PURE__ */ jsx48(
                   TickBox,
                   {
                     label: `Select row ${i + 1}`,
@@ -8707,7 +11762,7 @@ function DataTable(props) {
                     onChange: () => toggleRow(key)
                   }
                 ) }),
-                columns.map((col) => /* @__PURE__ */ jsx39(
+                columns.map((col) => /* @__PURE__ */ jsx48(
                   "td",
                   {
                     className: cn("px-3 py-2.5", tk.fg, alignClass(col.align), col.className),
@@ -8715,13 +11770,13 @@ function DataTable(props) {
                   },
                   col.key
                 )),
-                rowActions && rowActions.length > 0 && /* @__PURE__ */ jsx39("td", { className: "px-2 py-1.5 text-right", onClick: (e) => e.stopPropagation(), children: /* @__PURE__ */ jsx39(Menu, { items: rowMenuItems(row, rowActions, afterOwnWrite) }) })
+                rowActions && rowActions.length > 0 && /* @__PURE__ */ jsx48("td", { className: "px-2 py-1.5 text-right", onClick: (e) => e.stopPropagation(), children: /* @__PURE__ */ jsx48(Menu, { items: rowMenuItems(row, rowActions, afterOwnWrite) }) })
               ]
             },
             key
           );
         }),
-        showEmpty && /* @__PURE__ */ jsx39("tr", { children: /* @__PURE__ */ jsx39("td", { colSpan: columnCount, className: "p-0", children: remoteError ? /* @__PURE__ */ jsx39(ErrorState, { className: "m-3", error: remoteError, onRetry: refresh }) : emptyState ?? /* @__PURE__ */ jsx39(
+        showEmpty && /* @__PURE__ */ jsx48("tr", { children: /* @__PURE__ */ jsx48("td", { colSpan: columnCount, className: "p-0", children: remoteError ? /* @__PURE__ */ jsx48(ErrorState, { className: "m-3", error: remoteError, onRetry: refresh }) : emptyState ?? /* @__PURE__ */ jsx48(
           EmptyState,
           {
             className: "rounded-none border-0",
@@ -8731,7 +11786,7 @@ function DataTable(props) {
         ) }) })
       ] })
     ] }) }) }),
-    paging && total > effPageSize && /* @__PURE__ */ jsx39(
+    paging && total > effPageSize && /* @__PURE__ */ jsx48(
       Pagination,
       {
         className: "mt-3",
@@ -8743,7 +11798,7 @@ function DataTable(props) {
         noun: "rows"
       }
     ),
-    exporting && /* @__PURE__ */ jsx39("span", { className: "sr-only", role: "status", children: "Preparing the export" })
+    exporting && /* @__PURE__ */ jsx48("span", { className: "sr-only", role: "status", children: "Preparing the export" })
   ] });
 }
 var LOADING_ROWS = [0, 1, 2];
@@ -8753,11 +11808,11 @@ function TickBox({
   indeterminate = false,
   onChange
 }) {
-  const ref = useRef10(null);
-  useEffect13(() => {
+  const ref = useRef18(null);
+  useEffect19(() => {
     if (ref.current) ref.current.indeterminate = indeterminate && !checked;
   }, [indeterminate, checked]);
-  return /* @__PURE__ */ jsx39(
+  return /* @__PURE__ */ jsx48(
     "input",
     {
       ref,
@@ -8830,12 +11885,12 @@ function downloadCsv(filename, csv) {
 }
 function cellText(v) {
   if (v === null || v === void 0 || v === "") {
-    return /* @__PURE__ */ jsx39("span", { className: tk.fgFaint, children: "-" });
+    return /* @__PURE__ */ jsx48("span", { className: tk.fgFaint, children: "-" });
   }
   return String(v);
 }
 function SortIcon({ active, dir }) {
-  return /* @__PURE__ */ jsx39(
+  return /* @__PURE__ */ jsx48(
     Icon,
     {
       name: !active ? "chevrons-up-down" : dir === "asc" ? "chevron-up" : "chevron-down",
@@ -8852,11 +11907,11 @@ import {
   createContext as createContext5,
   isValidElement as isValidElement5,
   useContext as useContext6,
-  useEffect as useEffect14,
-  useRef as useRef11,
-  useState as useState19
+  useEffect as useEffect20,
+  useRef as useRef19,
+  useState as useState27
 } from "react";
-import { jsx as jsx40, jsxs as jsxs35 } from "react/jsx-runtime";
+import { jsx as jsx49, jsxs as jsxs44 } from "react/jsx-runtime";
 var KanbanContext = createContext5(null);
 function Kanban({ onMove, action, className, children }) {
   const items2 = Children7.toArray(children);
@@ -8864,12 +11919,12 @@ function Kanban({ onMove, action, className, children }) {
   for (const c of items2) {
     if (isValidElement5(c) && c.type === KanbanColumn) columns.push(String(c.props.id));
   }
-  const [dragKey, setDragKey] = useState19(null);
-  const [dragFrom, setDragFrom] = useState19(null);
-  const [dragOffset, setDragOffset] = useState19({ x: 0, y: 0 });
-  const [overColumn, setOverColumn] = useState19(null);
-  const origin = useRef11({ x: 0, y: 0 });
-  const latest = useRef11({
+  const [dragKey, setDragKey] = useState27(null);
+  const [dragFrom, setDragFrom] = useState27(null);
+  const [dragOffset, setDragOffset] = useState27({ x: 0, y: 0 });
+  const [overColumn, setOverColumn] = useState27(null);
+  const origin = useRef19({ x: 0, y: 0 });
+  const latest = useRef19({
     key: "",
     from: "",
     over: null
@@ -8888,7 +11943,7 @@ function Kanban({ onMove, action, className, children }) {
     setDragOffset({ x: 0, y: 0 });
     setOverColumn(null);
   };
-  useEffect14(() => {
+  useEffect20(() => {
     if (!dragKey) return;
     const onPointerMove = (e) => {
       setDragOffset({ x: e.clientX - origin.current.x, y: e.clientY - origin.current.y });
@@ -8923,7 +11978,7 @@ function Kanban({ onMove, action, className, children }) {
     startDrag,
     move
   };
-  return /* @__PURE__ */ jsx40(KanbanContext.Provider, { value: ctx, children: /* @__PURE__ */ jsx40(
+  return /* @__PURE__ */ jsx49(KanbanContext.Provider, { value: ctx, children: /* @__PURE__ */ jsx49(
     "div",
     {
       className: cn("flex gap-4 overflow-x-auto pb-2 text-left", className),
@@ -8936,7 +11991,7 @@ function KanbanColumn({ id, title, meta, emptyState, className, children }) {
   const ctx = useContext6(KanbanContext);
   const over = ctx?.overColumn === id && ctx?.dragFrom !== id;
   const cards = Children7.toArray(children);
-  return /* @__PURE__ */ jsxs35(
+  return /* @__PURE__ */ jsxs44(
     "section",
     {
       "data-rm-kanban-column": id,
@@ -8948,18 +12003,18 @@ function KanbanColumn({ id, title, meta, emptyState, className, children }) {
         className
       ),
       children: [
-        /* @__PURE__ */ jsxs35("header", { className: "flex items-center justify-between gap-2 px-3 py-2", children: [
-          /* @__PURE__ */ jsx40("h3", { className: cn("min-w-0 truncate", textStyles.cardTitle), children: title }),
-          /* @__PURE__ */ jsx40("span", { className: cn("shrink-0 rounded-full px-1.5 py-0.5 text-xs font-medium tabular-nums", tk.bgMuted, tk.fgMuted), children: meta ?? cards.length })
+        /* @__PURE__ */ jsxs44("header", { className: "flex items-center justify-between gap-2 px-3 py-2", children: [
+          /* @__PURE__ */ jsx49("h3", { className: cn("min-w-0 truncate", textStyles.cardTitle), children: title }),
+          /* @__PURE__ */ jsx49("span", { className: cn("shrink-0 rounded-full px-1.5 py-0.5 text-xs font-medium tabular-nums", tk.bgMuted, tk.fgMuted), children: meta ?? cards.length })
         ] }),
-        /* @__PURE__ */ jsx40("ul", { className: "flex min-h-[4rem] flex-1 flex-col gap-2 p-2", children: cards.length > 0 ? cards : /* @__PURE__ */ jsx40("li", { className: cn("border border-dashed px-3 py-6 text-center text-xs", tk.radiusMd, tk.borderInput, tk.fgMuted), children: emptyState ?? "Nothing here" }) })
+        /* @__PURE__ */ jsx49("ul", { className: "flex min-h-[4rem] flex-1 flex-col gap-2 p-2", children: cards.length > 0 ? cards : /* @__PURE__ */ jsx49("li", { className: cn("border border-dashed px-3 py-6 text-center text-xs", tk.radiusMd, tk.borderInput, tk.fgMuted), children: emptyState ?? "Nothing here" }) })
       ]
     }
   );
 }
 function KanbanCard({ id, column, disabled = false, className, children }) {
   const ctx = useContext6(KanbanContext);
-  const ref = useRef11(null);
+  const ref = useRef19(null);
   const dragging = ctx?.dragKey === id;
   const onPointerDown = (e) => {
     if (disabled || e.button !== 0) return;
@@ -8978,7 +12033,7 @@ function KanbanCard({ id, column, disabled = false, className, children }) {
     e.preventDefault();
     ctx.move(id, owner, next);
   };
-  return /* @__PURE__ */ jsx40(
+  return /* @__PURE__ */ jsx49(
     "li",
     {
       ref,
@@ -9010,8 +12065,8 @@ function columnOf(el) {
 }
 
 // src/components/calendar.tsx
-import { useMemo as useMemo4, useState as useState20 } from "react";
-import { Fragment as Fragment8, jsx as jsx41, jsxs as jsxs36 } from "react/jsx-runtime";
+import { useMemo as useMemo7, useState as useState28 } from "react";
+import { Fragment as Fragment15, jsx as jsx50, jsxs as jsxs45 } from "react/jsx-runtime";
 function iso(y, m, d) {
   return `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 }
@@ -9032,7 +12087,7 @@ function Calendar({
   className
 }) {
   const today = /* @__PURE__ */ new Date();
-  const [ownMonth, setOwnMonth] = useState20(
+  const [ownMonth, setOwnMonth] = useState28(
     defaultMonth ?? `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`
   );
   const current = month ?? ownMonth;
@@ -9043,7 +12098,7 @@ function Calendar({
     if (month === void 0) setOwnMonth(next);
     onMonthChange?.(next);
   };
-  const byDate = useMemo4(() => {
+  const byDate = useMemo7(() => {
     const map = /* @__PURE__ */ new Map();
     for (const e of events) {
       const list = map.get(e.date);
@@ -9067,23 +12122,23 @@ function Calendar({
   });
   const heading = firstDay.toLocaleDateString(void 0, { month: "long", year: "numeric" });
   const todayIso = iso(today.getFullYear(), today.getMonth(), today.getDate());
-  return /* @__PURE__ */ jsxs36("div", { className: cn("text-left", className), children: [
-    /* @__PURE__ */ jsxs36("div", { className: "mb-2 flex items-center justify-between gap-2", children: [
-      /* @__PURE__ */ jsx41(NavButton, { label: "Previous month", onClick: () => goto(-1), dir: "prev" }),
-      /* @__PURE__ */ jsx41("h3", { className: textStyles.cardTitle, children: heading }),
-      /* @__PURE__ */ jsx41(NavButton, { label: "Next month", onClick: () => goto(1), dir: "next" })
+  return /* @__PURE__ */ jsxs45("div", { className: cn("text-left", className), children: [
+    /* @__PURE__ */ jsxs45("div", { className: "mb-2 flex items-center justify-between gap-2", children: [
+      /* @__PURE__ */ jsx50(NavButton, { label: "Previous month", onClick: () => goto(-1), dir: "prev" }),
+      /* @__PURE__ */ jsx50("h3", { className: textStyles.cardTitle, children: heading }),
+      /* @__PURE__ */ jsx50(NavButton, { label: "Next month", onClick: () => goto(1), dir: "next" })
     ] }),
-    /* @__PURE__ */ jsxs36(
+    /* @__PURE__ */ jsxs45(
       "div",
       {
         role: "group",
         "aria-label": heading,
         className: cn("overflow-hidden border", tk.radius, tk.border, tk.bgCard),
         children: [
-          /* @__PURE__ */ jsx41("div", { "aria-hidden": "true", className: cn("grid grid-cols-7 border-b", tk.border, tk.bgMutedHalf), children: weekdays.map((w) => /* @__PURE__ */ jsx41("div", { className: cn("px-2 py-1.5 text-center text-xs font-medium", tk.fgMuted), children: w }, w)) }),
-          /* @__PURE__ */ jsx41("div", { className: "grid grid-cols-7", children: cells.map((day, i) => {
+          /* @__PURE__ */ jsx50("div", { "aria-hidden": "true", className: cn("grid grid-cols-7 border-b", tk.border, tk.bgMutedHalf), children: weekdays.map((w) => /* @__PURE__ */ jsx50("div", { className: cn("px-2 py-1.5 text-center text-xs font-medium", tk.fgMuted), children: w }, w)) }),
+          /* @__PURE__ */ jsx50("div", { className: "grid grid-cols-7", children: cells.map((day, i) => {
             if (day === null) {
-              return /* @__PURE__ */ jsx41(
+              return /* @__PURE__ */ jsx50(
                 "div",
                 {
                   className: cn("min-h-[4.5rem] border-b border-r last:border-r-0", tk.border, tk.bgMutedHalf)
@@ -9095,8 +12150,8 @@ function Calendar({
             const dayEvents = byDate.get(date) ?? [];
             const isSelected = selected === date;
             const isToday = date === todayIso;
-            const body = /* @__PURE__ */ jsxs36(Fragment8, { children: [
-              /* @__PURE__ */ jsx41(
+            const body = /* @__PURE__ */ jsxs45(Fragment15, { children: [
+              /* @__PURE__ */ jsx50(
                 "span",
                 {
                   className: cn(
@@ -9108,8 +12163,8 @@ function Calendar({
                   children: day
                 }
               ),
-              /* @__PURE__ */ jsxs36("span", { className: "mt-1 flex flex-col gap-0.5", children: [
-                dayEvents.slice(0, maxPerDay).map((e, j) => /* @__PURE__ */ jsx41(
+              /* @__PURE__ */ jsxs45("span", { className: "mt-1 flex flex-col gap-0.5", children: [
+                dayEvents.slice(0, maxPerDay).map((e, j) => /* @__PURE__ */ jsx50(
                   "span",
                   {
                     className: cn("truncate px-1 py-0.5 text-[11px] font-medium", tk.radiusSm, tk.bgPrimarySoft, tk.fgPrimary),
@@ -9117,7 +12172,7 @@ function Calendar({
                   },
                   j
                 )),
-                dayEvents.length > maxPerDay && /* @__PURE__ */ jsxs36("span", { className: cn("px-1 text-[11px]", tk.fgMuted), children: [
+                dayEvents.length > maxPerDay && /* @__PURE__ */ jsxs45("span", { className: cn("px-1 text-[11px]", tk.fgMuted), children: [
                   "+",
                   dayEvents.length - maxPerDay,
                   " more"
@@ -9130,12 +12185,12 @@ function Calendar({
               isSelected && tk.selectedBgPrimarySoft
             );
             if (!onSelect) {
-              return /* @__PURE__ */ jsx41("div", { className: cellClass, children: body }, date);
+              return /* @__PURE__ */ jsx50("div", { className: cellClass, children: body }, date);
             }
             const fullDate = new Date(year, monthIndex, day).toLocaleDateString(void 0, {
               dateStyle: "full"
             });
-            return /* @__PURE__ */ jsx41(
+            return /* @__PURE__ */ jsx50(
               "button",
               {
                 type: "button",
@@ -9154,12 +12209,12 @@ function Calendar({
   ] });
 }
 function NavButton({ label, onClick, dir }) {
-  return /* @__PURE__ */ jsx41("button", { type: "button", "aria-label": label, onClick, className: cn("p-1.5", ghostControl, focusRing), children: /* @__PURE__ */ jsx41(Icon, { name: dir === "prev" ? "chevron-left" : "chevron-right", size: 16 }) });
+  return /* @__PURE__ */ jsx50("button", { type: "button", "aria-label": label, onClick, className: cn("p-1.5", ghostControl, focusRing), children: /* @__PURE__ */ jsx50(Icon, { name: dir === "prev" ? "chevron-left" : "chevron-right", size: 16 }) });
 }
 
 // src/components/json-view.tsx
-import { useState as useState21 } from "react";
-import { jsx as jsx42, jsxs as jsxs37 } from "react/jsx-runtime";
+import { useState as useState29 } from "react";
+import { jsx as jsx51, jsxs as jsxs46 } from "react/jsx-runtime";
 function isEmpty2(value) {
   if (value === void 0 || value === null) return true;
   if (Array.isArray(value)) return value.length === 0;
@@ -9174,9 +12229,9 @@ function JsonView({
   label = "Result",
   className
 }) {
-  const [copied, setCopied] = useState21(false);
+  const [copied, setCopied] = useState29(false);
   if (isEmpty2(value)) {
-    return /* @__PURE__ */ jsx42(
+    return /* @__PURE__ */ jsx51(
       "div",
       {
         className: cn("border border-dashed px-4 py-6 text-center text-sm", tk.radiusMd, tk.borderInput, tk.fgMuted, className),
@@ -9192,7 +12247,7 @@ function JsonView({
     } catch {
     }
   };
-  return /* @__PURE__ */ jsxs37(
+  return /* @__PURE__ */ jsxs46(
     "div",
     {
       className: cn(
@@ -9205,7 +12260,7 @@ function JsonView({
         className
       ),
       children: [
-        copyable && /* @__PURE__ */ jsxs37(
+        copyable && /* @__PURE__ */ jsxs46(
           "button",
           {
             type: "button",
@@ -9222,12 +12277,12 @@ function JsonView({
               focusRing
             ),
             children: [
-              /* @__PURE__ */ jsx42(Icon, { name: copied ? "check" : "copy", size: 12 }),
+              /* @__PURE__ */ jsx51(Icon, { name: copied ? "check" : "copy", size: 12 }),
               copied ? "Copied" : "Copy"
             ]
           }
         ),
-        /* @__PURE__ */ jsx42("ul", { role: "tree", "aria-label": label, className: cn("m-0 list-none p-0", copyable && "pr-16"), children: /* @__PURE__ */ jsx42(Node2, { name: null, value, depth: 0, maxDepth }) })
+        /* @__PURE__ */ jsx51("ul", { role: "tree", "aria-label": label, className: cn("m-0 list-none p-0", copyable && "pr-16"), children: /* @__PURE__ */ jsx51(Node2, { name: null, value, depth: 0, maxDepth }) })
       ]
     }
   );
@@ -9239,70 +12294,70 @@ function Node2({
   maxDepth
 }) {
   const branch = value !== null && typeof value === "object";
-  const [open, setOpen] = useState21(depth < maxDepth);
+  const [open, setOpen] = useState29(depth < maxDepth);
   if (!branch) {
-    return /* @__PURE__ */ jsxs37("li", { role: "treeitem", className: "whitespace-pre-wrap break-words", children: [
-      name !== null && /* @__PURE__ */ jsx42(Key, { name }),
-      /* @__PURE__ */ jsx42(Leaf, { value })
+    return /* @__PURE__ */ jsxs46("li", { role: "treeitem", className: "whitespace-pre-wrap break-words", children: [
+      name !== null && /* @__PURE__ */ jsx51(Key, { name }),
+      /* @__PURE__ */ jsx51(Leaf, { value })
     ] });
   }
   const array = Array.isArray(value);
   const entries = array ? value.map((v, i) => [String(i), v]) : Object.entries(value);
   const summary = array ? `[${entries.length} ${entries.length === 1 ? "item" : "items"}]` : `{${entries.length} ${entries.length === 1 ? "field" : "fields"}}`;
-  return /* @__PURE__ */ jsxs37("li", { role: "treeitem", "aria-expanded": open, children: [
-    /* @__PURE__ */ jsxs37(
+  return /* @__PURE__ */ jsxs46("li", { role: "treeitem", "aria-expanded": open, children: [
+    /* @__PURE__ */ jsxs46(
       "button",
       {
         type: "button",
         onClick: () => setOpen((v) => !v),
         className: cn("inline-flex max-w-full items-center gap-1 rounded text-left", tk.fgMuted, tk.hoverFg, focusRing),
         children: [
-          /* @__PURE__ */ jsx42(Icon, { name: "chevron-right", size: 12, className: cn("transition-transform", open && "rotate-90") }),
-          name !== null ? /* @__PURE__ */ jsx42(Key, { name }) : null,
-          /* @__PURE__ */ jsx42("span", { className: tk.fgFaint, children: summary })
+          /* @__PURE__ */ jsx51(Icon, { name: "chevron-right", size: 12, className: cn("transition-transform", open && "rotate-90") }),
+          name !== null ? /* @__PURE__ */ jsx51(Key, { name }) : null,
+          /* @__PURE__ */ jsx51("span", { className: tk.fgFaint, children: summary })
         ]
       }
     ),
-    open && /* @__PURE__ */ jsx42("ul", { role: "group", className: cn("m-0 list-none border-l pl-3", tk.border), children: entries.map(([key, v]) => /* @__PURE__ */ jsx42(Node2, { name: key, value: v, depth: depth + 1, maxDepth }, key)) })
+    open && /* @__PURE__ */ jsx51("ul", { role: "group", className: cn("m-0 list-none border-l pl-3", tk.border), children: entries.map(([key, v]) => /* @__PURE__ */ jsx51(Node2, { name: key, value: v, depth: depth + 1, maxDepth }, key)) })
   ] });
 }
 function Key({ name }) {
-  return /* @__PURE__ */ jsxs37("span", { className: tk.fgMuted, children: [
+  return /* @__PURE__ */ jsxs46("span", { className: tk.fgMuted, children: [
     name,
     ": "
   ] });
 }
 function Leaf({ value }) {
   if (typeof value === "string") {
-    return /* @__PURE__ */ jsxs37("span", { className: tk.fgSuccess, children: [
+    return /* @__PURE__ */ jsxs46("span", { className: tk.fgSuccess, children: [
       '"',
       value,
       '"'
     ] });
   }
   if (typeof value === "number" || typeof value === "bigint") {
-    return /* @__PURE__ */ jsx42("span", { className: tk.fgInfo, children: String(value) });
+    return /* @__PURE__ */ jsx51("span", { className: tk.fgInfo, children: String(value) });
   }
   if (typeof value === "boolean") {
-    return /* @__PURE__ */ jsx42("span", { className: tk.fgWarning, children: String(value) });
+    return /* @__PURE__ */ jsx51("span", { className: tk.fgWarning, children: String(value) });
   }
-  if (value === null) return /* @__PURE__ */ jsx42("span", { className: tk.fgWarning, children: "null" });
-  if (value === void 0) return /* @__PURE__ */ jsx42("span", { className: tk.fgFaint, children: "-" });
-  return /* @__PURE__ */ jsx42("span", { className: tk.fg, children: String(value) });
+  if (value === null) return /* @__PURE__ */ jsx51("span", { className: tk.fgWarning, children: "null" });
+  if (value === void 0) return /* @__PURE__ */ jsx51("span", { className: tk.fgFaint, children: "-" });
+  return /* @__PURE__ */ jsx51("span", { className: tk.fg, children: String(value) });
 }
 
 // src/components/form.tsx
 import {
   createContext as createContext6,
-  useCallback as useCallback6,
+  useCallback as useCallback10,
   useContext as useContext7,
-  useEffect as useEffect15,
-  useId as useId11,
-  useMemo as useMemo5,
-  useRef as useRef12,
-  useState as useState22
+  useEffect as useEffect21,
+  useId as useId12,
+  useMemo as useMemo8,
+  useRef as useRef20,
+  useState as useState30
 } from "react";
-import { Fragment as Fragment9, jsx as jsx43, jsxs as jsxs38 } from "react/jsx-runtime";
+import { Fragment as Fragment16, jsx as jsx52, jsxs as jsxs47 } from "react/jsx-runtime";
 var FormContext = createContext6(null);
 var FieldContext = createContext6(null);
 var FORMATS = {
@@ -9423,11 +12478,11 @@ function Form({
   className,
   ...props
 }) {
-  const [ownValues, setOwnValues] = useState22(initialValues ?? {});
-  const [errors, setErrors] = useState22({});
+  const [ownValues, setOwnValues] = useState30(initialValues ?? {});
+  const [errors, setErrors] = useState30({});
   const values = controlledValues ?? ownValues;
-  const formRef = useRef12(null);
-  useEffect15(() => {
+  const formRef = useRef20(null);
+  useEffect21(() => {
     const form = formRef.current;
     if (!form || !action) return;
     const target = submitControlOf(form) ?? form;
@@ -9436,9 +12491,9 @@ function Form({
       target.setAttribute("data-rm-action", [...current, action.name].join(" "));
     }
   });
-  const latest = useRef12(values);
+  const latest = useRef20(values);
   latest.current = values;
-  const setValue = useCallback6(
+  const setValue = useCallback10(
     (name, value) => {
       const next = { ...latest.current, [name]: value };
       latest.current = next;
@@ -9453,11 +12508,11 @@ function Form({
     },
     [controlledValues, onChange]
   );
-  const ctx = useMemo5(
+  const ctx = useMemo8(
     () => ({ values, errors, disabled, setValue }),
     [values, errors, disabled, setValue]
   );
-  return /* @__PURE__ */ jsx43(FormContext.Provider, { value: ctx, children: /* @__PURE__ */ jsxs38(
+  return /* @__PURE__ */ jsx52(FormContext.Provider, { value: ctx, children: /* @__PURE__ */ jsxs47(
     "form",
     {
       ref: formRef,
@@ -9490,7 +12545,7 @@ function Form({
       ...props,
       children: [
         children,
-        !hideError && action?.error ? /* @__PURE__ */ jsx43(ErrorState, { error: action.error, className: "mt-3" }) : null
+        !hideError && action?.error ? /* @__PURE__ */ jsx52(ErrorState, { error: action.error, className: "mt-3" }) : null
       ]
     }
   ) });
@@ -9500,29 +12555,29 @@ function useFormValues() {
 }
 function Field({ name, label, help, required = false, error, className, children }) {
   const form = useContext7(FormContext);
-  const id = useId11();
+  const id = useId12();
   const helpId = `${id}-help`;
   const errorId = `${id}-error`;
   const shownError = error ?? form?.errors[name];
   const describedBy = [help !== void 0 ? helpId : null, shownError ? errorId : null].filter(Boolean).join(" ") || void 0;
-  const ctx = useMemo5(
+  const ctx = useMemo8(
     () => ({ name, id, describedBy, invalid: Boolean(shownError), required }),
     [name, id, describedBy, shownError, required]
   );
-  return /* @__PURE__ */ jsx43(FieldContext.Provider, { value: ctx, children: /* @__PURE__ */ jsxs38("div", { className: cn("flex flex-col gap-1.5", className), children: [
-    /* @__PURE__ */ jsxs38("label", { htmlFor: id, className: cn("text-sm font-medium", tk.fg), children: [
+  return /* @__PURE__ */ jsx52(FieldContext.Provider, { value: ctx, children: /* @__PURE__ */ jsxs47("div", { className: cn("flex flex-col gap-1.5", className), children: [
+    /* @__PURE__ */ jsxs47("label", { htmlFor: id, className: cn("text-sm font-medium", tk.fg), children: [
       label,
-      required && /* @__PURE__ */ jsx43("span", { "aria-hidden": "true", className: cn("ml-0.5", tk.fgDestructive), children: "*" })
+      required && /* @__PURE__ */ jsx52("span", { "aria-hidden": "true", className: cn("ml-0.5", tk.fgDestructive), children: "*" })
     ] }),
     children,
-    help !== void 0 && /* @__PURE__ */ jsx43("p", { id: helpId, className: cn("text-xs", tk.fgMuted), children: help }),
-    shownError && /* @__PURE__ */ jsx43("p", { id: errorId, className: cn("text-xs font-medium", tk.fgDestructive), children: shownError })
+    help !== void 0 && /* @__PURE__ */ jsx52("p", { id: helpId, className: cn("text-xs", tk.fgMuted), children: help }),
+    shownError && /* @__PURE__ */ jsx52("p", { id: errorId, className: cn("text-xs font-medium", tk.fgDestructive), children: shownError })
   ] }) });
 }
 function useControl(explicitId) {
   const form = useContext7(FormContext);
   const field = useContext7(FieldContext);
-  const fallbackId = useId11();
+  const fallbackId = useId12();
   return {
     form,
     field,
@@ -9544,7 +12599,7 @@ function useControl(explicitId) {
 function TextInput({ value, onChange, className, id, disabled, type = "text", ...props }) {
   const c = useControl(id);
   const current = value ?? c.read() ?? "";
-  return /* @__PURE__ */ jsx43(
+  return /* @__PURE__ */ jsx52(
     "input",
     {
       id: c.id,
@@ -9564,7 +12619,7 @@ function TextInput({ value, onChange, className, id, disabled, type = "text", ..
 function NumberInput({ value, onChange, className, id, disabled, ...props }) {
   const c = useControl(id);
   const current = value ?? c.read();
-  return /* @__PURE__ */ jsx43(
+  return /* @__PURE__ */ jsx52(
     "input",
     {
       id: c.id,
@@ -9587,7 +12642,7 @@ function NumberInput({ value, onChange, className, id, disabled, ...props }) {
 function TextArea({ value, onChange, className, id, disabled, rows = 4, ...props }) {
   const c = useControl(id);
   const current = value ?? c.read() ?? "";
-  return /* @__PURE__ */ jsx43(
+  return /* @__PURE__ */ jsx52(
     "textarea",
     {
       id: c.id,
@@ -9620,10 +12675,10 @@ function Select({
   const seed = bound === void 0 ? value !== void 0 && value !== "" ? value : firstEnabled : void 0;
   const current = value ?? bound ?? firstEnabled ?? "";
   const write = c.write;
-  useEffect15(() => {
+  useEffect21(() => {
     if (seed !== void 0) write(seed);
   }, [seed]);
-  return /* @__PURE__ */ jsxs38(
+  return /* @__PURE__ */ jsxs47(
     "select",
     {
       id: c.id,
@@ -9637,8 +12692,8 @@ function Select({
       ...c.ariaProps,
       ...props,
       children: [
-        placeholder !== void 0 && /* @__PURE__ */ jsx43("option", { value: "", disabled: true, children: placeholder }),
-        options.map((opt) => /* @__PURE__ */ jsx43("option", { value: opt.value, disabled: opt.disabled, children: opt.label }, opt.value))
+        placeholder !== void 0 && /* @__PURE__ */ jsx52("option", { value: "", disabled: true, children: placeholder }),
+        options.map((opt) => /* @__PURE__ */ jsx52("option", { value: opt.value, disabled: opt.disabled, children: opt.label }, opt.value))
       ]
     }
   );
@@ -9646,7 +12701,7 @@ function Select({
 function Checkbox({ checked, onChange, label, className, id, disabled, ...props }) {
   const c = useControl(id);
   const current = checked ?? Boolean(c.read());
-  return /* @__PURE__ */ jsxs38(
+  return /* @__PURE__ */ jsxs47(
     "label",
     {
       className: cn(
@@ -9656,7 +12711,7 @@ function Checkbox({ checked, onChange, label, className, id, disabled, ...props 
         className
       ),
       children: [
-        /* @__PURE__ */ jsx43(
+        /* @__PURE__ */ jsx52(
           "input",
           {
             id: c.id,
@@ -9685,14 +12740,14 @@ function RadioGroup({ options, value, onChange, name, className, disabled }) {
   const c = useControl();
   const groupName = name ?? c.field?.name ?? c.id;
   const current = value ?? c.read() ?? "";
-  return /* @__PURE__ */ jsx43(
+  return /* @__PURE__ */ jsx52(
     "div",
     {
       role: "radiogroup",
       "aria-describedby": c.ariaProps["aria-describedby"],
       "aria-invalid": c.ariaProps["aria-invalid"],
       className: cn("flex flex-col gap-2", className),
-      children: options.map((opt) => /* @__PURE__ */ jsxs38(
+      children: options.map((opt) => /* @__PURE__ */ jsxs47(
         "label",
         {
           className: cn(
@@ -9701,7 +12756,7 @@ function RadioGroup({ options, value, onChange, name, className, disabled }) {
             (disabled || c.disabled || opt.disabled) && "cursor-not-allowed opacity-60"
           ),
           children: [
-            /* @__PURE__ */ jsx43(
+            /* @__PURE__ */ jsx52(
               "input",
               {
                 type: "radio",
@@ -9731,7 +12786,7 @@ function RadioGroup({ options, value, onChange, name, className, disabled }) {
 function DatePicker({ value, onChange, className, id, disabled, ...props }) {
   const c = useControl(id);
   const current = value ?? c.read() ?? "";
-  return /* @__PURE__ */ jsx43(
+  return /* @__PURE__ */ jsx52(
     "input",
     {
       id: c.id,
@@ -9751,7 +12806,7 @@ function DatePicker({ value, onChange, className, id, disabled, ...props }) {
 function TimePicker({ value, onChange, className, id, disabled, ...props }) {
   const c = useControl(id);
   const current = value ?? c.read() ?? "";
-  return /* @__PURE__ */ jsx43(
+  return /* @__PURE__ */ jsx52(
     "input",
     {
       id: c.id,
@@ -9782,9 +12837,9 @@ function FieldArray({
   className
 }) {
   const form = useContext7(FormContext);
-  const helpId = useId11();
+  const helpId = useId12();
   const raw = form?.values[name];
-  const rows = useMemo5(
+  const rows = useMemo8(
     () => Array.isArray(raw) ? raw : [],
     [raw]
   );
@@ -9801,10 +12856,10 @@ function FieldArray({
     next.splice(to, 0, row);
     write(next);
   };
-  return /* @__PURE__ */ jsxs38("div", { className: cn("flex flex-col gap-2 text-left", className), children: [
-    label !== void 0 && /* @__PURE__ */ jsx43("span", { className: cn("text-sm font-medium", tk.fg), children: label }),
-    rows.length === 0 && /* @__PURE__ */ jsx43("p", { className: cn("border border-dashed px-3 py-4 text-center text-sm", tk.radiusMd, tk.borderInput, tk.fgMuted), children: emptyText }),
-    rows.map((row, i) => /* @__PURE__ */ jsx43(
+  return /* @__PURE__ */ jsxs47("div", { className: cn("flex flex-col gap-2 text-left", className), children: [
+    label !== void 0 && /* @__PURE__ */ jsx52("span", { className: cn("text-sm font-medium", tk.fg), children: label }),
+    rows.length === 0 && /* @__PURE__ */ jsx52("p", { className: cn("border border-dashed px-3 py-4 text-center text-sm", tk.radiusMd, tk.borderInput, tk.fgMuted), children: emptyText }),
+    rows.map((row, i) => /* @__PURE__ */ jsx52(
       FieldArrayRow,
       {
         form,
@@ -9821,9 +12876,9 @@ function FieldArray({
       },
       i
     )),
-    help !== void 0 && /* @__PURE__ */ jsx43("p", { id: helpId, className: cn("text-xs", tk.fgMuted), children: help }),
-    arrayError && /* @__PURE__ */ jsx43("p", { className: cn("text-xs font-medium", tk.fgDestructive), children: arrayError }),
-    (max2 === void 0 || rows.length < max2) && /* @__PURE__ */ jsx43("div", { children: /* @__PURE__ */ jsx43(Button, { type: "button", variant: "secondary", size: "sm", disabled, onClick: add, children: addLabel }) })
+    help !== void 0 && /* @__PURE__ */ jsx52("p", { id: helpId, className: cn("text-xs", tk.fgMuted), children: help }),
+    arrayError && /* @__PURE__ */ jsx52("p", { className: cn("text-xs font-medium", tk.fgDestructive), children: arrayError }),
+    (max2 === void 0 || rows.length < max2) && /* @__PURE__ */ jsx52("div", { children: /* @__PURE__ */ jsx52(Button, { type: "button", variant: "secondary", size: "sm", disabled, onClick: add, children: addLabel }) })
   ] });
 }
 function FieldArrayRow({
@@ -9840,14 +12895,14 @@ function FieldArrayRow({
   children
 }) {
   const prefix = `${arrayName}.${index}.`;
-  const errors = useMemo5(() => {
+  const errors = useMemo8(() => {
     const out = {};
     for (const [key, message] of Object.entries(form?.errors ?? {})) {
       if (key.startsWith(prefix)) out[key.slice(prefix.length)] = message;
     }
     return out;
   }, [form?.errors, prefix]);
-  const ctx = useMemo5(
+  const ctx = useMemo8(
     () => ({
       values: row,
       errors,
@@ -9860,25 +12915,25 @@ function FieldArrayRow({
     }),
     [row, errors, disabled, form, arrayName, index]
   );
-  return /* @__PURE__ */ jsx43(FormContext.Provider, { value: ctx, children: /* @__PURE__ */ jsxs38("div", { className: cn("flex items-start gap-2 border p-3", tk.radiusMd, tk.border), children: [
-    /* @__PURE__ */ jsx43("div", { className: "flex min-w-0 flex-1 flex-col gap-3", children }),
-    /* @__PURE__ */ jsxs38("div", { className: "flex shrink-0 flex-col gap-1", children: [
-      (canMoveUp || canMoveDown) && /* @__PURE__ */ jsxs38(Fragment9, { children: [
-        /* @__PURE__ */ jsx43(RowButton, { label: `Move row ${index + 1} up`, disabled: !canMoveUp, onClick: () => onMove(-1), children: /* @__PURE__ */ jsx43(Icon, { name: "chevron-up", size: 14, strokeWidth: 2.5 }) }),
-        /* @__PURE__ */ jsx43(RowButton, { label: `Move row ${index + 1} down`, disabled: !canMoveDown, onClick: () => onMove(1), children: /* @__PURE__ */ jsx43(Icon, { name: "chevron-down", size: 14, strokeWidth: 2.5 }) })
+  return /* @__PURE__ */ jsx52(FormContext.Provider, { value: ctx, children: /* @__PURE__ */ jsxs47("div", { className: cn("flex items-start gap-2 border p-3", tk.radiusMd, tk.border), children: [
+    /* @__PURE__ */ jsx52("div", { className: "flex min-w-0 flex-1 flex-col gap-3", children }),
+    /* @__PURE__ */ jsxs47("div", { className: "flex shrink-0 flex-col gap-1", children: [
+      (canMoveUp || canMoveDown) && /* @__PURE__ */ jsxs47(Fragment16, { children: [
+        /* @__PURE__ */ jsx52(RowButton2, { label: `Move row ${index + 1} up`, disabled: !canMoveUp, onClick: () => onMove(-1), children: /* @__PURE__ */ jsx52(Icon, { name: "chevron-up", size: 14, strokeWidth: 2.5 }) }),
+        /* @__PURE__ */ jsx52(RowButton2, { label: `Move row ${index + 1} down`, disabled: !canMoveDown, onClick: () => onMove(1), children: /* @__PURE__ */ jsx52(Icon, { name: "chevron-down", size: 14, strokeWidth: 2.5 }) })
       ] }),
-      /* @__PURE__ */ jsx43(RowButton, { label: `Remove row ${index + 1}`, disabled: !canRemove, onClick: onRemove, danger: true, children: /* @__PURE__ */ jsx43(Icon, { name: "x", size: 14, strokeWidth: 2.5 }) })
+      /* @__PURE__ */ jsx52(RowButton2, { label: `Remove row ${index + 1}`, disabled: !canRemove, onClick: onRemove, danger: true, children: /* @__PURE__ */ jsx52(Icon, { name: "x", size: 14, strokeWidth: 2.5 }) })
     ] })
   ] }) });
 }
-function RowButton({
+function RowButton2({
   label,
   disabled,
   onClick,
   danger = false,
   children
 }) {
-  return /* @__PURE__ */ jsx43(
+  return /* @__PURE__ */ jsx52(
     "button",
     {
       type: "button",
@@ -9898,14 +12953,14 @@ function RowButton({
 
 // src/components/combobox.tsx
 import {
-  useCallback as useCallback7,
-  useEffect as useEffect16,
-  useId as useId12,
-  useMemo as useMemo6,
-  useRef as useRef13,
-  useState as useState23
+  useCallback as useCallback11,
+  useEffect as useEffect22,
+  useId as useId13,
+  useMemo as useMemo9,
+  useRef as useRef21,
+  useState as useState31
 } from "react";
-import { jsx as jsx44, jsxs as jsxs39 } from "react/jsx-runtime";
+import { jsx as jsx53, jsxs as jsxs48 } from "react/jsx-runtime";
 function Combobox({
   options,
   loadOptions,
@@ -9920,31 +12975,31 @@ function Combobox({
   className
 }) {
   const c = useControl(id);
-  const baseId = useId12();
+  const baseId = useId13();
   const bound = c.read();
   const raw = value ?? bound;
-  const selected = useMemo6(
+  const selected = useMemo9(
     () => multiple ? Array.isArray(raw) ? raw : raw ? [String(raw)] : [] : raw ? [String(raw)] : [],
     [multiple, raw]
   );
-  const [open, setOpen] = useState23(false);
-  const [query, setQuery] = useState23("");
-  const [active, setActive] = useState23(0);
-  const [loaded, setLoaded] = useState23([]);
-  const [loading, setLoading] = useState23(false);
+  const [open, setOpen] = useState31(false);
+  const [query, setQuery] = useState31("");
+  const [active, setActive] = useState31(0);
+  const [loaded, setLoaded] = useState31([]);
+  const [loading, setLoading] = useState31(false);
   const openPanel = () => {
     setOpen(true);
     setActive(0);
   };
-  const rootRef = useRef13(null);
-  const listRef = useRef13(null);
-  const inputRef = useRef13(null);
+  const rootRef = useRef21(null);
+  const listRef = useRef21(null);
+  const inputRef = useRef21(null);
   const off = disabled || c.disabled;
   const floating = useFloating({ open, side: "bottom", align: "start", gap: 4, matchWidth: true });
-  const seq = useRef13(0);
-  const loadRef = useRef13(loadOptions);
+  const seq = useRef21(0);
+  const loadRef = useRef21(loadOptions);
   loadRef.current = loadOptions;
-  useEffect16(() => {
+  useEffect22(() => {
     if (!open || !loadRef.current) return;
     const mine = ++seq.current;
     setLoading(true);
@@ -9961,18 +13016,18 @@ function Combobox({
     return () => clearTimeout(t);
   }, [open, query]);
   const all = loadOptions ? loaded : options ?? [];
-  const shown = useMemo6(() => {
+  const shown = useMemo9(() => {
     if (loadOptions || !query.trim()) return all;
     const needle = query.trim().toLowerCase();
     return all.filter(
       (o) => o.value.toLowerCase().includes(needle) || labelText(o.label).toLowerCase().includes(needle)
     );
   }, [all, query, loadOptions]);
-  const enabled = useMemo6(() => shown.filter((o) => !o.disabled), [shown]);
-  useEffect16(() => {
+  const enabled = useMemo9(() => shown.filter((o) => !o.disabled), [shown]);
+  useEffect22(() => {
     if (active > enabled.length - 1) setActive(Math.max(0, enabled.length - 1));
   }, [enabled.length, active]);
-  const labelFor = useCallback7(
+  const labelFor = useCallback11(
     (v) => all.find((o) => o.value === v)?.label ?? v,
     [all]
   );
@@ -9993,7 +13048,7 @@ function Combobox({
     setQuery("");
     setOpen(false);
   };
-  useEffect16(() => {
+  useEffect22(() => {
     if (!open) return;
     const onDocClick = (e) => {
       const target = e.target;
@@ -10048,8 +13103,8 @@ function Combobox({
   };
   const activeId = enabled[active] ? `${baseId}-o-${enabled[active].value}` : void 0;
   const singleLabel = !multiple && selected[0] ? labelText(labelFor(selected[0])) : "";
-  return /* @__PURE__ */ jsxs39("div", { ref: rootRef, className: cn("relative text-left", className), children: [
-    /* @__PURE__ */ jsxs39(
+  return /* @__PURE__ */ jsxs48("div", { ref: rootRef, className: cn("relative text-left", className), children: [
+    /* @__PURE__ */ jsxs48(
       "div",
       {
         ref: floating.refs.setReference,
@@ -10064,7 +13119,7 @@ function Combobox({
           inputRef.current?.focus();
         },
         children: [
-          multiple && selected.map((v) => /* @__PURE__ */ jsx44(
+          multiple && selected.map((v) => /* @__PURE__ */ jsx53(
             Badge,
             {
               variant: "neutral",
@@ -10078,7 +13133,7 @@ function Combobox({
             },
             v
           )),
-          /* @__PURE__ */ jsx44(
+          /* @__PURE__ */ jsx53(
             "input",
             {
               ref: inputRef,
@@ -10111,11 +13166,11 @@ function Combobox({
               )
             }
           ),
-          /* @__PURE__ */ jsx44(Icon, { name: "chevron-down", size: 16, className: cn("ml-auto", tk.fgMuted) })
+          /* @__PURE__ */ jsx53(Icon, { name: "chevron-down", size: 16, className: cn("ml-auto", tk.fgMuted) })
         ]
       }
     ),
-    open && /* @__PURE__ */ jsx44(OverlayPortal, { children: /* @__PURE__ */ jsxs39(
+    open && /* @__PURE__ */ jsx53(OverlayPortal, { children: /* @__PURE__ */ jsxs48(
       "ul",
       {
         ref: (el) => {
@@ -10130,12 +13185,12 @@ function Combobox({
         "data-state": "open",
         className: cn("z-50 max-h-60 overflow-auto py-1", panelBase),
         children: [
-          loading && shown.length === 0 && /* @__PURE__ */ jsx44("li", { className: cn("px-3 py-2 text-sm", tk.fgMuted), children: "Looking" }),
-          !loading && shown.length === 0 && /* @__PURE__ */ jsx44("li", { className: cn("px-3 py-2 text-sm", tk.fgMuted), children: emptyText }),
+          loading && shown.length === 0 && /* @__PURE__ */ jsx53("li", { className: cn("px-3 py-2 text-sm", tk.fgMuted), children: "Looking" }),
+          !loading && shown.length === 0 && /* @__PURE__ */ jsx53("li", { className: cn("px-3 py-2 text-sm", tk.fgMuted), children: emptyText }),
           shown.map((opt) => {
             const on = selected.includes(opt.value);
             const highlighted = !opt.disabled && enabled[active]?.value === opt.value;
-            return /* @__PURE__ */ jsxs39(
+            return /* @__PURE__ */ jsxs48(
               "li",
               {
                 id: `${baseId}-o-${opt.value}`,
@@ -10152,8 +13207,8 @@ function Combobox({
                   opt.disabled && "cursor-not-allowed opacity-50"
                 ),
                 children: [
-                  /* @__PURE__ */ jsx44("span", { className: "min-w-0 flex-1 truncate", children: opt.label }),
-                  on && /* @__PURE__ */ jsx44(Icon, { name: "check", size: 16, strokeWidth: 2.5, className: tk.fgPrimary })
+                  /* @__PURE__ */ jsx53("span", { className: "min-w-0 flex-1 truncate", children: opt.label }),
+                  on && /* @__PURE__ */ jsx53(Icon, { name: "check", size: 16, strokeWidth: 2.5, className: tk.fgPrimary })
                 ]
               },
               opt.value
@@ -10169,8 +13224,8 @@ function labelText(label) {
 }
 
 // src/components/date-range.tsx
-import { useMemo as useMemo7 } from "react";
-import { jsx as jsx45, jsxs as jsxs40 } from "react/jsx-runtime";
+import { useMemo as useMemo10 } from "react";
+import { jsx as jsx54, jsxs as jsxs49 } from "react/jsx-runtime";
 function isoDate(d) {
   const pad = (n) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -10218,7 +13273,7 @@ function DateRangePicker({
   const bound = c.read();
   const current = value ?? bound ?? { from: "", to: "" };
   const off = disabled || c.disabled;
-  const list = useMemo7(
+  const list = useMemo10(
     () => presets === true ? defaultPresets() : presets === false ? [] : presets,
     [presets]
   );
@@ -10232,12 +13287,12 @@ function DateRangePicker({
     const r = p.range();
     return r.from === current.from && r.to === current.to;
   });
-  return /* @__PURE__ */ jsxs40("div", { className: cn("text-left", className), children: [
+  return /* @__PURE__ */ jsxs49("div", { className: cn("text-left", className), children: [
     list.length > 0 && // The presets read as one segmented row: the chosen period is the
     // raised segment, the others sit on the muted track.
-    /* @__PURE__ */ jsx45("div", { className: cn("mb-2 inline-flex max-w-full flex-wrap items-center gap-0.5 p-0.5", tk.radiusMd, tk.bgMuted), children: list.map((p) => {
+    /* @__PURE__ */ jsx54("div", { className: cn("mb-2 inline-flex max-w-full flex-wrap items-center gap-0.5 p-0.5", tk.radiusMd, tk.bgMuted), children: list.map((p) => {
       const on = active?.label === p.label;
-      return /* @__PURE__ */ jsx45(
+      return /* @__PURE__ */ jsx54(
         "button",
         {
           type: "button",
@@ -10255,10 +13310,10 @@ function DateRangePicker({
         p.label
       );
     }) }),
-    /* @__PURE__ */ jsxs40("div", { className: "flex flex-wrap items-end gap-3", children: [
-      /* @__PURE__ */ jsxs40("label", { className: "flex min-w-[9rem] flex-1 flex-col gap-1", children: [
-        /* @__PURE__ */ jsx45("span", { className: cn("text-xs font-medium", tk.fgMuted), children: fromLabel }),
-        /* @__PURE__ */ jsx45(
+    /* @__PURE__ */ jsxs49("div", { className: "flex flex-wrap items-end gap-3", children: [
+      /* @__PURE__ */ jsxs49("label", { className: "flex min-w-[9rem] flex-1 flex-col gap-1", children: [
+        /* @__PURE__ */ jsx54("span", { className: cn("text-xs font-medium", tk.fgMuted), children: fromLabel }),
+        /* @__PURE__ */ jsx54(
           "input",
           {
             type: "date",
@@ -10272,9 +13327,9 @@ function DateRangePicker({
           }
         )
       ] }),
-      /* @__PURE__ */ jsxs40("label", { className: "flex min-w-[9rem] flex-1 flex-col gap-1", children: [
-        /* @__PURE__ */ jsx45("span", { className: cn("text-xs font-medium", tk.fgMuted), children: toLabel }),
-        /* @__PURE__ */ jsx45(
+      /* @__PURE__ */ jsxs49("label", { className: "flex min-w-[9rem] flex-1 flex-col gap-1", children: [
+        /* @__PURE__ */ jsx54("span", { className: cn("text-xs font-medium", tk.fgMuted), children: toLabel }),
+        /* @__PURE__ */ jsx54(
           "input",
           {
             type: "date",
@@ -10292,7 +13347,7 @@ function DateRangePicker({
 }
 
 // src/components/switch.tsx
-import { jsx as jsx46, jsxs as jsxs41 } from "react/jsx-runtime";
+import { jsx as jsx55, jsxs as jsxs50 } from "react/jsx-runtime";
 function Switch({
   checked,
   onChange,
@@ -10311,8 +13366,8 @@ function Switch({
     onChange?.(!on);
     c.write(!on);
   };
-  return /* @__PURE__ */ jsxs41("div", { className: cn("flex items-start gap-3 text-left", off && "opacity-60", className), children: [
-    /* @__PURE__ */ jsx46(
+  return /* @__PURE__ */ jsxs50("div", { className: cn("flex items-start gap-3 text-left", off && "opacity-60", className), children: [
+    /* @__PURE__ */ jsx55(
       "button",
       {
         id: c.id,
@@ -10328,7 +13383,7 @@ function Switch({
           on ? tk.bgPrimary : tk.bgInput,
           focusRing
         ),
-        children: /* @__PURE__ */ jsx46(
+        children: /* @__PURE__ */ jsx55(
           "span",
           {
             "aria-hidden": "true",
@@ -10342,8 +13397,8 @@ function Switch({
         )
       }
     ),
-    (label !== void 0 || description !== void 0) && /* @__PURE__ */ jsxs41("span", { className: "min-w-0", children: [
-      label !== void 0 && /* @__PURE__ */ jsx46(
+    (label !== void 0 || description !== void 0) && /* @__PURE__ */ jsxs50("span", { className: "min-w-0", children: [
+      label !== void 0 && /* @__PURE__ */ jsx55(
         "button",
         {
           type: "button",
@@ -10353,14 +13408,14 @@ function Switch({
           children: label
         }
       ),
-      description !== void 0 && /* @__PURE__ */ jsx46("span", { className: cn("mt-0.5 block text-xs", tk.fgMuted), children: description })
+      description !== void 0 && /* @__PURE__ */ jsx55("span", { className: cn("mt-0.5 block text-xs", tk.fgMuted), children: description })
     ] })
   ] });
 }
 
 // src/components/tag-input.tsx
-import { useRef as useRef14, useState as useState24 } from "react";
-import { jsx as jsx47, jsxs as jsxs42 } from "react/jsx-runtime";
+import { useRef as useRef22, useState as useState32 } from "react";
+import { jsx as jsx56, jsxs as jsxs51 } from "react/jsx-runtime";
 function TagInput({
   value,
   onChange,
@@ -10374,8 +13429,8 @@ function TagInput({
   const c = useControl(id);
   const bound = c.read();
   const tags = value ?? (Array.isArray(bound) ? bound : []);
-  const [draft, setDraft] = useState24("");
-  const inputRef = useRef14(null);
+  const [draft, setDraft] = useState32("");
+  const inputRef = useRef22(null);
   const off = disabled || c.disabled;
   const commit = (next) => {
     onChange?.(next);
@@ -10404,7 +13459,7 @@ function TagInput({
       removeAt(tags.length - 1);
     }
   };
-  return /* @__PURE__ */ jsxs42(
+  return /* @__PURE__ */ jsxs51(
     "div",
     {
       onClick: () => inputRef.current?.focus(),
@@ -10415,7 +13470,7 @@ function TagInput({
         className
       ),
       children: [
-        tags.map((tag, i) => /* @__PURE__ */ jsx47(
+        tags.map((tag, i) => /* @__PURE__ */ jsx56(
           Badge,
           {
             variant: "neutral",
@@ -10429,7 +13484,7 @@ function TagInput({
           },
           `${tag}-${i}`
         )),
-        /* @__PURE__ */ jsx47(
+        /* @__PURE__ */ jsx56(
           "input",
           {
             ref: inputRef,
@@ -10455,7 +13510,7 @@ function TagInput({
 }
 
 // src/components/slider.tsx
-import { jsx as jsx48, jsxs as jsxs43 } from "react/jsx-runtime";
+import { jsx as jsx57, jsxs as jsxs52 } from "react/jsx-runtime";
 function Slider({
   value,
   onChange,
@@ -10478,11 +13533,11 @@ function Slider({
   const off = disabled || c.disabled;
   const span = max2 - min2 || 1;
   const percent = Math.min(100, Math.max(0, (current - min2) / span * 100));
-  return /* @__PURE__ */ jsxs43("div", { className: cn("w-full text-left", className), children: [
-    /* @__PURE__ */ jsxs43("div", { className: "flex items-center gap-3", children: [
-      /* @__PURE__ */ jsxs43("div", { className: "relative flex h-5 w-full items-center", children: [
-        /* @__PURE__ */ jsx48("span", { "aria-hidden": "true", className: cn("absolute inset-x-0 h-1.5 rounded-full", tk.bgMuted) }),
-        /* @__PURE__ */ jsx48(
+  return /* @__PURE__ */ jsxs52("div", { className: cn("w-full text-left", className), children: [
+    /* @__PURE__ */ jsxs52("div", { className: "flex items-center gap-3", children: [
+      /* @__PURE__ */ jsxs52("div", { className: "relative flex h-5 w-full items-center", children: [
+        /* @__PURE__ */ jsx57("span", { "aria-hidden": "true", className: cn("absolute inset-x-0 h-1.5 rounded-full", tk.bgMuted) }),
+        /* @__PURE__ */ jsx57(
           "span",
           {
             "aria-hidden": "true",
@@ -10490,7 +13545,7 @@ function Slider({
             style: { width: `${percent}%` }
           }
         ),
-        /* @__PURE__ */ jsx48(
+        /* @__PURE__ */ jsx57(
           "input",
           {
             id: c.id,
@@ -10515,18 +13570,18 @@ function Slider({
           }
         )
       ] }),
-      showValue && /* @__PURE__ */ jsx48("output", { htmlFor: c.id, className: cn("w-12 shrink-0 text-right text-sm tabular-nums", tk.fg), children: formatValue ? formatValue(current) : current })
+      showValue && /* @__PURE__ */ jsx57("output", { htmlFor: c.id, className: cn("w-12 shrink-0 text-right text-sm tabular-nums", tk.fg), children: formatValue ? formatValue(current) : current })
     ] }),
-    (minLabel !== void 0 || maxLabel !== void 0) && /* @__PURE__ */ jsxs43("div", { className: cn("mt-1 flex justify-between text-xs", tk.fgMuted), children: [
-      /* @__PURE__ */ jsx48("span", { children: minLabel }),
-      /* @__PURE__ */ jsx48("span", { children: maxLabel })
+    (minLabel !== void 0 || maxLabel !== void 0) && /* @__PURE__ */ jsxs52("div", { className: cn("mt-1 flex justify-between text-xs", tk.fgMuted), children: [
+      /* @__PURE__ */ jsx57("span", { children: minLabel }),
+      /* @__PURE__ */ jsx57("span", { children: maxLabel })
     ] })
   ] });
 }
 
 // src/components/rating.tsx
-import { useState as useState25 } from "react";
-import { jsx as jsx49, jsxs as jsxs44 } from "react/jsx-runtime";
+import { useState as useState33 } from "react";
+import { jsx as jsx58, jsxs as jsxs53 } from "react/jsx-runtime";
 function Rating({
   value,
   onChange,
@@ -10544,7 +13599,7 @@ function Rating({
   const bound = c.read();
   const current = value ?? (typeof bound === "number" && Number.isFinite(bound) ? bound : void 0);
   const off = disabled || c.disabled || readOnly;
-  const [hover, setHover] = useState25(null);
+  const [hover, setHover] = useState33(null);
   const values = [];
   for (let v = min2; v <= max2; v++) values.push(v);
   const pick = (v) => {
@@ -10565,8 +13620,8 @@ function Rating({
     pick(next);
   };
   const shown = hover ?? current;
-  return /* @__PURE__ */ jsxs44("div", { className: cn("flex items-center gap-2 text-left", className), children: [
-    /* @__PURE__ */ jsx49(
+  return /* @__PURE__ */ jsxs53("div", { className: cn("flex items-center gap-2 text-left", className), children: [
+    /* @__PURE__ */ jsx58(
       "div",
       {
         role: "radiogroup",
@@ -10580,7 +13635,7 @@ function Rating({
         children: values.map((v) => {
           const on = shown !== void 0 && v <= shown;
           const name = describeValue?.(v) ?? String(v);
-          return /* @__PURE__ */ jsx49(
+          return /* @__PURE__ */ jsx58(
             "button",
             {
               type: "button",
@@ -10597,7 +13652,7 @@ function Rating({
                 variant === "star" ? cn("p-0.5", on ? tk.fgWarning : tk.fgFaint) : cn("h-8 w-8 border text-sm font-medium", tk.borderInput, tk.fgMuted),
                 variant === "scale" && current === v && cn(tk.borderPrimary, tk.bgPrimary, tk.fgOnPrimary)
               ),
-              children: variant === "star" ? /* @__PURE__ */ jsx49(Icon, { name: "star", size: 20, strokeWidth: 1.5, className: cn(on && "fill-current") }) : v
+              children: variant === "star" ? /* @__PURE__ */ jsx58(Icon, { name: "star", size: 20, strokeWidth: 1.5, className: cn(on && "fill-current") }) : v
             },
             v
           );
@@ -10609,8 +13664,8 @@ function Rating({
 }
 
 // src/components/json-input.tsx
-import { useEffect as useEffect17, useRef as useRef15, useState as useState26 } from "react";
-import { jsx as jsx50, jsxs as jsxs45 } from "react/jsx-runtime";
+import { useEffect as useEffect23, useRef as useRef23, useState as useState34 } from "react";
+import { jsx as jsx59, jsxs as jsxs54 } from "react/jsx-runtime";
 function print(value) {
   if (value === void 0 || value === null) return "";
   try {
@@ -10633,10 +13688,10 @@ function JsonInput({
 }) {
   const c = useControl(id);
   const bound = value ?? c.read();
-  const [text, setText] = useState26(() => print(bound));
-  const [invalid, setInvalid] = useState26(false);
-  const ownWrite = useRef15(print(bound));
-  useEffect17(() => {
+  const [text, setText] = useState34(() => print(bound));
+  const [invalid, setInvalid] = useState34(false);
+  const ownWrite = useRef23(print(bound));
+  useEffect23(() => {
     const next = print(bound);
     if (next === ownWrite.current) return;
     ownWrite.current = next;
@@ -10665,8 +13720,8 @@ function JsonInput({
   };
   const errorId = `${c.id}-json-error`;
   const describedBy = [c.ariaProps["aria-describedby"], invalid ? errorId : null].filter(Boolean).join(" ") || void 0;
-  return /* @__PURE__ */ jsxs45("div", { className: "flex flex-col gap-1.5", children: [
-    /* @__PURE__ */ jsx50(
+  return /* @__PURE__ */ jsxs54("div", { className: "flex flex-col gap-1.5", children: [
+    /* @__PURE__ */ jsx59(
       "textarea",
       {
         id: c.id,
@@ -10697,29 +13752,29 @@ function JsonInput({
         ...props
       }
     ),
-    invalid && /* @__PURE__ */ jsx50("p", { id: errorId, role: "alert", className: cn("text-xs font-medium", tk.fgDestructive), children: invalidMessage })
+    invalid && /* @__PURE__ */ jsx59("p", { id: errorId, role: "alert", className: cn("text-xs font-medium", tk.fgDestructive), children: invalidMessage })
   ] });
 }
 
 // src/components/file-upload.tsx
-import { useEffect as useEffect18, useRef as useRef16, useState as useState27 } from "react";
+import { useEffect as useEffect24, useRef as useRef24, useState as useState35 } from "react";
 import { markGesture } from "@robomotion/apps-runtime";
-import { useFileUpload } from "@robomotion/apps-runtime/react";
+import { useFileUpload as useFileUpload2 } from "@robomotion/apps-runtime/react";
 
 // src/components/progress.tsx
-import { Fragment as Fragment10, jsx as jsx51, jsxs as jsxs46 } from "react/jsx-runtime";
+import { Fragment as Fragment17, jsx as jsx60, jsxs as jsxs55 } from "react/jsx-runtime";
 function Progress({ value, label, showValue = false, className, ...props }) {
   const determinate = typeof value === "number" && Number.isFinite(value);
   const clamped = determinate ? Math.min(100, Math.max(0, value)) : 0;
-  return /* @__PURE__ */ jsxs46("div", { className: cn("w-full", className), ...props, children: [
-    (label || showValue && determinate) && /* @__PURE__ */ jsxs46("div", { className: cn("mb-1 flex items-center justify-between text-xs", tk.fgMuted), children: [
-      /* @__PURE__ */ jsx51("span", { children: label }),
-      showValue && determinate && /* @__PURE__ */ jsxs46("span", { className: "tabular-nums", children: [
+  return /* @__PURE__ */ jsxs55("div", { className: cn("w-full", className), ...props, children: [
+    (label || showValue && determinate) && /* @__PURE__ */ jsxs55("div", { className: cn("mb-1 flex items-center justify-between text-xs", tk.fgMuted), children: [
+      /* @__PURE__ */ jsx60("span", { children: label }),
+      showValue && determinate && /* @__PURE__ */ jsxs55("span", { className: "tabular-nums", children: [
         Math.round(clamped),
         "%"
       ] })
     ] }),
-    /* @__PURE__ */ jsx51(
+    /* @__PURE__ */ jsx60(
       "div",
       {
         role: "progressbar",
@@ -10728,15 +13783,15 @@ function Progress({ value, label, showValue = false, className, ...props }) {
         "aria-valuemax": 100,
         "aria-valuenow": determinate ? Math.round(clamped) : void 0,
         className: cn("h-2 w-full overflow-hidden rounded-full", tk.bgMuted),
-        children: determinate ? /* @__PURE__ */ jsx51(
+        children: determinate ? /* @__PURE__ */ jsx60(
           "div",
           {
             className: cn("h-full rounded-full transition-[width] duration-300", tk.bgPrimary),
             style: { width: `${clamped}%` }
           }
-        ) : /* @__PURE__ */ jsxs46(Fragment10, { children: [
-          /* @__PURE__ */ jsx51("style", { children: `@keyframes rm-indeterminate{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}` }),
-          /* @__PURE__ */ jsx51(
+        ) : /* @__PURE__ */ jsxs55(Fragment17, { children: [
+          /* @__PURE__ */ jsx60("style", { children: `@keyframes rm-indeterminate{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}` }),
+          /* @__PURE__ */ jsx60(
             "div",
             {
               className: cn("h-full w-1/3 rounded-full", tk.bgPrimary),
@@ -10750,7 +13805,7 @@ function Progress({ value, label, showValue = false, className, ...props }) {
 }
 
 // src/components/file-upload.tsx
-import { jsx as jsx52, jsxs as jsxs47 } from "react/jsx-runtime";
+import { jsx as jsx61, jsxs as jsxs56 } from "react/jsx-runtime";
 function FileUpload({
   onUpload,
   onError,
@@ -10763,14 +13818,14 @@ function FileUpload({
   params,
   className
 }) {
-  const { upload, uploading, progress, error } = useFileUpload();
-  const inputRef = useRef16(null);
-  const zoneRef = useRef16(null);
-  const [dragOver, setDragOver] = useState27(false);
-  const [uploaded, setUploaded] = useState27(null);
-  const onErrorRef = useRef16(onError);
+  const { upload, uploading, progress, error } = useFileUpload2();
+  const inputRef = useRef24(null);
+  const zoneRef = useRef24(null);
+  const [dragOver, setDragOver] = useState35(false);
+  const [uploaded, setUploaded] = useState35(null);
+  const onErrorRef = useRef24(onError);
   onErrorRef.current = onError;
-  useEffect18(() => {
+  useEffect24(() => {
     if (error) onErrorRef.current?.(error);
   }, [error]);
   const start = async (file) => {
@@ -10792,8 +13847,8 @@ function FileUpload({
     setDragOver(false);
     void start(e.dataTransfer.files?.[0]);
   };
-  return /* @__PURE__ */ jsxs47("div", { className: cn("text-left", className), children: [
-    /* @__PURE__ */ jsx52(
+  return /* @__PURE__ */ jsxs56("div", { className: cn("text-left", className), children: [
+    /* @__PURE__ */ jsx61(
       "input",
       {
         ref: inputRef,
@@ -10808,7 +13863,7 @@ function FileUpload({
         }
       }
     ),
-    /* @__PURE__ */ jsxs47(
+    /* @__PURE__ */ jsxs56(
       "button",
       {
         ref: zoneRef,
@@ -10832,32 +13887,33 @@ function FileUpload({
           (disabled || uploading) && "cursor-not-allowed opacity-60"
         ),
         children: [
-          /* @__PURE__ */ jsx52(
+          /* @__PURE__ */ jsx61(
             "span",
             {
               "aria-hidden": "true",
               className: cn("mb-1 flex h-12 w-12 items-center justify-center rounded-full", tk.bgMuted, dragOver ? tk.fgPrimary : tk.fgMuted),
-              children: /* @__PURE__ */ jsx52(Icon, { name: "cloud-upload", size: 24, strokeWidth: 1.5 })
+              children: /* @__PURE__ */ jsx61(Icon, { name: "cloud-upload", size: 24, strokeWidth: 1.5 })
             }
           ),
-          /* @__PURE__ */ jsx52("span", { className: cn("text-sm font-medium", tk.fg), children: label }),
-          hint && /* @__PURE__ */ jsx52("span", { className: cn("text-xs", tk.fgMuted), children: hint })
+          /* @__PURE__ */ jsx61("span", { className: cn("text-sm font-medium", tk.fg), children: label }),
+          hint && /* @__PURE__ */ jsx61("span", { className: cn("text-xs", tk.fgMuted), children: hint })
         ]
       }
     ),
-    uploading && /* @__PURE__ */ jsx52("div", { className: "mt-3", children: /* @__PURE__ */ jsx52(Progress, { value: progress, label: "Uploading", showValue: true }) }),
-    !uploading && uploaded && /* @__PURE__ */ jsxs47("p", { className: cn("mt-2 flex items-center gap-1.5 text-sm", tk.fgSuccess), children: [
-      /* @__PURE__ */ jsx52(Icon, { name: "circle-check", size: 16 }),
+    uploading && /* @__PURE__ */ jsx61("div", { className: "mt-3", children: /* @__PURE__ */ jsx61(Progress, { value: progress, label: "Uploading", showValue: true }) }),
+    !uploading && uploaded && /* @__PURE__ */ jsxs56("p", { className: cn("mt-2 flex items-center gap-1.5 text-sm", tk.fgSuccess), children: [
+      /* @__PURE__ */ jsx61(Icon, { name: "circle-check", size: 16 }),
       uploaded.name,
       " uploaded"
     ] }),
-    !uploading && error && /* @__PURE__ */ jsx52("p", { role: "alert", className: cn("mt-2 text-sm font-medium", tk.fgDestructive), children: error.message })
+    !uploading && error && /* @__PURE__ */ jsx61("p", { role: "alert", className: cn("mt-2 text-sm font-medium", tk.fgDestructive), children: error.message })
   ] });
 }
 
 // src/components/layout.tsx
-import { jsx as jsx53 } from "react/jsx-runtime";
-var GAP = {
+import { useCallback as useCallback12, useEffect as useEffect25, useState as useState36 } from "react";
+import { jsx as jsx62, jsxs as jsxs57 } from "react/jsx-runtime";
+var GAP2 = {
   0: "gap-0",
   1: "gap-1",
   2: "gap-2",
@@ -10879,10 +13935,10 @@ var JUSTIFY = {
   between: "justify-between"
 };
 function Stack({ className, gap = 4, align, ...props }) {
-  return /* @__PURE__ */ jsx53(
+  return /* @__PURE__ */ jsx62(
     "div",
     {
-      className: cn("flex flex-col", GAP[gap], align && ALIGN[align], className),
+      className: cn("flex flex-col", GAP2[gap], align && ALIGN[align], className),
       ...props
     }
   );
@@ -10895,12 +13951,12 @@ function Row({
   wrap = false,
   ...props
 }) {
-  return /* @__PURE__ */ jsx53(
+  return /* @__PURE__ */ jsx62(
     "div",
     {
       className: cn(
         "flex flex-row",
-        GAP[gap],
+        GAP2[gap],
         ALIGN[align],
         justify && JUSTIFY[justify],
         wrap && "flex-wrap",
@@ -10910,21 +13966,21 @@ function Row({
     }
   );
 }
-var COLS = {
+var COLS2 = {
   1: "grid-cols-1",
   2: "grid-cols-2",
   3: "grid-cols-3",
   4: "grid-cols-4",
   6: "grid-cols-6"
 };
-var MD_COLS = {
+var MD_COLS2 = {
   1: "md:grid-cols-1",
   2: "md:grid-cols-2",
   3: "md:grid-cols-3",
   4: "md:grid-cols-4",
   6: "md:grid-cols-6"
 };
-var LG_COLS = {
+var LG_COLS2 = {
   1: "lg:grid-cols-1",
   2: "lg:grid-cols-2",
   3: "lg:grid-cols-3",
@@ -10932,26 +13988,111 @@ var LG_COLS = {
   6: "lg:grid-cols-6"
 };
 function Grid({ className, gap = 4, cols = 1, mdCols, lgCols, ...props }) {
-  return /* @__PURE__ */ jsx53(
+  return /* @__PURE__ */ jsx62(
     "div",
     {
       className: cn(
         "grid",
-        GAP[gap],
-        COLS[cols],
-        mdCols && MD_COLS[mdCols],
-        lgCols && LG_COLS[lgCols],
+        GAP2[gap],
+        COLS2[cols],
+        mdCols && MD_COLS2[mdCols],
+        lgCols && LG_COLS2[lgCols],
         className
       ),
       ...props
     }
   );
 }
+var FADE_PX = 32;
+function ScrollRow({
+  label,
+  gap = 4,
+  snap = false,
+  arrows = true,
+  fade = true,
+  className,
+  children,
+  onKeyDown,
+  ...props
+}) {
+  const { ref, width } = useMeasure();
+  const [more, setMore] = useState36({ left: false, right: false });
+  const read = useCallback12(() => {
+    const el = ref.current;
+    if (!el) return;
+    const left = el.scrollLeft > 1;
+    const right = el.scrollLeft + el.clientWidth < el.scrollWidth - 1;
+    setMore((m) => m.left === left && m.right === right ? m : { left, right });
+  }, [ref]);
+  useEffect25(read);
+  useEffect25(read, [read, width]);
+  const scrollTo = (left) => {
+    const el = ref.current;
+    if (!el) return;
+    const to = Math.max(0, left);
+    if (typeof el.scrollTo === "function") el.scrollTo({ left: to, behavior: prefersReducedMotion() ? "auto" : "smooth" });
+    else el.scrollLeft = to;
+    read();
+  };
+  const page = (dir) => {
+    const el = ref.current;
+    if (el) scrollTo(el.scrollLeft + dir * Math.max(120, el.clientWidth * 0.8));
+  };
+  const handleKeyDown = (e) => {
+    onKeyDown?.(e);
+    if (e.defaultPrevented || e.target !== e.currentTarget) return;
+    const el = e.currentTarget;
+    if (e.key === "ArrowRight") scrollTo(el.scrollLeft + 120);
+    else if (e.key === "ArrowLeft") scrollTo(el.scrollLeft - 120);
+    else if (e.key === "Home") scrollTo(0);
+    else if (e.key === "End") scrollTo(el.scrollWidth);
+    else return;
+    e.preventDefault();
+  };
+  const mask = fade && (more.left || more.right) ? `linear-gradient(to right, ${more.left ? "transparent" : "black"}, black ${FADE_PX}px, black calc(100% - ${FADE_PX}px), ${more.right ? "transparent" : "black"})` : void 0;
+  const arrow2 = cn(
+    "absolute top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border transition-colors",
+    tk.border,
+    tk.bgCard,
+    tk.fgMuted,
+    tk.hoverFg,
+    tk.shadowMd,
+    focusRing
+  );
+  return /* @__PURE__ */ jsxs57("div", { "data-rm-scroll-row": "", className: cn("relative", className), children: [
+    /* @__PURE__ */ jsx62(
+      "div",
+      {
+        ref,
+        role: "group",
+        "aria-label": label,
+        tabIndex: 0,
+        onScroll: read,
+        onKeyDown: handleKeyDown,
+        style: mask ? { maskImage: mask, WebkitMaskImage: mask } : void 0,
+        className: cn(
+          "flex overflow-x-auto pb-1 [scrollbar-width:thin]",
+          GAP2[gap],
+          snap && "snap-x snap-mandatory [&>*]:snap-start",
+          "[&>*]:shrink-0",
+          tk.radiusSm,
+          focusRing
+        ),
+        ...props,
+        children
+      }
+    ),
+    arrows && more.left && // Out of the tab order: the row itself takes the arrow keys, and a
+    // button that vanishes at the end of the row would take focus with it.
+    /* @__PURE__ */ jsx62("button", { type: "button", tabIndex: -1, "aria-label": "Scroll back", onClick: () => page(-1), className: cn(arrow2, "left-1"), children: /* @__PURE__ */ jsx62(Icon, { name: "chevron-left", size: 16 }) }),
+    arrows && more.right && /* @__PURE__ */ jsx62("button", { type: "button", tabIndex: -1, "aria-label": "Scroll forward", onClick: () => page(1), className: cn(arrow2, "right-1"), children: /* @__PURE__ */ jsx62(Icon, { name: "chevron-right", size: 16 }) })
+  ] });
+}
 
 // src/components/assistant-widget.tsx
-import { useEffect as useEffect19, useRef as useRef17, useState as useState28 } from "react";
+import { useEffect as useEffect26, useRef as useRef25, useState as useState37 } from "react";
 import { useAssistant, useMaybeAppClient as useMaybeAppClient3 } from "@robomotion/apps-runtime/react";
-import { jsx as jsx54, jsxs as jsxs48 } from "react/jsx-runtime";
+import { jsx as jsx63, jsxs as jsxs58 } from "react/jsx-runtime";
 function didLine(tools) {
   const words = tools.map(
     (t) => t.replace(/[_-]+/g, " ").replace(/([a-z0-9])([A-Z])/g, "$1 $2").trim().toLowerCase().replace(/^./, (c) => c.toUpperCase())
@@ -10973,28 +14114,28 @@ var assistantProse = cn(
 function AssistantWidget({ title = "Assistant", placeholder = "Ask the app to do something\u2026", className }) {
   const app = useMaybeAppClient3();
   if (!app) return null;
-  return /* @__PURE__ */ jsx54(AssistantWidgetInner, { title, placeholder, className });
+  return /* @__PURE__ */ jsx63(AssistantWidgetInner, { title, placeholder, className });
 }
 function AssistantWidgetInner({ title, placeholder, className }) {
   const { available, greeting, messages, busy, send } = useAssistant();
-  const [open, setOpen] = useState28(() => {
+  const [open, setOpen] = useState37(() => {
     try {
       return sessionStorage.getItem(STORAGE_OPEN) === "1";
     } catch {
       return false;
     }
   });
-  const [draft, setDraft] = useState28("");
-  const listRef = useRef17(null);
-  const inputRef = useRef17(null);
-  useEffect19(() => {
+  const [draft, setDraft] = useState37("");
+  const listRef = useRef25(null);
+  const inputRef = useRef25(null);
+  useEffect26(() => {
     try {
       sessionStorage.setItem(STORAGE_OPEN, open ? "1" : "0");
     } catch {
     }
     if (open) inputRef.current?.focus();
   }, [open]);
-  useEffect19(() => {
+  useEffect26(() => {
     const el = listRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages]);
@@ -11011,8 +14152,8 @@ function AssistantWidgetInner({ title, placeholder, className }) {
       submit();
     }
   };
-  return /* @__PURE__ */ jsxs48("div", { className: cn("fixed bottom-4 right-4 z-40 flex flex-col items-end gap-3", className), "data-rm-assistant": "", children: [
-    open && /* @__PURE__ */ jsxs48(
+  return /* @__PURE__ */ jsxs58("div", { className: cn("fixed bottom-4 right-4 z-40 flex flex-col items-end gap-3", className), "data-rm-assistant": "", children: [
+    open && /* @__PURE__ */ jsxs58(
       "div",
       {
         role: "dialog",
@@ -11025,12 +14166,12 @@ function AssistantWidgetInner({ title, placeholder, className }) {
           tk.radiusLg
         ),
         children: [
-          /* @__PURE__ */ jsxs48("header", { className: cn("flex items-center justify-between border-b px-4 py-3", mutedBar), children: [
-            /* @__PURE__ */ jsxs48("div", { className: cn("flex items-center gap-2", tk.fg), children: [
-              /* @__PURE__ */ jsx54(Icon, { name: "sparkles", size: 16, className: tk.fgPrimary }),
-              /* @__PURE__ */ jsx54("span", { className: "text-sm font-semibold", children: title })
+          /* @__PURE__ */ jsxs58("header", { className: cn("flex items-center justify-between border-b px-4 py-3", mutedBar), children: [
+            /* @__PURE__ */ jsxs58("div", { className: cn("flex items-center gap-2", tk.fg), children: [
+              /* @__PURE__ */ jsx63(Icon, { name: "sparkles", size: 16, className: tk.fgPrimary }),
+              /* @__PURE__ */ jsx63("span", { className: "text-sm font-semibold", children: title })
             ] }),
-            /* @__PURE__ */ jsx54(
+            /* @__PURE__ */ jsx63(
               "button",
               {
                 type: "button",
@@ -11041,9 +14182,9 @@ function AssistantWidgetInner({ title, placeholder, className }) {
               }
             )
           ] }),
-          /* @__PURE__ */ jsxs48("div", { ref: listRef, className: "flex-1 space-y-3 overflow-y-auto px-4 py-3 text-sm", children: [
-            messages.length === 0 && /* @__PURE__ */ jsx54("p", { className: tk.fgMuted, children: greeting || "Tell me what you want done in this app and I will do it." }),
-            messages.map((m) => /* @__PURE__ */ jsx54("div", { className: cn("flex", m.role === "user" ? "justify-end" : "justify-start"), children: /* @__PURE__ */ jsxs48(
+          /* @__PURE__ */ jsxs58("div", { ref: listRef, className: "flex-1 space-y-3 overflow-y-auto px-4 py-3 text-sm", children: [
+            messages.length === 0 && /* @__PURE__ */ jsx63("p", { className: tk.fgMuted, children: greeting || "Tell me what you want done in this app and I will do it." }),
+            messages.map((m) => /* @__PURE__ */ jsx63("div", { className: cn("flex", m.role === "user" ? "justify-end" : "justify-start"), children: /* @__PURE__ */ jsxs58(
               "div",
               {
                 className: cn(
@@ -11052,15 +14193,15 @@ function AssistantWidgetInner({ title, placeholder, className }) {
                   m.role === "user" ? cn("whitespace-pre-wrap rounded-br-[calc(var(--rm-radius)_-_0.125rem)]", tk.bgPrimary, tk.fgOnPrimary) : cn("rounded-bl-[calc(var(--rm-radius)_-_0.125rem)]", tk.bgMuted, tk.fg, assistantProse)
                 ),
                 children: [
-                  m.tools && m.tools.length > 0 && /* @__PURE__ */ jsx54("div", { className: "mb-1 text-[11px] opacity-70", children: didLine(m.tools) }),
-                  m.role === "user" ? m.text : m.text ? /* @__PURE__ */ jsx54(Xa, { mode: "streaming", isAnimating: !!m.streaming, children: m.text }) : m.streaming ? /* @__PURE__ */ jsx54("span", { className: "animate-pulse", children: "\u2026" }) : null,
-                  m.error && /* @__PURE__ */ jsx54("div", { className: cn("mt-1 text-[12px]", tk.fgDestructive), children: m.error })
+                  m.tools && m.tools.length > 0 && /* @__PURE__ */ jsx63("div", { className: "mb-1 text-[11px] opacity-70", children: didLine(m.tools) }),
+                  m.role === "user" ? m.text : m.text ? /* @__PURE__ */ jsx63(Xa, { mode: "streaming", isAnimating: !!m.streaming, children: m.text }) : m.streaming ? /* @__PURE__ */ jsx63("span", { className: "animate-pulse", children: "\u2026" }) : null,
+                  m.error && /* @__PURE__ */ jsx63("div", { className: cn("mt-1 text-[12px]", tk.fgDestructive), children: m.error })
                 ]
               }
             ) }, m.id))
           ] }),
-          /* @__PURE__ */ jsx54("form", { onSubmit: submit, className: cn("border-t p-3", tk.border), children: /* @__PURE__ */ jsxs48("div", { className: "flex items-end gap-2", children: [
-            /* @__PURE__ */ jsx54(
+          /* @__PURE__ */ jsx63("form", { onSubmit: submit, className: cn("border-t p-3", tk.border), children: /* @__PURE__ */ jsxs58("div", { className: "flex items-end gap-2", children: [
+            /* @__PURE__ */ jsx63(
               "textarea",
               {
                 ref: inputRef,
@@ -11073,7 +14214,7 @@ function AssistantWidgetInner({ title, placeholder, className }) {
                 "aria-label": "Message the assistant"
               }
             ),
-            /* @__PURE__ */ jsx54(
+            /* @__PURE__ */ jsx63(
               "button",
               {
                 type: "submit",
@@ -11086,14 +14227,14 @@ function AssistantWidgetInner({ title, placeholder, className }) {
                   tk.fgOnPrimary,
                   focusRing
                 ),
-                children: busy ? /* @__PURE__ */ jsx54("span", { className: "animate-pulse", children: "\u2026" }) : /* @__PURE__ */ jsx54(Icon, { name: "send", size: 16 })
+                children: busy ? /* @__PURE__ */ jsx63("span", { className: "animate-pulse", children: "\u2026" }) : /* @__PURE__ */ jsx63(Icon, { name: "send", size: 16 })
               }
             )
           ] }) })
         ]
       }
     ),
-    /* @__PURE__ */ jsxs48(
+    /* @__PURE__ */ jsxs58(
       "button",
       {
         type: "button",
@@ -11108,7 +14249,7 @@ function AssistantWidgetInner({ title, placeholder, className }) {
           focusRing
         ),
         children: [
-          /* @__PURE__ */ jsx54(Icon, { name: "sparkles", size: 18 }),
+          /* @__PURE__ */ jsx63(Icon, { name: "sparkles", size: 18 }),
           title
         ]
       }
@@ -11119,11 +14260,13 @@ export {
   Accordion,
   AccordionItem,
   Alert,
+  AnimatedNumber,
   AppShell,
   AssistantWidget,
   Avatar,
   AvatarGroup,
   Badge,
+  BarList,
   Breadcrumbs,
   Button,
   Calendar,
@@ -11154,25 +14297,34 @@ export {
   Grid,
   ICON_NAMES,
   Icon,
+  Image,
+  ImageCompare,
+  ImageGrid,
+  ImageMarkup,
   JsonInput,
   JsonView,
   Kanban,
   KanbanCard,
   KanbanColumn,
   Kbd,
+  Lightbox,
+  MarkList,
   Markdown,
   Menu,
   MenuItem,
   Message,
+  Meter,
   NumberInput,
   PageHeader,
   Pagination,
   Popover,
   Progress,
+  ProgressSteps,
   RadioGroup,
   Rating,
   Row,
   Screen,
+  ScrollRow,
   SearchInput,
   SegmentedControl,
   Select,
@@ -11216,6 +14368,7 @@ export {
   tk,
   toast,
   useFormValues,
+  useMarkHistory,
   useTheme,
   useThemeBridge,
   useToast

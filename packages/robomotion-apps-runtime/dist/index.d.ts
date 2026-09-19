@@ -1,6 +1,6 @@
-export { A as AppClient, a as AppError, b as ArtifactAddress, c as AssistantTurnHandle, d as AssistantTurnHandlers, C as ConnectionInfo, F as FilesApi, I as InstallLinksOptions, L as LinkHandler, e as LinkKind, f as LinkMode, g as LinkNamespace, h as LinkSite, i as LinkState, j as LinksHandle, V as ViewerInfo, k as bindAction, l as createApp, m as currentCause, n as decodeArtifactId, o as encodeArtifactId, p as installLinks, q as isAppError, r as linkKey, s as lookupTag, t as markGesture, u as splitLinkKey, v as tagAction } from './links-DY-_SxdO.js';
-import { a as AppRuntimeConfig, R as ResolvedInstance } from './types-BOvW7G1-.js';
-export { b as ActionProgress, A as AppContract, c as AppErrorCode, C as CallOptions, d as ConnectionState, e as ContractAction, f as ContractEvent, g as ContractSchema, h as ContractScreen, i as CreateAppOptions, F as FileRef, j as FileUploadOptions, H as HelloAck, S as StorageLike, W as WebSocketLike, k as WireEnvelope, l as WireIdentity } from './types-BOvW7G1-.js';
+export { A as AppClient, a as AppError, b as ArtifactAddress, c as AssistantTurnHandle, d as AssistantTurnHandlers, C as ConnectionInfo, F as FILE_URL_REFRESH_EARLY_MS, e as FILE_URL_TTL_MS, f as FilesApi, I as InstallLinksOptions, L as LinkHandler, g as LinkKind, h as LinkMode, i as LinkNamespace, j as LinkSite, k as LinkState, l as LinksHandle, V as ViewerInfo, m as bindAction, n as createApp, o as currentCause, p as decodeArtifactId, q as encodeArtifactId, r as installLinks, s as isAppError, t as linkKey, u as lookupTag, v as markGesture, w as splitLinkKey, x as tagAction } from './links-64_FaaHK.js';
+import { a as AppRuntimeConfig, R as ResolvedInstance } from './types-BAJsXo2R.js';
+export { b as ActionProgress, A as AppContract, c as AppErrorCode, C as CallOptions, d as ConnectionState, e as ContractAction, f as ContractEvent, g as ContractSchema, h as ContractScreen, i as CreateAppOptions, F as FileRef, j as FileUploadOptions, H as HelloAck, S as StorageLike, W as WebSocketLike, k as WireEnvelope, l as WireIdentity } from './types-BAJsXo2R.js';
 
 /**
  * Load the runtime config (sdk.md "Runtime config").
@@ -19,6 +19,64 @@ export { b as ActionProgress, A as AppContract, c as AppErrorCode, C as CallOpti
 declare function loadRuntimeConfig(options?: {
     fetchFn?: typeof fetch;
 }): Promise<AppRuntimeConfig>;
+
+interface LiveReaderOptions<TData> {
+    /** Ask the robot. Rejects on failure. */
+    read: () => Promise<TData>;
+    /** Subscribe to one event; returns the unsubscribe. */
+    subscribe: (event: string, cb: (payload: unknown) => void) => () => void;
+    /** The events that mean "ask again". */
+    events: string[];
+    /** Ask anyway after this long with no event. 0 turns polling off. Default 5000. */
+    pollMs?: number;
+    /** Never ask more often than this. Default 500. */
+    minIntervalMs?: number;
+    /** True when the answer is final and polling can stop. Default: `data.done === true`. */
+    isDone?: (data: TData) => boolean;
+    /** Called after every change to `state`. */
+    onChange: (state: LiveState<TData>) => void;
+    /** Called with each event, before the re-read, for a view that animates the hint. */
+    onEvent?: (event: string, payload: unknown) => void;
+}
+interface LiveState<TData> {
+    /** The latest answer. Kept while a newer one is being fetched, and when one fails. */
+    data: TData | undefined;
+    /** The latest failure; cleared by the next answer. */
+    error: unknown;
+    /** True until the first answer or failure. */
+    loading: boolean;
+    /** True while any read is out, including the quiet ones behind an answer already showing. */
+    refreshing: boolean;
+    /** True once the answer said it was final. */
+    done: boolean;
+}
+declare class LiveReader<TData = unknown> {
+    private state;
+    private readonly opts;
+    private readonly pollMs;
+    private readonly minIntervalMs;
+    private readonly isDone;
+    private unsubscribes;
+    private timer;
+    private timerAt;
+    private inflight;
+    private dirty;
+    private lastStart;
+    private started;
+    private stopped;
+    constructor(opts: LiveReaderOptions<TData>);
+    get current(): LiveState<TData>;
+    start(): void;
+    stop(): void;
+    /** Ask now, whatever the timers say. The person pressed Refresh, or the socket came back. */
+    refresh(): void;
+    /** Something changed: ask soon, but not sooner than the floor allows. */
+    private request;
+    private schedule;
+    private clearTimer;
+    private set;
+    private read;
+}
 
 declare function isBase58(str: string): boolean;
 declare function uuidToBase58(uuidStr: string): string;
@@ -94,4 +152,4 @@ declare function sealBody(key: CryptoKey, body: unknown): Promise<string>;
 /** Open a `payload` field sealed by `sealBody` (or by the robot). */
 declare function openBody(key: CryptoKey, payload: string): Promise<unknown>;
 
-export { AppRuntimeConfig, type InspectedElement, type InspectorHandle, ResolvedInstance, aesGcmDecrypt, aesGcmEncrypt, arrayBufferToBase64, base58ToUuid, base64ToArrayBuffer, base64ToUtf8, installInspector, instanceIdFromUrl, isBase58, loadRuntimeConfig, openBody, resolveInstance, sealBody, utf8ToBase64, uuidToBase58 };
+export { AppRuntimeConfig, type InspectedElement, type InspectorHandle, LiveReader, type LiveReaderOptions, type LiveState, ResolvedInstance, aesGcmDecrypt, aesGcmEncrypt, arrayBufferToBase64, base58ToUuid, base64ToArrayBuffer, base64ToUtf8, installInspector, instanceIdFromUrl, isBase58, loadRuntimeConfig, openBody, resolveInstance, sealBody, utf8ToBase64, uuidToBase58 };

@@ -112,7 +112,7 @@ Narrate progress with the task list, in the person's language ("Design the revie
 
 0d. **Write the promises down.** Before any screen, write what the person asked for as short checkable lines in `.robomotion/request-checks.md` (their language is fine): counts, order, what an empty case shows, what is refused and what stays unchanged when it is, what each screen shows - naming each screen by the label its navigation will carry. Step 7 checks the screens against it. Never mention the file to the person.
 
-1. **Pick an archetype silently**: dashboard / approval-queue / form-and-table / document-review / board. Match by what the person wants to DO - the chooser is `./docs/archetypes/` (one file per archetype). Never say the archetype's name; say what you're building: "I'll make you an app with two screens: a queue of waiting invoices, and a page to approve each one." **Layout follows the screen count**: two or more screens get the kit's sidebar (give each screen an `icon`, and a `group` when there are more than five); a one-screen app the top bar. "Tabs at the top" is `theme.layout: "topbar"` in `app.json`.
+1. **Pick an archetype silently**: dashboard / approval-queue / form-and-table / document-review / gallery-review / board. Match by what the person wants to DO - the chooser is `./docs/archetypes/` (one file per archetype). Never say the archetype's name; say what you're building: "I'll make you an app with two screens: a queue of waiting invoices, and a page to approve each one." **Layout follows the screen count**: two or more screens get the kit's sidebar (give each screen an `icon`, and a `group` when there are more than five); a one-screen app the top bar. "Tabs at the top" is `theme.layout: "topbar"` in `app.json`.
 
 2. **Write `app.json`** - read `./docs/contract.md` first. Every `description` doubles as UI copy, so write it for the end user. Then `robomotion app codegen` from `app/`.
 
@@ -417,8 +417,17 @@ there is nothing to look up in `creating-flow` for it:
     .then('e7f2a8', 'Robomotion.Apps.RespondError', 'Tell Them The Problem', {
       optRetryable: true,
       inMessage: Message('error.message'),
+      continueOnError: true,
     });
 ```
+
+**`continueOnError: true` on that answer step is not optional.** The Catch
+takes EVERY step's failure, its own answer step's included. A failure on a
+path that is not an app call - the start-up, a background job after its
+`{ id }` was answered - has no call to answer, so `App Respond Error` fails
+too, the Catch catches that, and it goes round for ever: the log fills with
+`unknown call_id` and the robot answers no button at all (Steal Ads,
+2026-09-19, a start-up step that failed once).
 
 `Catch` is a second trigger beside your `App Action` nodes (a separate
 `f.node(...)` chain, never `.then()`ed after anything), `optNodes` as written
@@ -961,6 +970,7 @@ Ask ONLY when the request genuinely matches more than one thing: two screens bot
 | Approval-queue archetype | `./docs/archetypes/approval-queue.md` |
 | Form-and-table archetype | `./docs/archetypes/form-and-table.md` |
 | Document-review archetype | `./docs/archetypes/document-review.md` |
+| Gallery-review archetype (pictures a person approves or marks up) | `./docs/archetypes/gallery-review.md` |
 | Board archetype (things that move through stages) | `./docs/archetypes/board.md` |
 
 ## Related skills
