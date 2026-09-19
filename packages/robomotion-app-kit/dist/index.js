@@ -11397,7 +11397,7 @@ function DataTable(props) {
       const failure = reply === void 0 ? action.error : void 0;
       if (failure) {
         setRemoteError(failure);
-        setRemote({ rows: [], total: 0 });
+        setRemote(null);
         return;
       }
       if (reply === void 0) {
@@ -11413,7 +11413,7 @@ function DataTable(props) {
     } catch (e) {
       if (mine !== seq.current) return;
       setRemoteError(e);
-      setRemote({ rows: [], total: 0 });
+      setRemote(null);
     } finally {
       if (mine === seq.current) setRemoteLoading(false);
     }
