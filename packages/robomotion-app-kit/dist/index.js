@@ -3294,7 +3294,7 @@ import {
   useCallback as useCallback2,
   useEffect as useEffect6,
   useLayoutEffect as useLayoutEffect3,
-  useMemo,
+  useMemo as useMemo2,
   useState as useState5
 } from "react";
 
@@ -3750,6 +3750,7 @@ import {
   useCallback,
   useEffect as useEffect4,
   useId,
+  useMemo,
   useRef as useRef2,
   useState as useState3
 } from "react";
@@ -3764,13 +3765,30 @@ function focusableIn(root) {
 }
 var scrollLocks = 0;
 function useOverlay(open, onClose) {
-  const panelRef = useRef2(null);
+  const [panel, setPanel] = useState3(null);
+  const panelRef = useMemo(() => {
+    let current = null;
+    return {
+      get current() {
+        return current;
+      },
+      set current(el) {
+        if (el === current) return;
+        current = el;
+        setPanel(el);
+      }
+    };
+  }, []);
   const openerRef = useRef2(null);
+  useEffect4(() => {
+    if (!open || !panel) return;
+    if (panel.contains(document.activeElement)) return;
+    const first = focusableIn(panel)[0] ?? panel;
+    first.focus();
+  }, [open, panel]);
   useEffect4(() => {
     if (!open) return;
     openerRef.current = document.activeElement ?? null;
-    const first = focusableIn(panelRef.current)[0] ?? panelRef.current;
-    first?.focus();
     scrollLocks += 1;
     const previousOverflow = document.body.style.overflow;
     if (scrollLocks === 1) document.body.style.overflow = "hidden";
@@ -4238,7 +4256,7 @@ function AppShell({
   useEffect6(() => {
     setMenuOpen(false);
   }, [activePath]);
-  const ctx = useMemo(
+  const ctx = useMemo2(
     () => ({ onNavigate, activePath, layout, collapsed: layout === "sidebar" && collapsed }),
     [onNavigate, activePath, layout, collapsed]
   );
@@ -4808,7 +4826,7 @@ function SegmentedControl({ options, value, onChange, label, size: size3 = "md",
 import { useId as useId6 } from "react";
 
 // src/components/chart.tsx
-import { useId as useId5, useMemo as useMemo2, useState as useState7 } from "react";
+import { useId as useId5, useMemo as useMemo3, useState as useState7 } from "react";
 
 // src/measure.ts
 import { useEffect as useEffect7, useRef as useRef3, useState as useState6 } from "react";
@@ -4949,7 +4967,7 @@ function Chart({
   const id = useId5();
   const fmt = formatValue ?? ((v) => v.toLocaleString());
   const linkAttrs = source ? sourceLinkAttrs(source) : {};
-  const plot = useMemo2(
+  const plot = useMemo3(
     () => buildPlot(data, series, xKind, title ?? "Value"),
     [data, series, xKind, title]
   );
@@ -4959,7 +4977,7 @@ function Chart({
   const n = plot.series.length;
   const round3 = kind === "pie" || kind === "donut";
   const showLegend = legend ?? (round3 || n > 1);
-  const fmtX = useMemo2(() => {
+  const fmtX = useMemo3(() => {
     if (formatX) return formatX;
     if (!plot.times) return (x) => String(x);
     return (x) => {
@@ -7529,7 +7547,7 @@ function Tooltip2({ content, side = "top", className, children }) {
 }
 
 // src/components/animated-number.tsx
-import { useMemo as useMemo3, useRef as useRef8, useState as useState14 } from "react";
+import { useMemo as useMemo4, useRef as useRef8, useState as useState14 } from "react";
 import { Fragment as Fragment7, jsx as jsx28, jsxs as jsxs26 } from "react/jsx-runtime";
 function decimalsOf(n) {
   if (!Number.isFinite(n)) return 0;
@@ -7539,7 +7557,7 @@ function decimalsOf(n) {
 }
 function AnimatedNumber({ value, durationMs = 600, format, locale, className }) {
   const formatKey = format ? JSON.stringify(format) : "";
-  const formatter = useMemo3(() => new Intl.NumberFormat(locale, format), [locale, formatKey]);
+  const formatter = useMemo4(() => new Intl.NumberFormat(locale, format), [locale, formatKey]);
   const elRef = useRef8(null);
   const [frame, setFrame] = useState14(null);
   const shown = useRef8(value);
@@ -10393,7 +10411,7 @@ import {
   useCallback as useCallback8,
   useEffect as useEffect16,
   useLayoutEffect as useLayoutEffect4,
-  useMemo as useMemo4,
+  useMemo as useMemo5,
   useRef as useRef16,
   useState as useState23
 } from "react";
@@ -10508,7 +10526,7 @@ function ImageGrid({
   const gapPx = GAP_PX[density];
   const tileAspect = filling && aspect === "auto" ? "1:1" : aspect;
   const { ref: boxRef, width, height, measured } = useMeasure();
-  const cols = useMemo4(() => {
+  const cols = useMemo5(() => {
     const d = DEFAULT_COLUMNS[density];
     if (typeof columns === "number") {
       const n = clampCols(columns) ?? d.base;
@@ -10519,7 +10537,7 @@ function ImageGrid({
     }
     return d;
   }, [columns, density]);
-  const solved = useMemo4(() => {
+  const solved = useMemo5(() => {
     if (!filling) return null;
     if (measured && width > 0 && height > 0) return solveFill(slots, width, height, gapPx, ratioOf(tileAspect));
     return { columns: Math.max(1, Math.ceil(Math.sqrt(slots * ratioOf(tileAspect)))), tile: 0 };
@@ -10560,7 +10578,7 @@ function ImageGrid({
     }
     setActive(next);
   };
-  const chosen = useMemo4(() => new Set(selection ?? []), [selection]);
+  const chosen = useMemo5(() => new Set(selection ?? []), [selection]);
   const toggle = (index, range) => {
     const item = items2[index];
     if (!item) return;
@@ -11189,7 +11207,7 @@ function clamp012(n) {
 import {
   useCallback as useCallback9,
   useEffect as useEffect19,
-  useMemo as useMemo5,
+  useMemo as useMemo6,
   useRef as useRef18,
   useState as useState26
 } from "react";
@@ -11430,7 +11448,7 @@ function DataTable(props) {
     setRemoteError(null);
     setReloadTick((t) => t + 1);
   }, []);
-  const filtered = useMemo5(() => {
+  const filtered = useMemo6(() => {
     if (paged) return NO_ROWS;
     const needle = filter.trim().toLowerCase();
     if (!needle) return rows;
@@ -11441,7 +11459,7 @@ function DataTable(props) {
       })
     );
   }, [paged, rows, columns, filter]);
-  const sorted = useMemo5(() => {
+  const sorted = useMemo6(() => {
     if (paged || !sortKey) return filtered;
     const col = columns.find((c) => c.key === sortKey);
     if (!col) return filtered;
@@ -11467,7 +11485,7 @@ function DataTable(props) {
   const [ownKeys, setOwnKeys] = useState26(defaultSelectedKeys ?? []);
   const [allMatching, setAllMatching] = useState26(false);
   const keys = selectedKeys ?? ownKeys;
-  const keySet = useMemo5(() => new Set(keys), [keys]);
+  const keySet = useMemo6(() => new Set(keys), [keys]);
   const seen = useRef18(/* @__PURE__ */ new Map());
   pageRows.forEach((row, i) => {
     if (selectable) seen.current.set(keyOf(row, i), row);
@@ -11484,7 +11502,7 @@ function DataTable(props) {
     [selectedKeys, onSelectionChange]
   );
   const selectionCount = allMatching ? total : keys.length;
-  const selection = useMemo5(
+  const selection = useMemo6(
     () => allMatching ? { allMatching: true, filter, count: total } : { keys, rows: rowsFor(keys), filter, count: keys.length },
     [allMatching, keys, filter, total, rowsFor]
   );
@@ -11510,7 +11528,7 @@ function DataTable(props) {
       tableRef.current = null;
     };
   }, [tableRef, refresh, clearSelection]);
-  const pageKeys = useMemo5(
+  const pageKeys = useMemo6(
     () => selectable ? pageRows.map((row, i) => keyOf(row, i)) : [],
     // pageRows is a fresh array every render; its contents are what matter.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -11550,7 +11568,7 @@ function DataTable(props) {
   };
   const bulkNames = joinNames((bulkActions ?? []).map((a) => isLinkedBulk(a) ? a.action.name : void 0));
   const [exporting, setExporting] = useState26(false);
-  const exportColumns = useMemo5(() => columns.filter((c) => !c.noExport), [columns]);
+  const exportColumns = useMemo6(() => columns.filter((c) => !c.noExport), [columns]);
   const exportCsv = async () => {
     setExporting(true);
     try {
@@ -11588,7 +11606,7 @@ function DataTable(props) {
   const alignClass = (align) => align === "right" ? "text-right" : align === "center" ? "text-center" : "text-left";
   const busy = loading || remoteLoading;
   const showEmpty = !busy && pageRows.length === 0;
-  const linkAttrs = useMemo5(
+  const linkAttrs = useMemo6(
     () => source ? sourceLinkAttrs(source) : rowsLinkAttrs(rows),
     [rows, source]
   );
@@ -12047,7 +12065,7 @@ function columnOf(el) {
 }
 
 // src/components/calendar.tsx
-import { useMemo as useMemo6, useState as useState28 } from "react";
+import { useMemo as useMemo7, useState as useState28 } from "react";
 import { Fragment as Fragment15, jsx as jsx50, jsxs as jsxs45 } from "react/jsx-runtime";
 function iso(y, m, d) {
   return `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
@@ -12080,7 +12098,7 @@ function Calendar({
     if (month === void 0) setOwnMonth(next);
     onMonthChange?.(next);
   };
-  const byDate = useMemo6(() => {
+  const byDate = useMemo7(() => {
     const map = /* @__PURE__ */ new Map();
     for (const e of events) {
       const list = map.get(e.date);
@@ -12335,7 +12353,7 @@ import {
   useContext as useContext7,
   useEffect as useEffect21,
   useId as useId12,
-  useMemo as useMemo7,
+  useMemo as useMemo8,
   useRef as useRef20,
   useState as useState30
 } from "react";
@@ -12490,7 +12508,7 @@ function Form({
     },
     [controlledValues, onChange]
   );
-  const ctx = useMemo7(
+  const ctx = useMemo8(
     () => ({ values, errors, disabled, setValue }),
     [values, errors, disabled, setValue]
   );
@@ -12542,7 +12560,7 @@ function Field({ name, label, help, required = false, error, className, children
   const errorId = `${id}-error`;
   const shownError = error ?? form?.errors[name];
   const describedBy = [help !== void 0 ? helpId : null, shownError ? errorId : null].filter(Boolean).join(" ") || void 0;
-  const ctx = useMemo7(
+  const ctx = useMemo8(
     () => ({ name, id, describedBy, invalid: Boolean(shownError), required }),
     [name, id, describedBy, shownError, required]
   );
@@ -12821,7 +12839,7 @@ function FieldArray({
   const form = useContext7(FormContext);
   const helpId = useId12();
   const raw = form?.values[name];
-  const rows = useMemo7(
+  const rows = useMemo8(
     () => Array.isArray(raw) ? raw : [],
     [raw]
   );
@@ -12877,14 +12895,14 @@ function FieldArrayRow({
   children
 }) {
   const prefix = `${arrayName}.${index}.`;
-  const errors = useMemo7(() => {
+  const errors = useMemo8(() => {
     const out = {};
     for (const [key, message] of Object.entries(form?.errors ?? {})) {
       if (key.startsWith(prefix)) out[key.slice(prefix.length)] = message;
     }
     return out;
   }, [form?.errors, prefix]);
-  const ctx = useMemo7(
+  const ctx = useMemo8(
     () => ({
       values: row,
       errors,
@@ -12938,7 +12956,7 @@ import {
   useCallback as useCallback11,
   useEffect as useEffect22,
   useId as useId13,
-  useMemo as useMemo8,
+  useMemo as useMemo9,
   useRef as useRef21,
   useState as useState31
 } from "react";
@@ -12960,7 +12978,7 @@ function Combobox({
   const baseId = useId13();
   const bound = c.read();
   const raw = value ?? bound;
-  const selected = useMemo8(
+  const selected = useMemo9(
     () => multiple ? Array.isArray(raw) ? raw : raw ? [String(raw)] : [] : raw ? [String(raw)] : [],
     [multiple, raw]
   );
@@ -12998,14 +13016,14 @@ function Combobox({
     return () => clearTimeout(t);
   }, [open, query]);
   const all = loadOptions ? loaded : options ?? [];
-  const shown = useMemo8(() => {
+  const shown = useMemo9(() => {
     if (loadOptions || !query.trim()) return all;
     const needle = query.trim().toLowerCase();
     return all.filter(
       (o) => o.value.toLowerCase().includes(needle) || labelText(o.label).toLowerCase().includes(needle)
     );
   }, [all, query, loadOptions]);
-  const enabled = useMemo8(() => shown.filter((o) => !o.disabled), [shown]);
+  const enabled = useMemo9(() => shown.filter((o) => !o.disabled), [shown]);
   useEffect22(() => {
     if (active > enabled.length - 1) setActive(Math.max(0, enabled.length - 1));
   }, [enabled.length, active]);
@@ -13206,7 +13224,7 @@ function labelText(label) {
 }
 
 // src/components/date-range.tsx
-import { useMemo as useMemo9 } from "react";
+import { useMemo as useMemo10 } from "react";
 import { jsx as jsx54, jsxs as jsxs49 } from "react/jsx-runtime";
 function isoDate(d) {
   const pad = (n) => String(n).padStart(2, "0");
@@ -13255,7 +13273,7 @@ function DateRangePicker({
   const bound = c.read();
   const current = value ?? bound ?? { from: "", to: "" };
   const off = disabled || c.disabled;
-  const list = useMemo9(
+  const list = useMemo10(
     () => presets === true ? defaultPresets() : presets === false ? [] : presets,
     [presets]
   );

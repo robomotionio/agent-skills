@@ -520,7 +520,7 @@ A rule between two things, in the kit's border colour. `label="or"` puts words i
 
 ### `DataTable`
 
-Columns, rows, sort, filter, empty state, row actions, pagination - all built in. This is the workhorse of three of the four archetypes, and **never re-implement sorting or paging in the screen**. A row action that runs an action is written as `{ label, action, params }` with `params` built from the row; one that only navigates keeps `onSelect`.
+Columns, rows, sort, filter, empty state, row actions, pagination - all built in. This is the workhorse of most archetypes, and **never re-implement sorting or paging in the screen**. A row action that runs an action is written as `{ label, action, params }` with `params` built from the row; one that only navigates keeps `onSelect`.
 
 There are two ways to feed it, and picking the wrong one is the difference between a table that works and a table that stalls on the tenth thousand row.
 
