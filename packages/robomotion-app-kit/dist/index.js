@@ -14117,7 +14117,9 @@ function AssistantWidget({ title = "Assistant", placeholder = "Ask the app to do
   return /* @__PURE__ */ jsx63(AssistantWidgetInner, { title, placeholder, className });
 }
 function AssistantWidgetInner({ title, placeholder, className }) {
-  const { available, greeting, messages, busy, send } = useAssistant();
+  const assistant = useAssistant();
+  const { available, greeting, messages, busy, send } = assistant;
+  const stop = assistant.stop;
   const [open, setOpen] = useState37(() => {
     try {
       return sessionStorage.getItem(STORAGE_OPEN) === "1";
@@ -14214,7 +14216,28 @@ function AssistantWidgetInner({ title, placeholder, className }) {
                 "aria-label": "Message the assistant"
               }
             ),
-            /* @__PURE__ */ jsx63(
+            busy && typeof stop === "function" ? (
+              // A reply can run for a minute and call the app's actions as
+              // it goes. The person can end it. An older runtime has no
+              // stop, and there the send button keeps its waiting dots.
+              /* @__PURE__ */ jsx63(
+                "button",
+                {
+                  type: "button",
+                  onClick: stop,
+                  "aria-label": "Stop",
+                  title: "Stop",
+                  className: cn(
+                    "flex h-10 w-10 shrink-0 items-center justify-center hover:brightness-95",
+                    tk.radiusMd,
+                    tk.bgPrimary,
+                    tk.fgOnPrimary,
+                    focusRing
+                  ),
+                  children: /* @__PURE__ */ jsx63("span", { "aria-hidden": true, className: "block h-3 w-3 rounded-[2px] bg-current" })
+                }
+              )
+            ) : /* @__PURE__ */ jsx63(
               "button",
               {
                 type: "submit",

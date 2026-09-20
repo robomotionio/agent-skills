@@ -1237,7 +1237,10 @@ var AppClient = class {
     return {
       turnId,
       stop: () => {
-        this.assistantTurns.delete(turnId);
+        if (!this.assistantTurns.delete(turnId)) return;
+        void this.sendEnvelope("assistant_cancel", {
+          session_key: this.assistantSessionKey()
+        });
       }
     };
   }
