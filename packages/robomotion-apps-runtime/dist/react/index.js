@@ -481,14 +481,19 @@ function useAssistant() {
     },
     [app, busy]
   );
+  const stop = useCallback(() => {
+    handleRef.current?.stop();
+    handleRef.current = null;
+    setBusy(false);
+  }, []);
   const clear = useCallback(() => {
     handleRef.current?.stop();
     setMessages([]);
     setBusy(false);
   }, []);
   return useMemo(
-    () => ({ available, greeting, messages, busy, send, clear }),
-    [available, greeting, messages, busy, send, clear]
+    () => ({ available, greeting, messages, busy, send, stop, clear }),
+    [available, greeting, messages, busy, send, stop, clear]
   );
 }
 export {

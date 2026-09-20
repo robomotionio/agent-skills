@@ -217,6 +217,11 @@ interface UseAssistantResult {
     messages: AssistantMessage[];
     busy: boolean;
     send: (text: string) => void;
+    /**
+     * Stop the reply that is streaming. What has arrived stays on screen, and
+     * the robot is told, so the model stops working for nobody.
+     */
+    stop: () => void;
     clear: () => void;
 }
 /**
