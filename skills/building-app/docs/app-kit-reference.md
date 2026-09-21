@@ -133,6 +133,8 @@ The page frame: a sidebar with an icon rail (the default once the app has two or
 </AppShell>
 ```
 
+The brand tile shows the first letter of the name. An app that ships an icon at `src/icon.png` (or `.svg`/`.webp`) gets it there instead: the template picks the file up and passes `logoSrc`, and a picture that cannot load falls back to the letter, so a screen never has to handle a missing icon. `logo` replaces the whole tile and overrides `logoSrc`.
+
 On a phone the sidebar becomes a menu button and a drawer; the person can fold the sidebar to its icons and the choice is remembered. `layout="topbar"` keeps the old top bar, and `app.json`'s `theme.layout` sets it for the app; `headerRight` and `topbar` put controls in the top bar (a search box, a period picker). When the app is opened on its own the sidebar's foot holds a `ThemeToggle`; inside the Designer the host decides the theme and none is shown.
 
 ### `Screen`
@@ -1243,6 +1245,7 @@ it by name from `@robomotion/app-kit`.
 
 ```ts
 AppShell:         { title: ReactNode, subtitle?: ReactNode, accent?: string, logo?: ReactNode,
+                    logoSrc?: string,
                     nav?: { label: string; path: string; icon?: IconName | ReactNode; group?: string;
                             badge?: ReactNode; exact?: boolean }[],
                     activePath?: string, onNavigate?: (path: string) => void,

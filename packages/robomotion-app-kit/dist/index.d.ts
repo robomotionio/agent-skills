@@ -260,6 +260,13 @@ interface AppShellProps extends Omit<HTMLAttributes<HTMLDivElement>, "title"> {
     /** Accent color, from app.json's theme.accent. Defaults to the brand orange. */
     accent?: string;
     logo?: ReactNode;
+    /**
+     * The app's icon, drawn in the brand tile in place of the name's first
+     * letter. A picture that cannot load falls back to the letter, so an app
+     * that ships no icon, or whose icon 404s, still reads as itself. Ignored
+     * when `logo` is given, which replaces the tile outright.
+     */
+    logoSrc?: string;
     /** Navigation, one item per screen. */
     nav?: AppShellNavItem[];
     activePath?: string;
@@ -282,7 +289,7 @@ interface AppShellProps extends Omit<HTMLAttributes<HTMLDivElement>, "title"> {
     contentWidth?: "default" | "wide" | "full";
     children?: ReactNode;
 }
-declare function AppShell({ title, subtitle, accent, logo, nav, activePath, onNavigate, connectionState, headerRight, topbar, layout: layoutProp, collapsible, defaultCollapsed, sidebarFooter, contentWidth, children, className, style, ...props }: AppShellProps): react.JSX.Element;
+declare function AppShell({ title, subtitle, accent, logo, logoSrc, nav, activePath, onNavigate, connectionState, headerRight, topbar, layout: layoutProp, collapsible, defaultCollapsed, sidebarFooter, contentWidth, children, className, style, ...props }: AppShellProps): react.JSX.Element;
 
 interface BreadcrumbItem {
     label: ReactNode;
