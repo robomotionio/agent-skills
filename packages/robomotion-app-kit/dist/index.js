@@ -4217,6 +4217,7 @@ function AppShell({
   subtitle,
   accent,
   logo,
+  logoSrc,
   nav,
   activePath,
   onNavigate,
@@ -4261,12 +4262,33 @@ function AppShell({
     [onNavigate, activePath, layout, collapsed]
   );
   const brand = /* @__PURE__ */ jsxs7("div", { className: "flex min-w-0 items-center gap-2.5", children: [
-    logo ?? /* @__PURE__ */ jsx8(
+    logo ?? /* @__PURE__ */ jsxs7(
       "span",
       {
         "aria-hidden": "true",
-        className: cn("flex h-8 w-8 shrink-0 items-center justify-center text-sm font-bold", tk.radiusMd, tk.bgPrimary, tk.fgOnPrimary),
-        children: firstGlyph(title)
+        className: cn(
+          "relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden text-sm font-bold",
+          tk.radiusMd,
+          tk.bgPrimary,
+          tk.fgOnPrimary
+        ),
+        children: [
+          firstGlyph(title),
+          logoSrc && // The letter is painted first and the icon sits over it, so an
+          // icon that 404s hides itself and leaves the letter rather than
+          // the browser's broken-image glyph. Same trick as Avatar.
+          /* @__PURE__ */ jsx8(
+            "img",
+            {
+              src: logoSrc,
+              alt: "",
+              className: "absolute inset-0 h-full w-full object-cover",
+              onError: (e) => {
+                e.currentTarget.style.display = "none";
+              }
+            }
+          )
+        ]
       }
     ),
     !(layout === "sidebar" && collapsed) && /* @__PURE__ */ jsxs7("span", { className: "min-w-0", children: [
