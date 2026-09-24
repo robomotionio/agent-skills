@@ -18,6 +18,7 @@ Start with `creating-flow` if you're new — it bundles the full Robomotion 101 
 | [`exploring-browser`](./skills/exploring-browser/SKILL.md) | Interactive browser exploration through `robomotion-browser-mcp`: snapshot, record actions, capture traffic. |
 | [`reversing-network`](./skills/reversing-network/SKILL.md) | Reverse-engineer a site's API from captured traffic and replace browser automation with HTTP. |
 | [`building-app`](./skills/building-app/SKILL.md) | Build a Robomotion App: screens under `app/` in front of a flow, in one repository. The harness tools under Build, or the `robomotion app` verbs from a terminal. |
+| [`document-understanding`](./skills/document-understanding/SKILL.md) | Read fields and tables out of invoices, receipts, statements and other documents; build the flow with the Document Understanding nodes and a human check. |
 
 ## Installation
 
@@ -164,6 +165,8 @@ These skills are derived from [`robomotionio/robomotion-templates`](https://gith
 ## Contributing
 
 PRs welcome. When adapting content from `robomotion-templates`, keep SKILL.md frontmatter limited to `name` + `description` (agent-agnostic) and make sure every doc referenced by a skill body lives inside that skill's directory — `npx skills add` does not pull sibling files from the repo root.
+
+Robomotion-specific settings live in each skill's `config.json`, not in the frontmatter. Under `skill`, `tools` lists the tools that belong to the skill (a name ending in `*` matches a prefix, e.g. `"tools": ["xy_*"]`). The Robomotion agent injects a skill on the turns its `triggers` match; a skill with `tools` also stays in the prompt for the rest of the conversation once it was injected and one of those tools has been called, so a follow-up answer that names none of its triggers keeps it.
 
 ## License
 
