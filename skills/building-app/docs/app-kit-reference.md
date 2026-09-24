@@ -46,7 +46,7 @@ import {
   Dialog, ConfirmDialog, Drawer, Popover, Tabs, Tab, TabPanel, Stepper, Step,
   Accordion, AccordionItem, Menu, MenuItem, Tooltip,
   Chart, Kanban, KanbanColumn, KanbanCard, Calendar, Timeline, TimelineItem,
-  Avatar, AvatarGroup, Thread, Message, Composer, Markdown, JsonView,
+  Avatar, AvatarGroup, Thread, Message, Composer, Markdown, MarkdownEditor, JsonView,
   Image, ImageGrid, Lightbox, ImageCompare, ImageMarkup, MarkList, useMarkHistory,
   Meter, BarList, AnimatedNumber, ProgressSteps,
   Stack, Row, Grid, ScrollRow, cn, accentStyle, focusRing, inputBase, DEFAULT_ACCENT,
@@ -945,6 +945,42 @@ Markdown the robot produced - a summary, a written-up report - rendered as prose
 <Card><CardBody><Markdown>{report.data?.text ?? SAMPLE_REPORT}</Markdown></CardBody></Card>
 ```
 
+### `MarkdownEditor`
+
+Long text a person writes and keeps editing - a chapter, a note, an article, a
+reply they draft - with headings, lists, tables and links, stored as Markdown.
+`Markdown` shows text; this is where text is written. It is controlled like any
+input: `value` in, `onChange(markdown)` out, and what the flow stores is the
+Markdown string. **Never build an editor from a `contenteditable` of your own
+or a `TextArea` with a preview beside it** - neither has undo across edits,
+tracked changes or anchors that follow the text.
+
+```tsx
+const [body, setBody] = useState(chapter.body);
+<MarkdownEditor value={body} onChange={setBody} placeholder="Start writing..." label="Chapter text"
+  onStats={(s) => setWords(s.words)} />
+```
+
+**Changes the robot proposes** go in `proposals` - `{ id, before, after, reason?, anchor? }` - and
+show as tracked changes the person accepts or rejects; accepting edits `value`
+through `onChange`, and `onAcceptProposal` / `onRejectProposal` tell the screen
+which one to drop or record. **Something to say about a passage** (a note, a
+comment, a flag) goes in `annotations` - `{ id, anchor: { quote }, kind?, tone? }` -
+highlighted in place and re-found by its quote when the text moves;
+`renderAnnotation` draws its margin note and `onAnnotationsResolved` hands back
+fresh anchors to store.
+
+**Actions on a selection** come from `renderSelectionToolbar`: it gets the
+selected `text` and `markdown` and a `replace(markdown)` that edits in one undo
+step, so a "Rewrite" button calls the robot and replaces what was selected.
+`slashItems` adds entries to the `/` menu. `extensions` teaches it block or
+inline syntax of the app's own (a scene break, a callout, a citation) so it
+round-trips instead of being flattened. `readOnly` shows it without editing;
+`streaming` / `appendOnly` let text arrive at the end while the robot writes.
+`toolbar={false}` hides the formatting bar for a quiet writing view; the ref
+handle (`MarkdownEditorHandle`) has `getMarkdown`, `insertMarkdown`,
+`replaceRange`, `undo` and `redo` for a screen that drives it.
+
 ### `JsonView`
 
 Free-form JSON coming **out**. When an action's `result` is the open shape, the screen does not know what came back - this shows it as a collapsible tree with a copy button, instead of `[object Object]` or a screen that quietly shows nothing.
@@ -1537,6 +1573,28 @@ MarkList:     { marks: Mark[], onMarksChange: (marks: Mark[]) => void,
 useMarkHistory(initial?: Mark[]): { marks, setMarks, undo, redo, canUndo, canRedo, reset(marks?) }
 
 Markdown:   { children?: string, streaming?: boolean }
+MarkdownEditor: { value?: string, defaultValue?: string, onChange?: (markdown: string) => void,
+              extensions?: MarkdownExtension[], placeholder?: string, label?: string,
+              readOnly?: boolean, appendOnly?: boolean, streaming?: boolean,
+              toolbar?: boolean | "fixed" | "floating" /* default true */,
+              renderSelectionToolbar?: (ctx: { text: string; markdown: string; range: { start: number; end: number };
+                                               anchor: TextAnchor; replace: (md: string) => void; close: () => void }) => ReactNode,
+              slashItems?: SlashItem[] | ((defaults: SlashItem[]) => SlashItem[]),
+              annotations?: { id: string; anchor: TextAnchor; kind?: string; tone?: "neutral"|"accent"|"success"|"warning"|"danger"|"info" }[],
+              renderAnnotation?: (a, state: { active: boolean }) => ReactNode, onAnnotationClick?: (id: string) => void,
+              onAnnotationsResolved?: (r: { id; status: "exact"|"fuzzy"|"orphaned"; start; end; anchor: TextAnchor | null }[]) => void,
+              activeAnnotation?: string | null,
+              proposals?: { id: string; before: string; after: string; reason?: string; anchor?: TextAnchor }[],
+              onAcceptProposal?: (id: string) => void, onRejectProposal?: (id: string) => void,
+              onStats?: (s: { words: number; characters: number }) => void,
+              documentKey?: string /* changing it resets undo */, autoFocus?: boolean,
+              contentClassName?: string, ref?: Ref<MarkdownEditorHandle> }
+TextAnchor:   { quote: string, offset?: number, prefix?: string, suffix?: string }
+SlashItem:    { id: string, label: string, hint?: string, keywords?: string[], markdown?: string,
+                run?: (editor: MarkdownEditorHandle) => void }
+MarkdownEditorHandle: { focus(), getMarkdown(), getText(), insertMarkdown(md), replaceRange({start, end}, md),
+                getSelection(), undo(), redo(), canUndo(), canRedo(), clearHistory(), exec(cmd) }
+
 JsonView:   { value: unknown, maxDepth?: number /* default 2 */, copyable?: boolean,
               emptyState?: ReactNode, label?: string }
 ```
