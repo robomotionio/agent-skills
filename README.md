@@ -166,6 +166,8 @@ These skills are derived from [`robomotionio/robomotion-templates`](https://gith
 
 PRs welcome. When adapting content from `robomotion-templates`, keep SKILL.md frontmatter limited to `name` + `description` (agent-agnostic) and make sure every doc referenced by a skill body lives inside that skill's directory — `npx skills add` does not pull sibling files from the repo root.
 
+Robomotion-specific settings live in each skill's `config.json`, not in the frontmatter. Under `skill`, `tools` lists the tools that belong to the skill (a name ending in `*` matches a prefix, e.g. `"tools": ["xy_*"]`). The Robomotion agent injects a skill on the turns its `triggers` match; a skill with `tools` also stays in the prompt for the rest of the conversation once it was injected and one of those tools has been called, so a follow-up answer that names none of its triggers keeps it.
+
 ## License
 
 [MIT](./LICENSE)

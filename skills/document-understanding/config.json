@@ -14,6 +14,9 @@
       "linux",
       "darwin",
       "windows"
+    ],
+    "tools": [
+      "du_*"
     ]
   }
 }
