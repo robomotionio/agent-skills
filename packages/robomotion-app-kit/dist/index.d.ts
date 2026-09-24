@@ -2110,4 +2110,208 @@ interface AssistantWidgetProps {
 }
 declare function AssistantWidget({ title, placeholder, className }: AssistantWidgetProps): react.JSX.Element | null;
 
-export { Accordion, AccordionItem, type AccordionItemProps, type AccordionProps, type ActionDataSource, type ActionLike, Alert, type AlertProps, type AlertVariant, AnimatedNumber, type AnimatedNumberProps, type AnyDataSource, AppShell, type AppShellNavItem, type AppShellProps, type AppTheme, AssistantWidget, type AssistantWidgetProps, Avatar, AvatarGroup, type AvatarGroupProps, type AvatarProps, Badge, type BadgeProps, type BadgeVariant, BarList, type BarListItem, type BarListProps, type BreadcrumbItem, Breadcrumbs, type BreadcrumbsProps, Button, type ButtonProps, Calendar, type CalendarEvent, type CalendarProps, Card, CardBody, CardFooter, CardHeader, type CardHeaderProps, type CardProps, Chart, type ChartDatum, type ChartPoint, type ChartProps, type ChartSeries, Checkbox, type CheckboxProps, Combobox, type ComboboxProps, Composer, type ComposerAttachments, type ComposerProps, ConfirmDialog, type ConfirmDialogProps, ConnectionBanner, type ConnectionBannerProps, CopyButton, type CopyButtonProps, DEFAULT_ACCENT, DataTable, type DataTableApi, type DataTableBulkAction, type DataTableBulkCallbackAction, type DataTableBulkLinkedAction, type DataTableColumn, type DataTableProps, type DataTableRowAction, type DataTableRowCallbackAction, type DataTableRowLinkedAction, type DataTableSelection, type DataTableSource, DatePicker, type DatePickerProps, type DateRange, DateRangePicker, type DateRangePickerProps, type DateRangePreset, type DescriptionItem, DescriptionList, type DescriptionListProps, Dialog, type DialogProps, Drawer, type DrawerProps, EmptyState, type EmptyStateProps, ErrorState, type ErrorStateProps, type ExportAnnotatedOptions, type ExportMaskOptions, Field, FieldArray, type FieldArrayProps, type FieldProps, FileUpload, type FileUploadProps, Form, type FormProps, type FormValues, Grid, type GridProps, ICON_NAMES, Icon, type IconName, type IconProps, type IconSize, Image, type ImageAspect, ImageCompare, type ImageCompareProps, type ImageCompareSide, ImageGrid, type ImageGridColumns, type ImageGridItem, type ImageGridProps, ImageMarkup, type ImageMarkupHandle, type ImageMarkupProps, type ImageProps, JsonInput, type JsonInputProps, JsonView, type JsonViewProps, Kanban, KanbanCard, type KanbanCardProps, KanbanColumn, type KanbanColumnProps, type KanbanMove, type KanbanProps, Kbd, type KbdProps, Lightbox, type LightboxItem, type LightboxProps, type Mark, type MarkHistory, type MarkKind, MarkList, type MarkListProps, type MarkTool, Markdown, type MarkdownProps, Menu, MenuItem, type MenuItemDef, type MenuItemProps, type MenuProps, Message, type MessageProps, Meter, type MeterProps, type MeterTone, type NamedDataSource, NumberInput, type NumberInputProps, PageHeader, type PageHeaderProps, type PageReply, type PageRequest, Pagination, type PaginationProps, type ParamsOf, Popover, type PopoverProps, Progress, type ProgressProps, type ProgressStep, type ProgressStepStatus, ProgressSteps, type ProgressStepsProps, RadioGroup, type RadioGroupProps, Rating, type RatingProps, Row, type RowProps, Screen, type ScreenProps, ScrollRow, type ScrollRowProps, SearchInput, type SearchInputProps, SegmentedControl, type SegmentedControlProps, type SegmentedOption, Select, type SelectOption, type SelectProps, Separator, type SeparatorProps, Skeleton, type SkeletonProps, Slider, type SliderProps, Sparkline, type SparklineProps, Spinner, Stack, type StackProps, Stat, type StatProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, Step, type StepProps, Stepper, type StepperProps, Switch, type SwitchProps, Tab, TabPanel, type TabPanelProps, type TabProps, Tabs, type TabsProps, TagInput, type TagInputProps, TextArea, type TextAreaProps, TextInput, type TextInputProps, ThemeToggle, type ThemeToggleProps, Thread, type ThreadMessage, type ThreadProps, TimePicker, type TimePickerProps, Timeline, TimelineItem, type TimelineItemProps, type TimelineProps, Toast, type ToastOptions, type ToastProps, Toolbar, type ToolbarProps, Tooltip, type TooltipProps, type UseToastResult, accentStyle, applyAccent, applyTheme, cn, dismissToast, ensureTokens, focusRing, inputBase, renderIcon, resolveIconName, setTheme, textStyles, tk, toast, useFormValues, useMarkHistory, useTheme, useThemeBridge, useToast };
+interface TextAnchor {
+    quote: string;
+    /** Where the quote started, in the document's plain text. */
+    offset?: number;
+    prefix?: string;
+    suffix?: string;
+}
+
+interface MarkdownBlockRenderProps<D = Record<string, unknown>> {
+    data: D;
+    /** The editable text, when `parse` returned `content`. Place it once. */
+    children?: ReactNode;
+    readOnly: boolean;
+    /** Replace this block's data (recorded in undo history). */
+    update: (data: D) => void;
+}
+/**
+ * A block type of the app's own: parsed from Markdown lines, rendered with
+ * React, written back to Markdown. Tried before the built-in block syntax, in
+ * the order given, so an extension can claim `***` from the horizontal rule.
+ */
+interface MarkdownBlockExtension<D extends Record<string, unknown> = Record<string, unknown>> {
+    kind: "block";
+    name: string;
+    /**
+     * Read a block starting at `lines[start]`. Return the line index it ends
+     * BEFORE (exclusive), its data, and - for a block with editable text - the
+     * inline Markdown of that text. Return null when the line is not yours.
+     */
+    parse(lines: readonly string[], start: number): {
+        end: number;
+        data: D;
+        content?: string;
+    } | null;
+    /** Write it back. `content` is the text's inline Markdown ("" when none). */
+    serialize(data: D, content: string): string;
+    /** Draw it. Anything that is not the editable text should be contentEditable={false}. */
+    render(props: MarkdownBlockRenderProps<D>): ReactNode;
+    /** Plain text for word counts and anchors when there is no editable text. */
+    plainText?(data: D): string;
+}
+/**
+ * Inline syntax of the app's own. An `atom` is one uneditable unit (a
+ * citation chip, a mention); a `mark` wraps editable text (a highlight).
+ */
+interface MarkdownInlineExtension<D extends Record<string, unknown> = Record<string, unknown>> {
+    kind: "atom" | "mark";
+    name: string;
+    /** Matched at the current position (the sticky flag is added for you). */
+    match: RegExp;
+    /** Data from the match; for a mark, also `text`: the inner Markdown. */
+    parse(m: RegExpExecArray): {
+        data: D;
+        text?: string;
+    } | null;
+    /** Write it back. `inner` is the wrapped text's Markdown, for a mark. */
+    serialize(data: D, inner: string): string;
+    /** Atom: what to draw. */
+    render?(props: {
+        data: D;
+    }): ReactNode;
+    /** Mark: classes for the wrapping span. */
+    className?: string;
+    /** Atom: the text it stands for in word counts. */
+    plainText?(data: D): string;
+}
+type MarkdownExtension = MarkdownBlockExtension<any> | MarkdownInlineExtension<any>;
+
+type Tone = "neutral" | "primary" | "info" | "success" | "warning" | "danger";
+
+type EditorCommand = "bold" | "italic" | "strike" | "code" | "link" | "paragraph" | "h1" | "h2" | "h3" | "h4" | "bullet" | "ordered" | "task" | "quote" | "codeblock" | "undo" | "redo";
+type AnnotationTone = Tone;
+interface EditorAnnotation {
+    id: string;
+    anchor: TextAnchor;
+    /** A free label for the app ("comment", "fact-check"); not interpreted. */
+    kind?: string;
+    /** Highlight colour. Default "warning". */
+    tone?: AnnotationTone;
+}
+interface EditorProposal {
+    id: string;
+    /** Where the change is. Defaults to `{ quote: before }`. */
+    anchor?: TextAnchor;
+    /** The text to replace (found inside the anchor); "" inserts at the anchor's end. */
+    before: string;
+    /** The replacement, as inline Markdown; "" deletes. */
+    after: string;
+    reason?: string;
+}
+interface ResolvedAnnotation {
+    id: string;
+    status: "exact" | "fuzzy" | "orphaned";
+    start: number;
+    end: number;
+    /** A fresh anchor for where it is now: store it to keep the annotation following the text. */
+    anchor: TextAnchor | null;
+}
+interface SelectionToolbarContext {
+    /** The selected plain text. */
+    text: string;
+    /** The selected Markdown. */
+    markdown: string;
+    /** Plain-text offsets of the selection. */
+    range: {
+        start: number;
+        end: number;
+    };
+    /** An anchor for the selection, ready to store with an annotation. */
+    anchor: TextAnchor;
+    /** Replace the selection with Markdown (one undo step). */
+    replace: (markdown: string) => void;
+    close: () => void;
+}
+interface SlashItem {
+    id: string;
+    label: string;
+    hint?: string;
+    keywords?: string[];
+    /** Markdown to insert in place of the "/" line. */
+    markdown?: string;
+    /** Or anything else, through the editor's handle. */
+    run?: (editor: MarkdownEditorHandle) => void;
+}
+interface EditorStats {
+    words: number;
+    characters: number;
+}
+interface MarkdownEditorHandle {
+    focus(): void;
+    getMarkdown(): string;
+    /** Plain text: the coordinate system of anchors and ranges. */
+    getText(): string;
+    exec(command: EditorCommand): void;
+    undo(): void;
+    redo(): void;
+    canUndo(): boolean;
+    canRedo(): boolean;
+    /** Insert Markdown at the caret (or at the end when the editor has none). */
+    insertMarkdown(markdown: string): void;
+    /** Replace a plain-text range with Markdown (one undo step). */
+    replaceRange(range: {
+        start: number;
+        end: number;
+    }, markdown: string): void;
+    getSelection(): {
+        text: string;
+        range: {
+            start: number;
+            end: number;
+        };
+    } | null;
+    clearHistory(): void;
+}
+interface MarkdownEditorProps {
+    /** Controlled Markdown. */
+    value?: string;
+    /** Uncontrolled starting value. */
+    defaultValue?: string;
+    onChange?: (markdown: string) => void;
+    /** Custom blocks and inline syntax. Keep the array stable (module level or memoised). */
+    extensions?: readonly MarkdownExtension[];
+    placeholder?: string;
+    /** Nothing can be changed; links open, annotations still answer clicks. */
+    readOnly?: boolean;
+    /** Only the last block can be edited: a log or a journal that grows at the end. */
+    appendOnly?: boolean;
+    /** Text is arriving at the end (an AI writing): shows a caret there, keeps the person's caret where it is. */
+    streaming?: boolean;
+    /**
+     * The formatting toolbar: `true` (default) is a bar above the text plus the
+     * same buttons over a selection; "fixed" or "floating" for one of them;
+     * `false` for none (focus mode). App actions from renderSelectionToolbar
+     * show over a selection either way.
+     */
+    toolbar?: boolean | "fixed" | "floating";
+    renderSelectionToolbar?: (ctx: SelectionToolbarContext) => ReactNode;
+    /** Replace or extend the "/" menu; the function form gets the built-in items. */
+    slashItems?: SlashItem[] | ((defaults: SlashItem[]) => SlashItem[]);
+    annotations?: readonly EditorAnnotation[];
+    /** A note in the margin beside an annotation. Return null for none. */
+    renderAnnotation?: (annotation: EditorAnnotation, state: {
+        active: boolean;
+    }) => ReactNode;
+    onAnnotationClick?: (id: string) => void;
+    /** Where each annotation landed after the text changed. */
+    onAnnotationsResolved?: (resolved: ResolvedAnnotation[]) => void;
+    /** The id of the annotation to show as selected. */
+    activeAnnotation?: string | null;
+    proposals?: readonly EditorProposal[];
+    onAcceptProposal?: (id: string) => void;
+    onRejectProposal?: (id: string) => void;
+    onStats?: (stats: EditorStats) => void;
+    /** Changing it starts a fresh undo history (another chapter, another note). */
+    documentKey?: string;
+    /** Accessible name of the text box. Default "Document". */
+    label?: string;
+    autoFocus?: boolean;
+    className?: string;
+    /** Classes for the text surface itself (padding, max width, font). */
+    contentClassName?: string;
+}
+declare const MarkdownEditor: react.ForwardRefExoticComponent<MarkdownEditorProps & react.RefAttributes<MarkdownEditorHandle>>;
+
+export { Accordion, AccordionItem, type AccordionItemProps, type AccordionProps, type ActionDataSource, type ActionLike, Alert, type AlertProps, type AlertVariant, AnimatedNumber, type AnimatedNumberProps, type AnnotationTone, type AnyDataSource, AppShell, type AppShellNavItem, type AppShellProps, type AppTheme, AssistantWidget, type AssistantWidgetProps, Avatar, AvatarGroup, type AvatarGroupProps, type AvatarProps, Badge, type BadgeProps, type BadgeVariant, BarList, type BarListItem, type BarListProps, type BreadcrumbItem, Breadcrumbs, type BreadcrumbsProps, Button, type ButtonProps, Calendar, type CalendarEvent, type CalendarProps, Card, CardBody, CardFooter, CardHeader, type CardHeaderProps, type CardProps, Chart, type ChartDatum, type ChartPoint, type ChartProps, type ChartSeries, Checkbox, type CheckboxProps, Combobox, type ComboboxProps, Composer, type ComposerAttachments, type ComposerProps, ConfirmDialog, type ConfirmDialogProps, ConnectionBanner, type ConnectionBannerProps, CopyButton, type CopyButtonProps, DEFAULT_ACCENT, DataTable, type DataTableApi, type DataTableBulkAction, type DataTableBulkCallbackAction, type DataTableBulkLinkedAction, type DataTableColumn, type DataTableProps, type DataTableRowAction, type DataTableRowCallbackAction, type DataTableRowLinkedAction, type DataTableSelection, type DataTableSource, DatePicker, type DatePickerProps, type DateRange, DateRangePicker, type DateRangePickerProps, type DateRangePreset, type DescriptionItem, DescriptionList, type DescriptionListProps, Dialog, type DialogProps, Drawer, type DrawerProps, type EditorAnnotation, type EditorCommand, type EditorProposal, type EditorStats, EmptyState, type EmptyStateProps, ErrorState, type ErrorStateProps, type ExportAnnotatedOptions, type ExportMaskOptions, Field, FieldArray, type FieldArrayProps, type FieldProps, FileUpload, type FileUploadProps, Form, type FormProps, type FormValues, Grid, type GridProps, ICON_NAMES, Icon, type IconName, type IconProps, type IconSize, Image, type ImageAspect, ImageCompare, type ImageCompareProps, type ImageCompareSide, ImageGrid, type ImageGridColumns, type ImageGridItem, type ImageGridProps, ImageMarkup, type ImageMarkupHandle, type ImageMarkupProps, type ImageProps, JsonInput, type JsonInputProps, JsonView, type JsonViewProps, Kanban, KanbanCard, type KanbanCardProps, KanbanColumn, type KanbanColumnProps, type KanbanMove, type KanbanProps, Kbd, type KbdProps, Lightbox, type LightboxItem, type LightboxProps, type Mark, type MarkHistory, type MarkKind, MarkList, type MarkListProps, type MarkTool, Markdown, type MarkdownBlockExtension, type MarkdownBlockRenderProps, MarkdownEditor, type MarkdownEditorHandle, type MarkdownEditorProps, type MarkdownExtension, type MarkdownInlineExtension, type MarkdownProps, Menu, MenuItem, type MenuItemDef, type MenuItemProps, type MenuProps, Message, type MessageProps, Meter, type MeterProps, type MeterTone, type NamedDataSource, NumberInput, type NumberInputProps, PageHeader, type PageHeaderProps, type PageReply, type PageRequest, Pagination, type PaginationProps, type ParamsOf, Popover, type PopoverProps, Progress, type ProgressProps, type ProgressStep, type ProgressStepStatus, ProgressSteps, type ProgressStepsProps, RadioGroup, type RadioGroupProps, Rating, type RatingProps, type ResolvedAnnotation, Row, type RowProps, Screen, type ScreenProps, ScrollRow, type ScrollRowProps, SearchInput, type SearchInputProps, SegmentedControl, type SegmentedControlProps, type SegmentedOption, Select, type SelectOption, type SelectProps, type SelectionToolbarContext, Separator, type SeparatorProps, Skeleton, type SkeletonProps, type SlashItem, Slider, type SliderProps, Sparkline, type SparklineProps, Spinner, Stack, type StackProps, Stat, type StatProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, Step, type StepProps, Stepper, type StepperProps, Switch, type SwitchProps, Tab, TabPanel, type TabPanelProps, type TabProps, Tabs, type TabsProps, TagInput, type TagInputProps, type TextAnchor, TextArea, type TextAreaProps, TextInput, type TextInputProps, ThemeToggle, type ThemeToggleProps, Thread, type ThreadMessage, type ThreadProps, TimePicker, type TimePickerProps, Timeline, TimelineItem, type TimelineItemProps, type TimelineProps, Toast, type ToastOptions, type ToastProps, Toolbar, type ToolbarProps, Tooltip, type TooltipProps, type UseToastResult, accentStyle, applyAccent, applyTheme, cn, dismissToast, ensureTokens, focusRing, inputBase, renderIcon, resolveIconName, setTheme, textStyles, tk, toast, useFormValues, useMarkHistory, useTheme, useThemeBridge, useToast };
