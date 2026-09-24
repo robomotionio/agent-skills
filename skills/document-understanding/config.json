@@ -1,0 +1,19 @@
+{
+  "name": "Document Understanding",
+  "namespace": "Robomotion.Skill.DocumentUnderstanding",
+  "version": "0.1.0",
+  "categories": [
+    "Artificial Intelligence"
+  ],
+  "description": "Reads fields and tables out of documents (invoices, receipts, statements, forms, any PDF or scan) with a Document Understanding reader: set up or reuse a reader, confirm its fields in plain words, try it on one sample, then build the flow with the Document Understanding nodes and a human check for uncertain documents. Use when the person wants values read from documents.",
+  "icon": "icon.png",
+  "skill": {
+    "runtime": "none",
+    "command": "document-understanding",
+    "platforms": [
+      "linux",
+      "darwin",
+      "windows"
+    ]
+  }
+}

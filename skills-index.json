@@ -14,6 +14,12 @@
       "runtime": "none"
     },
     {
+      "name": "document-understanding",
+      "path": "skills/document-understanding",
+      "version": "0.1.0",
+      "runtime": "none"
+    },
+    {
       "name": "exploring-browser",
       "path": "skills/exploring-browser",
       "version": "0.1.0",
