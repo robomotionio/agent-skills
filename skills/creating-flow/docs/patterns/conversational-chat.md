@@ -242,3 +242,6 @@ turn ends on the main branch.
 - [ ] `addDependency('Robomotion.ChatAssistant', '1.9.0')` or later for `GetAttachments`,
       `optEndStream`, `optTurnTimeout` and the lifted widget gate.
 - [ ] Ran `validate_flow` before `save_flow`.
+- [ ] When the person asks to try it: the `running-chat-assistant` skill (`robomotion agent push`,
+      `create`, `start`, `chat`) runs it as an Agent in the real chat page. `robomotion run` cannot:
+      nothing sends a Chat In flow a message.
