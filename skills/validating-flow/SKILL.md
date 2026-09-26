@@ -41,7 +41,7 @@ On failure, exits 1 and prints structured node-by-node errors on stderr. Designe
 
 ## What it does NOT check
 
-- **That the path from the trigger reaches `Core.Flow.Stop`.** A flow with no Stop, or with a Stop nothing wires to, validates clean and then runs for ever on the robot (the next run is refused as busy). Check it yourself — see the checklist. (The Designer's Build with AI validator does check this; the CLI does not.)
+- **That the path from the trigger reaches `Core.Flow.Stop`.** From robomotion 26.9.8, validate *warns* (`warning: no Core.Flow.Stop node`) when a flow has no Stop at all, except a Chat In or App Action flow; it still passes. A Stop that nothing wires to is not caught. A flow without a reachable Stop runs for ever on the robot (the next run is refused as busy). Check the wiring yourself — see the checklist.
 - A leaf (`Debug`, `Log`) fanned out beside the path to `Stop` — it validates, but Stop can end the flow before the leaf runs
 - Loop wiring patterns (Goto→Label) — manual review
 - Missing required properties — manual review
@@ -70,7 +70,7 @@ robomotion validate write-to-clipboard/    # exit 0
 ## Pre-run checklist
 
 - [ ] `robomotion validate` exits 0 — which also means the Designer can read the file and every Function is formatted
-- [ ] **The path from the trigger reaches `Core.Flow.Stop`** (manual check — validate does not): follow the wires from the trigger; every path ends at the Stop, and a `Debug`/`Log` leaf hangs off the node *before* the last step, never beside the Stop. No Stop at all is right for exactly two kinds of flow: an app backend (`Robomotion.Apps.Action`, every path ends at `App Respond`) and a chat flow (`Robomotion.ChatAssistant.ChatIn`, every turn ends at `Chat Out`)
+- [ ] **The path from the trigger reaches `Core.Flow.Stop`** (validate only warns when there is no Stop at all; the wiring is yours to check): follow the wires from the trigger; every path ends at the Stop, and a `Debug`/`Log` leaf hangs off the node *before* the last step, never beside the Stop. No Stop at all is right for exactly two kinds of flow: an app backend (`Robomotion.Apps.Action`, every path ends at `App Respond`) and a chat flow (`Robomotion.ChatAssistant.ChatIn`, every turn ends at `Chat Out`)
 - [ ] Loops have Goto→Label wiring (manual check)
 - [ ] Required properties set (manual check)
 - [ ] Port numbers correct for multi-output nodes
