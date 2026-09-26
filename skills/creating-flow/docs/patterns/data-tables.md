@@ -553,6 +553,12 @@ f.node('2a7f40', 'Robomotion.SQLite.Connect', 'Open The Database', {
 
 Build the path with a literal `'/'` in a Function (`msg.db = 'Data Source=' + global.get('$Home$') + '/app.db;Version=3;'`) — system variables are not read inside `Custom()`.
 
+Reading back is `Robomotion.SQLite.Query` with the SQL in its `func` and `{{{field}}}`
+placeholders. Write text values as `'{{{field}}}'`, quotes hugging the placeholder: the node
+doubles an apostrophe there itself (1.6.6), so never double it by hand, and a `LIKE` takes the
+whole pattern built in a Function (`LIKE '{{{pattern}}}'`, never `LIKE '%{{{q}}}%'`, which is
+not quoted). The full rule: `../reference/function-nodes.md`.
+
 ### Write to Excel 365 (Cloud)
 ```typescript
 f.node('1e2f3a', 'Robomotion.Excel365.RangeWrite', 'Write Range', {

@@ -79,9 +79,9 @@ Events are compact one-line JSON. The run is over at `flow_end` (or `flow_error`
 
 ```
 {"event":"agent_mode","status":"start"}
-{"event":"flow_start","flow":"Imported Write To Clipboard","version":"local"}
+{"event":"flow_start","flow":"Imported Write To Clipboard","version":"local","origin":"agent"}
 {"event":"node_start","node":"Start"}
-{"event":"node_end","node":"Start","duration_ms":21}
+{"event":"node_end","node":"Start"}
 {"event":"node_start","node":"Get Clipboard Data"}
 {"event":"node_end","node":"Get Clipboard Data","duration_ms":4780}
 {"event":"flow_end","status":"success","duration_ms":8852}
@@ -104,11 +104,11 @@ Flags: `--no-follow` (fire-and-forget, no stream), `--log-wait <s>` (how long to
 | Event | Fields | Meaning |
 |-------|--------|---------|
 | `agent_mode` | `status: "start" \| "end"` | May bracket the run. Not always written, and `robomotion logs` does not show it — never wait for it. |
-| `flow_start` | `flow`, `version` | Flow started. |
+| `flow_start` | `flow`, `version`, `origin` | Flow started. `version` is `local` for `robomotion run`; `origin` is who started it (`"agent"` for `robomotion run`). |
 | `flow_end` | `status: "success" \| "error"`, `duration_ms`, `error?` | Flow finished — the run is done. |
 | `flow_error` | `error`, `node?`, `node_id?`, `duration_ms` | Unhandled flow-level error — the run is done. |
 | `node_start` | `node` | Node entered. |
-| `node_end` | `node`, `duration_ms` | Node completed. |
+| `node_end` | `node`, `duration_ms?` | Node completed. `duration_ms` is absent on some nodes (the trigger's, for one); don't rely on it. |
 | `node_error` | `node`, `error`, `duration_ms` | Node threw — your signal to fix. |
 | `log` | `node?`, `level`, `msg` | `Core.Flow.Log` output. |
 | `debug` | `node`, `msg` | `Core.Programming.Debug` payload (truncated to 255 bytes per field). |
@@ -139,7 +139,7 @@ Target autonomous iteration (bounded retries; stop on user request):
    - Timeout (CLI exit 2) → flow may still be running on the robot; report and ask.
    - CLI exit 3 → read the output. No robot chosen: the robots are listed; ask which one, then `--robot <name>`. Log unreachable: the robot is on another machine and its log is there; say so, and ask the person what the robot showed, or watch progress in the Flow Designer.
 5. Between retries, keep mock/test fixtures stable so a passing run actually proves the fix.
-6. **Save** when a fix made it pass: `git add -A && git commit -m "..." && git push` in the flow folder (`commit -am` misses new files, such as a new `subflows/<id>.ts`). The Designer shows what was pushed. A run rewrites `main.designer.ts` (the canvas layout) — commit it together with `main.ts`. A run that passed with no change needs no save: the flow was already saved before it ran.
+6. **Save** when a fix made it pass: `git add -A && git commit -m "..." && git push` in the flow folder (`commit -am` misses new files, such as a new `subflows/<id>.ts`). The Designer shows what was pushed. A run rewrites `main.designer.ts` (the canvas layout) — commit it together with `main.ts`. A run that passed with no change needs no save when the flow was already saved before it ran. When it was not — the person asked to build it, run it, and save it once it works — save now, after the green run: that save is the last step of the job.
 
 ### After a successful run: offer to open what it produced
 
@@ -174,6 +174,12 @@ Rules:
   the flow wrote it, so you do. Never guess a path or open a folder instead.
 - **Only in a conversation.** A run somebody is watching earns the offer; a
   scheduled or headless run has nobody there and must not open anything.
+- **When you cannot ask, show it instead.** Running non-interactively (a
+  one-shot `claude -p`, a CI job, no question tool) there is nobody to answer
+  the offer, so don't end on a question: show what the run produced in your
+  report — print a text or CSV file (`cat`, or `head -n 20` for a long one),
+  the rows of a spreadsheet you read back — and give its full path. Still
+  never open a window.
 - **A failure to open is not a failure of the run.** If the opener is missing or
   the desktop is not available (a server, an SSH session), say the run worked
   and give the full path. Never let it turn a green run red.

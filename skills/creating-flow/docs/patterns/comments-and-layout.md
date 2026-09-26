@@ -82,7 +82,15 @@ Lay the graph out in **layers, left-to-right**, the way `layout-engine.cjs` does
   column baseline — let it sit on its parent's row, or the wires kink.
 - **Loop-back edges** (`GoTo → Label`) and **`Catch`** wires do **not** count toward layering — a
   loop's `GoTo` bridges back/forward and its card is allowed to sit at a phase boundary.
-- `Start` is offset left of the first column; `Stop` offset right of the last.
+- `Start` is layer 0, so it sits **in** the first column (`x = 600`), not left of it: left of
+  the first column is where the title box stands (`x` 60–500, `y` 0 down to its height, ≈265),
+  and a `Start` there lands on it. `Stop` is offset right of the last column. To stand the
+  trigger apart, put it **under** the title box (`x = 60`, `y` = the title box's height + 50,
+  e.g. `315`), never beside it.
+- **Nothing overlaps the title box.** The first phase box starts at `600 − 64 = 536`, 36 clear
+  of the title box's right edge (500). A title box wider than 440 moves the chain, not the
+  title: shift every node right by the extra width, so the first phase box still starts ≥ 16
+  right of the title box.
 
 **Presentation as phase-columns.** In the polished templates each *phase* is a vertical stack of
 its nodes (execution order top→bottom) under its comment header, and phases progress left→right;

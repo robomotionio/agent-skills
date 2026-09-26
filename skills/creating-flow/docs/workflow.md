@@ -1,6 +1,6 @@
 # Flow Build Workflow
 
-End-to-end: requirements → plan → write → validate → save. This skill ends at save. Running the flow is owned by the `running-flow` skill — invoke it separately when the user explicitly asks to run. When a run finds a bug and you fix it, validate and save again.
+End-to-end: requirements → plan → write → validate → save. This skill ends at save. Running the flow is owned by the `running-flow` skill — invoke it when the user explicitly asks to run. When a run finds a bug and you fix it, validate and save again. When the request itself asks for a run ("build it, run it, save it when it works"), the order is build → validate → run → save after the green run — see "End of workflow".
 
 The steps below are for a terminal (Claude Code, Codex): `robomotion validate`, `git add -A && git commit && git push`, `robomotion describe node`, and your own question tool. Inside the Designer's **Build with AI** the same steps are tools — `validate_flow`, `save_flow`, `get_node_schema`, `AskUserQuestion` — see "Under Build with AI" at the end.
 
@@ -13,7 +13,7 @@ If the user says "Write main.ts for X" or "Generate a flow that does Y", skip St
 1. Verify schemas with `robomotion describe node <type>[,<type2>...]` if unsure.
 2. Write `main.ts` with the `Write` tool. If the flow uses `Core.Flow.SubFlow` nodes, also write each subflow file at `subflows/<id>.ts` immediately — ID matches the SubFlow node's ID. Subflow files use `subflow.create(name, fn)` with `Core.Flow.Begin` → task nodes → `Core.Flow.End({sfPort: 0})`.
 3. Run `robomotion validate` in the flow folder — fix errors and re-validate.
-4. Then save: `git add -A && git commit -m "..." && git push` in the flow folder. Without the push, the Designer canvas does not update. **Stop here** — do not run the flow.
+4. Then save: `git add -A && git commit -m "..." && git push` in the flow folder. Without the push, the Designer canvas does not update. **Stop here** — do not run the flow, unless the request asked for a run (then see "End of workflow").
 
 ## Step 0a: The project folder
 
@@ -87,9 +87,9 @@ Then verify property names with `robomotion describe node <type>[,<type>...]`.
 - [ ] Terminal nodes (`Debug`, `Log`, `Stop`, `GoTo`, `End`, `WaitGroup.Done`) have 0 outputs — wire TO them, never `.then()` after them.
 - [ ] If the validator refuses a wire out of one of those leaves, **re-hang the leaf — do not delete the step that came after it.** Taking the wire away silences the error and strands everything downstream: the path now ends on the leaf, the run never reaches `Stop`, and the robot is left running an idle flow. Hang the leaf off the path with `f.edge('<previous node>', 0, '<leaf>', 0)` and carry the path on from that previous node.
 - [ ] The mirror of that rule: root nodes have **0 inputs** — start a chain AT them, never `.then()` or `f.edge()` INTO them. That is every trigger (`Core.Trigger.*`, `Robomotion.Apps.Action`, `ChatIn`, `Core.Application.In`) and, less obviously, **`Core.Flow.Label`**. Jump to a Label with `Core.Flow.GoTo` (`optNodes.ids: [<labelId>]`); chaining into one fails the build with `Cannot chain to node '<id>' (Core.Flow.Label): it has 0 inputs`.
-- [ ] The path from the trigger **reaches** a `Core.Flow.Stop` — having one in the file is not enough. `robomotion validate` does **not** check this: a flow with no Stop, or with a Stop nothing wires to, validates clean and then runs for ever on the robot. Follow the wires yourself. (Build with AI's `validate_flow` does report it, as `no_stop_node` / `stop_unreachable`.) **Two kinds of flow never stop, and have no Stop:**
+- [ ] The path from the trigger **reaches** a `Core.Flow.Stop` — having one in the file is not enough. `robomotion validate` only half checks it: from 26.9.8 it **warns** (`warning: no Core.Flow.Stop node`, exit still 0) when a flow has no Stop at all, except a Chat In or App Action flow; a Stop that nothing wires to validates clean, and the flow then runs for ever on the robot. Follow the wires yourself. (Build with AI's `validate_flow` does report it, as `no_stop_node` / `stop_unreachable`.) **Two kinds of flow never stop, and have no Stop:**
   - **An app backend.** A flow whose trigger is `Robomotion.Apps.Action` is the backend of a Robomotion App and stays up serving its screens for as long as the app lives; each path ends at `App Respond` / `App Respond Error` and no further. See the `building-app` skill, hard rule 5.
-  - **A chat flow.** A flow whose trigger is `Robomotion.ChatAssistant.ChatIn` answers one message per run of the turn, for as long as the chat is open; each turn ends at `Chat Out`, and every branch — the Catch branch too — must reach one. See `./docs/patterns/conversational-chat.md`.
+  - **A chat flow.** A flow whose trigger is `Robomotion.ChatAssistant.ChatIn` answers one message per run of the turn, for as long as the chat is open; each turn ends at `Chat Out`, and every branch — the Catch branch too — must reach one. See `./docs/patterns/conversational-chat.md` (guided mode: `./docs/patterns/guided-chat.md`).
 - [ ] Ends with `.start()` (libraries omit `.start()`).
 - [ ] **Every Function node is glue code a person can read** (hard rule 7, `./docs/reference/function-nodes.md`): formatted (one statement per line, blocks on their own lines, indented, blank lines between parts); only what that step does - no helper library, no SQL assembled in JavaScript (the SQL node takes `{{{field}}}` placeholders), no formatting helpers; one rule per Function with `outputs: 2`. The program is the flow.
 - [ ] **The Designer can read the file back** (hard rule 6, `./docs/reference/project-format.md`): the only import is `@robomotion/sdk`; every node is written as `f.node()` / `.then()` / `f.edge()` inside the `create` callback; every prop is a literal, a scope helper, or a string built from `const`s declared in THIS file; no spreads, no helper functions, nothing imported into a `func`. The person will open this on the canvas and save it from there; what the Designer could not read, its save deletes.
@@ -125,7 +125,7 @@ Read `./docs/patterns/credentials.md` MANDATORY before writing any `Credential()
 
 ## Step 4: Validate (MANDATORY — must run BEFORE Step 5)
 
-Run `robomotion validate` in the flow folder (exit 0 and `✔ <folder> validated` on stderr). It compiles, pspec-validates (catches wrong property names, scopes, types), validates `f.addDependency()` against the live package index, and refuses a file the Designer cannot read or a Function not formatted for a person. Fix any errors → re-validate. What it does not check (the path reaching Stop) is in the checklist above; the `validating-flow` skill has the full list.
+Run `robomotion validate` in the flow folder (exit 0 and `✔ <folder> validated` on stderr). It compiles, pspec-validates (catches wrong property names, scopes, types), validates `f.addDependency()` against the live package index, and refuses a file the Designer cannot read or a Function not formatted for a person. Fix any errors → re-validate. It warns when there is no Stop at all; what it does not check (the path reaching the Stop) is in the checklist above; the `validating-flow` skill has the full list.
 
 > **Order matters.** A `git push` stores whatever is in the folder, broken or not, and the Designer draws what was pushed. Validate first; validating after the save is meaningless.
 
@@ -144,6 +144,15 @@ Selectors are verified during exploration (Step 3). If the code changed (differe
 ## End of workflow
 
 After a successful `git push`, the create-flow lifecycle is **complete**. Report what changed and stop. Do NOT call `robomotion run`, `RemoteTrigger`, or any other run path on your own — running a flow is a separate user request, handled by the `running-flow` skill. Wait for the user to ask. If that run finds a bug, the fix goes through the same steps: validate, then save again.
+
+**When the person asked for the run in the same request** ("build it, run it, and save it when it works"), the run is part of the job and the save moves to the end:
+
+1. Build (Steps 0-3), then validate (Step 4).
+2. Run it with the `running-flow` skill. `robomotion run` runs the folder as it is, so nothing needs saving first.
+3. Fix → validate → run again until the run is green (the `running-flow` loop and its retry budget).
+4. Save (Step 5) once, after the green run, with the `main.designer.ts` the run wrote.
+
+A Chat In flow is tried with the `running-chat-assistant` skill instead; its loop pushes before every chat, and in a flow checkout that push is the save. Without an ask to run: build → validate → save, and stop.
 
 ## Under Build with AI
 
