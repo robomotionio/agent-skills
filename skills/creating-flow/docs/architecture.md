@@ -34,7 +34,9 @@ Use `.then()` for simple sequential connections (port 0 to port 0):
 ```typescript
 f.node('42ec21', 'Core.Trigger.Inject', 'Start', {})
   .then('7dbafc', 'Core.Programming.Function', 'Process', {
-    func: `msg.result = 'done'; return msg;`
+    func: `msg.result = 'done';
+
+return msg;`
   })
   .then('a06926', 'Core.Flow.Stop', 'Stop', {});
 ```

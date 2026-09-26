@@ -34,9 +34,9 @@ The function receives `msg` and must return it:
 `return [msg, null]` or `return [null, msg]`, never `return [msg, msg]`. Filling both
 ports runs both branches at once, on the same message, racing each other — the loop
 body and the finish path both go, and whatever the finish path writes is written while
-the body is still working. `null`, `undefined` and `''` are the holes. `validate_flow`
-reports a multi-output Function whose *every* return fills every port
-(`function_fires_every_port`); if two paths really are meant to run together, wire them
+the body is still working. `null`, `undefined` and `''` are the holes. `robomotion validate`
+does not catch it (Build with AI's `validate_flow` does, as `function_fires_every_port`),
+so check every return yourself; if two paths really are meant to run together, wire them
 both to port 0 and declare one output.
 
 ### Example: Binary Condition (if/else)

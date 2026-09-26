@@ -49,15 +49,15 @@ Where the urge to write a helper comes from, and where the work belongs:
 
 | The urge | Where it belongs |
 |---|---|
-| a `q()` to quote SQL values, `WHERE` clauses built by concatenation | **SQL lives in the SQL node**, in its `func` property, with `{{{field}}}` placeholders the package fills from `msg`: `SELECT * FROM vendors WHERE id = '{{{vendor_id}}}'`. The Function before it sets `msg.vendor_id`. |
+| a `q()` to quote SQL values, `WHERE` clauses built by concatenation | **SQL lives in the SQL node**, in its `func` property, with `{{{field}}}` placeholders the package fills from `msg`: `SELECT * FROM vendors WHERE id = '{{{vendor_id}}}'`. The Function before it sets `msg.vendor_id`. The SQLite nodes quote a placeholder written between single quotes themselves (below), so nothing is quoted by hand. |
 | `rowsOf()`, `vendorOf()`, `invoiceOf()` row shapers | The query names and aliases the columns the screen wants (`v.name AS vendor_name`); the Function after it hands them over: `msg.result = { vendors: msg.table.rows }`. |
 | `newId()` | The package's own id node, or one line: `msg.id = Date.now().toString(36);` |
-| `money()`, `pad()`, `todayStr()` | The screen formats (the kit's `Money`, `DateTime`); the flow hands over numbers and ISO strings. A date inside SQL is `strftime(...)` in the query. |
+| `money()`, `pad()`, `todayStr()` | The screen formats: `toLocaleString()` / `Intl.NumberFormat` for an amount or a date, or the app-kit's own `format` / `formatValue` props (`AnimatedNumber`, `Chart`, `BarList`); the flow hands over numbers and ISO strings. A date inside SQL is `strftime(...)` in the query. |
 | `whoOf(msg)` | One line, where it is needed: `msg.who = (msg.identity && msg.identity.email) \|\| 'someone';` |
 | a validation library (`if (!name) ... if (!email) ...` for every field) | One Function per rule the person would name ("Check the amount", "Check the vendor exists"), `outputs: 2`, wired to a `Respond Error` that says why. A rule is a step; the person sees it on the canvas. |
-| `try { ... } catch` around a package call | `continueOnError: true` on the node, or a `Core.Flow.Catch`. Error handling is a wire. |
+| `try { ... } catch` around a package call | `continueOnError: true` on the node, or a `Core.Trigger.Catch`. Error handling is a wire. |
 | loops, `map`, `filter`, `reduce` over rows | `Core.Programming.ForEach` with `Label` / `GoTo` when each row is a step; SQL when it is a query (`SUM`, `COUNT`, `GROUP BY`). A one-line `filter` is fine when the rows are already in `msg` and the result is one more field. |
-| building a table for a data node | `msg.table = { columns: [...], rows: [...] }`; `./patterns/data-tables.md`. |
+| building a table for a data node | `msg.table = { columns: [...], rows: [...] }`; `../patterns/data-tables.md`. |
 | the same three lines in three nodes | Three nodes with the same three lines. That is not duplication to fix; it is three steps a person can read on their own. |
 
 ## What it looks like
@@ -65,7 +65,7 @@ Where the urge to write a helper comes from, and where the work belongs:
 The public template library (`robomotionio/robomotion-templates`) is the
 model. Its 1,842 Function nodes are the glue between steps: most are a
 handful of lines, the longest around sixty, almost none declare a helper
-function. A SQLite step from one of them:
+function. A paged SQLite list, in that style:
 
 ```typescript
 .then('c4a8e2', 'Core.Programming.Function', 'Only what was asked', {
@@ -73,34 +73,72 @@ function. A SQLite step from one of them:
   func: `var p = msg.params || {};
 
 msg.vendor_id = String(p.vendor_id || '');
+msg.page_size = 25;
+msg.offset = (Math.max(1, parseInt(p.page, 10) || 1) - 1) * msg.page_size;
+
+// The whole LIKE pattern, % signs included: the SQL takes it as '{{{filter}}}',
+// and the SQLite node doubles its quotes there itself.
 msg.filter = '%' + String(p.filter || '') + '%';
 
-if (!msg.vendor_id) {
+if (!/^[0-9]+$/.test(msg.vendor_id)) {
   msg.refused = 'Say which vendor.';
   return [null, msg];
 }
 
 return [msg, null];`,
 })
-.then('d5b9f3', 'Robomotion.SQLite.Query', 'Read the vendor\'s invoices', {
+.then('d5b9f3', 'Robomotion.SQLite.Query', 'Read one page of invoices', {
   optConnectionString: Message('db'),
   outResult: Message('invoices'),
   func: `SELECT id, number, amount, due_date, status
 FROM invoices
 WHERE vendor_id = '{{{vendor_id}}}' AND number LIKE '{{{filter}}}'
-ORDER BY due_date`,
+ORDER BY due_date
+LIMIT {{{page_size}}} OFFSET {{{offset}}}`,
+})
+.then('7b20e6', 'Robomotion.SQLite.Query', 'Count all of them', {
+  optConnectionString: Message('db'),
+  outResult: Message('counted'),
+  func: `SELECT COUNT(*) AS total
+FROM invoices
+WHERE vendor_id = '{{{vendor_id}}}' AND number LIKE '{{{filter}}}'`,
 })
 .then('e6c0a4', 'Core.Programming.Function', 'Hand the rows over', {
   func: `msg.result = {
   rows: msg.invoices.rows,
-  total: msg.invoices.rows.length
+  total: msg.counted.rows[0].total
 };
 
 return msg;`,
 })
 ```
 
-Three steps with names a person understands, the SQL where a database
+`total` is the count across **all** pages, from its own `COUNT(*)` query with the same
+`WHERE` - never `rows.length`, which is only this page and makes a paged table think there
+is nothing after it. The id is checked before it goes into the SQL; the typed filter is
+left as typed.
+
+**Quoting is the SQLite node's job** (`Robomotion.SQLite` 1.6.6, `Query` and `NonQuery`). It
+doubles a text value's single quotes when **every** placeholder for that key sits directly
+between single quotes, as `'{{{filter}}}'` does, and inserts the value as it is anywhere else
+(`{{x}}` and `{{{x}}}` render the same). So:
+
+- **Never double quotes by hand** for a value written `'{{{x}}}'`: the node doubles them
+  again, and `O'Brien` is searched for as `O''Brien` and never found.
+- **A `LIKE` takes the whole pattern**, built in the Function (`'%' + q + '%'`) and written
+  `LIKE '{{{filter}}}'`. Never `LIKE '%{{{q}}}%'`: that placeholder sits between `%` signs, is
+  not quoted, and an apostrophe breaks the query - or runs SQL of its own.
+- **One key, one way.** A key written `'{{{x}}}'` in one place and bare `{{{x}}}` in another is
+  quoted nowhere.
+- **A piece of SQL a Function assembled** (`{{{where}}}`, avoid it) goes in verbatim: that
+  Function checks each id against a pattern and doubles quotes itself - the one place a hand
+  does it.
+
+Text you **store** needs none of this: write it with `Robomotion.SQLite.Insert`
+(`inDatabaseTable` + `inTable`), which passes the values as they are - see
+`../patterns/data-tables.md`.
+
+Four steps with names a person understands, the SQL where a database
 person expects it, and code anyone can read.
 
 ## Why this exists

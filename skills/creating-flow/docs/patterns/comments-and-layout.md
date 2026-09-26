@@ -15,11 +15,11 @@ runtime behaviour — but it's what turns a wall of nodes into something a human
 
 ```ts
 export default {
-  flowId: 'f01d9e3',
+  flowId: '<flow-id>',
   sourceHash: '3e55245e',            // hash of main.ts; a staleness marker for tooling only —
                                      // validate/run never read the designer or this hash
   positions: { 'c00001': { x: 60, y: 0 }, 'a10001': { x: 600, y: 250 }, /* every node id */ },
-  cameraPositions: { main: { x: 20, y: 60, zoom: 0.58 } },  // initial framing
+  cameraPositions: { '<flow-id>': { x: 20, y: 60, zoom: 0.58 } },  // initial framing
   nodeColors: { 'd40000': '#6610F2' },                       // per-node card tint (hex)
   nodeIcons: {},
   commentExtras: {                                            // per comment box: color + size
@@ -82,7 +82,15 @@ Lay the graph out in **layers, left-to-right**, the way `layout-engine.cjs` does
   column baseline — let it sit on its parent's row, or the wires kink.
 - **Loop-back edges** (`GoTo → Label`) and **`Catch`** wires do **not** count toward layering — a
   loop's `GoTo` bridges back/forward and its card is allowed to sit at a phase boundary.
-- `Start` is offset left of the first column; `Stop` offset right of the last.
+- `Start` is layer 0, so it sits **in** the first column (`x = 600`), not left of it: left of
+  the first column is where the title box stands (`x` 60–500, `y` 0 down to its height, ≈265),
+  and a `Start` there lands on it. `Stop` is offset right of the last column. To stand the
+  trigger apart, put it **under** the title box (`x = 60`, `y` = the title box's height + 50,
+  e.g. `315`), never beside it.
+- **Nothing overlaps the title box.** The first phase box starts at `600 − 64 = 536`, 36 clear
+  of the title box's right edge (500). A title box wider than 440 moves the chain, not the
+  title: shift every node right by the extra width, so the first phase box still starts ≥ 16
+  right of the title box.
 
 **Presentation as phase-columns.** In the polished templates each *phase* is a vertical stack of
 its nodes (execution order top→bottom) under its comment header, and phases progress left→right;
@@ -176,9 +184,18 @@ their **height to the rendered text** plus ~22 bottom padding. Title boxes are 4
 Don't eyeball it — measure the rendered height (headless render with the renderer's CSS), or grow
 generously since the title box is standalone and has empty space below it.
 
-## Gotcha: builds flatten the designer
+## Gotcha: `run` and `build` write `main.designer.ts`
 
-`robomotion run` / the local build step can **overwrite `main.designer.ts` with a flat auto-layout**
-(comments stacked at x=0, every node in one row). After running or building a flow you were
-hand-laying-out, restore the tuned designer (`git checkout -- '*/main.designer.ts'`) before
-committing. The flattening is cosmetic — runtime output is unaffected.
+`robomotion run` and `robomotion build` **write `main.designer.ts`** (and a `*.designer.ts`
+beside each subflow). They merge into what is there:
+
+- **Positions already saved are kept.** Only nodes new to the flow are placed, and the
+  positions of deleted nodes are dropped. Colors, icons, comment sizes and the camera stay.
+- **Where there are no positions yet** — no designer file, or one with empty `positions` —
+  they write a **fresh auto-layout** of the whole flow. It is a plain layered arrangement,
+  not the tuned layout this doc describes (comment boxes are not sized around their phases).
+- `robomotion build --relayout` throws the saved positions away and auto-lays-out everything.
+
+So after a run or build, `git diff main.designer.ts` before committing: keep it when it only
+placed new nodes, restore your tuned file (`git checkout -- main.designer.ts`) when it did
+not. Either way the layout is cosmetic — runtime output is unaffected.

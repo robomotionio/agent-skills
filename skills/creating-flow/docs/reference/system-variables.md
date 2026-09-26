@@ -11,7 +11,9 @@ Global system variables available in all flows via `global.get()`. Use these to 
 ```typescript
 // Step 1: Function node resolves system variable
 f.node('3f7b28', 'Core.Programming.Function', 'Setup Paths', {
-  func: `msg.excelPath = global.get('$Home$') + '/output.xlsx'; return msg;`
+  func: `msg.excelPath = global.get('$Home$') + '/output.xlsx';
+
+return msg;`
 })
 // Step 2: Next node reads from msg
   .then('d4e5f6', 'Core.Excel.Open', 'Open Excel', {
@@ -120,7 +122,23 @@ Use Function with `outputs: 2` and `global.get('$OS$')` to branch on `'windows'`
 
 ### Logging with Context
 
-Build a context object from `$FlowName$`, `$RobotName$`, `$RunType$`, `$MachineName$`, `$WorkspaceUsername$` and log with `console.log`.
+Build a line from `$FlowName$`, `$RobotName$`, `$RunType$`, `$MachineName$` in a Function, then write it with a `Core.Flow.Log` node. That line shows up in `robomotion run`'s stream (and `robomotion logs`) as a `log` event. `console.log` inside a Function does not: it goes to the robot's own output, which a CLI run never shows. To see a whole message, use a `Core.Programming.Debug` node instead (a `debug` event).
+
+```typescript
+f.node('5e81a0', 'Core.Programming.Function', 'Describe The Run', {
+  func: `
+var who = global.get('$RobotName$') + ' on ' + global.get('$MachineName$');
+msg.run_context = global.get('$FlowName$') + ' (' + global.get('$RunType$') + ') by ' + who;
+return msg;
+`
+})
+  .then('9c4d27', 'Core.Flow.Log', 'Log The Run', {
+    inText: Message('run_context'),
+    optLevel: 'info'
+  });
+```
+
+`Core.Flow.Log` and `Core.Programming.Debug` have no output port, so they end their branch. Hang them off a step that is not the last one before `Core.Flow.Stop` (see `../architecture.md`).
 
 ### Temp File Management
 
@@ -134,6 +152,6 @@ Use Function with `outputs: 2` and `global.get('$RunType$')` to branch on `'clou
 
 1. **Always use `$Home$` instead of hardcoded paths** - Makes flows portable across users and systems
 2. **Use `$TempDir$` for temporary files** - Ensures proper temp directory on all OS
-3. **Include `$PathSeparator$` for nested paths** - Or use `/` which works on all modern systems
-4. **Log `$RobotName$` and `$FlowName$` for debugging** - Helps identify issues in multi-robot setups
+3. **Join paths with a literal `'/'`** - It works on every OS the robot runs on. Never `$PathSeparator$` (see the warning above)
+4. **Log `$RobotName$` and `$FlowName$` for debugging** - With a `Core.Flow.Log` node, not `console.log` (which a CLI run never shows). Helps identify issues in multi-robot setups
 5. **Check `$RunType$` for cloud/local differences** - Some features behave differently in cloud runs

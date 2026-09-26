@@ -5,19 +5,21 @@ The builder SDK provides a fluent API for creating Robomotion flows in TypeScrip
 ## Basic Structure
 
 ```typescript
-import { flow, Message, Custom } from '@robomotion/sdk';
+import { flow, Message, Custom, JS, Global, Flow, Credential, AI } from '@robomotion/sdk';
 
-const myFlow = flow.create('main', 'Flow Name', (f) => {
+const myFlow = flow.create('<flow-id>', 'Flow Name', (f) => {
   // Define nodes and connections here
 });
 
 myFlow.start();  // REQUIRED - compiles and outputs JSON to stdout
 ```
 
+`<flow-id>` is the id the server gave the flow: `robomotion create flow` writes it into `main.ts` for you. Keep it; never replace it with a name like `'main'`.
+
 ### Library Projects
 
 ```typescript
-import { library, Message, Custom } from '@robomotion/sdk';
+import { library, Message, Custom, JS, Global, Flow, Credential, AI } from '@robomotion/sdk';
 
 library.create('FLOW_ID', 'Library Name', (f) => {
   // Uses Core.Flow.Begin/End instead of Inject/Stop
@@ -43,10 +45,14 @@ For simple sequential connections where one node leads to another:
 ```typescript
 f.node('7dbafc', 'Core.Trigger.Inject', 'Start', {})
   .then('a06926', 'Core.Programming.Function', 'Step 1', {
-    func: 'msg.step = 1; return msg;'
+    func: `msg.step = 1;
+
+return msg;`
   })
   .then('c3e8f1', 'Core.Programming.Function', 'Step 2', {
-    func: 'msg.step = 2; return msg;'
+    func: `msg.step = 2;
+
+return msg;`
   })
   .then('d4f9a2', 'Core.Flow.Stop', 'Stop', {});
 ```
@@ -71,7 +77,9 @@ f.node('7dbafc', 'Core.Trigger.Inject', 'Start', {})
 // GOOD - clean sequential chain
 f.node('b4f2e8', 'Core.Trigger.Inject', 'Start', {})
   .then('d91c3a', 'Core.Programming.Function', 'Process', {
-    func: `msg.data = 'hello'; return msg;`
+    func: `msg.data = 'hello';
+
+return msg;`
   })
   .then('e5a7b2', 'Core.FileSystem.WriteFile', 'Write', {
     inPath: Message('output_path'),
@@ -245,8 +253,8 @@ Without this, the saved flow has empty version strings and breaks the designer d
 
 ```typescript
 // MANDATORY — one call per external (non-Core) package, BEFORE any nodes
-f.addDependency('Robomotion.SQLite', 'v1.2.0');
-f.addDependency('Robomotion.WordPress', 'v2.0.0');
+f.addDependency('Robomotion.SQLite', '1.6.6');
+f.addDependency('Robomotion.GoogleGemini', '0.16.3');
 // ✗ NEVER:
 // f.addDependency('Core.Browser', 'v26.4.8');
 ```
@@ -354,7 +362,9 @@ Variables scoped to the current flow:
 
 ```typescript
 f.node('a6d2ae', 'Core.Programming.Function', 'Increment', {
-  func: `msg.counter = (flow.counter || 0) + 1; return msg;`
+  func: `msg.counter = (flow.counter || 0) + 1;
+
+return msg;`
 });
 ```
 
@@ -368,48 +378,47 @@ For AI-generated content:
 
 ## Import Statement
 
-Full imports when using all helpers:
+Every flow file starts with the full import line, even in a simple flow, and even when some helpers go unused (see `./reference/imports.md`):
 
 ```typescript
-import { flow, Credential, Custom, Message, Global, Flow, AI, JS } from '@robomotion/sdk';
+import { flow, Message, Custom, JS, Global, Flow, Credential, AI } from '@robomotion/sdk';
 ```
 
-Minimal import for simple flows:
-
-```typescript
-import { flow, Message, Custom } from '@robomotion/sdk';
-```
+A subflow file swaps `flow` for `subflow`, a library file for `library`. There is no shorter "minimal" import: a helper you leave out is a `ReferenceError` the day someone uses it.
 
 ## Complete Example
 
 ```typescript
-import { flow, Credential, Custom, Message } from '@robomotion/sdk';
+import { flow, Message, Custom, JS, Global, Flow, Credential, AI } from '@robomotion/sdk';
 
-const GEMINI_CREDS = {
-  vaultId: 'vault-123',
-  itemId: 'item-456'
-};
-
-const myFlow = flow.create('main', 'AI Blog Generator', (f) => {
-  // MANDATORY: declare external package dependencies with version
-  f.addDependency('Robomotion.GoogleGemini', 'v1.0.0');
+const myFlow = flow.create('<flow-id>', 'AI Blog Generator', (f) => {
+  // MANDATORY: declare external package dependencies with a published version
+  // (robomotion describe package Robomotion.GoogleGemini)
+  f.addDependency('Robomotion.GoogleGemini', '0.16.3');
 
   f.node('b7e3bf', 'Core.Trigger.Inject', 'Start', {})
     .then('c8f4c0', 'Core.Programming.Function', 'Build Prompt', {
-      func: `
-        msg.prompt = 'Write a blog post about automation';
-        return msg;
-      `
+      func: `msg.prompt = 'Write a blog post about automation';
+
+msg.path = global.get('$Home$') + '/blog-post.md';
+
+return msg;`
     })
-    .then('d9a5d1', 'Robomotion.GoogleGemini.GenerateText', 'Generate', {
-      inCredentials: Credential(GEMINI_CREDS),
-      inPrompt: Message('prompt'),
+    .then('d9a5d1', 'Robomotion.GoogleGemini.Content.GenerateText', 'Generate', {
+      optApiKey: Credential({ vaultId: 'vault-uuid', itemId: 'item-uuid' }),
+      inText: Message('prompt'),
       outText: Message('content')
+    })
+    .then('5a0e7c', 'Core.FileSystem.WriteFile', 'Save The Post', {
+      inPath: Message('path'),
+      inText: Message('content')
     })
     .then('fbc7f3', 'Core.Flow.Stop', 'Stop', {});
 
-  f.node('eab6e2', 'Core.Programming.Debug', 'Log Result', { optDebugData: Message('content') });
-  f.edge('d9a5d1', 0, 'eab6e2', 0);  // Debug is terminal — Stop wired separately above
+  // Debug is terminal: it hangs off Generate, one step BEFORE the Stop, never beside it -
+  // a leaf wired next to a Stop can be cut off when the Stop ends the flow.
+  f.node('eab6e2', 'Core.Programming.Debug', 'Show The Post', { optDebugData: Message('content') });
+  f.edge('d9a5d1', 0, 'eab6e2', 0);
 });
 
 myFlow.start();

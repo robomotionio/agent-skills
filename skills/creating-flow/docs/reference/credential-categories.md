@@ -4,11 +4,11 @@ Vault items have a category, which determines the field structure that `Core.Vau
 
 | Category | Type | Used By |
 |----------|------|---------|
-| 1 | LoginItem | WordPress, FTP, web logins, browser automation |
+| 1 | LoginItem | FTP, web logins, browser automation |
 | 2 | EmailItem | `Core.Mail.*` (IMAP/POP3 inbox + SMTP outbox) |
 | 3 | CreditCard | Payment flows (not commonly used in flows) |
 | 4 | APIKeyToken | Gemini, OpenAI, HTTP auth headers |
-| 5 | DatabaseItem | SQLite, MySQL, Postgres, MSSQL, Oracle |
+| 5 | DatabaseItem | MySQL, Postgres, MSSQL, Oracle (SQLite needs none) |
 | 6 | DocumentItem | Certificates, signed files |
 | 7 | AESKeyItem | AES symmetric keys |
 | 8 | RSAKeyPairItem | RSA key pairs |
@@ -23,8 +23,8 @@ Username/password authentication.
 | `password` | string | Password | REDACTED |
 
 ```typescript
-// Nodes with inCredentials (WordPress, FTP):
-inCredentials: Credential({ vaultId: '...', itemId: '...' })
+// Nodes with a login credential property (e.g. Core.FTP.Connect):
+optCredentials: Credential({ vaultId: '...', itemId: '...' })
 
 // Browser automation — use Core.Vault.GetItem first:
 .then('a1d24c', 'Core.Vault.GetItem', 'Get Credentials', {
@@ -59,9 +59,10 @@ API authentication (Gemini, OpenAI, HTTP).
 | `value` | string | API key or token | MASKED_MID |
 
 ```typescript
-// Runtime extracts the 'value' field automatically for inCredentials
-f.node('b2e35d', 'Robomotion.GoogleGemini.GenerateText', 'Generate', {
-  inCredentials: Credential({ vaultId: '...', itemId: '...' }),
+// The node reads the 'value' field itself from its API-key property
+f.node('b2e35d', 'Robomotion.GoogleGemini.Content.GenerateText', 'Generate', {
+  optApiKey: Credential({ vaultId: '...', itemId: '...' }),
+  inText: Custom('Write a blog post'),
 });
 ```
 

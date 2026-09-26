@@ -3,7 +3,9 @@ import { flow, Message, Custom, JS, Global, Flow, Credential, AI } from '@robomo
 flow.create('a1f005', 'Conditional Switch with Multiple Ports', (f) => {
   f.node('111111', 'Core.Trigger.Inject', 'Start', {})
     .then('222222', 'Core.Programming.Function', 'Build Status', {
-      func: `msg.status = 'pending'; return msg;`
+      func: `msg.status = 'pending';
+
+return msg;`
     })
     .then('333333', 'Core.Programming.Switch', 'Route By Status', {
       optConditions: [
@@ -14,13 +16,19 @@ flow.create('a1f005', 'Conditional Switch with Multiple Ports', (f) => {
     });
 
   f.node('444444', 'Core.Programming.Function', 'Handle Pending', {
-    func: `msg.note = 'pending'; return msg;`
+    func: `msg.note = 'pending';
+
+return msg;`
   });
   f.node('555555', 'Core.Programming.Function', 'Handle Active', {
-    func: `msg.note = 'active'; return msg;`
+    func: `msg.note = 'active';
+
+return msg;`
   });
   f.node('666666', 'Core.Programming.Function', 'Handle Done', {
-    func: `msg.note = 'done'; return msg;`
+    func: `msg.note = 'done';
+
+return msg;`
   });
   f.node('777777', 'Core.Flow.Stop', 'Stop', {});
 

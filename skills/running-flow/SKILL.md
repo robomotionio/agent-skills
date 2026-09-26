@@ -8,9 +8,9 @@ description: Validates locally (`robomotion validate`) then executes a Robomotio
 Run a flow on a robot, watch the agent-mode event stream, react to failures. Four moving parts:
 
 1. **Pre-flight** — `robomotion validate <flow-dir>` catches pspec/schema errors locally in <1s before you ever submit. Cheap; always do it first.
-2. **A robot** — the person's own, already running (Robomotion on their computer, or a robot they run elsewhere). `robomotion get robots` shows which are connected. You never start one.
+2. **A robot** — the person's own, connected on this computer (Robomotion's Desktop App, or `robomotion robot connect` when the person agrees). `robomotion get robots` shows which are connected.
 3. **Trigger** — `robomotion run <flow-dir> --robot <name>` builds locally, submits, and streams the event log.
-4. **Observation** — `run` tails the JSONL session log; `robomotion logs --last` reads it again. Events are bracketed by `{"event":"agent_mode","status":"start"}` … `{"event":"agent_mode","status":"end"}`.
+4. **Observation** — `run` tails the JSONL session log; `robomotion logs --last` reads it again. A run is done at its `flow_end` (or `flow_error`) event; an `agent_mode` start/end pair may bracket it, but do not wait for one.
 
 **A flow that starts at `Robomotion.ChatAssistant.ChatIn` is not run here.** Nothing would send it a message; it would wait until `--timeout`. Test it as an Agent in the real chat page with the `running-chat-assistant` skill (`robomotion agent`).
 
@@ -22,7 +22,7 @@ Run a flow on a robot, watch the agent-mode event stream, react to failures. Fou
 robomotion validate <flow-dir>           # exit 0 = pspec-clean, 1 = errors on stderr
 ```
 
-Catches every "wrong property name", "non-existent node type", "invalid port" before any robot-side work. The CLI rebuilds + validates without touching `*.designer.ts` or emitting JSON. **Don't skip it** — diagnosing a pspec error from a `node_error` event in the run log is much slower than reading the validate output.
+Catches every "wrong property name", "non-existent node type", "invalid port" before any robot-side work. The CLI rebuilds + validates without emitting JSON. **Don't skip it** — diagnosing a pspec error from a `node_error` event in the run log is much slower than reading the validate output.
 
 If validate fails: read stderr, fix `main.ts`, re-run validate. Loop until exit 0, then proceed.
 
@@ -30,15 +30,25 @@ If validate fails: read stderr, fix `main.ts`, re-run validate. Loop until exit 
 
 ## Step 2 — The robot is the person's
 
-A flow runs on a robot the person already has running: Robomotion on their computer, or a robot they keep elsewhere. You do not start, install or connect one.
+A flow runs on one of the person's own robots. `robomotion run` follows the run by reading the log the robot writes on its own machine, so the robot has to be connected **on this computer**. Usually the Desktop App already has it connected.
 
 ```bash
 robomotion get robots        # which robots exist, and which are connected right now
 ```
 
-The first time in a project, ask the person which robot, **once**, in one short question, unless they already said; then pass it as `--robot <name>`. The CLI remembers the choice in the project's `.robomotion/run.json`, so every later `robomotion run` in that folder needs no flag. When no robot is known and there is no terminal to ask in, `run` prints the robots and exits 3: that is your cue to ask, not to guess.
+The first time in a project, ask the person which robot, **once**, in one short question, unless they already said; then pass it as `--robot <name>`. The CLI remembers the choice in the project's `.robomotion/run.json`, so every later `robomotion run` in that folder needs no flag. When no robot is known and there is no terminal to ask in, `run` prints the robots and exits 3: that is your cue to ask, not to guess. (Exit 3 has a second meaning, below: the run went to a robot on another machine.)
 
 The robot writes its event log on its own machine (`~/.config/robomotion/agent/logs/sessions/<studio_id>.jsonl`); `robomotion run` follows it when the robot is on this computer.
+
+**When no robot of theirs is connected here** (the Desktop App is not running, or this is a server), ask the person once, then connect one here as them:
+
+```bash
+robomotion robot connect --robot "<name>"   # one of their Development/Production robots; remembered for this folder
+robomotion robot status                     # what `robot connect` has running here
+robomotion robot disconnect                 # when they are done
+```
+
+It connects the robot the way the Desktop App does, with their login; it never makes a new robot or a new token, and it refuses an agent's or an app's robot (those start with `robomotion agent start` / `robomotion app start`). Needs robomotion 26.9.8 or later.
 
 ## Step 3 — Trigger the run
 
@@ -65,13 +75,13 @@ The CLI accepts either a flow directory (resolves to `main.ts` inside) or a `.ts
 %LOCALAPPDATA%\Robomotion\agent\logs\sessions\<studio_id>.jsonl      (Windows)
 ```
 
-Events are compact one-line JSON, terminated by `agent_mode:end`. Example:
+Events are compact one-line JSON. The run is over at `flow_end` (or `flow_error`); the stream may stop right there, with no `agent_mode end` line after it. Example:
 
 ```
 {"event":"agent_mode","status":"start"}
-{"event":"flow_start","flow":"Imported Write To Clipboard","version":"local"}
+{"event":"flow_start","flow":"Imported Write To Clipboard","version":"local","origin":"agent"}
 {"event":"node_start","node":"Start"}
-{"event":"node_end","node":"Start","duration_ms":21}
+{"event":"node_end","node":"Start"}
 {"event":"node_start","node":"Get Clipboard Data"}
 {"event":"node_end","node":"Get Clipboard Data","duration_ms":4780}
 {"event":"flow_end","status":"success","duration_ms":8852}
@@ -85,7 +95,7 @@ Exit codes from `robomotion run`:
 | `0` | `flow_end status=success` |
 | `1` | `flow_end status=error` or `flow_error` |
 | `2` | Tail timeout (session still running) — raise `--timeout` or re-read the log file |
-| `3` | Session submitted but log file never appeared — robot is on a different machine so its log lives there. The run still proceeds on the robot; check the Flow Designer for progress. |
+| `3` | Either **no robot was chosen** (no `--robot`, none remembered, no terminal to ask in — the robots are listed; ask the person which one), or **the run was submitted but its log never appeared here** — the robot is on another machine, so its log lives there. In that second case the run still proceeds on the robot; check the Flow Designer for progress. Read the output to tell which. |
 
 Flags: `--no-follow` (fire-and-forget, no stream), `--log-wait <s>` (how long to wait for the file to appear, default 5), `--timeout <s>` (overall follow budget, default 300).
 
@@ -93,12 +103,12 @@ Flags: `--no-follow` (fire-and-forget, no stream), `--log-wait <s>` (how long to
 
 | Event | Fields | Meaning |
 |-------|--------|---------|
-| `agent_mode` | `status: "start" \| "end"` | Brackets the run. `end` is a safety-net terminal event. |
-| `flow_start` | `flow`, `version` | Flow started. |
-| `flow_end` | `status: "success" \| "error"`, `duration_ms`, `error?` | Flow finished — primary terminal event. |
-| `flow_error` | `error`, `node?`, `node_id?`, `duration_ms` | Unhandled flow-level error. |
+| `agent_mode` | `status: "start" \| "end"` | May bracket the run. Not always written, and `robomotion logs` does not show it — never wait for it. |
+| `flow_start` | `flow`, `version`, `origin` | Flow started. `version` is `local` for `robomotion run`; `origin` is who started it (`"agent"` for `robomotion run`). |
+| `flow_end` | `status: "success" \| "error"`, `duration_ms`, `error?` | Flow finished — the run is done. |
+| `flow_error` | `error`, `node?`, `node_id?`, `duration_ms` | Unhandled flow-level error — the run is done. |
 | `node_start` | `node` | Node entered. |
-| `node_end` | `node`, `duration_ms` | Node completed. |
+| `node_end` | `node`, `duration_ms?` | Node completed. `duration_ms` is absent on some nodes (the trigger's, for one); don't rely on it. |
 | `node_error` | `node`, `error`, `duration_ms` | Node threw — your signal to fix. |
 | `log` | `node?`, `level`, `msg` | `Core.Flow.Log` output. |
 | `debug` | `node`, `msg` | `Core.Programming.Debug` payload (truncated to 255 bytes per field). |
@@ -107,7 +117,7 @@ Flags: `--no-follow` (fire-and-forget, no stream), `--log-wait <s>` (how long to
 
 ### Re-reading after the run
 
-`robomotion run` consumes the log while streaming. The file persists afterwards; `robomotion logs` reads it back, filtered to the events above (the same set the Build view's `poll_logs` shows):
+`robomotion run` consumes the log while streaming. The file persists afterwards; `robomotion logs` reads it back, filtered to the events a person reads (`flow_start`, `node_*`, `log`, `debug`, `flow_error`, `flow_end` — no `agent_mode` lines). The first line is a `log: <path>` header naming the file it read:
 
 ```bash
 robomotion logs --last               # the newest run's events
@@ -122,14 +132,14 @@ Target autonomous iteration (bounded retries; stop on user request):
 
 1. **Validate locally**: `robomotion validate <flow-dir>` — must exit 0 before submitting. If non-zero, fix `main.ts` from the stderr report and repeat this step (do NOT submit a known-broken flow).
 2. **Submit**: `robomotion run <flow-dir> --robot <name>` (the flag only the first time) — capture the `Session` id.
-3. **Stream**: `run` tails the agent log automatically until `agent_mode:end`; `robomotion logs --last` reads it again.
+3. **Stream**: `run` tails the agent log automatically until `flow_end` / `flow_error`; `robomotion logs --last` reads it again.
 4. **Classify**:
    - `flow_end status=success` (CLI exit 0) → report, **offer to open what it produced** (below), and stop.
    - `node_error` or `flow_error` (CLI exit 1) → inspect `error` + `node`, fix `main.ts`, **back to step 1**. Max 3 retries without asking the person.
    - Timeout (CLI exit 2) → flow may still be running on the robot; report and ask.
-   - Log unreachable (CLI exit 3) → the robot is on another machine and its log is there; say so, and ask the person what the robot showed, or watch progress in the Flow Designer.
+   - CLI exit 3 → read the output. No robot chosen: the robots are listed; ask which one, then `--robot <name>`. Log unreachable: the robot is on another machine and its log is there; say so, and ask the person what the robot showed, or watch progress in the Flow Designer.
 5. Between retries, keep mock/test fixtures stable so a passing run actually proves the fix.
-6. **Save** when it passes: `git commit -am "..." && git push` in the flow folder. The Designer shows what was pushed.
+6. **Save** when a fix made it pass: `git add -A && git commit -m "..." && git push` in the flow folder (`commit -am` misses new files, such as a new `subflows/<id>.ts`). The Designer shows what was pushed. A run rewrites `main.designer.ts` (the canvas layout) — commit it together with `main.ts`. A run that passed with no change needs no save when the flow was already saved before it ran. When it was not — the person asked to build it, run it, and save it once it works — save now, after the green run: that save is the last step of the job.
 
 ### After a successful run: offer to open what it produced
 
@@ -164,6 +174,12 @@ Rules:
   the flow wrote it, so you do. Never guess a path or open a folder instead.
 - **Only in a conversation.** A run somebody is watching earns the offer; a
   scheduled or headless run has nobody there and must not open anything.
+- **When you cannot ask, show it instead.** Running non-interactively (a
+  one-shot `claude -p`, a CI job, no question tool) there is nobody to answer
+  the offer, so don't end on a question: show what the run produced in your
+  report — print a text or CSV file (`cat`, or `head -n 20` for a long one),
+  the rows of a spreadsheet you read back — and give its full path. Still
+  never open a window.
 - **A failure to open is not a failure of the run.** If the opener is missing or
   the desktop is not available (a server, an SSH session), say the run worked
   and give the full path. Never let it turn a green run red.
@@ -194,7 +210,21 @@ Rules:
 | `Flow validation failed` | pspec violation at build time | Fix errors (use `validating-flow` for a detailed report) and re-run. |
 | `No robot named "<x>"` / `No robot chosen` (exit 3) | Wrong name, or none given without a terminal | `robomotion get robots`, ask the person which one, `--robot <name>`. |
 | `No robots in this workspace` | No robots registered | Ask the person to create one in Robomotion and start it on their computer. |
-| Run submits but no `agent_mode:start` appears | Robot offline or in another workspace | `robomotion get robots`; ask the person to start their robot. |
+| Run submits but no `flow_start` appears | Robot offline or in another workspace | `robomotion get robots`; ask the person to start their robot, or (with their yes) `robomotion robot connect --robot "<name>"`. |
+| `Couldn't follow the flow here — no log appeared` (exit 3) | The robot is on another computer | The run still happened there. To follow runs here: `robomotion robot connect --robot "<name>"` on this computer. |
+
+## Developing a package against the flow
+
+When a fix belongs in a package the flow uses (its source is on this computer), run the package from its source tree instead of publishing it:
+
+```bash
+robomotion package dev <package source folder> [--version <the version main.ts depends on>]
+robomotion run                       # the robot now starts the package from source
+robomotion package off <package source folder>   # back to the installed build
+robomotion package status
+```
+
+A Python package runs from `<source>/.venv` (made on the first `dev`), so an edit is live on the next run; run `package dev` again after an edit if a flow keeps the package running. Other languages are rebuilt with the package's own build commands on each `package dev`. A package's full traceback is in the robot's output, not in the run's event stream. Run the package's own tests before calling a fix good. When it is released, bump `f.addDependency(...)` to the published version and `package off`. Needs robomotion 26.9.8 or later.
 
 ## Related Skills
 
