@@ -15,6 +15,7 @@ robomotion validate .                        # 1. pspec-clean first, always
 robomotion agent push                        # 2. this folder's flow → "<name> (dev)" in the workspace
 robomotion agent create --mode guided        # 3. the agent with one instance (or --mode conversational); publishes a version itself if there is none
 robomotion agent start                       # 4. connect the agent's own robot on this machine, then Play
+robomotion agent logs -n 20                  #    wait for "Started running <name> [...]" before chatting
 robomotion agent chat "…" --expect "…"       # 5. the real page, one step at a time, every reply printed
 ```
 
@@ -31,7 +32,7 @@ The agent's mode decides how the page asks. Pick it from the flow, or ask the pe
 | Mode | The page shows | The flow looks like |
 |---|---|---|
 | `guided` | Only what the flow draws: `Text`, then a question widget (`Textbox`, `ButtonGroup`, `Checkbox`, …) that holds the flow until it is answered. No message box. | `ChatIn → Text → Textbox → … → ChatOut`, questions in the order drawn. |
-| `conversational` | A message box. Every message is one `ChatIn → … → ChatOut` turn. | `ChatIn → LLM Agent → Text → ChatOut` (+ tools on the agent's tools port). Build it with `creating-flow`'s `docs/patterns/conversational-chat.md`. |
+| `conversational` | A message box. Every message is one `ChatIn → … → ChatOut` turn. | `ChatIn → Hermes Agent → ChatOut`, the answer either streamed (`Stream Chunk` on the agent's callbacks port, `End Stream → ChatOut` on its answer port, no `Text` node) or shown whole (`Text → ChatOut`), never both; tools on the agent's tools port. Build it with `creating-flow`'s `docs/patterns/conversational-chat.md`. |
 
 ## Step 1 - Push, create, start (once per folder)
 
@@ -45,6 +46,7 @@ robomotion agent start                # makes the robot a connect token, starts 
 - **The flow's own id is never touched.** A template or a flow with `flow.create('main', …)` gets a dev copy; so does any folder that is not a git checkout of its cloud flow. In a git checkout, `push` refuses: save with `git add -A && git commit -m "…" && git push` instead, then go on with `create` and `start` as above.
 - **`create` publishes for you.** If the flow has no version yet, `create` cuts one and publishes it before making the agent. Don't run `publish` first.
 - **The agent's robot is not the person's robot.** `create` makes an Application robot that belongs to the agent and runs nothing else; `start` connects it on this machine with its own token. It uses one Application-robot slot in the workspace. If `create` says there is no free slot, tell the person; don't delete their other agents.
+- **Wait for the robot before you chat.** `start` returns once the server has accepted the start; the robot still has to fetch the flow and start its packages. The flow is running when `robomotion agent logs` shows `Started running <name> [<version>]` (`[master]` after `--draft`). A message sent before that line can be lost, and `chat` then waits for an answer that never comes. The CLI is being changed so that `start` itself waits for that line; until your `robomotion` does, check `robomotion agent logs -n 20` first.
 - Everything is remembered in `.robomotion/agent.json` (0600: it holds the robot's token). Each flow folder has its own agent, robot and deskbot, so several agents can be developed side by side. `robomotion agent status` shows where things stand.
 
 ## Step 2 - Chat
@@ -56,8 +58,8 @@ robomotion agent start                # makes the robot a connect token, starts 
 | `"text"` | Conversational: sends it as a message. Guided: types it into the open text question and presses Enter. |
 | `--click "Label"` | Presses the button with that text in the open question (`ButtonGroup`; a single-choice one answers at once). |
 | `--check "Label"` | Ticks the box with that label (`Checkbox`). Ticking asks nothing yet. |
-| `--submit` | Presses the open question's ✓ (after ticks, or a multi-select `ButtonGroup`). |
-| `--expect "text"` | The text must be in what the step just before it produced, else exit 1. Case does not matter. Put each `--expect` right after the step it checks. |
+| `--submit` | Presses the open question's ✓ (after ticks, or a multi-select `ButtonGroup`). A `Checkbox` shows its ✓ only after a tick, so `--submit` there needs at least one `--check` before it. |
+| `--expect "text"` | The text must be in what the step just before it produced, else exit 1. A substring match that ignores case (the CLI is being changed to also count the dash and quote variants `– — ‘ ’ “ ”` as `-`, `'`, `"`). Put each `--expect` right after the step it checks; one before any other step checks the opening message. |
 
 It prints what the agent shows after each step, widgets as what they want:
 
@@ -79,6 +81,8 @@ Return RMA-0677 is open for order 48120677. …
 > [expect RMA-0677] shown
 ```
 
+Expect a word or two only the right reply would contain (an id, a name, `cannot find`), not a whole sentence: a reply that says the right thing in other words, or with a typographic apostrophe, fails a long `--expect`.
+
 Read `[type: …]`, `[click: a | b]` and `[tick: …]` as the next question and answer it with the matching step in the next `chat`. Each `chat` opens a **new** session, so a guided run is one `chat` with all its steps; a conversational run can be several messages in one `chat` (they share the conversation) or several `chat`s (each starts fresh).
 
 `--json` prints one JSON line per step (`{"step", "shown", "ms"}`). Exit 0 means every step got an answer and every `--expect` was shown. **Never say the assistant works without a printed reply that answers what was asked.**
@@ -96,6 +100,8 @@ Test the paths the flow draws, not just the happy one: a wrong answer that loops
 | `chat needs a session, not an API key` | Logged in with an API key. | `robomotion auth login`. |
 | `Package "agent" not found in the package index` | The CLI is older than 26.9.8 and has no `agent` command. | `robomotion version`; ask the person to update Robomotion. |
 
+A restart (`start --restart` / `--draft`, `stop`) ends every session that was waiting on a question. The robot log then shows `… package stopped unexpectedly` for those question widgets (`Textbox`, `Checkbox`, …). That is the restart, not a bug in the flow: read the log from the last `Started running` line on.
+
 The robot's full output (package tracebacks go there, not to the page) is `robomotion agent logs [-f] [-n N]`, the same file as `.robomotion/agent-robot.log`.
 
 A flow with no `Core.Trigger.Catch → Text → ChatOut` shows a failing turn as silence: the chat just stays locked. If the log shows an error the person's users would meet, add that Catch branch (see `conversational-chat.md` §2).
@@ -109,6 +115,7 @@ In a folder that is a git checkout of its cloud flow:
 robomotion validate .
 git add -A && git commit -m "what changed" && git push
 robomotion agent start --draft     # runs the flow you just pushed; no new version needed
+robomotion agent logs -n 20        # wait for "Started running <name> [master]"
 robomotion agent chat …
 ```
 
@@ -119,6 +126,7 @@ In any other folder:
 robomotion validate .
 robomotion agent push
 robomotion agent start --draft     # runs the flow as last pushed; no new version needed
+robomotion agent logs -n 20        # wait for "Started running <name> [master]"
 robomotion agent chat …
 ```
 
