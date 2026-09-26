@@ -167,20 +167,25 @@ Narrate progress with the task list, in the person's language ("Design the revie
    twice before they read anything about their app (2026-09-09, the
    earthquake app's first screen). Say nothing; the banner has it.
 
-   **And the sample answer goes the moment the robot is connected.** The
-   banner that explained it goes with the connection, so a sample result
-   left on a connected app reads as a real answer to a form nobody has
-   filled in. Gate the fallback on the connection, which `useConnection()`
-   reports (`robomotion app validate`'s `sample-gated` check fails a fallback that is
-   not):
+   **And the sample answer is only for an app that has never had a
+   backend.** That is one connection state, `"unconfigured"`, the only one
+   whose banner says the screens show sample data. In every other state the
+   app is real: connected with no answer yet, a stopped session, a published
+   app whose robot is off. Invented rows under "This app isn't running" read
+   as the app's own data, and a sample result on a connected app reads as a
+   real answer to a form nobody has filled in. Gate the fallback on that one
+   state, which `useConnection()` reports (`robomotion app validate`'s
+   `sample-gated` check fails a fallback that is not gated):
 
    ```tsx
    const { state } = useConnection();
-   const rows = search.data?.matches ?? (state === "ready" ? [] : SAMPLE_MATCHES);
+   const rows = search.data?.matches ?? (state === "unconfigured" ? SAMPLE_MATCHES : []);
    ```
 
-   Connected and no answer yet is the EMPTY state ("Type a topic and press
-   Search"), never the sample one.
+   Anything but `"unconfigured"` and no answer yet is the EMPTY state ("Type
+   a topic and press Search"), never the sample one. (The older
+   `state === "ready" ? [] : SAMPLE_MATCHES` passes the validator too, but
+   shows invented rows on a stopped or published app; don't write it.)
 3b. **Every view that waits on the robot renders THREE states, always: loading,
    empty, and failed.** Not two. The runtime times a call out after 30s and
    rejects the promise; if the screen has nowhere to put that rejection, the

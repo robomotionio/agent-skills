@@ -21,6 +21,11 @@ Two facts that page-walk was after, so nobody goes after them again:
 
 - `useConnection()` returns `{ state, robotOnline }`, and `state` is a plain
   **string union**, not an enum: `state === "ready"` is how you compare it.
+  `"unconfigured"` is the app that has never had a backend (the preview
+  before the first `robomotion app start`), and the one state in which a
+  screen shows its `SAMPLE_*` rows. Where a snippet below writes
+  `data ?? SAMPLE_X` for brevity, a screen writes
+  `data ?? (state === "unconfigured" ? SAMPLE_X : [])` (SKILL.md step 3a).
   The type is `ConnectionState`, exported from `@robomotion/apps-runtime` -
   but a screen almost never needs to name it.
 - The runtime's hooks come from `@robomotion/apps-runtime/react` (that exact
@@ -1242,7 +1247,7 @@ import {
 |---|---|---|
 | `use<Action>()` (generated) | `{ run, data, error, loading, progress, cancel, name }`, typed from the contract | every button that makes the robot do something; pass the whole object to `Button`'s `action`. Import it from `@/generated/actions.gen`, never write `useAction("name")` yourself |
 | `useEvent(name, cb)` | subscribes for the component's lifetime | toasts and refreshes when the robot announces something |
-| `useConnection()` | `{ state, robotOnline }` | anything that must react to `"connecting" \| "ready" \| "offline" \| "robot_offline" \| "contract_mismatch"` |
+| `useConnection()` | `{ state, robotOnline }` | anything that must react to `"connecting" \| "ready" \| "offline" \| "robot_offline" \| "app_not_running" \| "contract_mismatch" \| "unconfigured"` |
 | `useFileUpload()` | `{ upload, uploading, progress, error }` | getting a `FileRef` to pass into an action |
 | `useFileUrl(ref)` | `{ url, loading, error, refresh }` | a `FileRef` as a URL, for the rare custom surface. `Image` and the picture components already do this - never call it to feed them |
 | `useLive(action, { events, params?, pollMs? })` | `{ data, error, loading, refreshing, done, refresh, name }` | anything the robot is still changing: a run's counters, a queue. Asks the read action on open, again when one of `events` arrives (a burst is one question), by the clock when nothing is heard, and stops polling at `done: true` |
