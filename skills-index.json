@@ -32,6 +32,12 @@
       "runtime": "none"
     },
     {
+      "name": "running-chat-assistant",
+      "path": "skills/running-chat-assistant",
+      "version": "0.1.0",
+      "runtime": "none"
+    },
+    {
       "name": "running-flow",
       "path": "skills/running-flow",
       "version": "0.1.0",

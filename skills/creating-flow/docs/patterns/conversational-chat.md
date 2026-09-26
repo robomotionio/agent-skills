@@ -362,3 +362,6 @@ f.node('63b7c9', 'Robomotion.HermesAgent.Agent.HermesAgent', 'Agent', {
       `addDependency('Robomotion.HermesAgent', …)` with a published version
       (`robomotion describe package Robomotion.HermesAgent`).
 - [ ] Ran `robomotion validate` before saving (`git add -A && git commit && git push`).
+- [ ] When the person asks to try it: the `running-chat-assistant` skill (`robomotion agent push`,
+      `create`, `start`, `chat`) runs it as an Agent in the real chat page. `robomotion run` cannot:
+      nothing sends a Chat In flow a message.

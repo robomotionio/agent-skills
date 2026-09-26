@@ -1,0 +1,19 @@
+{
+  "name": "Running Chat Assistant",
+  "namespace": "Robomotion.Skill.RunningChatAssistant",
+  "version": "0.1.0",
+  "categories": [
+    "Artificial Intelligence"
+  ],
+  "description": "Runs and tests a Chat Assistant flow (trigger: Chat In) as an Agent in the real Chat Assistant page: `robomotion agent` push \u2192 create \u2192 start \u2192 chat, guided and conversational, with an edit \u2192 push \u2192 start --draft \u2192 chat loop. Use when the user says \"test the chatbot\", \"try the assistant\", \"open the chat\", \"talk to the agent\", or asks to run a flow that starts at Chat In.",
+  "icon": "icon.png",
+  "skill": {
+    "runtime": "none",
+    "command": "running-chat-assistant",
+    "platforms": [
+      "linux",
+      "darwin",
+      "windows"
+    ]
+  }
+}

@@ -197,6 +197,7 @@ For people editing this skill: an automated eval suite lives in the agent-skills
 - `validating-flow` — schema validation
 - `testing-flow` — behavioral tests
 - `running-flow` — execute on robot
+- `running-chat-assistant` — run and test a Chat Assistant flow (Chat In) as an Agent in the real chat page
 - `searching-packages` — find packages, nodes, templates
 - `exploring-browser` — interactive browser automation
 - `reversing-network` — convert a browser flow to HTTP after capturing traffic

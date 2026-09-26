@@ -6,7 +6,7 @@ Agent skills for building, testing, and running [Robomotion](https://www.robomot
 
 ## Available Skills
 
-Start with `creating-flow` if you're new — it bundles the full Robomotion 101 (SDK grammar, core principles, canonical examples, and all pattern docs). The other six skills are specialty wrappers that assume you either have `creating-flow` installed alongside or are already fluent in Robomotion.
+Start with `creating-flow` if you're new — it bundles the full Robomotion 101 (SDK grammar, core principles, canonical examples, and all pattern docs). The other skills are specialty wrappers that assume you either have `creating-flow` installed alongside or are already fluent in Robomotion.
 
 | Skill | Description |
 |-------|-------------|
@@ -14,6 +14,7 @@ Start with `creating-flow` if you're new — it bundles the full Robomotion 101 
 | [`validating-flow`](./skills/validating-flow/SKILL.md) | Run `robomotion validate` against pspec schemas; node-by-node error report. |
 | [`testing-flow`](./skills/testing-flow/SKILL.md) | Author and run behavioral tests with `@robomotion/sdk/testing` + `bun test`. |
 | [`running-flow`](./skills/running-flow/SKILL.md) | Execute a flow on a robot and stream agent-mode events with bounded retries. |
+| [`running-chat-assistant`](./skills/running-chat-assistant/SKILL.md) | Run and test a Chat Assistant flow as an Agent in the real chat page: `robomotion agent` push → create → start → chat, guided and conversational. |
 | [`searching-packages`](./skills/searching-packages/SKILL.md) | Find packages, nodes, templates, examples via the `robomotion` CLI (Bleve-backed fuzzy + semantic search). |
 | [`exploring-browser`](./skills/exploring-browser/SKILL.md) | Interactive browser exploration through `robomotion-browser-mcp`: snapshot, record actions, capture traffic. |
 | [`reversing-network`](./skills/reversing-network/SKILL.md) | Reverse-engineer a site's API from captured traffic and replace browser automation with HTTP. |
@@ -146,6 +147,8 @@ skills/
 │   ├── SKILL.md
 │   └── docs/patterns/browser.md
 ├── reversing-network/
+│   └── SKILL.md
+├── running-chat-assistant/
 │   └── SKILL.md
 ├── running-flow/
 │   └── SKILL.md

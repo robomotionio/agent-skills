@@ -12,6 +12,8 @@ Run a flow on a robot, watch the agent-mode event stream, react to failures. Fou
 3. **Trigger** — `robomotion run <flow-dir> --robot <name>` builds locally, submits, and streams the event log.
 4. **Observation** — `run` tails the JSONL session log; `robomotion logs --last` reads it again. A run is done at its `flow_end` (or `flow_error`) event; an `agent_mode` start/end pair may bracket it, but do not wait for one.
 
+**A flow that starts at `Robomotion.ChatAssistant.ChatIn` is not run here.** Nothing would send it a message; it would wait until `--timeout`. Test it as an Agent in the real chat page with the `running-chat-assistant` skill (`robomotion agent`).
+
 **No browser: the log is the only oracle for a flow.** A flow has no screens, so nothing shows you whether it worked but the robot's events. Read them; never say a run worked without a `flow_end status=success` in them.
 
 ## Step 1 — Validate (mandatory pre-flight)
@@ -221,5 +223,6 @@ A Python package runs from `<source>/.venv` (made on the first `dev`), so an edi
 ## Related Skills
 
 - `creating-flow` — generate the flow
+- `running-chat-assistant` — a flow that starts at Chat In: run and test it as an Agent in the chat page
 - `validating-flow` — schema check (local, no robot needed)
 - `testing-flow` — behavioral tests with mocks (no robot needed)
