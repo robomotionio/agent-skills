@@ -3,7 +3,8 @@
 How a **conversational** `Robomotion.ChatAssistant` flow actually behaves, and the three
 wirings you almost always need: the turn contract, streaming, and attachments.
 
-**Related:** `assistant-migration.md` (porting a legacy `Robomotion.Assistant` flow) ·
+**Related:** `guided-chat.md` (the other mode: questions the flow asks in order) ·
+`assistant-migration.md` (porting a legacy `Robomotion.Assistant` flow) ·
 `exceptions.md` (the Catch branch every conversational flow needs).
 
 ### The agent has three outputs — never `.then()` from it
@@ -171,7 +172,10 @@ Four rules:
    `pre_tool`, `post_tool`, `pre_llm`, `post_llm` and Tool Approve **do** wait, and still
    need their `Callback Out`.)
 
-Deltas arrive coalesced — a readable chunk, not one message per token.
+Deltas arrive coalesced — a readable chunk, not one message per token — **when the model
+streams them**. With `optUseRobomotionCredits: true` (HermesAgent 0.23.3) the answer can arrive
+as a single delta at the end of the turn, so the bubble fills at once. The wiring stays the
+same and still correct; just don't promise the person a reply that types itself out.
 
 ### Showing what the agent is doing
 
@@ -250,7 +254,7 @@ f.node('90e80e', 'Robomotion.ChatAssistant.ButtonGroup', 'Ask', {
 });
 f.node('b16150', 'Robomotion.HermesAgent.Callback.CallbackOut', 'Answer', {
   inCallerId: Message('caller_id'),
-  inResult:   Message('answer'),
+  inResult:   Message('answer.value'),   // outResult is { id, value }: hand Hermes the value
 });
 
 f.edge('63b7c9', 1, '37baa4', 0);   // port 1 = callbacks
@@ -314,22 +318,37 @@ A tool branch ends at `Tool Out`, never at `ChatOut` — it runs inside the turn
 ## 7. The model, AI credits, and the agent's own tools
 
 **AI credits.** `optUseRobomotionCredits: true` bills the model to the workspace's
-Robomotion AI credits — no API key, no vault item. Calls go through OpenRouter, so pick one
-of the `openrouter/...` entries of `optModelName` (for example
-`'openrouter/deepseek-v4.1-flash'`); the list is in
+Robomotion AI credits — no API key, no vault item. Calls go through OpenRouter, and **every
+curated `optModelName` works**: an `openrouter/...` entry (for example
+`'openrouter/deepseek-v4.1-flash'`), or a direct entry, which 0.23.3 sends as its OpenRouter
+id — so a Claude model is `'claude-haiku-4-5'` (sent as `anthropic/claude-haiku-4-5`) or
+`'openrouter/claude-haiku-4-5'`. The list is in
 `robomotion describe node Robomotion.HermesAgent.Agent.HermesAgent`. With credits on,
 `optProvider`, `optBaseUrl` and `optApiKey` are ignored. For `optModelName: 'custom'`, put
 an OpenRouter model id (`anthropic/...`, `google/...`) in `optModel`.
 
-**Tool search.** `optToolSearch` defaults to `'auto'`, which makes the agent look its
-tools up before it uses them — and that lookup can leak into the reply ("let me load the
-tools…"). With a handful of tools, set `optToolSearch: 'off'` so every tool is simply
-there. `'on'` is for an agent wired to a large catalog.
+**Tool search.** `optToolSearch` (`'auto'` by default, `'on'`, `'off'`) defers tools: the
+model finds them through a `tool_search` / `tool_describe` step instead of being sent every
+schema every turn. It matters for an MCP node that wires a large catalog. **Tools wired on the
+canvas — `Tool In`, `Delegate` — are never deferred**, whatever it is set to, so an agent whose
+tools are all `Tool In` branches sees every one of them directly. `'auto'` is currently an
+alias of `'on'` (the node's own description: pin `'on'` or `'off'` for behaviour that holds
+across upgrades). With no MCP catalog, `'off'` says what you mean.
 
-**Built-in toolsets.** `optEnabledToolsets` limits the agent's own plugins (terminal, file,
-todo, …) to the ones you name — `Custom('["file"]')`, or `Custom('[]')` for Hermes'
-defaults. A chat assistant that should only use the tools you wired does not need a
-terminal.
+**Built-in toolsets.** `optEnabledToolsets` is a JSON array of Hermes toolset ids — the cards
+on the node's Tools tab in the Designer: `terminal`, `file`, `web`, `browser`,
+`code_execution`, `memory`, `clarify`, `todo`, and more (`describe node` shows the property as
+a plain `object`, with no list). The node adds to the list before the agent starts:
+`robomotion` when tools are wired on port 0, `memory` when the Memory provider is on (the
+default, Built-in). The agent then gets **only** what the list holds. Left empty — the default
+`Custom('[]')` — with nothing added, it means Hermes' own default set, terminal and file tools
+among them.
+
+A chat that people outside the team open never gets `terminal`, `file`, `browser`,
+`code_execution` or `computer_use`: they act on the robot's own machine. Name a short, harmless
+list so no default can slip in: `Custom('["todo"]')` is the minimal choice (the agent keeps the
+tools you wired, plus memory while it is on); add `"clarify"` when a clarify callback branch is
+wired (§5), `"web"` when it should search the web.
 
 ```ts
 f.node('63b7c9', 'Robomotion.HermesAgent.Agent.HermesAgent', 'Agent', {
@@ -337,8 +356,8 @@ f.node('63b7c9', 'Robomotion.HermesAgent.Agent.HermesAgent', 'Agent', {
   inSessionId: Message('session_id'),
   optUseRobomotionCredits: true,
   optModelName:  'openrouter/deepseek-v4.1-flash',
-  optToolSearch: 'off',
-  optEnabledToolsets: Custom('["file"]'),
+  optToolSearch: 'off',                  // every tool here is a Tool In branch
+  optEnabledToolsets: Custom('["todo"]'), // nothing that touches the robot's machine
 });
 ```
 

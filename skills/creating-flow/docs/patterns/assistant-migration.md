@@ -26,7 +26,7 @@ This is the part that breaks naive migrations.
 | Exit point | **`Core.Application.Out`** ("App Out") — terminal (**0 outputs**); set its input var **`inOutput`** (default `Message('out')`) to the response payload sent back to the app. `Assistant.End` (End Conversation) publishes a "done" command. Both map to ChatOut. | **`Robomotion.ChatAssistant.ChatOut`** terminates the turn (terminal node — wire **TO** it, never `.then()` from it). |
 | Two modes | n/a (mode toggled at runtime via `Change Mode`). | Mode is set **on the Agent** (Admin Console), read by `ChatIn`: **`guided`** vs **`conversational`**. There is no mode node. |
 | AI | None built in — you scripted prompts/streaming manually. | Pair with an **LLM Agent** node (`Robomotion.ADK.Agent.LLMAgent` / `Robomotion.Agents.Agent.LLMAgent`) for conversational flows. |
-| Widget result | `outPayload` — a **map** keyed by the widget's ID (e.g. `payload.dropdown1`, `payload.textbox1`). | `outResult` — the **selected value directly** (string, or array for multi-select). No per-widget IDs. |
+| Widget result | `outPayload` — a **map** keyed by the widget's ID (e.g. `payload.dropdown1`, `payload.textbox1`). | `outResult` — **`{ id, value }`**, one object per widget; the answer is its `.value` (a string, or an array for multi-select). No per-widget IDs to set. |
 | Session plumbing | Manual. | `ChatIn` binds the message-context to the UI session automatically; **widgets need no session_id input** — they resolve it implicitly. |
 
 ### Which target mode?
@@ -80,7 +80,7 @@ For conversational flows also add an LLM Agent package (verify the live version)
 | `Assistant.End` (End Conversation) | **`ChatOut`** | terminal; wire TO it |
 | `Prompt` | **`ChatIn` payload** (conversational) or **`Textbox`** (guided) | see §5 |
 | `Text` | `Text` | markdown preserved |
-| `Header` | `Header` | `optAlignment` ➜ **gone**; new `inLevel` (h1–h6) |
+| `Header` | `Header` | `optAlignment` ➜ **gone**; new `optLevel` (h1–h6) |
 | `Divider` | `Divider` | `optWidth` ➜ `inThickness`; new `inBorder` style |
 | `Textbox` | `Textbox` | ID input dropped; result via `outResult` |
 | `Dropdown` | `Dropdown` | options model changed (§4) |
@@ -115,7 +115,7 @@ New widgets drop the ID and take a per-type array prop:
 | `Dropdown.optOptions` | `Dropdown.optDropdownArray` |
 | `Checkboxes.optOptions` | `Checkbox.optCheckboxArray` |
 | `RadioButtons.optOptions` | `RadioButton.optRadioButtonArray` |
-| `*.optCustomOptions` / `*.optCustomLabels` (designer) | same names, still designer-side custom arrays |
+| `*.optCustomOptions` / `*.optCustomLabels` (designer) | same names: the fixed list, items shaped `{ scope: 'Custom', name: { label: '…' } }` (`./guided-chat.md` §2) |
 
 These `opt*Array` props are **message/JS scope objects** — wrap them in `Message()` or `JS()`, never a
 raw array literal. Accepted item shapes (`utils.BuildOptions`):
@@ -128,12 +128,16 @@ raw array literal. Accepted item shapes (`utils.BuildOptions`):
 [{ id: "y", label: "Yes", value: "yes", variant: "default" }, …]
 ```
 
-**Recommended pattern** — build the array in a `Core.Programming.Function` node, then point the
-widget at it (mirrors how legacy flows fed `optOptions`):
+For options the flow **computes**, build the array in a `Core.Programming.Function` node, then
+point the widget at it (mirrors how legacy flows fed `optOptions`). For a **fixed** list, use the
+node's own `optCustomLabels` / `optCustomOptions` instead — no Function needed
+(`./guided-chat.md` §2).
 
 ```ts
 .then('c49e05', 'Core.Programming.Function', 'Options', {
-  func: `msg.options = ['Refund', 'Replace', 'Talk to agent']; return msg;`
+  func: `msg.options = ['Refund', 'Replace', 'Talk to agent'];
+
+return msg;`
 })
 .then('d4e5f6', 'Robomotion.ChatAssistant.Dropdown', 'Pick', {
   inLabel: Custom('How can we help?'),
@@ -152,15 +156,17 @@ var picked = msg.payload.dropdown1;          // value
 // checkboxes were a map of {label: bool}; an "OK" button key also appeared
 ```
 
-**New** stores the value directly in `outResult`:
+**New** puts the page's reply in `outResult`: an **object**, `{ id, value }`. The answer is its
+`.value`:
 
 ```js
-var picked = msg.choice;                      // single-select → the value string
-// multi-select (ButtonGroup multi / Checkbox) → array of values
+var picked = msg.choice.value;                // single-select → the value string
+var extras = msg.extras.value || [];          // multi-select (ButtonGroup multi / Checkbox) → array of values
 ```
 
-Audit every Function/condition node that read `msg.payload.<id>` and rewrite it to read the new
-`outResult` variable.
+`msg.choice` alone is the object: comparing it to a string is always false, and concatenating it
+prints `[object Object]`. Audit every Function/condition node that read `msg.payload.<id>` and
+rewrite it to read `msg.<outResult>.value`; in a scope helper it is `Message('choice.value')`.
 
 ---
 
@@ -197,7 +203,7 @@ The new equivalents are leaner. These legacy options have **no new home** — dr
 a Function / the widget label):
 - `DatePicker`: `optInitialDate`, `optFirstDate`, `optLastDate`, `optTitle` → gone (new has only
   `inLabel` / `inDescription`). Put any title text in `inLabel`.
-- `Header`: `optAlignment` → gone; instead set heading size via `inLevel` (1–6).
+- `Header`: `optAlignment` → gone; instead set heading size via `optLevel` (`'1'`–`'6'`, a plain string).
 - `Image`: `optAlignment`, `optSize` → gone; new `Image` adds `inAltText` and accepts a **local file
   path** in `inImageURL` (auto-uploaded).
 
@@ -230,8 +236,8 @@ contract, streaming and attachments.
 
 Property-typing rules from the SDK grammar still apply:
 - **Input-port props** (`in*`, and scoped `opt*` like `optMaxLength`, `optRows`, `inThickness`,
-  `inLevel`, `opt*Array`) → wrap in `Custom()` / `Message()` / `JS()`, **even numbers**.
-- **Enum / option props** (`inMultiSelect`, `inMode`, `inAuthMode`, `inBorder`, `optInputType`) →
+  `opt*Array`) → wrap in `Custom()` / `Message()` / `JS()`, **even numbers**.
+- **Enum / option props** (`inMultiSelect`, `inMode`, `inAuthMode`, `inBorder`, `optInputType`, `optLevel`) →
   plain string, e.g. `inMultiSelect: 'multi'`.
 - **Boolean option props** (`optPublic`, `optAutoplay`, `optLoop`, `optMuted`) → raw `true`/`false`.
 
@@ -240,14 +246,14 @@ Property-typing rules from the SDK grammar still apply:
 | `ChatIn` | — | — | `outSessionID`, `outPayload`, `outSession`, `outProfile` |
 | `ChatOut` | — | — | — |
 | `Text` | `inText` | — | — |
-| `Header` | `inText`, `inLevel` | — | — |
+| `Header` | `inText` | `optLevel` (`'1'`…`'6'`) | — |
 | `Divider` | `inThickness` | `inBorder` (`solid`\|`dashed`\|`dotted`\|`double`\|`groove`\|`ridge`\|`inset`\|`outset`\|`none`) | — |
-| `ButtonGroup` | `inLabel`, `inDescription`, `optButtonsArray` | `inMultiSelect` (`single`\|`multi`) | `outResult` |
-| `Dropdown` | `inLabel`, `inDescription`, `inPlaceholder`, `optDropdownArray` | — | `outResult` |
-| `Checkbox` | `inLabel`, `inDescription`, `optCheckboxArray` | — | `outResult` (array) |
-| `RadioButton` | `inLabel`, `inDescription`, `optRadioButtonArray` | — | `outResult` |
-| `Datepicker` | `inLabel`, `inDescription` | — | `outResult` |
-| `Textbox` | `inLabel`, `inDescription`, `inPlaceholder`, `optMaxLength`, `optRows` | `optInputType` (`text`\|`number`) | `outResult` |
+| `ButtonGroup` | `inLabel`, `inDescription`, `optButtonsArray` (or the fixed `optCustomLabels`) | `inMultiSelect` (`single`\|`multi`) | `outResult` (`.value`) |
+| `Dropdown` | `inLabel`, `inDescription`, `inPlaceholder`, `optDropdownArray` (or the fixed `optCustomOptions`) | — | `outResult` (`.value`) |
+| `Checkbox` | `inLabel`, `inDescription`, `optCheckboxArray` (or the fixed `optCustomOptions`) | — | `outResult` (`.value` is an array) |
+| `RadioButton` | `inLabel`, `inDescription`, `optRadioButtonArray` | — | `outResult` (`.value`) |
+| `Datepicker` | `inLabel`, `inDescription` | — | `outResult` (`.value`) |
+| `Textbox` | `inLabel`, `inDescription`, `inPlaceholder`, `optMaxLength`, `optRows` | `optInputType` (`text`\|`number`) | `outResult` (`.value`) |
 | `Image` | `inLabel`, `inDescription`, `inImageURL`, `inAltText` | — | — |
 | `Video` | `inLabel`, `inDescription`, `inVideoURL`, `inPoster` | `optPublic`,`optAutoplay`,`optLoop`,`optMuted` (bool) | `outPublicURL` |
 | `DownloadFile` | `inLabel`, `inDescription`, `inFilePath`, `optButtonText`, `optFileName` | `optPublic` (bool) | `outPublicURL` |
@@ -259,6 +265,7 @@ Property-typing rules from the SDK grammar still apply:
 | `Progress` | `inTitle`, `inDescription`, `inProgressID` | — | `outProgressID` (feed back into `inProgressID` to update) |
 
 Notes:
+- Every question widget's `outResult` is the page's reply object, `{ id, value }`: read `.value`.
 - `UploadFile.inLocalDirectory` is **required** and replaces legacy `File.inDir`. Output is
   `outFiles` (array of saved local paths), like legacy `outFiles`.
 - `DownloadFile.inFilePath` (required) replaces legacy `Download.inPath`. Set `optPublic: true` to
@@ -278,8 +285,7 @@ Notes:
    and `Theme` nodes.
 5. **Convert options**: `optOptions`/`optLabels` → the `opt*Array` prop, fed from a Function node
    (§4). Drop the `inXxxID` inputs.
-6. **Rewrite result reads**: every `msg.payload.<widgetId>` → the widget's new `outResult` variable
-   (§4).
+6. **Rewrite result reads**: every `msg.payload.<widgetId>` → `msg.<outResult>.value` (§4).
 7. **Handle `Prompt`** (§5) and **StreamingText** (§5).
 8. For conversational flows, insert the **LLM Agent** and a **Catch → Error** branch (clone
    `generic-chat-assistant`).
@@ -312,32 +318,46 @@ flow.create('…', 'Support Form', (f) => {
 }).start();
 ```
 
-**New** — guided mode, ChatIn → ChatOut, results via `outResult`:
+**New** — guided mode, ChatIn → ChatOut, results via `outResult.value`. The full guided pattern
+(fixed options, asking again, the error path) is `./guided-chat.md`.
 
 ```ts
 import { flow, Message, Custom, JS, Global, Flow, Credential, AI } from '@robomotion/sdk';
 flow.create('…', 'Support Form', (f) => {
-  f.addDependency('Robomotion.ChatAssistant', '1.8.3');
-  f.node('11aa11', 'Robomotion.ChatAssistant.ChatIn', 'Chat In', {})
-    .then('22bb22', 'Robomotion.ChatAssistant.Header', 'Title', { inText: Custom('Support'), inLevel: Custom('2') })
-    .then('33cc33', 'Core.Programming.Function', 'Opts', { func: `msg.options=['Refund','Replace']; return msg;` })
-    .then('44dd44', 'Robomotion.ChatAssistant.Dropdown', 'Pick', {
-      inLabel: Custom('How can we help?'), optDropdownArray: Message('options'), outResult: Message('choice')
+  f.addDependency('Robomotion.ChatAssistant', '1.9.1');
+  f.node('b7e41c', 'Robomotion.ChatAssistant.ChatIn', 'Chat In', {})
+    .then('3d90a6', 'Robomotion.ChatAssistant.Header', 'Title', { inText: Custom('Support'), optLevel: '2' })
+    .then('f15c28', 'Robomotion.ChatAssistant.Dropdown', 'Pick', {
+      inLabel: Custom('How can we help?'),
+      optCustomOptions: [
+        { scope: 'Custom', name: { label: 'Refund' } },
+        { scope: 'Custom', name: { label: 'Replace' } },
+      ],
+      outResult: Message('choice'),
     })
-    .then('55ee55', 'Robomotion.ChatAssistant.Textbox', 'Detail', {
+    .then('6a2e9d', 'Robomotion.ChatAssistant.Textbox', 'Detail', {
       inLabel: Custom('Tell us more'), optRows: Custom('4'), outResult: Message('detail')
     })
-    .then('66ff66', 'Core.Programming.Function', 'Confirm', {
-      func: `msg.text = 'Got it: ' + msg.choice + ' — ' + msg.detail; return msg;`
+    .then('c84b07', 'Core.Programming.Function', 'Confirm', {
+      func: `msg.text = 'Got it: ' + msg.choice.value + ' — ' + msg.detail.value;
+
+return msg;`
     })
-    .then('77aa77', 'Robomotion.ChatAssistant.Text', 'Echo', { inText: Message('text') })
-    .then('88bb88', 'Robomotion.ChatAssistant.ChatOut', 'Chat Out', {});
+    .then('2f7d13', 'Robomotion.ChatAssistant.Text', 'Echo', { inText: Message('text') })
+    .then('e96a50', 'Robomotion.ChatAssistant.ChatOut', 'Chat Out', {});
+
+  f.node('5c03fb', 'Core.Trigger.Catch', 'Catch', { optNodes: { type: 'catch', ids: [], all: true } })
+    .then('9b62e4', 'Robomotion.ChatAssistant.Error', 'Say What Went Wrong', {
+      inErrorLabel: Custom('Something went wrong'), inErrorMessage: Custom('Please try again.')
+    })
+    .then('0d8ac7', 'Robomotion.ChatAssistant.ChatOut', 'Chat Out (error)', {});
 }).start();
 ```
 
 Key diffs: `App In`→`ChatIn`; `App Out` / `End`→`ChatOut` (no more `msg.out` payload — wire to `ChatOut`);
-`optOptions`→`optDropdownArray`; dropped `inDropdownID`/`inTextboxID`; `msg.payload.dropdown1`→`msg.choice`
-(`outResult`); `Header` gains `inLevel`.
+the Function-fed `optOptions`→ the node's own `optCustomOptions` (a fixed list; `optDropdownArray` when it is
+computed); dropped `inDropdownID`/`inTextboxID`; `msg.payload.dropdown1`→`msg.choice.value` (`outResult`);
+`Header` gains `optLevel`; a `Catch → Error → ChatOut` branch so a failure hands the chat back.
 
 ---
 
@@ -347,9 +367,9 @@ Key diffs: `App In`→`ChatIn`; `App Out` / `End`→`ChatOut` (no more `msg.out`
 - [ ] Flow starts at `ChatIn` (not `App In` / `Inject`) and every branch ends at `ChatOut` (replacing `App Out` / `End`).
 - [ ] `ChangeMode` and `Theme` nodes deleted (no equivalent).
 - [ ] Options moved from `optOptions`/`optLabels` to `opt*Array`, wrapped in `Message()`/`JS()`.
-- [ ] All `msg.payload.<widgetId>` reads rewritten to the new `outResult` variables.
+- [ ] All `msg.payload.<widgetId>` reads rewritten to `msg.<outResult>.value` (`outResult` is `{ id, value }`).
 - [ ] Interactive widgets in a **conversational**-mode flow: fine from ChatAssistant 1.9.0; before that, pinned to a version that allows them or removed.
-- [ ] Numeric inputs wrapped in a scope helper (`inLevel: Custom('2')`, `optRows: Custom('4')`).
+- [ ] Numeric inputs wrapped in a scope helper (`optRows: Custom('4')`; an enum such as `optLevel: '2'` stays plain).
 - [ ] LLM Agent + Catch/Error branch present for conversational migrations.
 - [ ] `addDependency('Robomotion.ChatAssistant', …)` pinned to a real published version.
 - [ ] Ran `robomotion validate` (catches renamed-property errors) **before** saving (`git add -A && git commit && git push`).
