@@ -17,6 +17,8 @@ Two things decide whether this goes well: **how fast the person sees the first s
 
 **What you need:** the `robomotion` CLI on PATH (it brings `robomotion-sdk-mcp`, `robomotion-api-mcp` and `robomotion-browser-mcp` with it), `bun`, `git`, and a Robomotion login (`robomotion auth login`). Nothing else: no Designer, no other MCP server. Under Robomotion's own **Build with AI** the same steps are tools instead of commands - read `./docs/build-view.md` there and only there.
 
+**The loop below is robomotion 26.9.8 or later** - check `robomotion version` once. An older CLI still builds the app, but: `app screen` / `app try` read localhost instead of the preview link, `app start --restart` runs the last published build instead of your save once the app has been published, and `app publish` serves the screens without publishing the backend or printing the app's address. On an older CLI, ask the person to update Robomotion (robomotion.io/downloads) before you publish, and do not send them to the Designer to finish it.
+
 ## The contract is the spine
 
 `app.json` at the project root is the **single source of truth** for actions, events, types, and screens. The project is one folder - the flow's - and the screens live in `app/` inside it. Typegen ripples every change into both halves:
