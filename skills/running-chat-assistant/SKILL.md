@@ -58,8 +58,12 @@ robomotion agent start                # makes the robot a connect token, starts 
 | `"text"` | Conversational: sends it as a message. Guided: types it into the open text question and presses Enter. |
 | `--click "Label"` | Presses the button with that text in the open question (`ButtonGroup`; a single-choice one answers at once). |
 | `--check "Label"` | Ticks the box with that label (`Checkbox`). Ticking asks nothing yet. |
-| `--submit` | Presses the open question's ✓ (after ticks, or a multi-select `ButtonGroup`). A `Checkbox` shows its ✓ only after a tick, so `--submit` there needs at least one `--check` before it. |
+| `--select "Option"` | Picks a `RadioButton` option by its label, or an option from a `Dropdown`'s list. Then `--submit`. |
+| `--date YYYY-MM-DD` | Fills a `Datepicker` question. Then `--submit`. |
+| `--submit` | Presses the open question's ✓ (after ticks, `--select`, `--date`, or a multi-select `ButtonGroup`). A `Checkbox` shows its ✓ only after a tick, so `--submit` there needs at least one `--check` before it. |
 | `--expect "text"` | The text must be in what the step just before it produced, else exit 1. A substring match that ignores case (the CLI is being changed to also count the dash and quote variants `– — ‘ ’ “ ”` as `-`, `'`, `"`). Put each `--expect` right after the step it checks; one before any other step checks the opening message. |
+
+`--select` and `--date` come with the `robomotion` release after 26.9.8; 26.9.8 itself answers only text, buttons and boxes (`robomotion agent --help` lists the steps yours has).
 
 It prints what the agent shows after each step, widgets as what they want:
 
@@ -83,7 +87,7 @@ Return RMA-0677 is open for order 48120677. …
 
 Expect a word or two only the right reply would contain (an id, a name, `cannot find`), not a whole sentence: a reply that says the right thing in other words, or with a typographic apostrophe, fails a long `--expect`.
 
-Read `[type: …]`, `[click: a | b]` and `[tick: …]` as the next question and answer it with the matching step in the next `chat`. Each `chat` opens a **new** session, so a guided run is one `chat` with all its steps; a conversational run can be several messages in one `chat` (they share the conversation) or several `chat`s (each starts fresh).
+Read `[type: …]`, `[click: a | b]`, `[tick: …, then submit]`, `[select: Small | Large, then submit]` (radio options), `[select from the list (<placeholder>), then submit]` (a dropdown) and `[date: --date YYYY-MM-DD, then submit]` as the next question and answer it with the matching step in the next `chat`. Each `chat` opens a **new** session, so a guided run is one `chat` with all its steps; a conversational run can be several messages in one `chat` (they share the conversation) or several `chat`s (each starts fresh).
 
 `--json` prints one JSON line per step (`{"step", "shown", "ms"}`). Exit 0 means every step got an answer and every `--expect` was shown. **Never say the assistant works without a printed reply that answers what was asked.**
 
