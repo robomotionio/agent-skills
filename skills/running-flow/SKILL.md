@@ -8,7 +8,7 @@ description: Validates locally (`robomotion validate`) then executes a Robomotio
 Run a flow on a robot, watch the agent-mode event stream, react to failures. Four moving parts:
 
 1. **Pre-flight** — `robomotion validate <flow-dir>` catches pspec/schema errors locally in <1s before you ever submit. Cheap; always do it first.
-2. **A robot** — the person's own, already running (Robomotion on their computer, or a robot they run elsewhere). `robomotion get robots` shows which are connected. You never start one.
+2. **A robot** — the person's own, connected on this computer (Robomotion's Desktop App, or `robomotion robot connect` when the person agrees). `robomotion get robots` shows which are connected.
 3. **Trigger** — `robomotion run <flow-dir> --robot <name>` builds locally, submits, and streams the event log.
 4. **Observation** — `run` tails the JSONL session log; `robomotion logs --last` reads it again. A run is done at its `flow_end` (or `flow_error`) event; an `agent_mode` start/end pair may bracket it, but do not wait for one.
 
@@ -28,7 +28,7 @@ If validate fails: read stderr, fix `main.ts`, re-run validate. Loop until exit 
 
 ## Step 2 — The robot is the person's
 
-A flow runs on a robot the person already has running: Robomotion on their computer, or a robot they keep elsewhere. You do not start, install or connect one.
+A flow runs on one of the person's own robots. `robomotion run` follows the run by reading the log the robot writes on its own machine, so the robot has to be connected **on this computer**. Usually the Desktop App already has it connected.
 
 ```bash
 robomotion get robots        # which robots exist, and which are connected right now
@@ -37,6 +37,16 @@ robomotion get robots        # which robots exist, and which are connected right
 The first time in a project, ask the person which robot, **once**, in one short question, unless they already said; then pass it as `--robot <name>`. The CLI remembers the choice in the project's `.robomotion/run.json`, so every later `robomotion run` in that folder needs no flag. When no robot is known and there is no terminal to ask in, `run` prints the robots and exits 3: that is your cue to ask, not to guess. (Exit 3 has a second meaning, below: the run went to a robot on another machine.)
 
 The robot writes its event log on its own machine (`~/.config/robomotion/agent/logs/sessions/<studio_id>.jsonl`); `robomotion run` follows it when the robot is on this computer.
+
+**When no robot of theirs is connected here** (the Desktop App is not running, or this is a server), ask the person once, then connect one here as them:
+
+```bash
+robomotion robot connect --robot "<name>"   # one of their Development/Production robots; remembered for this folder
+robomotion robot status                     # what `robot connect` has running here
+robomotion robot disconnect                 # when they are done
+```
+
+It connects the robot the way the Desktop App does, with their login; it never makes a new robot or a new token, and it refuses an agent's or an app's robot (those start with `robomotion agent start` / `robomotion app start`). Needs robomotion 26.9.8 or later.
 
 ## Step 3 — Trigger the run
 
@@ -192,7 +202,21 @@ Rules:
 | `Flow validation failed` | pspec violation at build time | Fix errors (use `validating-flow` for a detailed report) and re-run. |
 | `No robot named "<x>"` / `No robot chosen` (exit 3) | Wrong name, or none given without a terminal | `robomotion get robots`, ask the person which one, `--robot <name>`. |
 | `No robots in this workspace` | No robots registered | Ask the person to create one in Robomotion and start it on their computer. |
-| Run submits but no `flow_start` appears | Robot offline or in another workspace | `robomotion get robots`; ask the person to start their robot. |
+| Run submits but no `flow_start` appears | Robot offline or in another workspace | `robomotion get robots`; ask the person to start their robot, or (with their yes) `robomotion robot connect --robot "<name>"`. |
+| `Couldn't follow the flow here — no log appeared` (exit 3) | The robot is on another computer | The run still happened there. To follow runs here: `robomotion robot connect --robot "<name>"` on this computer. |
+
+## Developing a package against the flow
+
+When a fix belongs in a package the flow uses (its source is on this computer), run the package from its source tree instead of publishing it:
+
+```bash
+robomotion package dev <package source folder> [--version <the version main.ts depends on>]
+robomotion run                       # the robot now starts the package from source
+robomotion package off <package source folder>   # back to the installed build
+robomotion package status
+```
+
+A Python package runs from `<source>/.venv` (made on the first `dev`), so an edit is live on the next run; run `package dev` again after an edit if a flow keeps the package running. Other languages are rebuilt with the package's own build commands on each `package dev`. A package's full traceback is in the robot's output, not in the run's event stream. Run the package's own tests before calling a fix good. When it is released, bump `f.addDependency(...)` to the published version and `package off`. Needs robomotion 26.9.8 or later.
 
 ## Related Skills
 
