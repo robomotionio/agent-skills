@@ -59,7 +59,7 @@ contract, the part an agent reads before it touches a tool.
   should reach for it.
 - **Every tool says `read_only`, true or false.** `true` means the action only reads and
   changes nothing; `false` means it changes something. It is required on every tool,
-  including one with `enabled: false`: `validate_app` fails a tool without it, and fails
+  including one with `enabled: false`: `robomotion app validate` fails a tool without it, and fails
   a generated hook that no longer matches it. Run `robomotion app codegen` again after
   writing or changing it.
 - **Hints are honest.** `read_only` for pure reads, `destructive` for anything that
@@ -71,10 +71,10 @@ contract, the part an agent reads before it touches a tool.
   it. An action marked `read_only` that changes anything is run again after every write
   on its screen, so the mark is for pure reads only.
 - **`enabled: false`** keeps an action off both the MCP server and the assistant. Use it
-  for admin or bulk actions a person should click deliberately. The harness's smoke pass
-  (`smoke_app`, step 6b) presses through this same door, so a tool that is off here is
-  not pressed either - it shows in the report as `not_exposed`, and only a person can
-  prove it.
+  for admin or bulk actions a person should click deliberately. `robomotion app smoke`
+  (step 6b) and `robomotion app press` go through this same door, so a tool that is off
+  here is not pressed either - it shows in the smoke report as `not_exposed`, and only a
+  press on its screen proves it (`robomotion app try`, step 7).
 - **`assistant.public`** is off by default. Anonymous visitors of a public app get the
   assistant only if you turn it on, because every message runs the app's actions and
   costs the owner model credits.

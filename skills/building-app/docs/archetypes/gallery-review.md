@@ -13,7 +13,7 @@ PICTURES are the work, and a PERSON looks at them: "the robot collects the site 
   - **Before and after**: when the picture has a previous version, an `ImageCompare` of the two with what was asked last time under it (`MarkList readOnly`).
   - **The marks go to the robot twice.** As data (`marks`, every coordinate a fraction of the picture), and burned into a copy for whoever redoes the picture: `markup.current.exportAnnotated()` → `useFileUpload().upload(new File([blob], ...))` → `annotatedFile: FileRef` in the call. Call `markGesture` on the composer's wrapper right before `run` - the upload took a while, and the call still belongs to the box the person pressed Send in.
 
-Sample pictures: a few drawn locally as SVG data URLs in `lib/mock.ts` (no network, never an image model), shown only while no robot is connected (`useConnection()`), with `sampleSrc(file)` giving the drawn picture for a sample file and `undefined` for every file the robot saved, which `Image` resolves itself. Presses always go to the robot: nothing on these screens pretends a picture was approved.
+Sample pictures: a few drawn locally as SVG data URLs in `lib/mock.ts` (no network, never an image model), shown only while the app has never had a backend (`useConnection()`'s `state === "unconfigured"`), with `sampleSrc(file)` giving the drawn picture for a sample file and `undefined` for every file the robot saved, which `Image` resolves itself. Presses always go to the robot: nothing on these screens pretends a picture was approved.
 
 ## Backend shape
 
