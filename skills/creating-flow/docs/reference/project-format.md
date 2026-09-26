@@ -6,12 +6,12 @@ to open, change and save it:
 - **The CLI / Claude Code** runs `main.ts` and `subflows/*.ts` with Bun
   (`robomotion build`, `robomotion run`, the robot). To Bun the file is a
   program: imports, helpers, loops, anything TypeScript allows.
-- **The Flow Designer** never runs the file. It **reads** it with the
-  TypeScript compiler API, statically, one file at a time
-  (`robomotion-new-designer/src/ts-format/loader.ts`), draws the nodes it
-  found, and on every save **regenerates the whole file from the canvas**
-  (`saver.ts`). Whatever the reader did not understand is not on the canvas,
-  and the next Designer save writes the file without it - for good, in git.
+- **The Flow Designer** never runs the file. It **reads** it the way a
+  person reads source code: statically, one file at a time, without running
+  anything or following an import. It draws the nodes it found, and on every
+  save it **regenerates the whole file from the canvas**. Whatever it did not
+  understand is not on the canvas, and the next Designer save writes the file
+  without it - for good, in git.
 
 So a flow file is **a declaration, not a program**. The person who opens your
 flow in the Designer must see every node with every value, and a save from
@@ -43,7 +43,7 @@ the file that is not in a node.
 ## How the two sides hand over
 
 - **Claude Code → Designer:** `robomotion validate` (which runs this check),
-  then `git commit && git push`. The Designer loads the pushed files; the
+  then `git add -A && git commit && git push`. The Designer loads the pushed files; the
   person sees the same nodes the robot runs.
 - **Designer → Claude Code:** the person saves; the server commits the
   regenerated files. `git pull` before editing; expect the file to look

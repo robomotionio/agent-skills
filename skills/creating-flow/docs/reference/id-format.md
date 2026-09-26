@@ -18,7 +18,7 @@ For every `Core.Flow.SubFlow` node in `main.ts`, a file `subflows/<id>.ts` must 
 f.node('a3f21c', 'Core.Flow.SubFlow', 'My SubFlow', {})  // node ID
 
 // subflows/a3f21c.ts        ← filename = node ID, exactly
-import { subflow } from '@robomotion/sdk';
+import { subflow, Message, Custom, JS, Global, Flow, Credential, AI } from '@robomotion/sdk';
 subflow.create('My SubFlow', (f) => { /* ... */ });
 ```
 

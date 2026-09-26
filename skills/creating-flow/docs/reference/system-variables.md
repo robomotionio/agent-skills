@@ -11,7 +11,9 @@ Global system variables available in all flows via `global.get()`. Use these to 
 ```typescript
 // Step 1: Function node resolves system variable
 f.node('3f7b28', 'Core.Programming.Function', 'Setup Paths', {
-  func: `msg.excelPath = global.get('$Home$') + '/output.xlsx'; return msg;`
+  func: `msg.excelPath = global.get('$Home$') + '/output.xlsx';
+
+return msg;`
 })
 // Step 2: Next node reads from msg
   .then('d4e5f6', 'Core.Excel.Open', 'Open Excel', {
@@ -134,6 +136,6 @@ Use Function with `outputs: 2` and `global.get('$RunType$')` to branch on `'clou
 
 1. **Always use `$Home$` instead of hardcoded paths** - Makes flows portable across users and systems
 2. **Use `$TempDir$` for temporary files** - Ensures proper temp directory on all OS
-3. **Include `$PathSeparator$` for nested paths** - Or use `/` which works on all modern systems
+3. **Join paths with a literal `'/'`** - It works on every OS the robot runs on. Never `$PathSeparator$` (see the warning above)
 4. **Log `$RobotName$` and `$FlowName$` for debugging** - Helps identify issues in multi-robot setups
 5. **Check `$RunType$` for cloud/local differences** - Some features behave differently in cloud runs

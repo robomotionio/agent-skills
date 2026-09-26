@@ -37,7 +37,7 @@ There are two types of subflows in Robomotion:
 
 ```typescript
 // Library project main.ts
-import { library, Message } from '@robomotion/sdk';
+import { library, Message, Custom, JS, Global, Flow, Credential, AI } from '@robomotion/sdk';
 
 library.create('FLOW_ID', 'My Library', (f) => {
   f.node('e4f5c6', 'Core.Flow.Begin', 'Begin', {})
@@ -157,7 +157,7 @@ The simplest pattern: one Begin, one End.
 
 ```typescript
 // subflows/7dbafc.ts - Login SubFlow (ID inferred from filename)
-import { subflow, Message, Custom } from '@robomotion/sdk';
+import { subflow, Message, Custom, JS, Global, Flow, Credential, AI } from '@robomotion/sdk';
 
 subflow.create('Login SubFlow', (f) => {
   // Begin node - entry point (REQUIRED)
@@ -202,7 +202,7 @@ subflow.create('Login SubFlow', (f) => {
 
 ```typescript
 // main.ts - Main flow that uses the Login subflow
-import { flow, Message, Custom, Credential } from '@robomotion/sdk';
+import { flow, Message, Custom, JS, Global, Flow, Credential, AI } from '@robomotion/sdk';
 
 const CREDS = { vaultId: 'xxx', itemId: 'yyy' };
 
@@ -250,7 +250,7 @@ SubFlows can have multiple outputs for different outcomes (success/failure, diff
 
 ```typescript
 // subflows/c4e5a2.ts - Bank File Check SubFlow
-import { subflow, Message } from '@robomotion/sdk';
+import { subflow, Message, Custom, JS, Global, Flow, Credential, AI } from '@robomotion/sdk';
 
 subflow.create('Bank File Check', (f) => {
   // Begin - entry point
@@ -262,6 +262,7 @@ subflow.create('Bank File Check', (f) => {
       outResult: Message('result')
     })
     .then('9a5c2d', 'Core.Programming.Function', 'Check Count', {
+      outputs: 2,
       func: `if (msg.result.rows[0].counter == 0) {
   return [msg, null];  // Port 0: no records
 }
@@ -286,9 +287,9 @@ return [null, msg];    // Port 1: has records`
 
 ```typescript
 // main.ts - Main flow with multi-output subflow
-import { flow, Message, Custom } from '@robomotion/sdk';
+import { flow, Message, Custom, JS, Global, Flow, Credential, AI } from '@robomotion/sdk';
 
-flow.create('main', 'Process Bank Data', (f) => {
+flow.create('<flow-id>', 'Process Bank Data', (f) => {
   f.node('de9061', 'Core.Trigger.Inject', 'Start', {})
     .then('ef0172', 'Robomotion.SQLite.Open', 'Open DB', {
       inPath: Message('db_path'),

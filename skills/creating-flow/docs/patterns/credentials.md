@@ -121,9 +121,9 @@ Pick one per node. See the summary table at the end for which to use when.
 Use the helper for any credential property (`inCredentials`, `optCredentials`). It wraps `{vaultId, itemId}` into the scope object the runtime expects.
 
 ```typescript
-import { flow, Credential, Custom, Message } from '@robomotion/sdk';
+import { flow, Message, Custom, JS, Global, Flow, Credential, AI } from '@robomotion/sdk';
 
-flow.create('main', 'Secure Flow', (f) => {
+flow.create('<flow-id>', 'Secure Flow', (f) => {
   f.node('5c2d91', 'Core.Mail.Connect', 'Connect to Email', {
     optCredentials: Credential({
       vaultId: 'e6343c49-e40f-4c18-8e8a-5cd4077b747e',
@@ -160,11 +160,11 @@ Use when a node doesn't have `inCredentials` and you need raw fields (e.g. typin
 **`optCredentials` is REQUIRED.** Omitting it fails at runtime with "Vault has to be selected".
 
 ```typescript
-import { flow, Custom, Message, Credential } from '@robomotion/sdk';
+import { flow, Message, Custom, JS, Global, Flow, Credential, AI } from '@robomotion/sdk';
 
 const LOGIN_CREDENTIALS = { vaultId: 'vault-uuid', itemId: 'item-uuid' };
 
-flow.create('main', 'Login Flow', (f) => {
+flow.create('<flow-id>', 'Login Flow', (f) => {
   f.node('7e4f73', 'Core.Trigger.Inject', 'Start', {})
     .then('8f5a64', 'Core.Vault.GetItem', 'Get Credentials', {
       optCredentials: Credential(LOGIN_CREDENTIALS),
@@ -205,12 +205,12 @@ f.node('bc8d37', 'Core.Programming.Function', 'Pick Credentials', {
 For multiple nodes sharing a credential, define constants at the top of the file:
 
 ```typescript
-import { flow, Credential, Custom, Message } from '@robomotion/sdk';
+import { flow, Message, Custom, JS, Global, Flow, Credential, AI } from '@robomotion/sdk';
 
 const GEMINI_CREDENTIALS    = { vaultId: 'vault-abc123', itemId: 'item-xyz789' };
 const WORDPRESS_CREDENTIALS = { vaultId: 'vault-def456', itemId: 'item-uvw012' };
 
-flow.create('main', 'Blog Generator', (f) => {
+flow.create('<flow-id>', 'Blog Generator', (f) => {
   f.node('deaf19', 'Robomotion.GoogleGemini.GenerateText', 'Generate Content', {
     inCredentials: Credential(GEMINI_CREDENTIALS),
     inPrompt: Custom('Write about automation'),

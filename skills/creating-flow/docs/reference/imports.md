@@ -12,7 +12,7 @@ Library files swap `flow` for `library`; subflow files swap it for `subflow`. Ev
 
 | Helper | Use for | Example |
 |---|---|---|
-| `flow` / `library` / `subflow` | Top-level builder. `flow.create('main', name, fn).start()` for flows, `library.create(id, name, fn)` for libraries (no `.start()`), `subflow.create(name, fn)` inside `subflows/<id>.ts`. | `flow.create('main', 'My Flow', (f) => { ... }).start();` |
+| `flow` / `library` / `subflow` | Top-level builder. `flow.create('<flow-id>', name, fn).start()` for flows, `library.create(id, name, fn)` for libraries (no `.start()`), `subflow.create(name, fn)` inside `subflows/<id>.ts`. | `flow.create('<flow-id>', 'My Flow', (f) => { ... }).start();` |
 | `Message(name)` | Read/write a variable from the message payload (`msg.<name>`). The dominant scope helper — use for any per-flow value (URLs, results, IDs). | `inUrl: Message('url')` |
 | `Custom(value)` | Hardcoded literal value in a property slot that expects a scoped value. NEVER use for enum properties or numeric common props (those are plain strings/numbers). | `optUrl: Custom('https://example.com')` |
 | `JS(expr)` | One-liner JavaScript expression evaluated by the runtime when the property is read. Distinct from a Function node's `func` (which is a literal string, NOT `JS()`). | `optCondition: JS('msg.x > 10')` |

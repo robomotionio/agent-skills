@@ -284,7 +284,7 @@ Notes:
 8. For conversational flows, insert the **LLM Agent** and a **Catch → Error** branch (clone
    `generic-chat-assistant`).
 9. Fresh **6-hex node IDs** for any node you add. Every branch ends at a `ChatOut`.
-10. **Validate** (`validate_flow`) before save — it catches the renamed-property class of bug.
+10. **Validate** (`robomotion validate`) before save — it catches the renamed-property class of bug.
 
 ---
 
@@ -293,7 +293,7 @@ Notes:
 **Legacy** — collect a choice and some text, then finish:
 
 ```ts
-import { flow, Message, Custom } from '@robomotion/sdk';
+import { flow, Message, Custom, JS, Global, Flow, Credential, AI } from '@robomotion/sdk';
 flow.create('…', 'Support Form', (f) => {
   f.addDependency('Robomotion.Assistant', '0.4.3');
   f.node('11aa11', 'Core.Application.In', 'App In', {})   // 0 inputs; launch payload at msg.in.payload
@@ -352,5 +352,5 @@ Key diffs: `App In`→`ChatIn`; `App Out` / `End`→`ChatOut` (no more `msg.out`
 - [ ] Numeric inputs wrapped in a scope helper (`inLevel: Custom('2')`, `optRows: Custom('4')`).
 - [ ] LLM Agent + Catch/Error branch present for conversational migrations.
 - [ ] `addDependency('Robomotion.ChatAssistant', …)` pinned to a real published version.
-- [ ] Ran `validate_flow` (catches renamed-property errors) **before** `save_flow`.
+- [ ] Ran `robomotion validate` (catches renamed-property errors) **before** saving (`git add -A && git commit && git push`).
 ```
