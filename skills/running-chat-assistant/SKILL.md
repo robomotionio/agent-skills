@@ -20,6 +20,8 @@ robomotion agent chat "…" --expect "…"       # 5. the real page, one step at
 
 **What you need:** the `robomotion` CLI on PATH. It brings `robomotion-deskbot` (the robot) and `robomotion-browser-mcp` (the browser) with it. Plus a login made with `robomotion auth login` in the flow folder (a session, not an API key: the chat page signs in with it). Nothing else: no Designer, no Admin Console, no Desktop App, no Playwright, no curl.
 
+**`robomotion agent` needs robomotion 26.9.8 or later.** Check with `robomotion version` first. On an older CLI the command does not exist (it answers `Package "agent" not found in the package index`): tell the person to update Robomotion (robomotion.io/downloads) and stop. Do not work around it with API calls or the Designer.
+
 ## Which mode
 
 The agent's mode decides how the page asks. Pick it from the flow, or ask the person once if the flow could be either.
@@ -88,6 +90,7 @@ Test the paths the flow draws, not just the happy one: a wrong answer that loops
 | `[click X]: nothing like that to press. The open question is: …` | The page is asking something else. | The printed question; your step order. |
 | `there is nowhere to type` | A guided page with no open text question. | Use `--click` / `--check` for this question. |
 | `chat needs a session, not an API key` | Logged in with an API key. | `robomotion auth login`. |
+| `Package "agent" not found in the package index` | The CLI is older than 26.9.8 and has no `agent` command. | `robomotion version`; ask the person to update Robomotion. |
 
 The robot's full output (package tracebacks go there, not to the page) is `robomotion agent logs [-f] [-n N]`, the same file as `.robomotion/agent-robot.log`.
 
