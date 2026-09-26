@@ -89,7 +89,7 @@ Reach for one when the payload really is open, and not before:
 
 Still write the `description`: it is all the person, the Designer and an MCP client have to go on. The call site is unchecked, so `run({ ...payload })` compiles - that is the point, and also the cost. **Type what you know, open what you don't**: an action with three known fields and one free-form bag declares the three and puts the bag in a property, rather than opening the whole thing.
 
-`additionalProperties` is **not** in the subset and is not needed. The open object is exactly `{ "type": "object" }`; `validate_app` rejects any key outside the list above plus `description` and `default`.
+`additionalProperties` is **not** in the subset and is not needed. The open object is exactly `{ "type": "object" }`; `robomotion app validate` rejects any key outside the list above plus `description` and `default`.
 
 ## Auth and theme
 
@@ -102,4 +102,4 @@ One entry per screen with a one-line description and a `route` starting with `/`
 
 ## After every change
 
-Changing `app.json` changes `contract_hash`. The sequence is always: edit `app.json` → regenerate (both `actions.gen.ts` files) → fix whatever `tsc` now flags in screens and flow → save (`save_flow`, or `git commit && git push` from a terminal). Skipping the regenerate step doesn't cause subtle bugs; it causes a hard `validate_app` failure, by design.
+Changing `app.json` changes `contract_hash`. The sequence is always: edit `app.json` → regenerate (both `actions.gen.ts` files) → fix whatever `tsc` now flags in screens and flow → `robomotion app validate` → save (`git add -A && git commit && git push` at the project root) → `robomotion app validate` again, which now also finds the flow committed. Skipping the regenerate step doesn't cause subtle bugs; it causes a hard `robomotion app validate` failure, by design.

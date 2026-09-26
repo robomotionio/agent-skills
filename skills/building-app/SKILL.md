@@ -28,7 +28,7 @@ app/src/generated/actions.gen.ts     ← SPA: typed client + CONTRACT_HASH
 src/generated/actions.gen.ts         ← flow: param/result types per action
 ```
 
-Any behavior change starts in `app.json`, then regenerate, then touch screens and flow. Changing `app.json` without regenerating leaves both sides referencing types that no longer exist, so `tsc` fails inside `validate_app` before anything ships. **Drift is a compile error, never a runtime surprise.** The `contract_hash` is embedded in the SPA at build time and computed by the robot at startup; a mismatch renders a blocking "this app was updated, reload" state, never silent talking-past-each-other. Authoring guide: `./docs/contract.md`.
+Any behavior change starts in `app.json`, then regenerate, then touch screens and flow. Changing `app.json` without regenerating leaves both sides referencing types that no longer exist, so `tsc` fails inside `robomotion app validate` before anything ships. **Drift is a compile error, never a runtime surprise.** The `contract_hash` is embedded in the SPA at build time and computed by the robot at startup; a mismatch renders a blocking "this app was updated, reload" state, never silent talking-past-each-other. Authoring guide: `./docs/contract.md`.
 
 ### When the shape is open, say so
 
@@ -65,7 +65,7 @@ object is exactly `{ "type": "object" }`.
 
 One project, one folder, one save. The layout:
 
-- `app.json` (and `mcp.json`) at the project root - the contract, where the robot reads it.
+- `app.json` at the project root - the contract, where the robot reads it. `mcp.json` sits beside it once you write it in step 2c; a new project has none.
 - `main.ts` and `subflows/` at the root - the robot's side.
 - `app/` holds the screens: `app/package.json`, `app/src/`, the two Robomotion packages under `app/vendor/`.
 - `src/generated/` on both sides (`src/generated/actions.gen.ts` for the flow, `app/src/generated/actions.gen.ts` for the screens) is codegen-owned; never hand-edit it.
@@ -80,7 +80,7 @@ One project, one folder, one save. The layout:
 | `robomotion app codegen` (from `app/`) | regenerates both typed clients from `app.json` and prints the contract hash |
 | `robomotion app dev` | runs the screens live and prints two addresses: localhost, and the app's **preview link** (`https://runs.<domain>/preview/<id>/`, also in `robomotion app status`). Every screen change is on the preview at once; it reaches the robot through the same serving tier the published app uses. Develop and test on it. Start it in the background; it keeps running. |
 | `robomotion app link` | a link that opens the preview in any browser, for members of the workspace (it expires in minutes; the browser keeps the preview after that) |
-| `robomotion app validate` | every check: schema, `tsc` on both halves, contract hash, the flow's wiring, the kit rules |
+| `robomotion app validate` | every check: schema, `tsc` on both halves, contract hash, the flow's wiring, the kit rules, and whether the flow is saved (`flow-committed`). It writes a `.designer.ts` for `main.ts` or a subflow that has none; commit it with the flow |
 | `git add -A && git commit -m "..." && git push` | the save, at the project root - screens and flow together |
 | `robomotion app robot` | gives the app its own robot (only after the person said yes) |
 | `robomotion app start [--restart]` | brings that robot up on this computer and starts the app on it; `--restart` after a save that changed the flow |
@@ -208,12 +208,20 @@ Narrate progress with the task list, in the person's language ("Design the revie
 
 5. **Build the flow, one action at a time**, in the order the person will press them. For each action: `App Action` trigger → the real work → `App Respond` on EVERY path (an unresponded call only ends by timeout, which the person experiences as a hung button). Long work sends `App Progress`. `src/generated/actions.gen.ts` at the project root gives you the param/result types. Flow SDK mechanics (node grammar, browser, credentials) are the `creating-flow` skill - use it. The exact shape of an app's flow is the next section; read it before the first node.
 
-5b. **Check and save.** `robomotion app validate` until it passes, then `git add -A && git commit -m "<what changed>" && git push` at the project root. The robot fetches the flow from git: an uncommitted flow is a flow the robot has never seen.
+5b. **Check, save, check again.** The robot fetches the flow from git, so an uncommitted flow is a flow the robot has never seen, and `robomotion app validate`'s `flow-committed` check fails until the flow is saved. So, in this order:
+
+   1. `robomotion app validate`, and fix every problem it names except `flow-committed`.
+   2. Save: `git add -A && git commit -m "<what changed>" && git push` at the project root.
+   3. `robomotion app validate` again. `flow-committed` passes now; if anything else fails, fix it and save again.
+
+   Validate writes a `.designer.ts` beside `main.ts` or a subflow that has none (the canvas positions the Designer reads). They are part of the flow: `git add -A` takes them with the rest, which is why the save comes after the first check.
 
 6a. **When the app has no robot of its own yet - a brand-new app never does -
    ask before anything gives it one, and the question is a CARD, not a
-   sentence.** Do not run `robomotion app start` before the answer: on an app
-   with no robot it sets one up by itself, spending the robot without asking. This is the last question of the build and it
+   sentence.** On an app with no robot, `robomotion app start` says the app has
+   no robot yet and points at `robomotion app robot`; that is your cue to ask,
+   never to run `app robot` straight away, because it spends one of a small
+   number of robots in their workspace. This is the last question of the build and it
    arrives at the end of a long summary, where a sentence ending in a question
    mark leaves the person nothing to press. Call the question tool
    (AskUserQuestion in Claude Code). Exactly this shape:
@@ -248,6 +256,10 @@ Narrate progress with the task list, in the person's language ("Design the revie
    | `unwired` | No `App Action` node serves this action. | Add `Robomotion.Apps.Action` with this action name, wire its path to an `App Respond`, save. |
    | `stale` | `contract_mismatch` / `unknown_action`: the running backend is older than `app.json`. | Save the flow and call `robomotion app start` again. |
    | `dead_after_first` | The first press answered and the second found nothing running: the flow ended itself. | Hard rule 5. Remove the `Stop`/`End`, or the path that reaches one; wire `Core.Trigger.Catch` to an `App Respond Error`. Save. |
+   | `step_failed` | A step failed inside the robot before the path reached an `App Respond` or `App Respond Error`. | `robomotion app logs` names the step and its error. Fix that step, save, `robomotion app start --restart`, `robomotion app smoke` again. |
+   | `declined` | The app said no on purpose: its `App Respond Error` answered with a message and no step failed (a duplicate name, a missing choice). Not a fault, and not proof of the good path either. | `robomotion app press` with values it should accept, and say which case you proved. |
+   | `not_exposed` | The action is in `app.json` but `mcp.json` keeps it off the app's door (`"enabled": false`), so the pass did not press it, and `robomotion app press` cannot either. | Nothing to fix. Prove it the way a person would, with `robomotion app try` on its screen (step 7). |
+   | `untried` | The pass ran out of time before this button, or it needed a record the pass had not made. | `robomotion app press` it yourself if it matters. |
    | `not_running` / `still_starting` | The flow is not up, or never loaded its contract. | `robomotion app start` once more; if it says the session is up, read `robomotion app logs` for why the flow ended, say so, and end your turn. |
    | `busy` / `slow` / `error` / `skipped` | Nothing proven either way. | Say nothing alarming about the buttons; `robomotion app press` the one that matters if you need to know. |
 
@@ -269,6 +281,8 @@ Narrate progress with the task list, in the person's language ("Design the revie
 
     robomotion app try --screen "Items" --fill "Name=Rice" --fill "Unit=kg" --click "Add item" --expect "Rice"
     robomotion app try --screen "Movements" --select "Item=Rice (kg)" --select "In or out=Out" --fill "Quantity=8" --click "Save" --expect "only"
+
+   **A button that opens a dialog.** While a dialog is open, `--click` looks for the button inside it first. A confirm dialog's button often carries the same words as the row button that opened it (a row's "Remove" opens "Remove this item?" with its own "Remove"), so a delete is the same word twice: `--click "Remove" --click "Remove"` - the first opens the dialog, the second confirms it, rather than pressing the row button behind it again. A confirm that is worded differently is named by its own words (`--click "Remove" --click "Yes, remove it"`).
 
    It fills fields by their labels, presses buttons by their words, then prints the screen's text, the page's console errors, and every step the robot ran meanwhile. Check every line of `request-checks.md` against what the screen shows - reading a screen is not checking it. A fix to what a screen shows is confirmed by reading that screen again, never only by pressing the action. Fix any mismatch, save, restart when the flow changed, try again. Take away the records your tries made before you hand over, through the app's own delete.
 
@@ -352,11 +366,15 @@ only in this package, and hunting for them costs a search round every build.
 | `Robomotion.Apps.SaveFile` | App Save File | nothing |
 
 One complete action, start to finish. It is always two files: `main.ts` names
-the screen, and the screen's subflow file holds the action.
+the screen, and the screen's subflow file holds the action. Both open with
+`creating-flow`'s Required First Line, copied whole even where the file uses
+one helper or none (`subflow` in place of `flow` in a subflow file): a helper
+you add later is then already imported, and a missing one is a
+`ReferenceError` on the robot, not a build error.
 
 ```ts
 // main.ts - the package, one SubFlow node per screen, the catch-all (below)
-import { flow, Message } from '@robomotion/sdk';
+import { flow, Message, Custom, JS, Global, Flow, Credential, AI } from '@robomotion/sdk';
 
 flow.create('<flowId>', '<Flow Name>', (f) => {
   f.addDependency('Robomotion.Apps', '<version>');   // the one main.ts already has
@@ -367,7 +385,7 @@ flow.create('<flowId>', '<Flow Name>', (f) => {
 
 ```ts
 // subflows/b2d4e1.ts - the file name is the SubFlow node's id
-import { subflow } from '@robomotion/sdk';
+import { subflow, Message, Custom, JS, Global, Flow, Credential, AI } from '@robomotion/sdk';
 
 subflow.create('Problems', (f) => {
   f.node('e1a7c3', 'Core.Flow.Begin', 'Begin', {});
@@ -422,7 +440,7 @@ for you in `src/generated/actions.gen.ts` at the project root.
 never `{ balance: 17 }` alone. The id is how the screen points at the row it
 just added, how the checks after a save know which row the press made, and
 how that same row is taken away again; a create that answers without it
-leaves a row nobody can name. Declare `id` in the action's `output` in
+leaves a row nobody can name. Declare `id` in the action's `result` in
 `app.json`.
 
 **And the catch-all, in `main.ts`, every time.** An unhandled error ends
@@ -632,7 +650,7 @@ flow calls, like every other system the flow reaches.
 Open a SQLite database by a full path built from the home folder, in a
 Function, and **put the app's own id in the file name**:
 `msg.db = 'Data Source=' + global.get('$Home$') + '/<app name>-<first 8 of app_id>.db;Version=3;'`,
-then `Message('db')` on the SQLite nodes. The id is what keeps two apps
+then `optConnectionString: Message('db')` on every SQLite node (`Query`, `NonQuery` and `Insert` all take it, so no `Connect` node and no `inConnectionId`). The id is what keeps two apps
 apart: a person who builds "Pantry Stock" twice gets two apps, and a file
 named only after the app hands the second one the first one's tables -
 `CREATE TABLE IF NOT EXISTS` sees them, keeps them, and every query then
@@ -643,14 +661,19 @@ the app starts over empty. The validator refuses the relative form.
 
 **The SQL is written in the SQL node, in SQL.** `Robomotion.SQLite.Query` /
 `NonQuery` take the statement in their `func` property with `{{{field}}}`
-placeholders filled from `msg`:
+placeholders filled from `msg`. A paged list is two queries: the page, and
+how many rows match altogether, because `DataTable`'s pager needs the count
+across every page (`total`), not the length of this one:
 
 ```typescript
 .then('a4b005', 'Core.Programming.Function', 'What was asked', {
   func: `var p = msg.params || {};
-msg.filter = '%' + String(p.filter || '') + '%';
+msg.filter = '%' + String(p.filter || '').replace(/'/g, "''") + '%';
 msg.offset = Number(p.offset) || 0;
 msg.limit = Number(p.limit) || 25;
+if (p.limit === 0) {
+  msg.limit = -1;
+}
 return msg;` })
 .then('a4b006', 'Robomotion.SQLite.Query', 'Read the page', {
   optConnectionString: Message('db'), outResult: Message('page'),
@@ -660,12 +683,38 @@ FROM vendors v
 WHERE v.name LIKE '{{{filter}}}' OR v.email LIKE '{{{filter}}}'
 ORDER BY v.name COLLATE NOCASE
 LIMIT {{{limit}}} OFFSET {{{offset}}}` })
+.then('a4b008', 'Robomotion.SQLite.Query', 'Count what matches', {
+  optConnectionString: Message('db'), outResult: Message('matching'),
+  func: `SELECT COUNT(*) AS n
+FROM vendors v
+WHERE v.name LIKE '{{{filter}}}' OR v.email LIKE '{{{filter}}}'` })
 .then('a4b007', 'Core.Programming.Function', 'Hand the page over', {
-  func: `msg.result = { rows: msg.page.rows, total: msg.page.rows.length };
+  func: `var total = Number(msg.matching.rows[0].n);
+msg.result = { rows: msg.page.rows, total: total };
 return msg;` })
 ```
 
-Never a `q()` that quotes values, never a `WHERE` built by concatenation,
+The count query repeats the page's `WHERE` exactly and nothing else: no
+`ORDER BY`, no `LIMIT`. `limit: 0` is the table's export asking for every
+row, and SQLite spells "no limit" `LIMIT -1`, hence the `if`.
+
+**Text that can hold an apostrophe never goes into SQL as it is.** `O'Brien`
+in a `{{{name}}}` placeholder ends the SQL string early: the statement fails,
+and a crafted value runs SQL of its own. Three cases, three answers:
+
+- **A write that carries the person's text** goes through
+  `Robomotion.SQLite.Insert`, which takes rows, not SQL, so nothing is quoted
+  and nothing needs to be. Build the row in a Function
+  (`msg.row = { columns: ['id', 'name', 'email'], rows: [{ id: id, name: p.name, email: p.email }] };`),
+  then `{ optConnectionString: Message('db'), inDatabaseTable: Custom('vendors'), inTable: Message('row'), optReplace: true }`.
+  `optReplace` makes it the insert-or-replace a whole-row write is (below).
+- **An id** that goes into a `WHERE` is checked first, in the Function that
+  reads it: `if (!/^[A-Za-z0-9-]+$/.test(String(p.id || '')))` is a refusal
+  ("That item no longer exists"), never a query.
+- **A search filter** in a `LIKE` doubles its single quotes, as above:
+  `.replace(/'/g, "''")`. That one line is the whole of the quoting.
+
+Never a `q()` helper that quotes values, never a `WHERE` built by concatenation,
 never `rowsOf()` / `vendorOf()` shapers, never a `money()` or `pad()` in the
 flow (the screen formats), and never a block of helper functions at the top
 of every Function node. The program is the flow; a Function is glue code,
@@ -852,9 +901,9 @@ The project is the folder `robomotion create app` made (or `robomotion app creat
 Each rule carries its reason. The reason is why you don't route around the rule when it feels inconvenient.
 
 0. **`robomotion app create` and `robomotion app sync` install the packages.** They place `@robomotion/app-kit` and `@robomotion/apps-runtime` under `app/vendor/` and run the install. Never symlink, copy or `bun install` packages by hand, and never borrow them from another app's checkout - if something looks missing, run `robomotion app sync` and read what it says.
-1. **Every control that runs an action declares it.** A button, upload zone or form that makes the robot do something takes the action through the kit's `action` prop (`<Button action={greet} params={{ name }}>`), or spreads `bindAction(greet)` when it must keep its own handler. Never write `onClick={() => greet.run(...)}` on its own: the Build view then cannot link the control to its step, the connections map reports the action as unlinked, and the person is told the button they can see does not exist. See `./docs/app-kit-reference.md`.
 1. **Kit-only.** Compose `@robomotion/app-kit` components plus Tailwind classes for layout. Never write a new UI primitive, never add an npm dependency, never edit `vite.config.ts`, `tailwind.config.ts`, `src/index.css` or the dependency list. The allowlist is exactly: `react`, `react-dom`, `@robomotion/app-kit`, `@robomotion/apps-runtime`, and the dev toolchain - `robomotion app validate` fails on anything else. **Colours, tables, spinners and pictures drawn by hand are reported too** (`robomotion app validate`'s `kit-only` check, by file and line): a Tailwind palette colour (`text-gray-500`), a `dark:` variant, a hex in brackets or an inline `style` colour; an inline `<svg>`; an inline `<table>`; an `animate-spin` div. The kit's preset gives a screen the colours it may name (`text-muted-foreground`, `bg-card`, `border-border`, `text-primary`), `Icon` gives it every picture, `DataTable` every table and `Spinner` the one spinner; the "Design language" section of `./docs/app-kit-reference.md` is the whole vocabulary. Every nav item carries an `icon` in `src/screens.tsx`, and every file under `src/pages/` opens with `<Screen>`. Reason: a prompt-built app that can pull arbitrary packages becomes a codebase nobody can review; the kit is also what keeps every screen themed, dark-mode aware, and accessible without you doing anything, and a colour chosen by hand is the one thing on the screen that does not follow the theme.
 2. **Actions only through the generated typed stubs.** `src/generated/actions.gen.ts` exports one hook per action, `use<Action>()` (for `greet`: `const greet = useGreet()`), plus `<Action>Params` / `<Action>Result` types; `greet.data` is typed and `<Form action={greet}>` / `<Button action={greet}>` link the control. Use those. Never write `useAction("name")` yourself - untyped, its `data` is `{}` and `tsc` fails on the first field you read. Events use `useEvent` with the generated payload types. Never hand-write transport, never invent a message format, never call `app.call` from screen code. Reason: the old app system died because clients hand-invented protocols over a raw channel and drift was discovered by users in production; the stubs make a contract change break `tsc` instead of a person.
+2b. **Every control that runs an action declares it.** A button, upload zone or form that makes the robot do something takes the action through the kit's `action` prop (`<Button action={greet} params={{ name }}>`), or spreads `bindAction(greet)` when it must keep its own handler. Never write `onClick={() => greet.run(...)}` on its own: the Build view then cannot link the control to its step, the connections map reports the action as unlinked, and the person is told the button they can see does not exist. See `./docs/app-kit-reference.md`.
 3. **One component per file, flat directories, no barrel files.** `src/pages/Review.tsx`, `src/components/InvoiceCard.tsx` - that's the whole depth. Reason: "make that button green" must resolve to exactly one file from the route context; barrels and deep nesting break targeted edits and make hot reload touch more than it should.
 3b. **The flow files must read back in the Flow Designer.** The person opens the app's flow on the canvas and saves it from there; the Designer parses each `subflows/<screen>.ts` statically and regenerates it on save. So no `src/helpers.ts` imported into subflows, no `openDb(f)` helpers that make nodes, no `{ ...SQL_FROM_MSG }` spreads, no `func: \`${IMPORTED}...\``. Declare the SQL helper string as a `const` at the top of EACH subflow that needs it and write every node out. `robomotion validate` (and so `app validate`) refuses the rest with "the Flow Designer cannot read it". The rule and the table: `creating-flow` hard rule 6 and its `docs/reference/project-format.md`. Reason: an app whose flow used an imported helper ran perfectly and showed "return msg;" in all 53 Function nodes on the canvas; one Designer save would have written that into git.
 4. **Never hand-edit generated files.** Anything under `src/generated/` is regenerated from `app.json`; edit `app.json` and regenerate. Reason: the next regeneration silently erases your edit, and an edited file no longer matches `contract_hash`, which blocks the app from connecting at all.
@@ -903,7 +952,7 @@ Each rule carries its reason. The reason is why you don't route around the rule 
    `error.message` through - the first press before the file exists would
    show a raw path.
 
-7. **The save is `git commit && git push` at the project root.** The robot
+7. **The save is `git add -A && git commit && git push` at the project root.** The robot
    fetches the flow from git, so a flow that is not pushed is a flow the
    robot has never seen, and `robomotion app validate` says so. (Under Build
    with AI the save is a tool and git is refused: `./docs/build-view.md`.)

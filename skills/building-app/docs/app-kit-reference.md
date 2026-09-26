@@ -65,7 +65,7 @@ import {
 
 The kit is a design system, not a pile of widgets. A screen composes it and
 adds layout; it never chooses a colour, draws a picture or invents a
-primitive. `validate_app`'s `kit-only` check reports each of the things
+primitive. `robomotion app validate`'s `kit-only` check reports each of the things
 below by file and line, in these words.
 
 **Colours a screen may write.** The kit's Tailwind preset gives every screen
@@ -184,7 +184,7 @@ Where the person is, and one press back to anywhere above them. A detail screen 
 
 ### `AssistantWidget`
 
-The app's own assistant, in the corner of every screen. It talks to the flow through the app's MCP server, so it can answer questions about the app's own data and run its actions; it is not a general chatbot bolted on. Mount it once, beside the routed screens inside `AppShell`. Only add it when the person asked for one.
+The app's own assistant, in the corner of every screen. It talks to the flow through the app's MCP server, so it can answer questions about the app's own data and run its actions; it is not a general chatbot bolted on. The seeded `src/main.tsx` already mounts it once, beside the routed screens inside `AppShell`, so every app has one. Leave it there unless the person asks for it to go; never mount a second.
 
 ```tsx
 <AppShell title="Invoice Approvals" nav={nav} onNavigate={navigate}>
@@ -220,7 +220,7 @@ Each of those leaves the app's base and lands the WHOLE page on the serving
 tier's "not found", from which the only way back is reloading the Designer.
 It works everywhere except the one place the app actually runs, so nothing but
 pressing the link finds it. Write `screenHref("/")` for an href and
-`navigate("/trips")` in a handler. `validate_app`'s `screen-links` check
+`navigate("/trips")` in a handler. `robomotion app validate`'s `screen-links` check
 refuses the three spellings above; a link that really does leave the app needs
 a full URL with its scheme.
 
@@ -639,7 +639,7 @@ async function importRows() {
 }
 ```
 
-**Loading a screen.** Only a table with `source={{ action }}` asks for its rows by itself, on mount. Every other screen that shows an answer - a detail page, a row of counters, a dropdown fed by a list - has to ask when it opens, in ONE effect, and `validate_app`'s `screen-loads` check names each one that does not:
+**Loading a screen.** Only a table with `source={{ action }}` asks for its rows by itself, on mount. Every other screen that shows an answer - a detail page, a row of counters, a dropdown fed by a list - has to ask when it opens, in ONE effect, and `robomotion app validate`'s `screen-loads` check names each one that does not:
 
 ```tsx
 // RIGHT - asked on open; the person sees their data without pressing anything.
@@ -651,7 +651,7 @@ useEffect(() => { void summary.run({}); void customers.run({}); }, []);
 async function onAdd() { await addCustomer.run(draft); await customers.run({}); }
 ```
 
-The effect's dependency array is `[]`, or the values that should ask again (an id). Never the hook object or a function made during render: both are new on every render, so the effect asks after every answer and the screen shows Loading for ever. `validate_app`'s `effect-loop` check names it.
+The effect's dependency array is `[]`, or the values that should ask again (an id). Never the hook object or a function made during render: both are new on every render, so the effect asks after every answer and the screen shows Loading for ever. `robomotion app validate`'s `effect-loop` check names it.
 
 ```tsx
 // WRONG - `customers` is a new object every render: asks, re-renders, asks again, for ever.
@@ -1003,7 +1003,7 @@ without it the form checks nothing at all. The types in `actions.gen.ts` are
 gone by run time, and a form's values are a bag of unknowns, so `schema` is the
 only thing that connects the fields to the contract. Skip it and a `Select`
 writing the string `"20"` into a field the contract declares as a `number`
-compiles, passes `validate_app`, and comes back from the robot as
+compiles, passes `robomotion app validate`, and comes back from the robot as
 **"invalid parameters"** with no step having run and nothing in the robot's log
 to read. A type mismatch between a screen and its contract has no other net.
 
@@ -1726,6 +1726,6 @@ So `onSubmit` must never call `run` - a screen that does (`onSubmit={async (v) =
 { await addItem.run({...v}); navigate("/") }}`) runs the flow twice for every
 press, and every record it adds arrives twice. Shape the values in the flow's
 first step or with `onChange`; do what must follow the call - navigate, a toast -
-in a `useEffect` on `addItem.data`. `validate_app` reports the shape as
+in a `useEffect` on `addItem.data`. `robomotion app validate` reports the shape as
 `form-runs-once`, and kit 0.1.6 ignores its own run when `onSubmit` already ran
 the action, but an app carries the kit it was built with.
