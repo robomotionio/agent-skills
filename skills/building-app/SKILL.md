@@ -80,14 +80,14 @@ One project, one folder, one save. The layout:
 | `robomotion app codegen` (from `app/`) | regenerates both typed clients from `app.json` and prints the contract hash |
 | `robomotion app dev` | runs the screens live and prints two addresses: localhost, and the app's **preview link** (`https://runs.<domain>/preview/<id>/`, also in `robomotion app status`). Every screen change is on the preview at once; it reaches the robot through the same serving tier the published app uses. Develop and test on it. Start it in the background; it keeps running. |
 | `robomotion app link` | a link that opens the preview in any browser, for members of the workspace (it expires in minutes; the browser keeps the preview after that) |
-| `robomotion app validate` | every check: schema, `tsc` on both halves, contract hash, the flow's wiring, the kit rules, and whether the flow is saved (`flow-committed`). It writes a `.designer.ts` for `main.ts` or a subflow that has none; commit it with the flow |
+| `robomotion app validate` | every check: schema, `tsc` on both halves, contract hash, the flow's wiring, the kit rules, and whether the flow is saved (`flow-committed`). It writes no files: the canvas positions (`.designer.ts`) come from `robomotion build` (step 5b) |
 | `git add -A && git commit -m "..." && git push` | the save, at the project root - screens and flow together |
 | `robomotion app robot` | gives the app its own robot (only after the person said yes) |
 | `robomotion app start [--restart]` | brings that robot up on this computer and starts the app on it; `--restart` after a save that changed the flow |
 | `robomotion app smoke` | presses every button once through the app's own door and reports what each answered |
 | `robomotion app press <action> --params '{...}'` | presses one button with values you choose |
 | `robomotion app try --screen "<label>" --fill "Label=value" --select "Label=option" --click "Button" --expect "text"` | uses the app the way a person does, on the live preview (`--local` for localhost, `--url` for another address), in a browser signed in as them, and prints what the screen shows and what the robot did |
-| `robomotion app screen "<label>"` | reads what a screen shows on the live preview (text and console errors) |
+| `robomotion app screen "<label>"` | reads what a screen shows on the live preview (text and console errors). A one-screen app has no navigation to pick a label from: `robomotion app screen /` |
 | `robomotion app logs [-f]` | the robot's output: every step it ran, and the error when one failed |
 | `robomotion app status` | the app, the screens, the robot, what was last checked |
 | `robomotion app publish` | the last step, when the app is finished and the person asked: builds the screens, uploads them, publishes the flow version the app runs in production, and prints the **production link** (`https://runs.<domain>/<id>`). Never part of the development loop |
@@ -202,7 +202,7 @@ Narrate progress with the task list, in the person's language ("Design the revie
 
 3c. **A screen asks for what it shows when it opens, and a row button is a column.** A table with `source={{ action }}` loads itself; every other list, counter or detail runs its read in one `useEffect` on open, and a form that adds a record refetches the list that shows it. A button the person asked for on every row is rendered as a column, not folded into the table's "More" menu. Both are under `DataTable` in `./docs/app-kit-reference.md` ("Loading a screen", "A button on every row").
 
-4. **Start the screens and look.** `robomotion app dev` in the background, once; it prints the preview link. **You develop on the preview link from here to the end**: a screen edit is there as soon as the file is saved, with no build and no publish. After every batch of screen edits, `robomotion app screen "<label>"` on the screen you touched (it reads the preview): it prints the text and the console errors, and a screen that throws on first render is caught here, not by the person. Give the person the preview link when they ask where the app is. A change to the flow is not live the same way: save it (step 5b), then `robomotion app start --restart`.
+4. **Start the screens and look.** `robomotion app dev` in the background, once; it prints the preview link. **You develop on the preview link from here to the end**: a screen edit is there as soon as the file is saved, with no build and no publish. After every batch of screen edits, `robomotion app screen "<label>"` on the screen you touched (`robomotion app screen /` on a one-screen app; it reads the preview): it prints the text and the console errors, and a screen that throws on first render is caught here, not by the person. Give the person the preview link when they ask where the app is. A change to the flow is not live the same way: save it (step 5b), then `robomotion app start --restart`.
 
 4b. **`robomotion app codegen`** whenever `app.json` or a `read_only` mark in `mcp.json` changes, before writing code against it. Run it from `app/`.
 
@@ -211,10 +211,13 @@ Narrate progress with the task list, in the person's language ("Design the revie
 5b. **Check, save, check again.** The robot fetches the flow from git, so an uncommitted flow is a flow the robot has never seen, and `robomotion app validate`'s `flow-committed` check fails until the flow is saved. So, in this order:
 
    1. `robomotion app validate`, and fix every problem it names except `flow-committed`.
-   2. Save: `git add -A && git commit -m "<what changed>" && git push` at the project root.
-   3. `robomotion app validate` again. `flow-committed` passes now; if anything else fails, fix it and save again.
+   2. When the flow's nodes changed: `robomotion build` at the project root (the canvas positions, below).
+   3. Save: `git add -A && git commit -m "<what changed>" && git push` at the project root.
+   4. `robomotion app validate` again. `flow-committed` passes now; if anything else fails, fix it and save again.
 
-   Validate writes a `.designer.ts` beside `main.ts` or a subflow that has none (the canvas positions the Designer reads). They are part of the flow: `git add -A` takes them with the rest, which is why the save comes after the first check.
+   The canvas positions the Designer reads live in a `.designer.ts` beside `main.ts` and each subflow. Validate never writes them; `robomotion build` does, and merges: a position already saved is kept, a new node is placed, a removed one is dropped. They are part of the flow, so `git add -A` takes them with the rest.
+
+   A subflow the app arrived with keeps the demo's `.designer.ts` until a build touches it, and keeps the demo's positions for every node id you reused. After rewriting a starter subflow, delete its `.designer.ts`, then `robomotion build`, so the person's canvas shows your subflow laid out rather than piled where the demo's nodes were.
 
 6a. **When the app has no robot of its own yet - a brand-new app never does -
    ask before anything gives it one, and the question is a CARD, not a
@@ -286,7 +289,7 @@ Narrate progress with the task list, in the person's language ("Design the revie
 
    It fills fields by their labels, presses buttons by their words, then prints the screen's text, the page's console errors, and every step the robot ran meanwhile. Check every line of `request-checks.md` against what the screen shows - reading a screen is not checking it. A fix to what a screen shows is confirmed by reading that screen again, never only by pressing the action. Fix any mismatch, save, restart when the flow changed, try again. Take away the records your tries made before you hand over, through the app's own delete.
 
-8. **Hand over, honestly.** Say what the app does and what to press, in the person's words; give them the preview link (`robomotion app status`; members of the workspace open it signed in) or a link from `robomotion app link`; and tell them they can also open it in Robomotion: opening the flow there opens Build with AI with the app, and while `robomotion app dev` is running the screens show in its panel. Save first (`git add -A && git commit && git push`) so what they open is what you built. Say nothing about ids, files or test data unless something was left behind. **Offer to publish; never publish unasked.** Publishing is the end of development, not a way to test: when they say yes (or asked for it up front), `robomotion app publish`, and give them the production link it prints. Every later change goes back to the preview loop and is published again only when it is done.
+8. **Hand over, honestly.** Say what the app does and what to press, in the person's words; give them the preview link (`robomotion app status`; members of the workspace open it signed in) or a link from `robomotion app link`; and tell them they can also open it in Robomotion: opening the flow there opens Build with AI with the app, and while `robomotion app dev` is running the screens show in its panel. Save first (`git add -A && git commit && git push`) so what they open is what you built. Say nothing about ids, files or test data unless something was left behind. **Offer to publish; never publish unasked.** Publishing is the end of development, not a way to test: when they say yes (or asked for it up front), `robomotion app publish`, and give them the production link it prints. Publishing does not touch the session already running on the app's robot: it keeps running the saved flow (`[master]` in `robomotion app logs`) until a production start - the app's card, or its auto-start - which runs the published version. `robomotion app start --restart` on this computer still runs the saved flow, for development. Every later change goes back to the preview loop and is published again only when it is done.
 
 ### The flow side, exactly
 
@@ -483,10 +486,11 @@ inside the screen's file covers that screen's nodes only), or a Catch on the
 `ids` of one lookup so the action can answer with words about that lookup.
 The `main.ts` catch-all stays either way.
 
-`App Action` is a trigger, so it has no input port and the validator reports it
-as an unreachable node. `App Respond` and `App Respond Error` end a path, so it
-reports them as dead ends. Both warnings are expected on every app. Never
-restructure the flow to silence either.
+`App Action` is a trigger, so it has no input port, and `App Respond` and `App
+Respond Error` end a path. The validator knows both: it reports neither as
+unreachable or as a dead end. A path from an `App Action` that never reaches an
+`App Respond` shows up at run time instead, as `dead_end` in `robomotion app
+smoke`.
 
 **`App Respond Error` needs a message.** Its message input defaults to empty,
 and an empty one puts a title and a Try again button on screen with nothing
@@ -668,7 +672,7 @@ across every page (`total`), not the length of this one:
 ```typescript
 .then('a4b005', 'Core.Programming.Function', 'What was asked', {
   func: `var p = msg.params || {};
-msg.filter = '%' + String(p.filter || '').replace(/'/g, "''") + '%';
+msg.filter = '%' + String(p.filter || '') + '%';
 msg.offset = Number(p.offset) || 0;
 msg.limit = Number(p.limit) || 25;
 if (p.limit === 0) {
@@ -698,9 +702,12 @@ The count query repeats the page's `WHERE` exactly and nothing else: no
 `ORDER BY`, no `LIMIT`. `limit: 0` is the table's export asking for every
 row, and SQLite spells "no limit" `LIMIT -1`, hence the `if`.
 
-**Text that can hold an apostrophe never goes into SQL as it is.** `O'Brien`
-in a `{{{name}}}` placeholder ends the SQL string early: the statement fails,
-and a crafted value runs SQL of its own. Three cases, three answers:
+**Text that can hold an apostrophe: let the node quote it.** The SQLite nodes
+(`Robomotion.SQLite` 1.6.6) double a text value's single quotes themselves when
+**every** placeholder for that key sits directly between single quotes:
+`WHERE name = '{{{name}}}'` with `O'Brien` runs as `'O''Brien'`. Anywhere else
+the value goes in as it is, and an apostrophe ends the SQL string early: the
+statement fails, and a crafted value runs SQL of its own. So:
 
 - **A write that carries the person's text** goes through
   `Robomotion.SQLite.Insert`, which takes rows, not SQL, so nothing is quoted
@@ -711,8 +718,20 @@ and a crafted value runs SQL of its own. Three cases, three answers:
 - **An id** that goes into a `WHERE` is checked first, in the Function that
   reads it: `if (!/^[A-Za-z0-9-]+$/.test(String(p.id || '')))` is a refusal
   ("That item no longer exists"), never a query.
-- **A search filter** in a `LIKE` doubles its single quotes, as above:
-  `.replace(/'/g, "''")`. That one line is the whole of the quoting.
+- **Text in a `WHERE`** is written `'{{{name}}}'`, quotes hugging the
+  placeholder. Never double its quotes by hand as well: the node doubles them
+  again, `O'Brien` is searched for as `O''Brien`, and nothing matches.
+- **A search filter** builds the whole `LIKE` pattern in the Function, `%`
+  signs included (`msg.filter = '%' + p.filter + '%'`), and the SQL says
+  `LIKE '{{{filter}}}'`, as above. Never `LIKE '%{{{filter}}}%'`: there the
+  placeholder sits between `%` signs, the node does not quote it, and an
+  apostrophe breaks the query.
+- **One key, one way.** A key written `'{{{x}}}'` in one place and `{{{x}}}` in
+  another is not quoted anywhere. Use two keys.
+- **A piece of SQL assembled in a Function** (avoid it, below) goes in
+  verbatim as `{{{where}}}`: that Function makes every value in it safe itself
+  (ids checked against a pattern, text with its quotes doubled - here, and only
+  here, by hand).
 
 Never a `q()` helper that quotes values, never a `WHERE` built by concatenation,
 never `rowsOf()` / `vendorOf()` shapers, never a `money()` or `pad()` in the
