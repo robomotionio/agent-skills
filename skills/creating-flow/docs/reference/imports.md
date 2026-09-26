@@ -27,7 +27,7 @@ These belong inside a Function node's `func` string (a JS sandbox executed by th
 
 - `msg` — the per-call payload (`msg.x = 1; return msg;`)
 - `global.get(...)` / `global.set(...)` — robot-side global store, including system variables like `$Home$`, `$TempDir$`
-- `console.log(...)` — robot stdout
+- `console.log(...)` — the robot's own output only; `robomotion run` never shows it. Use a `Core.Flow.Log` node (a `log` event) or `Core.Programming.Debug` (a `debug` event) for anything you need to read in a run
 
 `func` content does NOT need any of the SDK helpers above — those only apply to the *property slots* in `f.node()` calls.
 

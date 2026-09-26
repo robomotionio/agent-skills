@@ -8,7 +8,7 @@ Universal tabular data format used across all Robomotion data packages: CSV, Exc
 
 - **Single-object data** — use `msg.field` directly; don't wrap one row in a `{columns, rows}` structure.
 - **Free-form JSON** — array of heterogeneous objects → stay as an array; don't force a columns list.
-- **Logs and diagnostics** — `console.log` in a Function or `Core.Flow.Log` are better than building a table.
+- **Logs and diagnostics** — a `Core.Flow.Log` or `Core.Programming.Debug` node is better than building a table (`console.log` in a Function never reaches `robomotion run`).
 
 ## Philosophy
 

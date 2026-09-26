@@ -253,8 +253,8 @@ Without this, the saved flow has empty version strings and breaks the designer d
 
 ```typescript
 // MANDATORY — one call per external (non-Core) package, BEFORE any nodes
-f.addDependency('Robomotion.SQLite', 'v1.2.0');
-f.addDependency('Robomotion.WordPress', 'v2.0.0');
+f.addDependency('Robomotion.SQLite', '1.6.6');
+f.addDependency('Robomotion.GoogleGemini', '0.16.3');
 // ✗ NEVER:
 // f.addDependency('Core.Browser', 'v26.4.8');
 ```
