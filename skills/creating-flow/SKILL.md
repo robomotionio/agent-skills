@@ -1,6 +1,6 @@
 ---
 name: creating-flow
-description: "Creates Robomotion automation flows with the @robomotion/sdk TypeScript builder. Owns the full lifecycle: requirements → plan → build → validate → deploy. Also use when the user has a plan ready and wants the flow code written."
+description: "Creates Robomotion automation flows with the @robomotion/sdk TypeScript builder. Owns the full lifecycle: requirements → plan → build → validate → save. Also use when the user has a plan ready and wants the flow code written."
 ---
 
 # Robomotion Flow Builder
@@ -27,21 +27,21 @@ Every flow file (`main.ts` and every `subflows/*.ts`) starts with this exact imp
 import { flow, Message, Custom, JS, Global, Flow, Credential, AI } from '@robomotion/sdk';
 ```
 
-For library files swap `flow` for `library` / `subflow`. Full reference: `./docs/reference/imports.md`.
+For library files swap `flow` for `library` / `subflow`. This is the rule for every file, however small: there is no shorter "minimal" import, and every example in these docs starts with this line. Full reference: `./docs/reference/imports.md`.
 
 ## Builder grammar
 
 - `f.node(id, type, name, props)` — param order. Only emit non-default props (Go runtime fills defaults from pspec).
 - `.then()` for sequential, `.edge()` for multi-port wiring.
 - `Message(name)` for variables · `Custom(value)` for literals · `JS(expr)` for one-line JS · `Credential({vaultId, itemId})` for secrets.
-- **A field takes a scope helper based on its TYPE IN THAT NODE, not its `in*`/`opt*` name — and the SAME name can differ across nodes.** Every `in*`/`out*` port takes a scope helper (`Custom('…')` / `Message()`); a bare literal there is silently dropped. For `opt*` fields, don't guess from the name — check `get_node_schema`: a field typed `object` + `variableType` (even a numeric one) takes a scope helper; a plain `number`/`boolean`/`enum` field takes a bare literal and must NOT be wrapped. **The very same property can differ by node:** `Core.Browser.OpenLink` `optTimeout` is a plain number → `optTimeout: 32`, but `Core.Browser.WaitElement` `optTimeout` is `variableType:Integer` → `optTimeout: Custom('30')`. Mismatching either way VALIDATES but FAILS TO LOAD on the robot (`flow_error: failed` / `Config parse error`, no nodes run): wrapping a plain field sends an object to a scalar; leaving a variable-backed field bare sends a scalar into a `{scope,name}` slot. Enums/booleans are always plain (`optBrowser: 'chrome'`, `optMethod: 'post'`, `optInsecure: true`); `in*` ports and value fields like `optUrl`/`optDownloadDir`/`optNofBranches` always take `Custom()`/`Message()`.
+- **A field takes a scope helper based on its TYPE IN THAT NODE, not its `in*`/`opt*` name — and the SAME name can differ across nodes.** Every `in*`/`out*` port takes a scope helper (`Custom('…')` / `Message()`); a bare literal there is silently dropped. For `opt*` fields, don't guess from the name — check `robomotion describe node <type>`: a field typed `object` + `variableType` (even a numeric one) takes a scope helper; a plain `number`/`boolean`/`enum` field takes a bare literal and must NOT be wrapped. **The very same property can differ by node:** `Core.Browser.OpenLink` `optTimeout` is a plain number → `optTimeout: 32`, but `Core.Browser.WaitElement` `optTimeout` is `variableType:Integer` → `optTimeout: Custom('30')`. Mismatching either way VALIDATES but FAILS TO LOAD on the robot (`flow_error: failed` / `Config parse error`, no nodes run): wrapping a plain field sends an object to a scalar; leaving a variable-backed field bare sends a scalar into a `{scope,name}` slot. Enums/booleans are always plain (`optBrowser: 'chrome'`, `optMethod: 'post'`, `optInsecure: true`); `in*` ports and value fields like `optUrl`/`optDownloadDir`/`optNofBranches` always take `Custom()`/`Message()`.
 - `func` is a literal string (NOT `JS()`).
 - Common runtime props also take raw values: `delayBefore: 2`, `delayAfter: 0.5`, `continueOnError: true`.
 - ES5-only inside `func`: no `=>`, no template literals, no `const`/`let`, no destructuring. No `require()` / `fs` / `Buffer` / `process` (pure JS sandbox).
 - Loops: `Label → ForEach → body → GoTo`. `Stop` is standalone, wired via `f.edge()` on ForEach port 1.
 - **`GoTo`/`Label` are not only for loops: a long wire is a `GoTo`.** Any edge that would travel back, or across other rows to reach a shared or late-declared node (an error handler, a common "say why" responder, a rejoin after a branch), draws a diagonal over everything in between - once per branch - and the canvas becomes unreadable. Put a `Core.Flow.Label` beside the target, and end each far branch with a `Core.Flow.GoTo` sitting in its own row. A `GoTo` has no outgoing wire, so the long edge stops existing rather than being redrawn shorter. Rule of thumb: **more than about two rows of travel, make it a `GoTo`**, and name it after where it goes so the row still reads left to right. A chain too long for one row is the same case: end the row with a `GoTo` and start the next one with a `Label`, never a wire running back across the canvas. See `./docs/patterns/branches.md`; for row wraps and where a multi-port node's targets go, `./docs/patterns/comments-and-layout.md`.
 - Library projects use `library.create(id, name, fn)` with `Begin`/`End` nodes (no `.start()`). Inline subflows use `subflow.create(name, fn)`.
-- Every flow ends with `.start()`. Every flow has a `Core.Flow.Stop` node — **except an app backend**: a flow triggered by `Robomotion.Apps.Action` is a long-lived service behind a Robomotion App's screens and must never stop, so it has no `Stop` and no `End`. See the `building-app` skill.
+- Every flow ends with `.start()`. Every flow has a `Core.Flow.Stop` node that the path from the trigger reaches — **except two kinds of flow that never stop**: an **app backend** (a flow triggered by `Robomotion.Apps.Action` is a long-lived service behind a Robomotion App's screens; each path ends at `App Respond`; see the `building-app` skill), and a **chat flow** (a flow triggered by `Robomotion.ChatAssistant.ChatIn` answers message after message; each turn ends at `Chat Out`; see `./docs/patterns/conversational-chat.md` and, for guided mode, `./docs/patterns/guided-chat.md`). Neither has a `Stop` or an `End`. `robomotion validate` warns only when a flow has no Stop at all (Chat In and App Action flows excepted); a Stop the trigger's path never reaches validates clean — check the wiring yourself.
 - `Core.*` packages (`Core.Trigger`, `Core.Browser`, `Core.Programming`, `Core.CSV`, `Core.Flow`, `Core.Vault`, `Core.Net`, `Core.Excel`, …) are **embedded in the robot** — NEVER call `f.addDependency('Core.*', …)`. The Designer auto-loads them. Only call `f.addDependency(ns, ver)` for non-`Core.*` packages. When updating an existing flow, NEVER bump existing `addDependency` versions; only add missing ones.
 - **Comments & canvas layout** — `Core.Flow.Comment` nodes (with an `optText` markdown string) title the flow and fence its logical phases; the visual arrangement — node `positions`, comment box colors/sizes, and Sugiyama-style layering — lives in `main.designer.ts`. Layout is cosmetic (never affects runtime) but it's what makes a flow readable. See `./docs/patterns/comments-and-layout.md`.
 
@@ -49,7 +49,7 @@ Full grammar: `./docs/sdk-grammar.md`. Architecture: `./docs/architecture.md`.
 
 ## Diagnostic map
 
-Map an error symptom to the doc that fixes it. When `validate_flow` fails, look up the symptom here before reading the full failure trace.
+Map an error symptom to the doc that fixes it. When `robomotion validate` fails, look up the symptom here before reading the full failure trace.
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
@@ -69,7 +69,7 @@ Map an error symptom to the doc that fixes it. When `validate_flow` fails, look 
 | `Core.Programming.If` not found | Node doesn't exist | `Core.Programming.Function` with `outputs: 2` (`./docs/patterns/conditions.md`) |
 | Wrong node name (e.g. `Core.CSV.Read`, `Browser.Click`) | Common naming mistake | `./docs/reference/node-naming.md` |
 | `inPath: Custom('$Home$/file')` literal not resolved | System variables only resolve in Function nodes | `global.get('$Home$') + '/file'` (`./docs/reference/system-variables.md`) |
-| Flow VALIDATES but FAILS TO LOAD on robot (`flow_error: failed` / `Config parse error`, no nodes run) | An `opt*` value shape mismatches its per-node type: a plain `number`/`bool`/`enum` field wrapped in `Custom()`, OR a `variableType`/object field left as a bare literal | Check `get_node_schema` per node. Enums/bools are plain (`optBrowser: 'chrome'`). Numeric fields depend on the node: `OpenLink.optTimeout: 32` (plain `number`) vs `WaitElement.optTimeout: Custom('30')` (`variableType:Integer`). `in*` ports + `optUrl`/`optDownloadDir`/`optNofBranches` always take `Custom()`/`Message()`. |
+| Flow VALIDATES but FAILS TO LOAD on robot (`flow_error: failed` / `Config parse error`, no nodes run) | An `opt*` value shape mismatches its per-node type: a plain `number`/`bool`/`enum` field wrapped in `Custom()`, OR a `variableType`/object field left as a bare literal | Check `robomotion describe node <type>` per node. Enums/bools are plain (`optBrowser: 'chrome'`). Numeric fields depend on the node: `OpenLink.optTimeout: 32` (plain `number`) vs `WaitElement.optTimeout: Custom('30')` (`variableType:Integer`). `in*` ports + `optUrl`/`optDownloadDir`/`optNofBranches` always take `Custom()`/`Message()`. |
 | Any CSV / Excel / Sheets / SQLite / Pandas / Airtable / DOMParser / DataTable node in scope | Custom data shape is wrong (e.g. `{header: [...]}`, rows as arrays) | **MANDATORY** read `./docs/patterns/data-tables.md` — the format is `{columns: [...], rows: [{key: value}]}` with row keys matching column names |
 | Write produces empty cells / `ErrFilePath` / "table not recognized" | `header` instead of `columns`, or rows are arrays not objects | `./docs/patterns/data-tables.md` — the property is `columns`, never `header`; rows are objects keyed by column name, never positional arrays |
 
@@ -78,9 +78,10 @@ Drift-prone reminders before every `Write` / `Edit` of flow code:
 - Never output TypeScript as chat text — always use `Write` / `Edit`. Plans and explanations stay in chat.
 - Hex IDs from the start. Cross-references (`optNodes.ids`, `Catch.optNodes.ids`, subflow filenames) must use the same hex.
 - For browser flows: explore the live page first (`Skill(exploring-browser)` or `mcp__browser__*` after `ToolSearch` warmup). Don't guess selectors. **`Core.Browser.*` element nodes (`ClickElement`/`TypeText`/`GetValue`/`SetValue`/`WaitElement`/`Select`) default `inSelector` to XPath — translate CSS handles you find (`#email`, `input[type="email"]`) to XPath (`//input[@id='email']`) and omit `inSelectorType`; use a CSS string ONLY with `inSelectorType: 'css'` (plain literal — `inSelectorType` is an enum, so NEVER `Custom('css')`). A CSS string with the default engine fails at runtime with "element not found". Never write `inSelectorType: 'xpath'` (invalid; the value is `xpath:position`). Also: enum/dropdown opts (`optBrowser`, `optProxy`, `optProxyAuth`, `optClickType`) take a PLAIN string/boolean — NEVER `Custom()`; wrapping an enum in `Custom()` emits a `{name,scope}` object and the robot rejects the node at load with `Config parse error` (flow never starts). `Custom()`/`Message()` are only for variable value fields (selectors/URLs/text/paths). See `./docs/patterns/browser.md`.**
-- For any flow that READS or WRITES tabular data (CSV / Excel / Google Sheets / Excel 365 / SQLite / Airtable / Pandas / DataTable / DOMParser) — read `./docs/patterns/data-tables.md` BEFORE adding the node, both for the Function that builds the table AND for the reader/writer node. That doc names the exact node and shows its properties (e.g. write CSV = `Core.CSV.WriteCSV` with `inFilePath` + `inTable`; write Sheets = `Robomotion.GoogleSheets.SetRange`; etc.) and the `{columns: [...], rows: [{key: value}]}` format (never `{header: ...}`, never rows-as-arrays). **Do NOT `unified_search` / `search` for data-output nodes — search returns TEMPLATES, not nodes, and looping on it wastes the turn. The node names are in data-tables.md; once you know the node, use `get_node_schema` for its exact properties.** When a search returns templates instead of the node you need, stop searching and read the relevant pattern doc.
+- For any flow that READS or WRITES tabular data (CSV / Excel / Google Sheets / Excel 365 / SQLite / Airtable / Pandas / DataTable / DOMParser) — read `./docs/patterns/data-tables.md` BEFORE adding the node, both for the Function that builds the table AND for the reader/writer node. That doc names the exact node and shows its properties (e.g. write CSV = `Core.CSV.WriteCSV` with `inFilePath` + `inTable`; write Sheets = `Robomotion.GoogleSheets.SetRange`; etc.) and the `{columns: [...], rows: [{key: value}]}` format (never `{header: ...}`, never rows-as-arrays). **Do NOT `robomotion search` for data-output nodes — search returns TEMPLATES, not nodes, and looping on it wastes the turn. The node names are in data-tables.md; once you know the node, use `robomotion describe node <type>` for its exact properties.** When a search returns templates instead of the node you need, stop searching and read the relevant pattern doc.
 - For any `Robomotion.ChatAssistant` flow in **conversational** mode — read `./docs/patterns/conversational-chat.md` BEFORE writing it. One user message is one `ChatIn → ChatOut` run and **`ChatOut` is the only thing that unlocks the composer**, so a branch that ends anywhere else (an error, a missing `ChatOut`) freezes the chat until the page is reloaded — the most common bug in these flows, and it looks like a product fault rather than a flow fault. That doc also carries the streaming wiring (Callback In `stream_delta` → `Streaming Text`, and **no `Text` node repeating the answer**) and the attachments wiring (`GetAttachments`, because `msg.payload.files` is names and versions, never files on disk).
-- Validate BEFORE save — `save_flow` only compiles, it does NOT pspec-validate.
+- For a `Robomotion.ChatAssistant` flow in **guided** mode (questions the flow asks one after another: `Textbox`, `ButtonGroup`, `Checkbox`, …) — read `./docs/patterns/guided-chat.md` BEFORE writing it. Fixed options are `[{ scope: 'Custom', name: { label: '…' } }]` (a shape `describe node` shows only as `array` and validate does not check), and every `outResult` is an object: read `msg.<x>.value`.
+- Validate BEFORE save — `robomotion validate` first; a `git push` stores whatever is in the folder, broken or not.
 
 ## Pattern reference
 
@@ -99,6 +100,7 @@ Read these docs before writing the corresponding code:
 | Captcha solving | `./docs/patterns/captcha.md` |
 | Migrating a legacy `Robomotion.Assistant` flow → `Robomotion.ChatAssistant` | `./docs/patterns/assistant-migration.md` |
 | Conversational Chat Assistant (turn contract, Stop, streaming, attachments) — **MANDATORY** before writing any conversational-mode chat flow | `./docs/patterns/conversational-chat.md` |
+| Guided Chat Assistant (question widgets, fixed options, `outResult.value`, asking again, error path) — **MANDATORY** before writing any guided-mode chat flow | `./docs/patterns/guided-chat.md` |
 | Comments, grouping & Sugiyama layout (title box, colored phase headers + description text, box sizing, long wires as `GoTo`/`Label`, multi-port fan-out, `main.designer.ts`) | `./docs/patterns/comments-and-layout.md` |
 
 References:
@@ -139,14 +141,17 @@ Full step-by-step: **`./docs/workflow.md`**. Outline:
     robomotion create flow "<short human name>"
 
    It makes the folder (a slug of the name, or `--dir <path>`), signs it in when it is not (a code and a link the person approves in their browser; run it in the background, it waits for the approval; `--workspace <host>` when they named one), creates the flow on the server and checks it out there. Then `cd` into it. An existing checkout (a `git clone` from the flow's Home card) needs nothing; if `robomotion auth whoami` says not logged in, `robomotion auth login --workspace <host>` in it.
-0. **Gather requirements** (interactive only) — credentials (commit to a vault-item pick, don't quiz the user; **never ask for the secret itself** — `vault_picker`, or ask them to add it to Vault first: `./docs/patterns/credentials.md`), URLs, files, iteration, error handling.
-1. **Discover** — `robomotion search`, `robomotion get nodes`, `robomotion docs <namespace>` (MANDATORY for every non-`Core.*` package).
-2. **Plan** — output plan as chat text, then `AskUserQuestion(["Build it", "Modify plan"])`.
+0. **Gather requirements** (interactive only) — credentials (commit to a vault-item pick from `robomotion get vaults` / `robomotion get vault-items <vault-id>`, don't quiz the user; **never ask for the secret itself** — ask them to add it to Vault first: `./docs/patterns/credentials.md`), URLs, files, iteration, error handling.
+1. **Discover** — `robomotion search`, `robomotion get nodes`, `robomotion docs <namespace>` for every non-`Core.*` package (when a package has no llms.txt, `robomotion describe package <ns>` and `describe node`).
+2. **Plan** — output plan as chat text, then ask "Build it, or change the plan?" with your own question tool (or in plain chat).
 3. **Write** — read 1-2 relevant `./docs/patterns/*.md`, verify property names with `robomotion describe node`, then `Write` `main.ts` (and any `subflows/<id>.ts`). For browser flows: explore live first.
-4. **Validate** — call `validate_flow` MCP tool. Pspec-checks AND dependency-checks. MUST run BEFORE save.
-5. **Save** — `save_flow` if registered (Designer / pi); else `git add -A && git commit -m "..." && git push` from inside the flow dir (the checkout `robomotion create flow` made pushes with no setup). **This is the terminal step.** Stop here and report success — do NOT chain into running the flow. Running is a separate user request handled by the `running-flow` skill.
+4. **Validate** — `robomotion validate` in the flow folder. Pspec-checks AND dependency-checks. MUST pass BEFORE save.
+5. **Save** — `git add -A && git commit -m "..." && git push` from inside the flow dir (the checkout `robomotion create flow` made pushes with no setup; commit `main.designer.ts` with `main.ts`). **This ends the job** unless the person asked for a run too. Report success — do NOT chain into running the flow on your own. Running is a separate user request handled by the `running-flow` skill; when a run there finds a bug and you fix it, validate and save again.
+6. **When the request includes running it** ("build it, run it, and save it when it works"): build → validate → run (`running-flow`: `robomotion run` runs the folder as it is, nothing needs saving first) → fix until the run is green → save, after the green run. A Chat In flow is run by `running-chat-assistant` instead, whose loop pushes before every chat (in a flow checkout that push is the save). Without that ask: build → validate → save, and stop.
 
 If invoked in **direct mode** ("Write main.ts for X", "Generate a flow that does Y"), skip 0-2 and jump to 3.
+
+Inside the Designer's **Build with AI**, the same steps are tools: `validate_flow` for step 4, `save_flow` for step 5 (git is refused there), `get_node_schema` for `describe node`, and `AskUserQuestion` (with its `vault_picker`) for questions. In a terminal, use the commands above.
 
 **Browser caveat:** if code changed after the initial exploration (different selectors, new actions), re-verify selectors against the live page before saving. Selectors are owned by Step 3, not a post-save step. **And close the exploration browser the moment exploring ends** - whichever tool opened it (robomotion-browser-mcp, a Playwright MCP) - before writing the flow; never leave it open while the flow is built or run. The robot opens its own.
 
@@ -155,12 +160,14 @@ If invoked in **direct mode** ("Write main.ts for X", "Generate a flow that does
 For loop / conditional / subflow / catch examples, see the corresponding pattern docs — they have richer working snippets.
 
 ```typescript
-import { flow, Message, Custom } from '@robomotion/sdk';
+import { flow, Message, Custom, JS, Global, Flow, Credential, AI } from '@robomotion/sdk';
 
-flow.create('main', 'Simple Flow', (f) => {
+flow.create('<flow-id>', 'Simple Flow', (f) => {
   f.node('42ec21', 'Core.Trigger.Inject', 'Start', {})
     .then('7dbafc', 'Core.Programming.Function', 'Setup', {
-      func: `msg.url = 'https://example.com'; return msg;`
+      func: `msg.url = 'https://example.com';
+
+return msg;`
     })
     .then('a06926', 'Core.Browser.Open', 'Open Browser', {
       outBrowserId: Message('browser_id')
@@ -186,7 +193,7 @@ The `robomotion` CLI shells out to `robomotion-sdk-mcp` internally for search-ba
 
 ## Regression suite
 
-This skill ships with an automated eval suite at `./evals/` — Tier A pinpoint regressions (handcrafted fixtures, one rule each) plus Tier B integration tests (live `main.ts` from the public `robomotion-templates` repo). Run `bun run skills/creating-flow/evals/run-evals.ts` from the agent-skills root before committing edits to this SKILL.md or the `./docs/` files. See `./evals/README.md` for adding new cases and the assertion grammar.
+For people editing this skill: an automated eval suite lives in the agent-skills repository ([`github.com/robomotionio/agent-skills`](https://github.com/robomotionio/agent-skills), `skills/creating-flow/evals/`) — Tier A pinpoint regressions (handcrafted fixtures, one rule each) plus Tier B integration tests (live `main.ts` from the public `robomotion-templates` repo). `robomotion skills install` does not install it. In a checkout of that repo, run `bun run skills/creating-flow/evals/run-evals.ts` from the root before committing edits to this SKILL.md or the `./docs/` files; its `README.md` covers adding new cases and the assertion grammar.
 
 ## Related skills
 

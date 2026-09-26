@@ -47,7 +47,7 @@ Resources for `describe`: `node | package | template`.
    robomotion docs Robomotion.WordPress --grep auth       # line-filtered
    robomotion docs Robomotion.WordPress --section CreatePost
    ```
-   `docs` carries auth patterns and package-level gotchas that aren't in node schemas. MANDATORY for every non-`Core.*` package you use.
+   `docs` carries auth patterns and package-level gotchas that aren't in node schemas. Run it for every non-`Core.*` package you use. Many packages have no llms.txt (for example `Robomotion.HermesAgent`): then `docs` answers `"available":false`, and the package's own descriptions are the documentation — read `robomotion describe package <ns>` for its nodes and versions, and `robomotion describe node <type>` for each node you wire (every property carries a description).
 
 ## Search engine capabilities
 

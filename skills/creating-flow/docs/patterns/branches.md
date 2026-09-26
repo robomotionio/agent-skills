@@ -321,9 +321,9 @@ The recommended pattern for parallel work distribution with multiple workers.
 ### Example: Process Invoices with 5 Parallel Workers
 
 ```typescript
-import { flow, Message, Custom } from '@robomotion/sdk';
+import { flow, Message, Custom, JS, Global, Flow, Credential, AI } from '@robomotion/sdk';
 
-const invoiceFlow = flow.create('main', 'Parallel Invoice Processing', (f) => {
+const invoiceFlow = flow.create('<flow-id>', 'Parallel Invoice Processing', (f) => {
   // Start and prepare data
   f.node('d1e4f7', 'Core.Trigger.Inject', 'Start', {})
     .then('8c3b2a', 'Core.Programming.Function', 'Get Invoices', {

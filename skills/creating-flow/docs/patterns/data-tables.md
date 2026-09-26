@@ -8,7 +8,7 @@ Universal tabular data format used across all Robomotion data packages: CSV, Exc
 
 - **Single-object data** — use `msg.field` directly; don't wrap one row in a `{columns, rows}` structure.
 - **Free-form JSON** — array of heterogeneous objects → stay as an array; don't force a columns list.
-- **Logs and diagnostics** — `console.log` in a Function or `Core.Flow.Log` are better than building a table.
+- **Logs and diagnostics** — a `Core.Flow.Log` or `Core.Programming.Debug` node is better than building a table (`console.log` in a Function never reaches `robomotion run`).
 
 ## Philosophy
 
@@ -191,6 +191,7 @@ double-writes it. (Reading back uses the same flag: `optHeaders: true` on
 |-----------|-----------|
 | `Core.CSV.ReadCSV` | **Returns** |
 | `Core.CSV.WriteCSV` | **Expects** |
+| `Core.CSV.AppendCSV` | **Expects** |
 | `Core.Excel.GetRange` | **Returns** |
 | `Core.Excel.SetRange` | **Expects** |
 | `Core.Browser.RunScript` | **Returns** JSON string (parse with Function) |
@@ -443,6 +444,59 @@ f.node('3e4f5a', 'Core.CSV.WriteCSV', 'Write CSV', {
 });
 ```
 
+### Append to CSV (create the file on the first run)
+
+`Core.CSV.AppendCSV` adds rows to the end of a CSV file that **already exists** — it has no
+header option and fails when the file is not there. A flow that adds a row per run (a daily
+log, a price tracker) therefore checks for the file first: the first run creates it with
+`WriteCSV` and a header row, every later run appends.
+
+```typescript
+f.node('4c1e9a', 'Core.Programming.Function', 'Today\'s Row', {
+  func: `msg.csv_path = global.get('$Home$') + '/prices.csv';
+
+msg.table = {
+  columns: ['date', 'price'],
+  rows: [{ date: new Date().toISOString().slice(0, 10), price: msg.price }]
+};
+
+return msg;`
+})
+  .then('a7d352', 'Core.FileSystem.PathExists', 'Is The File There', {
+    inPath: Message('csv_path'),
+    outResult: Message('exists')
+  })
+  .then('e92b06', 'Core.Programming.Function', 'Append Or Create', {
+    outputs: 2,
+    func: `if (msg.exists) {
+  return [msg, null];
+}
+
+return [null, msg];`
+  });
+
+// Port 0: the file is there - append the row (same separator as the file)
+f.node('3f6d81', 'Core.CSV.AppendCSV', 'Append The Row', {
+  inFilePath: Message('csv_path'),
+  inTable: Message('table')
+});
+// Port 1: first run - create it, header row first
+f.node('b50c2e', 'Core.CSV.WriteCSV', 'Create The File', {
+  inFilePath: Message('csv_path'),
+  inTable: Message('table'),
+  optHeaders: true
+});
+f.node('61af94', 'Core.Flow.Stop', 'Stop', {});
+
+f.edge('e92b06', 0, '3f6d81', 0);
+f.edge('e92b06', 1, 'b50c2e', 0);
+f.edge('3f6d81', 0, '61af94', 0);
+f.edge('b50c2e', 0, '61af94', 0);
+```
+
+Keep the `columns` the same on both paths: `WriteCSV` writes them as the header, and
+`AppendCSV` writes the row values in that column order.
+
 ### Write to Excel
 ```typescript
 f.node('6b7c8d', 'Core.Excel.Create', 'Create Excel', {
@@ -464,13 +518,46 @@ f.node('6b7c8d', 'Core.Excel.Create', 'Create Excel', {
 ```
 
 ### Insert into SQLite
+
+`inTable` is the **data** (`{columns, rows}`); the table's name in the database is
+`inDatabaseTable`. The values are passed as they are — no quoting to do, an apostrophe in
+a name is safe — so this is the way to write text a person typed.
+
+A SQLite node reaches the database one of two ways (`robomotion describe node Robomotion.SQLite.Insert`):
+
+- **`optConnectionString`** on the node itself — `Custom('Data Source=/path/to/app.db;Version=3;')`
+  or a `Message()` holding that string. Simplest; each node opens the file on its own.
+- **`inConnectionId`** — the id a `Robomotion.SQLite.Connect` node put in `msg.conn_id`
+  (Connect takes the same `optConnectionString`). Use it for several statements on one
+  connection, or with a transaction (`Start` / `Commit`, `inTransactionId`).
+
 ```typescript
+// With a connection string (no Connect node)
 f.node('8b9c0d', 'Robomotion.SQLite.Insert', 'Insert', {
-  inConnectionId: Message('conn_id'),
-  inTable: Custom('products'),
-  inData: Message('table')
+  optConnectionString: Message('db'),   // 'Data Source=' + path + ';Version=3;'
+  inDatabaseTable: Custom('products'),
+  inTable: Message('table')
 });
+
+// With a connection opened earlier
+f.node('2a7f40', 'Robomotion.SQLite.Connect', 'Open The Database', {
+  optConnectionString: Message('db'),
+  outConnectionId: Message('conn_id')
+})
+  .then('c63e1b', 'Robomotion.SQLite.Insert', 'Insert', {
+    inConnectionId: Message('conn_id'),
+    inDatabaseTable: Custom('products'),
+    inTable: Message('table')
+  });
 ```
+
+Build the path with a literal `'/'` in a Function (`msg.db = 'Data Source=' + global.get('$Home$') + '/app.db;Version=3;'`) — system variables are not read inside `Custom()`.
+
+Reading back is `Robomotion.SQLite.Query` with the SQL in its `func` and `{{{field}}}`
+placeholders. Write text values as `'{{{field}}}'`, quotes hugging the placeholder: the node
+doubles an apostrophe there itself (1.6.6), so never double it by hand, and a `LIKE` takes the
+whole pattern built in a Function (`LIKE '{{{pattern}}}'`, never `LIKE '%{{{q}}}%'`, which is
+not quoted). The full rule: `../reference/function-nodes.md`.
 
 ### Write to Excel 365 (Cloud)
 ```typescript
@@ -530,6 +617,7 @@ f.node('0a1b2c', 'Core.Net.HttpRequest', 'HTTP Request', {
 |-----------|--------|
 | Read CSV | `Core.CSV.ReadCSV` |
 | Write CSV | `Core.CSV.WriteCSV` |
+| Append to CSV (file must exist) | `Core.CSV.AppendCSV` |
 | Read local Excel | `Core.Excel.GetRange` |
 | Write local Excel | `Core.Excel.SetRange` |
 | Read Excel 365 | `Robomotion.Excel365.RangeRead` |
@@ -538,7 +626,7 @@ f.node('0a1b2c', 'Core.Net.HttpRequest', 'HTTP Request', {
 | Write Google Sheets | `Robomotion.GoogleSheets.SetRange`, `AppendRange` |
 | Extract HTML table | `Robomotion.DOMParser.ExtractTable` |
 | SQLite query | `Robomotion.SQLite.Query` |
-| SQLite insert | `Robomotion.SQLite.Insert` |
+| SQLite insert | `Robomotion.SQLite.Insert` (`inDatabaseTable` + `inTable`) |
 | Iterate rows | `ForEach` on `table.rows` |
 | Add row | `rows.push(rowObj)` in Function |
 | Filter rows | `rows.filter()` in Function |

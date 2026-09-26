@@ -26,7 +26,7 @@ Direct credential-based approach. Each node takes `optToken` credential directly
 
 ```typescript
 const ANTICAPTCHA_CREDS = { vaultId: '...', itemId: '...' };
-f.addDependency('Robomotion.AntiCaptcha', 'v0.3.0'); // MANDATORY for non-Core packages
+f.addDependency('Robomotion.AntiCaptcha', '0.6.0'); // MANDATORY for non-Core packages
 
 f.node('42ec21', 'Robomotion.AntiCaptcha.ReCaptcha', 'Solve reCAPTCHA', {
   optToken: Credential(ANTICAPTCHA_CREDS),
@@ -54,7 +54,7 @@ Session-based approach. Create session first, then solve captchas.
 
 ```typescript
 const CAPMONSTER_CREDS = { vaultId: '...', itemId: '...' };
-f.addDependency('Robomotion.CapMonster', 'v0.5.2'); // MANDATORY for non-Core packages
+f.addDependency('Robomotion.CapMonster', '0.6.0'); // MANDATORY for non-Core packages
 
 f.node('7dbafc', 'Robomotion.CapMonster.CreateSession', 'Create Session', {
   optAPIKey: Credential(CAPMONSTER_CREDS),
