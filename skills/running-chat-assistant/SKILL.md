@@ -13,10 +13,12 @@ By hand that is the Designer (version, publish), Admin Console > Agents (create,
 ```bash
 robomotion validate .                        # 1. pspec-clean first, always
 robomotion agent push                        # 2. this folder's flow → "<name> (dev)" in the workspace
-robomotion agent create --mode guided        # 3. publish + the agent with one instance (or --mode conversational)
+robomotion agent create --mode guided        # 3. the agent with one instance (or --mode conversational); publishes a version itself if there is none
 robomotion agent start                       # 4. connect the agent's own robot on this machine, then Play
 robomotion agent chat "…" --expect "…"       # 5. the real page, one step at a time, every reply printed
 ```
+
+**In a folder that is a git checkout of its cloud flow, `agent push` refuses** (saving there is git). Step 2 is then `git add -A && git commit -m "…" && git push`; steps 3 to 5 stay the same. Everywhere else, `agent push` is step 2. After an edit, see Step 4.
 
 **What you need:** the `robomotion` CLI on PATH. It brings `robomotion-deskbot` (the robot) and `robomotion-browser-mcp` (the browser) with it. Plus a login made with `robomotion auth login` in the flow folder (a session, not an API key: the chat page signs in with it). Nothing else: no Designer, no Admin Console, no Desktop App, no Playwright, no curl.
 
@@ -35,11 +37,13 @@ The agent's mode decides how the page asks. Pick it from the flow, or ask the pe
 
 ```bash
 robomotion agent push                 # creates "<name> (dev)" on the first push; never writes to the flow main.ts names
+                                      #   (git checkout of the cloud flow: git add -A && git commit && git push instead)
 robomotion agent create --mode <m>    # publishes a version if there is none, then Agents > New with one instance
 robomotion agent start                # makes the robot a connect token, starts its deskbot here, starts the agent
 ```
 
-- **The flow's own id is never touched.** A template or a flow with `flow.create('main', …)` gets a dev copy; so does any folder that is not a git checkout of its cloud flow. In a git checkout, `push` refuses: saving there is `git add`, `git commit`, `git push`, and then `publish`.
+- **The flow's own id is never touched.** A template or a flow with `flow.create('main', …)` gets a dev copy; so does any folder that is not a git checkout of its cloud flow. In a git checkout, `push` refuses: save with `git add -A && git commit -m "…" && git push` instead, then go on with `create` and `start` as above.
+- **`create` publishes for you.** If the flow has no version yet, `create` cuts one and publishes it before making the agent. Don't run `publish` first.
 - **The agent's robot is not the person's robot.** `create` makes an Application robot that belongs to the agent and runs nothing else; `start` connects it on this machine with its own token. It uses one Application-robot slot in the workspace. If `create` says there is no free slot, tell the person; don't delete their other agents.
 - Everything is remembered in `.robomotion/agent.json` (0600: it holds the robot's token). Each flow folder has its own agent, robot and deskbot, so several agents can be developed side by side. `robomotion agent status` shows where things stand.
 
@@ -53,7 +57,7 @@ robomotion agent start                # makes the robot a connect token, starts 
 | `--click "Label"` | Presses the button with that text in the open question (`ButtonGroup`; a single-choice one answers at once). |
 | `--check "Label"` | Ticks the box with that label (`Checkbox`). Ticking asks nothing yet. |
 | `--submit` | Presses the open question's ✓ (after ticks, or a multi-select `ButtonGroup`). |
-| `--expect "text"` | The text must be on the page, else exit 1. Put it right after the step that should produce it. |
+| `--expect "text"` | The text must be in what the step just before it produced, else exit 1. Case does not matter. Put each `--expect` right after the step it checks. |
 
 It prints what the agent shows after each step, widgets as what they want:
 
@@ -97,6 +101,18 @@ The robot's full output (package tracebacks go there, not to the page) is `robom
 A flow with no `Core.Trigger.Catch → Text → ChatOut` shows a failing turn as silence: the chat just stays locked. If the log shows an error the person's users would meet, add that Catch branch (see `conversational-chat.md` §2).
 
 ## Step 4 - Fix and go again
+
+In a folder that is a git checkout of its cloud flow:
+
+```bash
+# edit main.ts
+robomotion validate .
+git add -A && git commit -m "what changed" && git push
+robomotion agent start --draft     # runs the flow you just pushed; no new version needed
+robomotion agent chat …
+```
+
+In any other folder:
 
 ```bash
 # edit main.ts
