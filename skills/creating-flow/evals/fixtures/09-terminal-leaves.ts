@@ -13,7 +13,9 @@ flow.create('a1f009', 'Terminal Nodes Wired As Leaves', (f) => {
     });
 
   f.node('333333', 'Core.Programming.Function', 'Process Positive', {
-    func: `msg.note = 'positive'; return msg;`
+    func: `msg.note = 'positive';
+
+return msg;`
   });
 
   f.node('444444', 'Core.Flow.Log', 'Log Positive', {

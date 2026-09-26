@@ -10,7 +10,9 @@ flow.create('a1f008', 'Credentials via Vault', (f) => {
       outItem: Message('credentials')
     })
     .then('2a2a2a', 'Core.Programming.Function', 'Build Headers', {
-      func: `msg.headers = { Authorization: 'Bearer ' + msg.credentials.api_key }; return msg;`
+      func: `msg.headers = { Authorization: 'Bearer ' + msg.credentials.api_key };
+
+return msg;`
     })
     .then('333333', 'Core.Net.HttpRequest', 'Call API', {
       optUrl: Custom('https://api.example.com/me'),

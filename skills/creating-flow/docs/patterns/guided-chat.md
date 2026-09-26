@@ -26,7 +26,9 @@ ends the conversation.
 | `ButtonGroup` | one press (`inMultiSelect: 'single'`, the default) or several and ✓ (`'multi'`) | `optCustomLabels` | the label pressed (`'multi'`: an array of labels) |
 | `Checkbox` | ticks, then ✓ | `optCustomOptions` | an **array** of the labels ticked |
 | `Dropdown` | one pick from a list (`inPlaceholder`) | `optCustomOptions` | the label picked |
-| `RadioButton`, `Datepicker`, `UploadFile` | one pick · a date · files | see `describe node` | see `describe node` |
+| `RadioButton` | one pick, then ✓ | `optCustomOptions` | the label picked |
+| `Datepicker` | a day, then ✓ (`inLabel`, `inDescription`) | — | an ISO date-time string (§3) |
+| `UploadFile` | files | see `describe node` | see `describe node` |
 
 Around them, the display-only nodes: `Text` (Markdown), `Header`, `Divider`, `Image`, `Error`.
 
@@ -78,6 +80,27 @@ var extras = msg.extras.value || [];                // Checkbox → ['Chain clea
 
 `msg.service === 'Brake service'` is always false, and `'Service: ' + msg.service` prints
 `[object Object]`. In a scope helper, the same path: `inText: Message('name.value')`.
+
+**A Datepicker's value is a date-time, not a day:** an ISO string such as
+`'2026-10-03T00:00:00.000Z'`. Which day it names depends on the chat page:
+
+- The fixed page (robomotion #3208, not deployed everywhere yet) sends the picked day at UTC
+  midnight, so `msg.date.value.slice(0, 10)` is the day the person picked.
+- The page before it sent the person's local midnight converted to UTC. East of UTC that is the
+  evening before: 3 October picked in Istanbul arrives as `'2026-10-02T21:00:00.000Z'`, and
+  `.slice(0, 10)` reads 2 October.
+
+So read the date part with `.slice(0, 10)` only once the fixed page is what your users get.
+Until then, build the day from a `Date` in the flow's own timezone — right when the robot and the
+person are in the same one:
+
+```js
+var picked = new Date(msg.date.value);
+var day = picked.getFullYear() + '-' + ('0' + (picked.getMonth() + 1)).slice(-2) + '-' + ('0' + picked.getDate()).slice(-2);
+```
+
+(After the deploy that same code reads the day before on a robot west of UTC; switch to
+`.slice(0, 10)` then.)
 
 ## 4. The whole flow
 
@@ -214,9 +237,9 @@ What to notice:
 `robomotion run` cannot: nothing opens the chat page. The `running-chat-assistant` skill runs it
 as an Agent (`robomotion agent create --mode guided`) and answers each question from the terminal:
 a `Textbox` with `"text"`, a `ButtonGroup` with `--click "Label"`, a `Checkbox` with
-`--check "Label"` then `--submit` (at least one tick first). It has no step for a `Dropdown`,
-`RadioButton` or `Datepicker`, so a flow meant to be tested there asks short fixed lists with a
-`ButtonGroup`. For the flow above:
+`--check "Label"` then `--submit` (at least one tick first), a `RadioButton` or `Dropdown` with
+`--select "Option"` then `--submit`, a `Datepicker` with `--date YYYY-MM-DD` then `--submit`
+(`--select` and `--date` need the `robomotion` release after 26.9.8). For the flow above:
 
 ```bash
 robomotion agent chat --expect "bike workshop" Sam --click "Full service" --click Saturday \

@@ -3,7 +3,9 @@ import { flow, Message, Custom, JS, Global, Flow, Credential, AI } from '@robomo
 flow.create('a1f002', 'ForEach Loop with Label and GoTo', (f) => {
   f.node('111111', 'Core.Trigger.Inject', 'Start', {})
     .then('222222', 'Core.Programming.Function', 'Build Items', {
-      func: `msg.items = ['alpha', 'beta', 'gamma']; return msg;`
+      func: `msg.items = ['alpha', 'beta', 'gamma'];
+
+return msg;`
     });
 
   f.node('333333', 'Core.Flow.Label', 'Next Item', {});
@@ -12,7 +14,9 @@ flow.create('a1f002', 'ForEach Loop with Label and GoTo', (f) => {
     optOutput: Message('item')
   })
     .then('555555', 'Core.Programming.Function', 'Process Item', {
-      func: `msg.processed = msg.item + '!'; return msg;`
+      func: `msg.processed = msg.item + '!';
+
+return msg;`
     })
     .then('666666', 'Core.Flow.GoTo', 'Loop Back', {
       optNodes: { ids: ['333333'], type: 'goto', all: false }
