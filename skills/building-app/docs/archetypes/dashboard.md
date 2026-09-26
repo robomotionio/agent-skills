@@ -9,7 +9,7 @@ The person wants to WATCH something: "see how the shop is doing", "keep an eye o
 - **overview** (`/`): a `Grid` of `Stat` tiles on top (the 3-6 numbers that matter, each with its change against the previous period and `upIsGood={false}` where a rise is bad), a `DateRangePicker` for the period when the numbers are over one, a `Chart` when one of those numbers is really a shape - takings by month, tickets by day, us against the competition week by week - a `DataTable` of the most recent records below, a Refresh `Button`, and a "last updated" line. That one screen is usually the whole app.
 - Optional **detail** (`/detail`) only if the person asks to click into a row.
 
-Sample data: a `SAMPLE_METRICS` and `SAMPLE_RECENT` const per screen with realistic numbers, and a `SAMPLE_SERIES` for the chart, kept as the fallback the screen shows before the first answer arrives.
+Sample data: a `SAMPLE_METRICS` and `SAMPLE_RECENT` const per screen with realistic numbers, and a `SAMPLE_SERIES` for the chart, kept as the fallback the screen shows only while the app has never had a backend (`state === "unconfigured"`); once it has, no answer yet is the empty state.
 
 Never hand-write a stat tile. `Stat` is the kit's own and carries the label, the value, the change with its direction and an optional sparkline; a `Card` with your own `text-3xl` and your own green loses all of that and looks like a different app.
 

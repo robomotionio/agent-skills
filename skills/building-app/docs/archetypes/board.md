@@ -14,6 +14,8 @@ A board where nothing ever moves is a table with extra steps. If the stage only 
 
 ## Screens
 
+The app arrives with example screens for the other archetypes under `app/archetypes/`, but none for this one: there is no `board` folder to copy. Build it from the kit's `Kanban`, `KanbanColumn` and `KanbanCard` (`./docs/app-kit-reference.md`) as described here.
+
 - **board** (`/`): one `Kanban`, one `KanbanColumn` per stage in the person's own order, one `KanbanCard` per item. Above it, one line of plain words about what is still in play ("Still open: 6 deals worth £48,200"), and one primary `Button` that opens a `Dialog` with the add `Form`.
   - **Never hand-roll dragging.** The kit owns it: `Kanban` drags with pointer events, so it works on a touch screen, and a focused card also moves with the Left and Right arrow keys. An app that writes its own `draggable` / `onDragStart` / `onDrop` gets neither - HTML5 drag is mouse-only and leaves no keyboard path at all - and a board only some people can use is a board that failed. `./docs/app-kit-reference.md` has the whole component.
   - **The action a `Kanban` is given is called with exactly `{ key, from, to }`** - which card, the column it left, the column it landed on. Declare the move action's params as those three names. Inventing `{ id, stage }` and hoping is how a board passes every check and answers "invalid parameters" on the first drag.

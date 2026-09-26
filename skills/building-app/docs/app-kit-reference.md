@@ -21,6 +21,11 @@ Two facts that page-walk was after, so nobody goes after them again:
 
 - `useConnection()` returns `{ state, robotOnline }`, and `state` is a plain
   **string union**, not an enum: `state === "ready"` is how you compare it.
+  `"unconfigured"` is the app that has never had a backend (the preview
+  before the first `robomotion app start`), and the one state in which a
+  screen shows its `SAMPLE_*` rows. Where a snippet below writes
+  `data ?? SAMPLE_X` for brevity, a screen writes
+  `data ?? (state === "unconfigured" ? SAMPLE_X : [])` (SKILL.md step 3a).
   The type is `ConnectionState`, exported from `@robomotion/apps-runtime` -
   but a screen almost never needs to name it.
 - The runtime's hooks come from `@robomotion/apps-runtime/react` (that exact
@@ -65,7 +70,7 @@ import {
 
 The kit is a design system, not a pile of widgets. A screen composes it and
 adds layout; it never chooses a colour, draws a picture or invents a
-primitive. `validate_app`'s `kit-only` check reports each of the things
+primitive. `robomotion app validate`'s `kit-only` check reports each of the things
 below by file and line, in these words.
 
 **Colours a screen may write.** The kit's Tailwind preset gives every screen
@@ -184,7 +189,7 @@ Where the person is, and one press back to anywhere above them. A detail screen 
 
 ### `AssistantWidget`
 
-The app's own assistant, in the corner of every screen. It talks to the flow through the app's MCP server, so it can answer questions about the app's own data and run its actions; it is not a general chatbot bolted on. Mount it once, beside the routed screens inside `AppShell`. Only add it when the person asked for one.
+The app's own assistant, in the corner of every screen. It talks to the flow through the app's MCP server, so it can answer questions about the app's own data and run its actions; it is not a general chatbot bolted on. The seeded `src/main.tsx` already mounts it once, beside the routed screens inside `AppShell`, so every app has one. Leave it there unless the person asks for it to go; never mount a second.
 
 ```tsx
 <AppShell title="Invoice Approvals" nav={nav} onNavigate={navigate}>
@@ -220,7 +225,7 @@ Each of those leaves the app's base and lands the WHOLE page on the serving
 tier's "not found", from which the only way back is reloading the Designer.
 It works everywhere except the one place the app actually runs, so nothing but
 pressing the link finds it. Write `screenHref("/")` for an href and
-`navigate("/trips")` in a handler. `validate_app`'s `screen-links` check
+`navigate("/trips")` in a handler. `robomotion app validate`'s `screen-links` check
 refuses the three spellings above; a link that really does leave the app needs
 a full URL with its scheme.
 
@@ -370,9 +375,9 @@ Copy a reference number, a link, or a whole answer the robot wrote. It falls bac
 Transient feedback after an action completes. Success gets a toast; failure gets an `ErrorState` or a toast with the plain-language message.
 
 ```tsx
-const toast = useToast();
+const { toast } = useToast();
 await approve.run({ number });
-toast("Invoice approved");
+toast({ title: "Invoice approved", variant: "success" });
 ```
 
 ### `EmptyState`
@@ -639,7 +644,7 @@ async function importRows() {
 }
 ```
 
-**Loading a screen.** Only a table with `source={{ action }}` asks for its rows by itself, on mount. Every other screen that shows an answer - a detail page, a row of counters, a dropdown fed by a list - has to ask when it opens, in ONE effect, and `validate_app`'s `screen-loads` check names each one that does not:
+**Loading a screen.** Only a table with `source={{ action }}` asks for its rows by itself, on mount. Every other screen that shows an answer - a detail page, a row of counters, a dropdown fed by a list - has to ask when it opens, in ONE effect, and `robomotion app validate`'s `screen-loads` check names each one that does not:
 
 ```tsx
 // RIGHT - asked on open; the person sees their data without pressing anything.
@@ -651,7 +656,7 @@ useEffect(() => { void summary.run({}); void customers.run({}); }, []);
 async function onAdd() { await addCustomer.run(draft); await customers.run({}); }
 ```
 
-The effect's dependency array is `[]`, or the values that should ask again (an id). Never the hook object or a function made during render: both are new on every render, so the effect asks after every answer and the screen shows Loading for ever. `validate_app`'s `effect-loop` check names it.
+The effect's dependency array is `[]`, or the values that should ask again (an id). Never the hook object or a function made during render: both are new on every render, so the effect asks after every answer and the screen shows Loading for ever. `robomotion app validate`'s `effect-loop` check names it.
 
 ```tsx
 // WRONG - `customers` is a new object every render: asks, re-renders, asks again, for ever.
@@ -1003,7 +1008,7 @@ without it the form checks nothing at all. The types in `actions.gen.ts` are
 gone by run time, and a form's values are a bag of unknowns, so `schema` is the
 only thing that connects the fields to the contract. Skip it and a `Select`
 writing the string `"20"` into a field the contract declares as a `number`
-compiles, passes `validate_app`, and comes back from the robot as
+compiles, passes `robomotion app validate`, and comes back from the robot as
 **"invalid parameters"** with no step having run and nothing in the robot's log
 to read. A type mismatch between a screen and its contract has no other net.
 
@@ -1242,7 +1247,7 @@ import {
 |---|---|---|
 | `use<Action>()` (generated) | `{ run, data, error, loading, progress, cancel, name }`, typed from the contract | every button that makes the robot do something; pass the whole object to `Button`'s `action`. Import it from `@/generated/actions.gen`, never write `useAction("name")` yourself |
 | `useEvent(name, cb)` | subscribes for the component's lifetime | toasts and refreshes when the robot announces something |
-| `useConnection()` | `{ state, robotOnline }` | anything that must react to `"connecting" \| "ready" \| "offline" \| "robot_offline" \| "contract_mismatch"` |
+| `useConnection()` | `{ state, robotOnline }` | anything that must react to `"connecting" \| "ready" \| "offline" \| "robot_offline" \| "app_not_running" \| "contract_mismatch" \| "unconfigured"` |
 | `useFileUpload()` | `{ upload, uploading, progress, error }` | getting a `FileRef` to pass into an action |
 | `useFileUrl(ref)` | `{ url, loading, error, refresh }` | a `FileRef` as a URL, for the rare custom surface. `Image` and the picture components already do this - never call it to feed them |
 | `useLive(action, { events, params?, pollMs? })` | `{ data, error, loading, refreshing, done, refresh, name }` | anything the robot is still changing: a run's counters, a queue. Asks the read action on open, again when one of `events` arrives (a burst is one question), by the clock when nothing is heard, and stops polling at `done: true` |
@@ -1726,6 +1731,6 @@ So `onSubmit` must never call `run` - a screen that does (`onSubmit={async (v) =
 { await addItem.run({...v}); navigate("/") }}`) runs the flow twice for every
 press, and every record it adds arrives twice. Shape the values in the flow's
 first step or with `onChange`; do what must follow the call - navigate, a toast -
-in a `useEffect` on `addItem.data`. `validate_app` reports the shape as
+in a `useEffect` on `addItem.data`. `robomotion app validate` reports the shape as
 `form-runs-once`, and kit 0.1.6 ignores its own run when `onSubmit` already ran
 the action, but an app carries the kit it was built with.
