@@ -17,6 +17,8 @@ Two things decide whether this goes well: **how fast the person sees the first s
 
 **What you need:** the `robomotion` CLI on PATH (it brings `robomotion-sdk-mcp`, `robomotion-api-mcp` and `robomotion-browser-mcp` with it), `bun`, `git`, and a Robomotion login (`robomotion auth login`). Nothing else: no Designer, no other MCP server. Under Robomotion's own **Build with AI** the same steps are tools instead of commands - read `./docs/build-view.md` there and only there.
 
+**The loop below is robomotion 26.9.8 or later** - check `robomotion version` once. An older CLI still builds the app, but: `app screen` / `app try` read localhost instead of the preview link, `app start --restart` runs the last published build instead of your save once the app has been published, and `app publish` serves the screens without publishing the backend or printing the app's address. On an older CLI, ask the person to update Robomotion (robomotion.io/downloads) before you publish, and do not send them to the Designer to finish it.
+
 ## The contract is the spine
 
 `app.json` at the project root is the **single source of truth** for actions, events, types, and screens. The project is one folder - the flow's - and the screens live in `app/` inside it. Typegen ripples every change into both halves:
@@ -76,7 +78,7 @@ One project, one folder, one save. The layout:
 | `robomotion app create "<name>"` | the same, in place, on an EXISTING flow checkout (a `git clone` from its Home card) that has no app yet. |
 | `robomotion app sync` | for an app that already exists: pull, place the packages, install |
 | `robomotion app codegen` (from `app/`) | regenerates both typed clients from `app.json` and prints the contract hash |
-| `robomotion app dev` | runs the screens and prints two addresses: localhost, and the app's preview address - the one Robomotion's Build view shows, so the person can watch the same live screens from the Designer while you work. Start it in the background; it keeps running. |
+| `robomotion app dev` | runs the screens live and prints two addresses: localhost, and the app's **preview link** (`https://runs.<domain>/preview/<id>/`, also in `robomotion app status`). Every screen change is on the preview at once; it reaches the robot through the same serving tier the published app uses. Develop and test on it. Start it in the background; it keeps running. |
 | `robomotion app link` | a link that opens the preview in any browser, for members of the workspace (it expires in minutes; the browser keeps the preview after that) |
 | `robomotion app validate` | every check: schema, `tsc` on both halves, contract hash, the flow's wiring, the kit rules |
 | `git add -A && git commit -m "..." && git push` | the save, at the project root - screens and flow together |
@@ -84,11 +86,11 @@ One project, one folder, one save. The layout:
 | `robomotion app start [--restart]` | brings that robot up on this computer and starts the app on it; `--restart` after a save that changed the flow |
 | `robomotion app smoke` | presses every button once through the app's own door and reports what each answered |
 | `robomotion app press <action> --params '{...}'` | presses one button with values you choose |
-| `robomotion app try --screen "<label>" --fill "Label=value" --select "Label=option" --click "Button" --expect "text"` | uses the app the way a person does, in a headless browser signed in as them, and prints what the screen shows and what the robot did |
-| `robomotion app screen "<label>"` | reads what a screen shows (text and console errors) |
+| `robomotion app try --screen "<label>" --fill "Label=value" --select "Label=option" --click "Button" --expect "text"` | uses the app the way a person does, on the live preview (`--local` for localhost, `--url` for another address), in a browser signed in as them, and prints what the screen shows and what the robot did |
+| `robomotion app screen "<label>"` | reads what a screen shows on the live preview (text and console errors) |
 | `robomotion app logs [-f]` | the robot's output: every step it ran, and the error when one failed |
 | `robomotion app status` | the app, the screens, the robot, what was last checked |
-| `robomotion app publish` | builds the screens, cuts a flow version, publishes - only when asked |
+| `robomotion app publish` | the last step, when the app is finished and the person asked: builds the screens, uploads them, publishes the flow version the app runs in production, and prints the **production link** (`https://runs.<domain>/<id>`). Never part of the development loop |
 
 Results come on stdout; progress and complaints on stderr.
 
@@ -200,13 +202,34 @@ Narrate progress with the task list, in the person's language ("Design the revie
 
 3c. **A screen asks for what it shows when it opens, and a row button is a column.** A table with `source={{ action }}` loads itself; every other list, counter or detail runs its read in one `useEffect` on open, and a form that adds a record refetches the list that shows it. A button the person asked for on every row is rendered as a column, not folded into the table's "More" menu. Both are under `DataTable` in `./docs/app-kit-reference.md` ("Loading a screen", "A button on every row").
 
-4. **Start the screens and look.** `robomotion app dev` in the background, once; it prints the local address. After every batch of screen edits, `robomotion app screen "<label>"` on the screen you touched: it prints the text and the console errors, and a screen that throws on first render is caught here, not by the person. Give the person the address when they ask where the app is.
+4. **Start the screens and look.** `robomotion app dev` in the background, once; it prints the preview link. **You develop on the preview link from here to the end**: a screen edit is there as soon as the file is saved, with no build and no publish. After every batch of screen edits, `robomotion app screen "<label>"` on the screen you touched (it reads the preview): it prints the text and the console errors, and a screen that throws on first render is caught here, not by the person. Give the person the preview link when they ask where the app is. A change to the flow is not live the same way: save it (step 5b), then `robomotion app start --restart`.
 
 4b. **`robomotion app codegen`** whenever `app.json` or a `read_only` mark in `mcp.json` changes, before writing code against it. Run it from `app/`.
 
 5. **Build the flow, one action at a time**, in the order the person will press them. For each action: `App Action` trigger → the real work → `App Respond` on EVERY path (an unresponded call only ends by timeout, which the person experiences as a hung button). Long work sends `App Progress`. `src/generated/actions.gen.ts` at the project root gives you the param/result types. Flow SDK mechanics (node grammar, browser, credentials) are the `creating-flow` skill - use it. The exact shape of an app's flow is the next section; read it before the first node.
 
 5b. **Check and save.** `robomotion app validate` until it passes, then `git add -A && git commit -m "<what changed>" && git push` at the project root. The robot fetches the flow from git: an uncommitted flow is a flow the robot has never seen.
+
+6a. **When the app has no robot of its own yet - a brand-new app never does -
+   ask before anything gives it one, and the question is a CARD, not a
+   sentence.** Do not run `robomotion app start` before the answer: on an app
+   with no robot it sets one up by itself, spending the robot without asking. This is the last question of the build and it
+   arrives at the end of a long summary, where a sentence ending in a question
+   mark leaves the person nothing to press. Call the question tool
+   (AskUserQuestion in Claude Code). Exactly this shape:
+
+       header:    "Robot"
+       question:  "Your app needs a robot to run on. Shall I set one up?"
+       options:   "Yes, set it up"  /  "Not now"
+
+   The header is a word the person reads too: "Robot", not "App robot" or
+   "Robot slot". Writing the same words into your reply instead is not a
+   different spelling of the same thing, it is the fault. The person owns
+   robots; slots and types are our bookkeeping. Say what it costs only if they
+   ask. On yes: `robomotion app robot`, then `robomotion app start`, **in the
+   same turn**. On no: stop there and say the screens show sample data until
+   then. If the person already said yes in their request, that is the answer:
+   do not ask again.
 
 6b. **Press every button, then read the report before you say anything works.** After
    every `robomotion app start` (and every `--restart`), run `robomotion app smoke`
@@ -240,23 +263,16 @@ Narrate progress with the task list, in the person's language ("Design the revie
    every theory you have about why a press timed out (the twenty-sixth pass
    spent twenty-one minutes on a confident wrong one).
 
-6a. **When the app has no robot of its own yet - a brand-new app never does,
-   and `robomotion app start` says so if you call it anyway - the question is a
-   CARD, not a sentence.** This is the last question of the build and it
-   arrives at the end of a long summary, where a sentence ending in a question
-   mark leaves the person nothing to press. Call the question tool. Exactly
-   this shape:
-
 6d. **Prove the paths the stand-ins could not, with real values.** `robomotion app press <action> --params '{...}'` for the refusal ("not enough left"), the second page, the empty case. Read `robomotion app logs` when a press does not answer as you expect, BEFORE explaining anything: the failing step and its message are there in the robot's own words.
 
-7. **Use the app the way the person will, and check every promise.** With `robomotion app dev` running and the robot up, for each screen `.robomotion/request-checks.md` names, drive it as a person:
+7. **Use the app the way the person will, and check every promise.** With `robomotion app dev` running and the robot up, `app try` drives the live preview; for each screen `.robomotion/request-checks.md` names, drive it as a person:
 
     robomotion app try --screen "Items" --fill "Name=Rice" --fill "Unit=kg" --click "Add item" --expect "Rice"
     robomotion app try --screen "Movements" --select "Item=Rice (kg)" --select "In or out=Out" --fill "Quantity=8" --click "Save" --expect "only"
 
    It fills fields by their labels, presses buttons by their words, then prints the screen's text, the page's console errors, and every step the robot ran meanwhile. Check every line of `request-checks.md` against what the screen shows - reading a screen is not checking it. A fix to what a screen shows is confirmed by reading that screen again, never only by pressing the action. Fix any mismatch, save, restart when the flow changed, try again. Take away the records your tries made before you hand over, through the app's own delete.
 
-8. **Hand over, honestly.** Say what the app does and what to press, in the person's words; give them a link from `robomotion app link` (it opens anywhere), or the local address when they are on this computer; and tell them they can also open it in Robomotion: opening the flow there opens Build with AI with the app, and while `robomotion app dev` is running the screens show in its panel. Save first (`git add -A && git commit && git push`) so what they open is what you built. Say nothing about ids, files or test data unless something was left behind. **Offer to publish; never publish unasked.** When they say yes, `robomotion app publish`.
+8. **Hand over, honestly.** Say what the app does and what to press, in the person's words; give them the preview link (`robomotion app status`; members of the workspace open it signed in) or a link from `robomotion app link`; and tell them they can also open it in Robomotion: opening the flow there opens Build with AI with the app, and while `robomotion app dev` is running the screens show in its panel. Save first (`git add -A && git commit && git push`) so what they open is what you built. Say nothing about ids, files or test data unless something was left behind. **Offer to publish; never publish unasked.** Publishing is the end of development, not a way to test: when they say yes (or asked for it up front), `robomotion app publish`, and give them the production link it prints. Every later change goes back to the preview loop and is published again only when it is done.
 
 ### The flow side, exactly
 
@@ -343,7 +359,7 @@ the screen, and the screen's subflow file holds the action.
 import { flow, Message } from '@robomotion/sdk';
 
 flow.create('<flowId>', '<Flow Name>', (f) => {
-  f.addDependency('Robomotion.Apps', '0.3.3');
+  f.addDependency('Robomotion.Apps', '<version>');   // the one main.ts already has
 
   f.node('b2d4e1', 'Core.Flow.SubFlow', 'Problems', { optHidePorts: true });
 }).start();
@@ -389,9 +405,13 @@ port (0 inputs), so it is always the FIRST node of its chain, written with
   not drawn, because nothing is ever wired to them in a screen. The robot
   ignores it, and the `Begin`/`End` lines above are still written.
 
-**`f.addDependency('Robomotion.Apps', '0.3.3')` goes in `main.ts`, once.** The
+**`f.addDependency('Robomotion.Apps', '<version>')` goes in `main.ts`, once.** The
 subflow files use the main flow's packages, and `main.ts` needs it anyway for
-the catch-all's `App Respond Error`.
+the catch-all's `App Respond Error`. The version is already there: `robomotion
+create app` writes the latest published one. Keep it; never type one from
+memory. A newer one is a deliberate change: `robomotion describe package
+Robomotion.Apps` names what is published, and the flow is saved and restarted
+after the bump.
 
 The caller's arguments arrive as **`msg.params.<field>`**; the answer is whatever
 sits on **`msg.result`** when `App Respond` runs. Both shapes are already typed

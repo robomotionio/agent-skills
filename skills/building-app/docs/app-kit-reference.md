@@ -370,9 +370,9 @@ Copy a reference number, a link, or a whole answer the robot wrote. It falls bac
 Transient feedback after an action completes. Success gets a toast; failure gets an `ErrorState` or a toast with the plain-language message.
 
 ```tsx
-const toast = useToast();
+const { toast } = useToast();
 await approve.run({ number });
-toast("Invoice approved");
+toast({ title: "Invoice approved", variant: "success" });
 ```
 
 ### `EmptyState`
