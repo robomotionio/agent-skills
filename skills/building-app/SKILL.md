@@ -357,7 +357,7 @@ the screen, and the screen's subflow file holds the action.
 import { flow, Message } from '@robomotion/sdk';
 
 flow.create('<flowId>', '<Flow Name>', (f) => {
-  f.addDependency('Robomotion.Apps', '0.3.3');
+  f.addDependency('Robomotion.Apps', '<version>');   // the one main.ts already has
 
   f.node('b2d4e1', 'Core.Flow.SubFlow', 'Problems', { optHidePorts: true });
 }).start();
@@ -403,9 +403,13 @@ port (0 inputs), so it is always the FIRST node of its chain, written with
   not drawn, because nothing is ever wired to them in a screen. The robot
   ignores it, and the `Begin`/`End` lines above are still written.
 
-**`f.addDependency('Robomotion.Apps', '0.3.3')` goes in `main.ts`, once.** The
+**`f.addDependency('Robomotion.Apps', '<version>')` goes in `main.ts`, once.** The
 subflow files use the main flow's packages, and `main.ts` needs it anyway for
-the catch-all's `App Respond Error`.
+the catch-all's `App Respond Error`. The version is already there: `robomotion
+create app` writes the latest published one. Keep it; never type one from
+memory. A newer one is a deliberate change: `robomotion describe package
+Robomotion.Apps` names what is published, and the flow is saved and restarted
+after the bump.
 
 The caller's arguments arrive as **`msg.params.<field>`**; the answer is whatever
 sits on **`msg.result`** when `App Respond` runs. Both shapes are already typed
