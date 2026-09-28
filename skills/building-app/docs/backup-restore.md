@@ -6,8 +6,11 @@ files it writes. Every app that stores anything ships the same four things, on
 its **Settings** screen, from the first build:
 
 1. **Where the data is.** The database path and size, the files folder, the
-   backups folder, and any file the flow reads a key from (its path and whether
-   it is there, never its contents).
+   backups folder, and the vault items the app uses (vault and item name, and
+   whether the robot can read each one; never a value). Credentials always come
+   from the vault: never read a key from a file on disk, and never show one's
+   path, even when a file is offered (2026-09-28: "credentials MUST come from
+   vaults").
 2. **Back up now.** A consistent copy of the database (and the files folder),
    zipped with a small manifest into the backups folder, answered with the
    zip's path: "Backup is ready: /home/you/<app-slug>-backups/…zip".
@@ -33,15 +36,16 @@ Mill that day; copy it, change the names.
     "name": { "type": "string" }, "path": { "type": "string" },
     "size": { "type": "number", "description": "Bytes." }, "created_at": { "type": "number" } },
     "required": ["id", "name", "path", "size", "created_at"] },
-  "KeyFile": { "type": "object", "properties": {
-    "label": { "type": "string" }, "path": { "type": "string" }, "present": { "type": "boolean" } },
-    "required": ["label", "path", "present"] },
+  "VaultKey": { "type": "object", "properties": {
+    "label": { "type": "string" }, "vault": { "type": "string" }, "item": { "type": "string" },
+    "readable": { "type": "boolean" } },
+    "required": ["label", "vault", "item", "readable"] },
   "Storage": { "type": "object", "properties": {
     "data_dir": { "type": "string" }, "db_path": { "type": "string" }, "db_size": { "type": "number" },
     "backups_dir": { "type": "string" },
-    "key_files": { "type": "array", "items": { "$ref": "#/types/KeyFile" } },
+    "credentials": { "type": "array", "items": { "$ref": "#/types/VaultKey" } },
     "backups": { "type": "array", "items": { "$ref": "#/types/BackupFile" } } },
-    "required": ["data_dir", "db_path", "db_size", "backups_dir", "key_files", "backups"] }
+    "required": ["data_dir", "db_path", "db_size", "backups_dir", "credentials", "backups"] }
 },
 "actions": {
   "getStorage":    { "params": { "type": "object", "properties": {} }, "result": { "$ref": "#/types/Storage" } },
@@ -135,7 +139,10 @@ on every step, so the next press reads the restored data. The screen offers
 Custom('\\.zip$')`, `optSort: 'modifiedlatest'`, `optTop: 0` (all),
 `optSize`/`optModTime`/`optAbsolutePath: true`; skip directories, and read
 `name`, `size`, `modTime` defensively (`f.size || f.Size`). `getStorage` adds a
-`Core.FileSystem.Stat` of the database and a `PathExists` per key file.
+`Core.FileSystem.Stat` of the database and, per vault item the app uses, a
+`Core.Vault.GetItem` with `continueOnError: true`: `readable` is whether a value
+came back. Clear the item from `msg` in the next step; the value never reaches
+the answer.
 
 Every `Robomotion.Apps.Progress` on a chain that more than one action or a
 timer can reach gets `continueOnError: true`: a Progress with no call to report
@@ -145,8 +152,10 @@ to fails, and a failed step drops the message.
 
 A `BackupCard` component on Settings, loading `getStorage` on open:
 
-- `DescriptionList` of the paths, each with a `CopyButton`, and a
-  `StatusBadge` Found / Missing per key file.
+- `DescriptionList` of the paths, each with a `CopyButton`, and per vault item
+  `Vault "<vault>" · <item>` with a `StatusBadge`: "Robot can read it" /
+  "Robot can't read it". When the robot cannot read one, the fix is access to
+  that vault in Robomotion, not a file.
 - A primary "Back up now" button in the card header (`action={createBackup}`);
   on success a `toast` ("Backup is ready", the path, `durationMs: 10000`) and
   an `Alert` that stays, with the path and "Copy the path".
@@ -164,8 +173,9 @@ to describe before a robot exists.
 
 ## Checks to add to `request-checks.md`
 
-- Settings shows the database path and size, the backups folder, and each key
-  file as Found or Missing.
+- Settings shows the database path and size, the backups folder, and each vault
+  item the app uses with whether the robot can read it; no file paths, no key
+  values.
 - Back up now answers with the zip's path; the zip holds the database and the
   manifest; no working folder is left in the backups folder.
 - A record added after a backup is gone after restoring that backup, the app
