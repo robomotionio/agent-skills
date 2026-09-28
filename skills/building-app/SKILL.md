@@ -124,6 +124,8 @@ Narrate progress with the task list, in the person's language ("Design the revie
 
     Anything listed that you did not write is debris: delete it. `app/src/screens.tsx` says which screens the app mounts; anything unreachable from there goes too.
 
+2b2. **An app that stores anything gets backup and restore on its Settings screen.** Database path, backups folder, Back up now, a list of backups to restore from or remove, all on the robot's own disk: nothing is uploaded. Read `./docs/backup-restore.md` and put its actions (`getStorage`, `listBackups`, `createBackup`, `restoreBackup`, `removeBackup`) in `app.json` in the same pass, and its checks in `request-checks.md`.
+
 2c. **Write `mcp.json` beside `app.json`** - read `./docs/mcp.md`. Every app is also an MCP server and has an assistant in its corner; `mcp.json` is how both understand it. Presentation only: a name, an `instructions` paragraph, a sentence per tool, `"read_only": true` or `false` on EVERY tool (`robomotion app validate` fails one without it; run `robomotion app codegen` again after it changes), and the `destructive` / `idempotent` hints. Keep an action an agent must never run out of it with `"enabled": false`. Never put schemas in it.
 
 3. **Generate the screens from the archetype, with sample data baked in.** The
@@ -796,6 +798,10 @@ there showing yesterday.
 And hard rule 6 applies hardest here: the flow creates its table before the
 first write, on every path that reads or writes it.
 
+**Whatever the flow stores, the person can back up and restore.** The database
+file and any files folder go into a zip in a backups folder on the same disk,
+and come back from it, from the Settings screen: `./docs/backup-restore.md`.
+
 From `Robomotion.Apps` **0.1.8** a page whose contract does not match is told
 WHICH kind of mismatch it is. One local robot runs one app session at a time,
 so on a machine with several apps the ordinary answer is "this robot is
@@ -1063,6 +1069,7 @@ Ask ONLY when the request genuinely matches more than one thing: two screens bot
 | Composing screens: every kit component with a usage example | `./docs/app-kit-reference.md` |
 | Authoring `app.json`: naming, action vs event, timeouts, concurrency, descriptions | `./docs/contract.md` |
 | `mcp.json`: the app as an MCP server and the assistant in its corner | `./docs/mcp.md` |
+| Backup and restore on the robot's disk: contract, flow recipe, Settings card, smoke tidy-up | `./docs/backup-restore.md` |
 | Under Robomotion's Build with AI: the tools that stand in for the commands, and what its harness does for you | `./docs/build-view.md` |
 | Dashboard archetype | `./docs/archetypes/dashboard.md` |
 | Approval-queue archetype | `./docs/archetypes/approval-queue.md` |
