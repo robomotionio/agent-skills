@@ -1,4 +1,4 @@
-import { j as FileUploadOptions, F as FileRef, d as ConnectionState, V as Viewer, i as CreateAppOptions, C as CallOptions, c as AppErrorCode } from './types-BAJsXo2R.js';
+import { j as FileUploadOptions, F as FileRef, d as ConnectionState, V as Viewer, i as CreateAppOptions, C as CallOptions, c as AppErrorCode } from './types-BPU0cmpz.js';
 
 /**
  * File transfer over the existing /v1/artifacts.* REST endpoints
@@ -175,6 +175,9 @@ declare class AppClient {
     private robotRecheckTimer;
     private robotRecheckDelayMs;
     private pingTimer;
+    private helloRetryMs;
+    private helloTimer;
+    private helloAttempts;
     private sendChain;
     private recvChain;
     private pending;
@@ -231,6 +234,8 @@ declare class AppClient {
      * case that works.
      */
     private reconnectIfRobotChanged;
+    /** Drop the socket and register again from scratch. */
+    private reopen;
     /**
      * Start this app's backend on its robot.
      *
@@ -254,8 +259,22 @@ declare class AppClient {
     private isWaitingForBackend;
     private stopRobotRecheck;
     private doKeyExchange;
-    /** First connection sends hello; every reconnect sends resume (protocol.md section 8). */
+    /**
+     * First connection sends hello; every reconnect sends resume (protocol.md
+     * section 8) and then a hello as well.
+     *
+     * The robot answers resume with nothing but the calls it names, and hello
+     * is the only message it acknowledges - so a page that resumed and said
+     * nothing else stayed "connecting" for the life of the page after any
+     * reconnect: after a network blip, and after a backend that was stopped
+     * was started again. The hello also re-checks the contract, which is the
+     * question worth asking of a robot that may be running a newer flow.
+     */
     private sendHelloOrResume;
+    private sendHello;
+    /** Say hello again if the robot has not answered (DEFAULT_HELLO_RETRY_MS). */
+    private armHelloRetry;
+    private stopHelloRetry;
     private handleAppEnvelope;
     private failInFlight;
     private sendRaw;
