@@ -270,6 +270,13 @@ interface CreateAppOptions {
      * refuses at once (the old behaviour).
      */
     callConnectWaitMs?: number;
+    /**
+     * How long to wait for the robot to answer a hello before saying it again.
+     * A backend that is still starting drops a hello it cannot answer yet (its
+     * manifest is not loaded), so a page that says it once waits for ever.
+     * Defaults to 3000.
+     */
+    helloRetryMs?: number;
 }
 interface FileUploadOptions {
     onProgress?: (percent: number) => void;

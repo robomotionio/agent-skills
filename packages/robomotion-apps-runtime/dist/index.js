@@ -434,6 +434,8 @@ var DEFAULT_CALL_CONNECT_WAIT_MS = 8e3;
 var ROBOT_RECHECK_INTERVAL_MS = 5e3;
 var ROBOT_RECHECK_START_MS = 3e3;
 var ROBOT_RECHECK_MAX_MS = 3e4;
+var DEFAULT_HELLO_RETRY_MS = 3e3;
+var HELLO_RETRY_MAX = 20;
 function dispatchDom(type, detail) {
   if (typeof window === "undefined" || typeof CustomEvent === "undefined") return;
   try {
@@ -567,6 +569,9 @@ var AppClient = class {
   robotRecheckTimer = null;
   robotRecheckDelayMs = ROBOT_RECHECK_START_MS;
   pingTimer = null;
+  helloRetryMs;
+  helloTimer = null;
+  helloAttempts = 0;
   sendChain = Promise.resolve();
   recvChain = Promise.resolve();
   pending = /* @__PURE__ */ new Map();
@@ -582,10 +587,12 @@ var AppClient = class {
     this.reconnectDelayMs = options.reconnectDelayMs ?? DEFAULT_RECONNECT_MS;
     this.pingIntervalMs = options.pingIntervalMs ?? DEFAULT_PING_MS;
     this.callConnectWaitMs = options.callConnectWaitMs ?? DEFAULT_CALL_CONNECT_WAIT_MS;
+    this.helloRetryMs = options.helloRetryMs ?? DEFAULT_HELLO_RETRY_MS;
     this.storage = options.storage ?? (typeof localStorage !== "undefined" ? localStorage : new MemoryStorage());
     this.connection.onChange((state) => {
       if (state === "robot_offline") this.startRobotRecheck();
       else this.stopRobotRecheck();
+      if (state === "ready" || state === "contract_mismatch") this.stopHelloRetry();
     });
     this.files = new FilesApi(() => ({
       apiUrl: this.apiUrl,
@@ -713,6 +720,7 @@ var AppClient = class {
     this.closed = true;
     this.clearReconnect();
     this.stopRobotRecheck();
+    this.stopHelloRetry();
     this.stopPing();
     const ws = this.ws;
     this.ws = null;
@@ -727,6 +735,7 @@ var AppClient = class {
   onSocketDown() {
     if (this.closed) return;
     this.stopPing();
+    this.stopHelloRetry();
     this.aesKey = null;
     this.ws = null;
     this.connection.set("offline");
@@ -880,6 +889,8 @@ var AppClient = class {
       return;
     }
     if (status === "waiting" || status === "disconnected") {
+      this.aesKey = null;
+      this.stopHelloRetry();
       this.connection.set("robot_offline");
       this.failInFlight(
         new AppError(
@@ -926,13 +937,25 @@ var AppClient = class {
       this.connection.set("app_not_running");
       return;
     }
+    if (fresh.isRunning === true && fresh.robotId === this.instance.robotId && this.connection.state === "app_not_running") {
+      this.reopen();
+      return;
+    }
     if (!fresh.robotId || fresh.robotId === this.instance.robotId) return;
     this.instance = fresh;
+    this.reopen();
+  }
+  /** Drop the socket and register again from scratch. */
+  reopen() {
+    const ws = this.ws;
+    this.ws = null;
+    this.stopPing();
+    this.stopHelloRetry();
+    this.aesKey = null;
     try {
-      this.ws?.close();
+      ws?.close();
     } catch {
     }
-    this.ws = null;
     this.connect();
   }
   /**
@@ -975,7 +998,8 @@ var AppClient = class {
         true
       );
     }
-    void this.reconnectIfRobotChanged(false);
+    this.stopRobotRecheck();
+    if (this.isWaitingForBackend()) this.startRobotRecheck();
   }
   /** Begin asking, while we are waiting on a robot that may never come. */
   startRobotRecheck() {
@@ -1041,19 +1065,53 @@ var AppClient = class {
       profile: {}
     });
   }
-  /** First connection sends hello; every reconnect sends resume (protocol.md section 8). */
+  /**
+   * First connection sends hello; every reconnect sends resume (protocol.md
+   * section 8) and then a hello as well.
+   *
+   * The robot answers resume with nothing but the calls it names, and hello
+   * is the only message it acknowledges - so a page that resumed and said
+   * nothing else stayed "connecting" for the life of the page after any
+   * reconnect: after a network blip, and after a backend that was stopped
+   * was started again. The hello also re-checks the contract, which is the
+   * question worth asking of a robot that may be running a newer flow.
+   */
   async sendHelloOrResume() {
-    if (!this.helloSentOnce) {
-      this.helloSentOnce = true;
-      await this.sendEnvelope("hello", {
-        client_id: this.clientId,
-        contract_hash: this.contractHash
-      });
-    } else {
+    if (this.helloSentOnce) {
       await this.sendEnvelope("resume", {
         client_id: this.clientId,
         pending_calls: [...this.pending.keys()]
       });
+    }
+    this.helloSentOnce = true;
+    this.helloAttempts = 0;
+    await this.sendHello();
+  }
+  async sendHello() {
+    await this.sendEnvelope("hello", {
+      client_id: this.clientId,
+      contract_hash: this.contractHash
+    });
+    this.armHelloRetry();
+  }
+  /** Say hello again if the robot has not answered (DEFAULT_HELLO_RETRY_MS). */
+  armHelloRetry() {
+    this.stopHelloRetry();
+    if (this.closed || this.helloRetryMs <= 0 || this.helloAttempts >= HELLO_RETRY_MAX) return;
+    const ws = this.ws;
+    this.helloTimer = setTimeout(() => {
+      this.helloTimer = null;
+      const s = this.connection.state;
+      if (this.closed || this.ws !== ws || !this.aesKey) return;
+      if (s === "ready" || s === "contract_mismatch") return;
+      this.helloAttempts++;
+      void this.sendHello().catch(() => void 0);
+    }, this.helloRetryMs);
+  }
+  stopHelloRetry() {
+    if (this.helloTimer) {
+      clearTimeout(this.helloTimer);
+      this.helloTimer = null;
     }
   }
   async handleAppEnvelope(type, data) {
