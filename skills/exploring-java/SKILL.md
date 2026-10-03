@@ -80,7 +80,7 @@ Every node takes a **Window Title** and a **Full Path**; the server writes both.
 
 - Actions are recorded by default; reads (`java_get_text`, `java_get`, `java_read_table`, `java_get_cell`) are not. Pass `explore=true` to act without recording; `explore=false` on a read to record it as a node writing `msg.<variable>` (`java_read_table explore=false variable="orders"` → Extract Table → a Robomotion data table).
 - `java_remove_step step=N` drops a mistaken step; `java_get_sequence` shows the recording so far.
-- Steps that use what Java Automation 2.1.0 added say "needs Robomotion.JavaAutomation 2.1.0+" and the sequence's `dependencies[0].minVersion` says the lowest version that runs all of it.
+- Steps that use what Java Automation 2.1.0 / 2.2.0 added say "needs Robomotion.JavaAutomation 2.x+" and the sequence's `dependencies[0].minVersion` says the lowest version that runs all of it. The server records for 2.2.0 by default.
 - **Check what is published before exploring**: `robomotion describe package Robomotion.JavaAutomation`. If its newest version is older than 2.1.0, call `java_target_version version="<that version>"` first: selectors are then recorded as absolute paths with regex titles, and clicks that open a dialog as mouse clicks, so the flow runs on it. A few steps have no older form (table rows, multi-select lists, typed values an editable combo does not list): the recording still marks them 2.1.0 — tell the person they need the newer package.
 - `java_launch` records `Core.Process.StartProcess` (background) + `Wait` for the window. A `.jar` is recorded as the `javaw.exe` that started it: the robot's machine needs Java there (or `javaw` on PATH) — say so in the plan.
 
@@ -105,9 +105,10 @@ The application is the person's live system. Read it; do not change it.
 | Trees | `java_select target=<tree> value="Root/Branch/Leaf"` expands lazily loaded branches on the way; `java_expand` |
 | Menus and popup menus | `java_menu path="File/Export/CSV..."`; right-click first (`java_click click_type=right`, or `java_select_row … click=right_click`), then `java_menu path="Mark as shipped"` |
 | Something that appears later | `java_wait target=<path> condition=appear` (or `disappear`, or `value` with `expected=`); `java_wait_window title="Order"` |
-| Keys | `java_send_keys keys="{Ctrl+S}"`, `"{Enter}"`, `"Grace{Tab}Hopper"` — sent only once the window is in front and the element focused |
+| Keys | `java_send_keys keys="{Ctrl+S}"`, `"{Enter}"`, `"Grace{Tab}Hopper"`, `"{Home}{Shift+End}{Backspace}"` — sent only once the window is in front and the element focused; recorded as one Send Key node (with Key Tokens on 2.2.0) |
 | Hyperlinks in an HTML pane | the snapshot lists them; `java_activate_link target=… text="Terms of use"` |
-| Closing the app | `java_close_window` (recorded as Close Window); a "save changes?" question is answered Cancel and reported |
+| Closing the app | `java_close_window` (recorded as Close Window); a "save changes?" question is answered Cancel and reported. `answer="No"` (or "Don't Save", "Save") is what the FLOW should press: recorded as Close Window's Answer; it is pressed now only with `confirm_side_effect=true` after the person agreed |
+| Reading what a list / combo / menu offers | `java_list_items explore=false variable="options"` → Get Items; `java_list_windows explore=false` → Get Windows (titles, and whether the bridge is on) |
 
 ## Converting to a flow
 

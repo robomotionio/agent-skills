@@ -74,21 +74,23 @@ All element nodes wait up to `optTimeout` seconds (plain number, default 5; Wait
 | `ClickElement` | Click (mouse when on screen; 2.1.0) | `optClickType: 'double_click'` (plain), `optMethod` |
 | `ClickCoordinate` | Click at x,y inside an element (custom-painted areas) | `inX`, `inY` (Custom), `optCoordinateType` (default `'relative'`) |
 | `SetText` | Replace a field's text (typed like a person when on screen; 2.1.0) | `inText`, `optMethod: 'auto'` |
-| `SendKey` / `SendKeyToElement` | Keys: up to three from the list (`'17'` Ctrl, `'16'` Shift, `'18'` Alt, `'13'` Enter, `'9'` Tab, `'27'` Esc, `'112'`–`'123'` F1–F12, …) plus text | `inMod1..3` (plain strings; leave unused slots out — `validate` refuses `'_'`), `optKey: Custom('S')` — Ctrl+S is `inMod1: '17', optKey: Custom('S')` |
+| `SendKey` / `SendKeyToElement` | Keys: up to three from the list (`'17'` Ctrl, `'16'` Shift, `'18'` Alt, `'13'` Enter, `'9'` Tab, `'27'` Esc, `'112'`–`'123'` F1–F12; 2.2.0 adds `'36'` Home, `'35'` End, `'8'` Backspace, `'45'` Insert, `'91'` Win, `'93'` Menu) plus text. 2.2.0 `optKeyTokens: true` reads `{Key}` / `{Ctrl+Key}` tokens in the text: `Custom('Hello{Tab}World{Enter}')`, `{Ctrl+Shift+Alt+F4}` | `inMod1..3` (plain strings; leave unused slots out — `validate` refuses `'_'`), `optKey: Custom('S')` — Ctrl+S is `inMod1: '17', optKey: Custom('S')` |
 | `SetCheckbox` | Check / uncheck / toggle | `optState: 'check'` |
-| `SetCombobox` | Choose a combo item (an editable combo takes any text) | `inValue` |
+| `SetCombobox` | Choose a combo item (an editable combo takes any text) | `inValue`; 2.2.0: `inIndex` (0-based) when `inValue` is empty |
 | `SelectListItem` (2.1.0) | Choose a list item | `inValue` (+ `optMatchMode`), or `inIndex`; `optAdd` for multi-select |
 | `SelectTab` | Open a tab | `inTabName` on the `page tab list` |
 | `SelectMenu` | Menu path, menu bar or open popup menu | `inFullPath: Custom('')`, `inMenuPath: Custom('File/Save As...')` |
-| `SelectTreeNode` | Select / expand a tree item by its path | `inNodePath: Custom('Catalog/Phones/Cases')`, `optExpandOnly` |
+| `SelectTreeNode` | Select / expand / collapse a tree item by its path | `inNodePath: Custom('Catalog/Phones/Cases')`, `optExpandOnly`; 2.2.0 `optAction: 'collapse'` (or `'expand'`; no-op when it already is) |
 | `SelectTableRow` (2.1.0) | Select a row by a cell value or index; optionally click it | `inValue`, `inColumn`, `inRow`, `optClick: 'double_click'`; outputs `outRow` |
 | `ExtractTable` | A whole table → Robomotion data table | `outTable: Message('table')`, `inMaxRows`, `inColumns`, `optJsonify` |
 | `GetTableCell`, `GetSelectedRows`, `GetTableInfo` | Table reads | |
 | `GetText`, `GetValue`, `GetCheckbox`, `GetCombobox`, `IsEnabled`, `ElementExists`, `GetAttribute` | Reads into `msg` | `out…: Message('x')` |
+| `GetItems` (2.2.0) | A list's items, a combo's options, a tab list's tabs, a tree item's children, a menu's items | `outItems: Message('items')`, `outCount` |
+| `GetWindows` (2.2.0) | Open Java windows' titles; whether the bridge is on | `inTitle` (filter), `outWindows`, `outBridgeEnabled` |
 | `SetSpinnerValue` | Spinner or slider | `inValue` |
 | `ActivateHyperlink` | A link in an HTML pane | `inLinkText` |
 | `ScrollIntoView`, `HoverElement`, `DragAndDrop`, `SetFocus`, `DoAction`, `Screenshot` | | |
-| `CloseWindow` (2.1.0) | Close a window like its close button | outputs `outClosed` (false when the app asked to save) |
+| `CloseWindow` (2.1.0) | Close a window like its close button | outputs `outClosed`, `outQuestion` (2.2.0: what it asked); 2.2.0 `inAnswer: Custom('No')` presses that button when the app asks to save |
 
 ## A recorded flow
 
