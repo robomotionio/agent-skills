@@ -68,6 +68,7 @@ Options: `"Build it"` | `"Modify plan"`. On "Build it", proceed to Step 3.
 **Before writing, read the 1-2 pattern docs most relevant to the task:**
 
 - `./docs/patterns/browser.md` — MANDATORY for any `Core.Browser.*` flow
+- `./docs/patterns/windows.md` — MANDATORY for any `Robomotion.WindowsAutomation.*` flow
 - `./docs/patterns/loops.md` — ForEach / Label / GoTo
 - `./docs/patterns/conditions.md` — Function with `outputs: 2`
 - `./docs/patterns/credentials.md` — any `Credential()` usage
@@ -102,6 +103,10 @@ Use the canonical SubFlow example in `./docs/patterns/subflows.md`: `subflow.cre
 
 If the flow uses `Robomotion.ImageAutomation.*`, explore the screen before writing code, in the main session: `Skill(skill="exploring-image", args="<what to do on which screen>")`. It drives the live screen through `mcp__image__*`, records every step as the node that repeats it with a template image verified unique on the screen, and returns the sequence; `image_write_templates flow_file=<flow>/main.ts` writes the templates into the flow file and `./docs/patterns/image.md` maps the sequence to `main.ts`. Tell the person what the robot's session must look like (same resolution, scaling, colour depth and font smoothing; the window maximized and never minimized).
 
+### Java desktop flows — mandatory exploration
+
+If the flow uses `Robomotion.JavaAutomation.*`, explore the application before writing code, in the main session: `Skill(skill="exploring-java", args="<what to do in which app>")`. It drives the live app through `mcp__java__*`, records every step as the node that repeats it with a verified Window Title + Full Path, and returns the sequence; `./docs/patterns/java.md` maps it to `main.ts`. Exploring ends with `java_end` (it closes the windows it launched) before the first line of flow code. If `java_status` says the Java Access Bridge is off, ask the person before enabling it (`jabswitch -enable`, then restart the app).
+
 ### Browser flows — mandatory exploration
 
 If the flow uses `Core.Browser.*`, explore the page before writing code. **Do this in the main session** — MCP servers are scoped to the main conversation; `Agent` sub-agents cannot use `mcp__browser__*`.
@@ -122,6 +127,12 @@ Two ways to explore, in order of preference:
 > If you've already crashed the server, only a Claude Code restart brings the tools back.
 
 If `browser` MCP shows `failed` in `/mcp`, stop and ask the user to restart Claude Code — do NOT fall back to guessing selectors from `curl` + HTML for production flows.
+
+### Windows desktop flows — mandatory exploration
+
+If the flow drives a Windows application (`Robomotion.WindowsAutomation.*`), explore the live app first, in the main session: `Skill(skill="exploring-windows", args="<what the person asked>")`, or the `mcp__windows__*` tools inline after the same `ToolSearch` warm-up (`select:mcp__windows__windows_launch,mcp__windows__windows_snapshot,…`). It performs each step with the Windows Automation package's own code and records the node that repeats it, with a selector it verified against the app. Convert the recorded `actions` to nodes (`./docs/patterns/windows.md`); do not rewrite the selectors.
+
+Exploring ends with `windows_end` — the windows the exploration launched are closed before the flow is built or run (a window that asks to save changes is left open for the person: never answer for them). If the `windows` MCP is missing or failed, say so; do not guess selectors.
 
 ### Credentials
 

@@ -1,0 +1,17 @@
+{
+  "name": "Exploring Windows",
+  "namespace": "Robomotion.Skill.ExploringWindows",
+  "version": "0.1.0",
+  "categories": [
+    "Artificial Intelligence"
+  ],
+  "description": "Explores a Windows desktop application through the robomotion-windows-mcp server - reads its UI tree like a DOM, searches it, takes screenshots, performs the steps - and returns a recorded sequence of Robomotion.WindowsAutomation nodes whose selectors were verified against the live app. Use before writing any Windows desktop automation flow.",
+  "icon": "icon.png",
+  "skill": {
+    "runtime": "none",
+    "command": "exploring-windows",
+    "platforms": [
+      "windows"
+    ]
+  }
+}

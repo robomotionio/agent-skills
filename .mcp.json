@@ -7,6 +7,14 @@
     "image": {
       "type": "stdio",
       "command": "robomotion-image-mcp"
+    },
+    "java": {
+      "type": "stdio",
+      "command": "robomotion-java-mcp"
+    },
+    "windows": {
+      "type": "stdio",
+      "command": "robomotion-windows-mcp"
     }
   }
 }
