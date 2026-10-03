@@ -68,6 +68,7 @@ Options: `"Build it"` | `"Modify plan"`. On "Build it", proceed to Step 3.
 **Before writing, read the 1-2 pattern docs most relevant to the task:**
 
 - `./docs/patterns/browser.md` — MANDATORY for any `Core.Browser.*` flow
+- `./docs/patterns/windows.md` — MANDATORY for any `Robomotion.WindowsAutomation.*` flow
 - `./docs/patterns/loops.md` — ForEach / Label / GoTo
 - `./docs/patterns/conditions.md` — Function with `outputs: 2`
 - `./docs/patterns/credentials.md` — any `Credential()` usage
@@ -122,6 +123,12 @@ Two ways to explore, in order of preference:
 > If you've already crashed the server, only a Claude Code restart brings the tools back.
 
 If `browser` MCP shows `failed` in `/mcp`, stop and ask the user to restart Claude Code — do NOT fall back to guessing selectors from `curl` + HTML for production flows.
+
+### Windows desktop flows — mandatory exploration
+
+If the flow drives a Windows application (`Robomotion.WindowsAutomation.*`), explore the live app first, in the main session: `Skill(skill="exploring-windows", args="<what the person asked>")`, or the `mcp__windows__*` tools inline after the same `ToolSearch` warm-up (`select:mcp__windows__windows_launch,mcp__windows__windows_snapshot,…`). It performs each step with the Windows Automation package's own code and records the node that repeats it, with a selector it verified against the app. Convert the recorded `actions` to nodes (`./docs/patterns/windows.md`); do not rewrite the selectors.
+
+Exploring ends with `windows_end` — the windows the exploration launched are closed before the flow is built or run (a window that asks to save changes is left open for the person: never answer for them). If the `windows` MCP is missing or failed, say so; do not guess selectors.
 
 ### Credentials
 
