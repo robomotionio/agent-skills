@@ -3,6 +3,10 @@
     "browser": {
       "type": "stdio",
       "command": "robomotion-browser-mcp"
+    },
+    "java": {
+      "type": "stdio",
+      "command": "robomotion-java-mcp"
     }
   }
 }

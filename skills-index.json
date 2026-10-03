@@ -26,6 +26,12 @@
       "runtime": "none"
     },
     {
+      "name": "exploring-java",
+      "path": "skills/exploring-java",
+      "version": "0.1.0",
+      "runtime": "none"
+    },
+    {
       "name": "reversing-network",
       "path": "skills/reversing-network",
       "version": "0.1.0",

@@ -607,6 +607,47 @@
           "value": "Each HttpIn route is its own entry chain; the shared HttpOut node is a single f.node() reached via f.edge() from every handler — never duplicated per route."
         }
       ]
+    },
+    {
+      "id": 17,
+      "tier": "regression",
+      "title": "Java desktop app from an exploring-java recording",
+      "prompt": "In our Java client Acme Desk, type a customer (name, email, country, newsletter, Gold tier), save it, and save the file under a new name.",
+      "fixture": "fixtures/11-java-acme-customer.ts",
+      "assertions": [
+        {
+          "kind": "validator-passes"
+        },
+        {
+          "kind": "must-contain",
+          "value": "f.addDependency('Robomotion.JavaAutomation'",
+          "reason": "Robomotion.JavaAutomation is not a Core package: it needs a pinned dependency."
+        },
+        {
+          "kind": "must-contain",
+          "value": "optBackground: true",
+          "reason": "Core.Process.StartProcess without background mode waits for the app to exit and the flow never reaches the next step."
+        },
+        {
+          "kind": "must-contain",
+          "value": "inFullPath: Custom(''),",
+          "reason": "Wait Context on the window itself takes an empty Full Path."
+        },
+        {
+          "kind": "must-not-contain-regex",
+          "value": "inMod[123]:\\s*'_'",
+          "reason": "Unused Send Key slots are left out: robomotion validate refuses '_'."
+        },
+        {
+          "kind": "must-not-contain-regex",
+          "value": "optTimeout:\\s*Custom\\(|optState:\\s*Custom\\(|inMod[123]:\\s*Custom\\(",
+          "reason": "optTimeout, optState and the key slots are plain values on Java Automation nodes; Custom() makes the node fail to load."
+        },
+        {
+          "kind": "rubric",
+          "value": "Every Window Title + Full Path comes from an exploring-java recording (verified against the app); a click that opens a dialog is a mouse click (Click Coordinate on 1.7.x, Click Element on 2.1.0+), never Do Action 'click'; the dependency version is a published one at least the recording's minVersion."
+        }
+      ]
     }
   ]
 }
