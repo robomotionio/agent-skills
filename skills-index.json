@@ -26,6 +26,12 @@
       "runtime": "none"
     },
     {
+      "name": "exploring-image",
+      "path": "skills/exploring-image",
+      "version": "0.1.0",
+      "runtime": "none"
+    },
+    {
       "name": "reversing-network",
       "path": "skills/reversing-network",
       "version": "0.1.0",

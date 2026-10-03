@@ -98,6 +98,10 @@ Then verify property names with `robomotion describe node <type>[,<type>...]`.
 
 Use the canonical SubFlow example in `./docs/patterns/subflows.md`: `subflow.create(name, fn)` with `Begin` → nodes → `End(sfPort: 0)`. SubFlow node ID in the parent equals the subflow filename. No need to call `robomotion describe node` for Begin/End/SubFlow.
 
+### Image flows (Remote Desktop, Citrix) — mandatory exploration
+
+If the flow uses `Robomotion.ImageAutomation.*`, explore the screen before writing code, in the main session: `Skill(skill="exploring-image", args="<what to do on which screen>")`. It drives the live screen through `mcp__image__*`, records every step as the node that repeats it with a template image verified unique on the screen, and returns the sequence; `image_write_templates flow_file=<flow>/main.ts` writes the templates into the flow file and `./docs/patterns/image.md` maps the sequence to `main.ts`. Tell the person what the robot's session must look like (same resolution, scaling, colour depth and font smoothing; the window maximized and never minimized).
+
 ### Browser flows — mandatory exploration
 
 If the flow uses `Core.Browser.*`, explore the page before writing code. **Do this in the main session** — MCP servers are scoped to the main conversation; `Agent` sub-agents cannot use `mcp__browser__*`.

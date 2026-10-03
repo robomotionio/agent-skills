@@ -77,6 +77,7 @@ Drift-prone reminders before every `Write` / `Edit` of flow code:
 
 - Never output TypeScript as chat text — always use `Write` / `Edit`. Plans and explanations stay in chat.
 - Hex IDs from the start. Cross-references (`optNodes.ids`, `Catch.optNodes.ids`, subflow filenames) must use the same hex.
+- For image flows (`Robomotion.ImageAutomation.*` - a Remote Desktop / Citrix session, a legacy app nothing else can see into): explore the live screen first with `Skill(exploring-image)` (`mcp__image__*` after `ToolSearch` warmup) and build from its recorded sequence; read `./docs/patterns/image.md`. Never draw a template or guess coordinates: the recorded templates were verified unique on the screen. `image: IMG_X` is the identifier of a const written by `image_write_templates` - never a string, never pasted base64. deltaX/Y, booleans and enums are plain; `in*` ports and `optConfidence`/`optWaitTimeout` take `Custom()`.
 - For browser flows: explore the live page first (`Skill(exploring-browser)` or `mcp__browser__*` after `ToolSearch` warmup). Don't guess selectors. **`Core.Browser.*` element nodes (`ClickElement`/`TypeText`/`GetValue`/`SetValue`/`WaitElement`/`Select`) default `inSelector` to XPath — translate CSS handles you find (`#email`, `input[type="email"]`) to XPath (`//input[@id='email']`) and omit `inSelectorType`; use a CSS string ONLY with `inSelectorType: 'css'` (plain literal — `inSelectorType` is an enum, so NEVER `Custom('css')`). A CSS string with the default engine fails at runtime with "element not found". Never write `inSelectorType: 'xpath'` (invalid; the value is `xpath:position`). Also: enum/dropdown opts (`optBrowser`, `optProxy`, `optProxyAuth`, `optClickType`) take a PLAIN string/boolean — NEVER `Custom()`; wrapping an enum in `Custom()` emits a `{name,scope}` object and the robot rejects the node at load with `Config parse error` (flow never starts). `Custom()`/`Message()` are only for variable value fields (selectors/URLs/text/paths). See `./docs/patterns/browser.md`.**
 - For any flow that READS or WRITES tabular data (CSV / Excel / Google Sheets / Excel 365 / SQLite / Airtable / Pandas / DataTable / DOMParser) — read `./docs/patterns/data-tables.md` BEFORE adding the node, both for the Function that builds the table AND for the reader/writer node. That doc names the exact node and shows its properties (e.g. write CSV = `Core.CSV.WriteCSV` with `inFilePath` + `inTable`; write Sheets = `Robomotion.GoogleSheets.SetRange`; etc.) and the `{columns: [...], rows: [{key: value}]}` format (never `{header: ...}`, never rows-as-arrays). **Do NOT `robomotion search` for data-output nodes — search returns TEMPLATES, not nodes, and looping on it wastes the turn. The node names are in data-tables.md; once you know the node, use `robomotion describe node <type>` for its exact properties.** When a search returns templates instead of the node you need, stop searching and read the relevant pattern doc.
 - For any `Robomotion.ChatAssistant` flow in **conversational** mode — read `./docs/patterns/conversational-chat.md` BEFORE writing it. One user message is one `ChatIn → ChatOut` run and **`ChatOut` is the only thing that unlocks the composer**, so a branch that ends anywhere else (an error, a missing `ChatOut`) freezes the chat until the page is reloaded — the most common bug in these flows, and it looks like a product fault rather than a flow fault. That doc also carries the streaming wiring (Callback In `stream_delta` → `Streaming Text`, and **no `Text` node repeating the answer**) and the attachments wiring (`GetAttachments`, because `msg.payload.files` is names and versions, never files on disk).
@@ -93,6 +94,7 @@ Read these docs before writing the corresponding code:
 | Conditions (Function with `outputs: N`) | `./docs/patterns/conditions.md` |
 | Credentials (vault + categories) | `./docs/patterns/credentials.md` |
 | Browser automation (incl. proxy) | `./docs/patterns/browser.md` |
+| Remote Desktop / Citrix / screens by their pixels (`Robomotion.ImageAutomation`) — explore with `exploring-image` first | `./docs/patterns/image.md` |
 | Exception handling (Catch, continueOnError) | `./docs/patterns/exceptions.md` |
 | Branches & parallel (ForkBranch, WaitGroup) | `./docs/patterns/branches.md` |
 | Subflows (Begin/End, multi-output) | `./docs/patterns/subflows.md` |
@@ -188,6 +190,7 @@ return msg;`
 
 - `robomotion` — self-sufficient CLI. Builds, validates, runs, searches, inspects. `robomotion help` for the full verb list.
 - `robomotion-browser-mcp` — MCP server for interactive browser exploration (used by `exploring-browser` and `mcp__browser__*` tools).
+- `robomotion-image-mcp` — MCP server for screens seen only as pixels: Remote Desktop, Citrix, legacy apps (used by `exploring-image` and `mcp__image__*` tools; Windows).
 
 The `robomotion` CLI shells out to `robomotion-sdk-mcp` internally for search-backed commands and calls `api.robomotion.io` directly for run/stop/vault/robot operations. No additional MCP servers required.
 
@@ -203,4 +206,5 @@ For people editing this skill: an automated eval suite lives in the agent-skills
 - `running-chat-assistant` — run and test a Chat Assistant flow (Chat In) as an Agent in the real chat page
 - `searching-packages` — find packages, nodes, templates
 - `exploring-browser` — interactive browser automation
+- `exploring-image` — explore a Remote Desktop / Citrix / legacy screen by its pixels and record verified Image Automation steps
 - `reversing-network` — convert a browser flow to HTTP after capturing traffic
