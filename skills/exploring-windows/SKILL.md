@@ -77,14 +77,16 @@ The app is the person's live system. Read it; do not change it.
 
 | Situation | What happens / what to do |
 |---|---|
-| A field that ignores the value set through UI Automation (the File name box of Save As, a date picker) | `windows_type` detects it and types the keys instead; the recorded Set Text node does the same |
+| A field that ignores the value set through UI Automation (the File name box of Save As, a date picker), or drops it a moment later | `windows_type` detects it and types the keys instead, and reads the field back; the recorded Set Text node does the same (with Verify when the field dropped the text) |
+| Closing a window | `windows_close_window` uses the close button, like a person: only that window closes. If the app asks ("Save changes?") the question is reported and left open: ask the person which button, then call again with `answer=` — never choose for them |
+| A step that needs the window in front without an element (a click at a point, keys to the window) | `windows_focus_window window=… explore=false` records Set Focus on the window |
 | Element below the fold of a scroll area or a long list | actions scroll it into view first |
 | A list, grid or tree with thousands of rows (virtualized) | `windows_find` / `windows_select` reach rows that are not on screen; for big grids prefer the app's own search/filter box, then pick the row — that is what a person does, and it is faster |
 | Items whose UIA name is a type name (`MyApp.Models.Customer`) | the snapshot shows their visible text; selectors use `@text='…'` |
 | Look-alike elements (an "Open" button on every row) | the selector is anchored to what tells them apart: `//DataItemControl[@text='10500']//ButtonControl[@name='Open']` |
 | Icon-only toolbar buttons | named by their tooltip: `[@helptext='Refresh orders']` |
 | Something that appears later (a button after a slow task, a dialog) | `windows_wait target=<selector> condition=appear` (or `enabled`, `disappear`); every element node also waits up to 30 s on its own |
-| Keys | `windows_send_keys keys="ctrl+s"` (shortcut), `"enter"` (one key), `"John{Tab}Smith{Enter}"` (text with keys, one node) |
+| Keys | `windows_send_keys keys="ctrl+s"` (shortcut), `"enter"` (one key), `"John{Tab}Smith{Enter}"` or `"{Ctrl+A}new text"` (text with keys and shortcuts, one node) |
 | A menu path | `windows_menu path="Edit > Find > Replace…"` — menu bars, WinForms ToolStrips, Win32 popup menus, right-click context menus (right-click first, then `windows_menu path="Duplicate"`) |
 | Combo boxes, lists, tab strips | `windows_select target=<the container> value="…"`; a radio button or a single item: `windows_select target=<it>` |
 | Grids and list views | `windows_get_table` (all rows, virtualized included); `explore=false` records Get Table Data |

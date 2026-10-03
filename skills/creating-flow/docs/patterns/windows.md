@@ -80,8 +80,8 @@ All element nodes wait up to `optWaitTimeout` seconds (default 30, plain number)
 | `Core.Process.StartProcess` | Start the app | `inFilePath: Custom('notepad.exe')`, `inCustomArgs: [...]`, **`optBackground: true`** (else the node waits for the app to exit) |
 | `WaitWindow` | Wait for a window | `inSelector`, `optCondition: 'appear' \| 'disappear'` (must be set), `optTimeout: 30` |
 | `Click` | Click | `inSelector`, `optMouseButton: 'left' \| 'double_left' \| 'right' \| 'middle'`, `optShowWindow: true` (bring the window forward), `optInvokePattern: true` (UIA invoke, no mouse) |
-| `SetText` | Put text in a field | `inSelector`, `inText`, `optClearFirst` (default true), `optEmulateTyping` |
-| `SendKey` | Keys into an element | `inSelector`, `optKeyModifier1..3: '{Ctrl}' \| '{Enter}' \| '{Tab}' \| '{F5}' …`, `optText: Custom('s')` — Ctrl+S = `optKeyModifier1: '{Ctrl}', optText: Custom('s')`; text with keys `Custom('John{Tab}Smith{Enter}')` (0.20.0+) |
+| `SetText` | Put text in a field | `inSelector`, `inText`, `optClearFirst` (default true), `optEmulateTyping`, `optVerify: true` (0.21.0+: read the field back, type again key by key once, fail when it still does not show the text) |
+| `SendKey` | Keys into an element | `inSelector`, `optKeyModifier1..3: '{Ctrl}' \| '{Enter}' \| '{Tab}' \| '{F5}' …`, `optText: Custom('s')` — Ctrl+S = `optKeyModifier1: '{Ctrl}', optText: Custom('s')`; text with keys `Custom('John{Tab}Smith{Enter}')` (0.20.0+); shortcuts inside the text `Custom('{Ctrl+A}new text')`, `{Ctrl+Shift+Alt+F4}`, `{Menu}` (0.21.0+) |
 | `SetValue` | UIA value (no typing) | `inSelector`, `inValue` |
 | `SetCheckbox` | Check / uncheck / toggle | `inSelector`, `inValue: Custom('true' \| 'false' \| 'toggle')` |
 | `SetCombobox` | Pick a combo box entry by text | `inSelector` (the combo), `inValue: Custom('APAC')` |
@@ -93,16 +93,17 @@ All element nodes wait up to `optWaitTimeout` seconds (default 30, plain number)
 | `Scroll` | Scroll a container | `inSelector`, `optDirection`, `optAmount: 'small' \| 'large' \| 'to_start' \| 'to_end' \| 'by_percent'`, `inPercent` |
 | `MouseDrag` | Drag between elements | `inSourceSelector`, `inTargetSelector`, `inSourceX/Y`, `inTargetX/Y` (offsets inside each), `optCoordinateType: 'relative'` |
 | `ClickCoordinate` | Click a point inside an element (canvas, custom-drawn) | `inSelector`, `inX`, `inY`, `optCoordinateType: 'relative'` |
-| `SetFocus` | Keyboard focus | `inSelector` |
+| `SetFocus` | Bring the window forward and focus the element; on a window selector, activate the window (0.21.0+; before, focus only) | `inSelector` |
 | `WaitElement` | Wait for a state | `inSelector`, `optCondition: 'appear' \| 'disappear' \| 'enabled' \| 'disabled' \| 'selected' \| 'focused'` (must be set), `optTimeout: 30` |
 | `WaitForValue` | Wait for a value | `inSelector`, `inExpectedValue`, `optCondition: 'equals' \| 'contains' \| … \| 'changed'` |
 | `GetText` / `GetValue` | Read | `inSelector` → `outText` / `outValue` |
 | `GetTableData` | Read a grid / list view | `inSelector` → `outTable` (`{columns, rows}` — see `data-tables.md`), `optMaxRows`, `optIncludeHeaders` |
-| `GetListItems` / `GetTabItems` / `GetTreeItems` | List items | `inSelector` → `outItems` / `outTabs` |
+| `GetListItems` / `GetTabItems` / `GetTreeItems` | List items; Get List Items on a combo box lists its options (0.21.0+) | `inSelector` → `outItems` / `outTabs` |
 | `GetCheckbox` / `GetSlider` / `GetCombobox` / `IsEnabled` / `IsSelected` | Read a state | `inSelector` → `outChecked` / `outValue` / `outValues` / `outEnabled` / `outSelected` |
-| `CloseWindow` | Close a window | `inSelector` (the window) |
-| `GetWindowList` | Open windows as a table | `inFilter`, `inProcessName` → `outTable` |
-| `Screenshot` | Image of an element / screen | `inSelector`, `inFilePath`, `optFullScreen` |
+| `GetProperties` | Everything about an element as a JSON **text** (`JSON.parse` it) | `inSelector` → `outProperties`; keys `Name`, `IsEnabled`, `HasKeyboardFocus`, … and (0.21.0+) `ToggleState`, `IsSelected`, `ExpandCollapseState`, `Value`, `RangeValue` |
+| `CloseWindow` | Close a window | `inSelector` (the window), **`optMethod: 'close'`** (0.21.0+: the close button, only that window; the default `'kill'` ends the app's whole process), `inAnswer: Custom("Don't Save")` (the button to press if the app asks; empty leaves the question open) → `outClosed`, `outQuestion` |
+| `GetWindowList` | Open windows as a table | `inFilter`, `inProcessName` → `outTable` (`ref`, `Name`, `Class`, `Handle`, `ProcessId`, `ProcessName`, `Minimized`, `Foreground` — 0.21.0+ for the last three; hidden windows only with `optIncludeHidden`) |
+| `Screenshot` | Image of an element / screen | `inSelector`, `inFilePath`, `optFullScreen`, `optShowWindow` / `optBackground` (0.21.0+: bring the window forward first / capture its own pixels even when covered) |
 | `GetClipboard` / `SetClipboard` | Clipboard text | `outText` / `inText` |
 | `RunScript` | C# against the UIA tree when no node fits | `func` (C#; `Find("selector")`, `msg`) |
 | `KeepAlive` | Keep an unattended session from locking | `optMethod` |
@@ -173,7 +174,9 @@ These selectors are Windows 11 Notepad's (the `AddButton` tab button, the menu's
 |---|---|---|
 | `Element not found within 30s timeout` | Selector does not match on the robot: the app is not open yet, a dialog is not up, a title changed, a row is not loaded | Re-explore; `windows_query` the selector against the live app. Add `WaitWindow` / `WaitElement` for windows that open later. Prefer `ends-with` on document titles |
 | The flow types the text but the app ignores it (Save As saves the old name, a date picker keeps its date) | The control ignores UIA ValuePattern | Windows Automation 0.20.0+ detects it and types instead; on older versions set `optEmulateTyping: true` on `SetText` |
-| Clicks land in the wrong window / nothing happens | The window is behind another one | `optShowWindow: true` on `Click` |
+| Clicks land in the wrong window / nothing happens | The window is behind another one | `optShowWindow: true` on `Click`; before a `ClickCoordinate` or keys to a window, `SetFocus` on the window (0.21.0+) |
+| Closing one window closed every window of the app, unsaved work lost | `CloseWindow` without `optMethod` kills the process | `optMethod: 'close'`, and `inAnswer` for the "Save changes?" question |
+| A click "worked" but nothing happened | The button was still disabled | 0.21.0+ waits for it to become enabled and fails if it does not; on older versions add `WaitElement` with `optCondition: 'enabled'` |
 | A step works in the Designer but not on the unattended robot | Locked screen, no interactive session | Run the robot in a logged-in desktop session; `KeepAlive`; or `Session.StartSession` |
 | `Config parse error` at load | A plain option wrapped in `Custom()` (`optWaitTimeout: Custom('30')`) or an `in*` port left bare | Plain: `optWaitTimeout`, `optTimeout`, `optIndex`, enums, booleans. Wrapped: every `in*`/`out*`, `optText` |
 | `WaitWindow`/`WaitElement`/`SendKey` does nothing | `optCondition` / key modifiers left at their `_` default | Set `optCondition: 'appear'` …; set the key slots you need |
