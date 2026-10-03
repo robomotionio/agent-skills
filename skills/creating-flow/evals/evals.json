@@ -347,6 +347,42 @@
       ]
     },
     {
+      "id": 16,
+      "tier": "regression",
+      "title": "Windows desktop app from an exploring-windows recording",
+      "prompt": "Open Notepad, type a note and save it as a file.",
+      "fixture": "fixtures/10-windows-notepad.ts",
+      "assertions": [
+        {
+          "kind": "validator-passes"
+        },
+        {
+          "kind": "must-contain",
+          "value": "f.addDependency('Robomotion.WindowsAutomation'",
+          "reason": "Robomotion.WindowsAutomation is not a Core package: it needs a pinned dependency."
+        },
+        {
+          "kind": "must-contain",
+          "value": "optBackground: true",
+          "reason": "Core.Process.StartProcess without background mode waits for the app to exit and the flow never reaches the next step."
+        },
+        {
+          "kind": "must-contain",
+          "value": "optCondition: 'appear'",
+          "reason": "WaitWindow's condition defaults to '_' and must be set, as a plain enum."
+        },
+        {
+          "kind": "must-not-contain-regex",
+          "value": "optWaitTimeout:\\s*Custom\\(|optCondition:\\s*Custom\\(",
+          "reason": "optWaitTimeout and optCondition are plain values on Windows Automation nodes; Custom() makes the node fail to load."
+        },
+        {
+          "kind": "rubric",
+          "value": "Selectors come from an exploring-windows recording (verified against the app), anchored on the window by class + ends-with on the title, dialog elements under the dialog's WindowControl."
+        }
+      ]
+    },
+    {
       "id": 10,
       "tier": "regression",
       "title": "Required imports complete",
