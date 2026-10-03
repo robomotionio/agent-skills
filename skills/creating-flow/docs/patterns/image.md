@@ -42,7 +42,8 @@ Templates stored in the flow as data URLs need **0.12.0+**; 0.11.x reads only te
 - **Template** (`image`): a PNG cut from the screen. Matching is normalised correlation on grey levels; `optConfidence` (recorded `0.9`) is the minimum score. The best match wins; the recording kept only templates that match exactly one place.
 - **Click point**: `deltaX` / `deltaY` = pixels from the template's top-left corner (0,0 = its centre). The point may lie outside the template (a label used as a landmark for the field next to it).
 - **Wait Timeout** (`optWaitTimeout`, recorded `15`): the node polls until its target appears. A remote screen answers late - keep it; raise it for slow sessions.
-- **Search Region** (`optSearchRegion`, `"x,y,w,h"` in screen pixels or 0-1 fractions): only for speed or to pick one of several look-alikes; it ties the step to the window's position.
+- **Window** (`optWindow`, 0.12.0, plain text in the window title - `'acme-erp01'`): the step searches only that window, wherever it is when the step runs; OCR is faster and is not confused by what is beside the window. The recording sets it on every step after Focus Window - keep it. A wait keeps polling while the window is not open; Image / Text Exists answer false.
+- **Search Region** (`optSearchRegion`, `"x,y,w,h"` in pixels or 0-1 fractions): only for speed or to pick one of several look-alikes. With Window it is relative to the window; without, it ties the step to the window's position on the screen.
 - **Scale Invariant** (`optScaleInvariant: true`, `optScaleRange`): tries other template sizes - for a session whose scaling differs between runs (smart sizing). Slower (~0.5 s per search).
 - **OCR nodes** find text instead (`inText` / `inSearchText`, `optMatch`: `exact` - whole words, case and punctuation ignored; `contains`; `fuzzy` - one misread letter per word; `optIndex` picks one of several occurrences in reading order).
 
@@ -52,7 +53,7 @@ Templates stored in the flow as data URLs need **0.12.0+**; 0.11.x reads only te
 |---|---|---|
 | `Window.FocusWindow` (0.12.0) | Bring a window (the RDP / Citrix client) to the front - keys go to the window in front | `inTitle` (Custom: text in the title), `optMatch` contains/exact/regex, `optMaximize`, `optWaitTimeout` (default 10), `outTitle` |
 | `Image.ClickImage` | Click where the template is | `optMouseButton` left/middle/right, `optClickType` single/double, `optKeyModifier` none/ctrl/shift/alt/win |
-| `Image.ClickType` | Click a field, (select all), type | `inText`, `optClear`, `optPressEnter`, `optDelayPerKeyMs` (0.12.0; 20-50 for sessions that drop fast keys) |
+| `Image.ClickType` | Click a field, (select all), type | `inText`, `optClear`, `optPressEnter`, `optDelayPerKeyMs` (0.12.0; 20-50 for sessions that drop fast keys), `optVerify` (0.12.0: read the field back, retype slowly once if a key was lost; never for passwords) |
 | `Image.SelectCopy` | Click, Ctrl+A, Ctrl+C | then `Clipboard.GetText` → `outText` |
 | `Image.FindImage` | Where the template is | `outX`, `outY` (top-left), `outConfidence`, `outCount` (0.12.0: how many places match) |
 | `Image.ImageExists` | Is it there (no error when not) | `outExists`, `outConfidence` |
@@ -61,11 +62,11 @@ Templates stored in the flow as data URLs need **0.12.0+**; 0.11.x reads only te
 | `OCR.ClickText`, `OCR.FindText`, `OCR.TextExists`, `OCR.WaitText` | Text instead of a template | `inText` / `inSearchText`, `optMatch` (0.12.0), `optIndex`, `optLanguage` (eng, deu, tur, ...) |
 | `OCR.GetTextNearImage` | Read the text in a rectangle next to an anchor | `image` = reference image; `regions[0]` = anchor, `regions[1]` = target, each `{x,y,width,height}` in % of the reference image; `outText` |
 | `OCR.GetTextNearText` | Read next to an anchor text | `inAnchorText`, `targetOffset {x,y,w,h}` from the anchor's top-left, `optMatch` |
-| `OCR.GetText` | Read a fixed screen rectangle | `region {x,y,w,h}` - tied to the window's position |
+| `OCR.GetText` | Read a fixed rectangle | `region {x,y,w,h}` - relative to the window with `optWindow`, else screen pixels |
 | `OCR.ExtractTable` | A grid into rows | `image` + `regions` (anchor = the table's corner, target = the table), `optHasHeader`, `optScrollMode` none/wheel/pagedown for more rows than fit; `outTable` (rows), `outHeaders`, `outRowCount` |
 | `Keyboard.SendKeys` | Type text into what has the focus | `inText`, `optInterpretTokens` (`{ENTER}`, `{TAB}`, `{HOTKEY:ctrl+s}`), `optDelayPerKeyMs` |
 | `Keyboard.SendHotkey` | A key combination | `inKeys` (`"ctrl+s"`, `"alt+f4"`, `"enter"`), `optDelayMs` |
-| `Screen.WaitScreenStable`, `Screen.WaitMouseShape` | Wait until the screen stops changing / the pointer is not busy (`optShape` notbusy) | |
+| `Screen.WaitScreenStable`, `Screen.WaitMouseShape` | Wait until the screen (window, region) stops changing / the pointer is not busy (`optShape` notbusy) | `optChangeFirst` (0.12.0: first wait for the screen to answer the click before it, then to settle - before Send Keys / Get Text on a slow session), `optWindow`, `optStableMs`, `optTimeout` |
 
 Run `robomotion describe node <type>` for anything not listed.
 
@@ -117,7 +118,9 @@ flow.create('Save a customer (ERP over RDP)', (f) => {
 | "Best match 0.86-0.89" | compression (RemoteFX / AVC) blurs the screen | lower `optConfidence` to 0.85; keep it ≥ 0.8 |
 | "The screen could not be captured ... not being drawn" | the robot's own Remote Desktop window is minimized, the session is locked or disconnected | keep that window restored; on dedicated robots log on to the console or use a session that stays connected |
 | Clicks the wrong one of two look-alikes | a template that matches more than one place (the recording warned) | re-record that step on a target with distinctive surroundings, or set `optSearchRegion` |
+| Text found slowly, or not found though it is in the window | the step OCRs the whole screen (no `optWindow`); what is beside the window changes the reading | set `optWindow` to text in the session window's title |
 | Keys typed into another window | the remote window was not in front | `Window.FocusWindow` first; a click into the remote window before typing |
-| Characters missing from typed text | the session drops fast keystrokes | `optDelayPerKeyMs` 20-50 (Click & Type, Send Keys) |
+| Characters missing from typed text | the session drops fast keystrokes | `optVerify: true` on Click & Type (retypes slowly once); `optDelayPerKeyMs` 20-50 (Click & Type, Send Keys) |
+| Keys lost after opening a dialog (Send Keys right after a click) | the slow session had not shown the dialog yet; the keys went to the window behind it | `Screen.WaitScreenStable` with `optChangeFirst: true` between them, or a step that looks for something in the dialog |
 | OCR misreads ("Biling") | small or low-contrast text | `optMatch: 'fuzzy'`, a template step instead, or Select & Copy for field values |
 | The step runs before the dialog shows | no wait on the target | keep `optWaitTimeout`; `Image.WaitImage` / `OCR.WaitText` for things no step clicks |

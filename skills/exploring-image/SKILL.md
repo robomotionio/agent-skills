@@ -31,7 +31,7 @@ Say these to the person when you show the plan.
 
 ## The loop
 
-1. **Find the window.** `image_status`, then `image_list_windows`; `image_focus_window title="acme-erp01"` brings the Remote Desktop / Citrix window to the front, makes it the scope, and records Focus Window (the flow's first step - keys go to whatever window is in front). To start it instead: `image_launch path="mstsc.exe" args=["C:\\RDP\\erp.rdp"] title="acme-erp01"` (records Start Process + Focus Window).
+1. **Find the window.** `image_status`, then `image_list_windows`; `image_focus_window title="acme-erp01"` brings the Remote Desktop / Citrix window to the front, makes it the scope, and records Focus Window (the flow's first step - keys go to whatever window is in front). From then on every recorded step carries the **Window** option (text in that title): on the robot it searches only that window, wherever it is, and rectangles are relative to it. `image_set_scope window=screen` records whole-screen steps instead (rarely right). To start it instead: `image_launch path="mstsc.exe" args=["C:\\RDP\\erp.rdp"] title="acme-erp01"` (records Start Process + Focus Window).
 2. **Snapshot.** `image_snapshot` - the scope as text, one line per thing a person would name, positions relative to the scope:
    ```
    "acme-erp01 - Remote Desktop Connection": 1282x800 at 307,87 (positions below are relative to it).
@@ -48,7 +48,7 @@ Say these to the person when you show the plan.
    ```
    It is built from OCR and the pixels, so it is imperfect: a word may be misread ("Biling" for "Billing"), an icon has no name, a control may be missed. **Check it against the picture**: `image_snapshot screenshot=true` draws the same refs as numbered boxes on the screenshot. Take a new snapshot after anything changes the screen - refs point at places, and a ref on a screen that changed is refused rather than clicked.
 3. **Act with refs.** `image_click target=@e42`, `image_type target=@e25 text="Grace Hopper"`, `image_send_keys keys="ctrl+s"`. A target can also be visible text (`target="text:Export orders..."`) or a point in the scope (`target="point:254,111"`, as the snapshot prints positions - for an icon you identified on the screenshot). Each result says what was recorded (the template's size and how unique it is) and **what changed on the screen**: a dialog that appeared with its text, a busy pointer, a screen still painting.
-4. **Wait for the remote side.** A remote screen answers after a round trip and paints in pieces. Every recorded find step already waits for its target (Wait Timeout, 15 s by default - `image_settings wait_timeout=30` for slow Citrix). Record `image_wait` only for things no step looks for: a "Saving..." banner to go away (`condition=disappear`), a report to finish.
+4. **Wait for the remote side.** A remote screen answers after a round trip and paints in pieces. Every recorded find step already waits for its target (Wait Timeout, 15 s by default - `image_settings wait_timeout=30` for slow Citrix). Record `image_wait` only for things no step looks for: a "Saving..." banner to go away (`condition=disappear`), a report to finish. When the next step does not look for anything (keys into a dialog that is still coming, `how=region` reads) and the session is slow, record `image_wait screen_stable=true change_first=true` right after the click: on the robot it waits for the screen to answer and settle (it compares with the screen before the click, so it works even if the answer was quick). A keystroke typed before a slow dialog is there goes to the window behind it.
 5. **Finish with `image_end`.** It returns the recorded sequence. With `flow_file="<flow>/main.ts"` it also writes the template images into that file (see Converting).
 6. **Show the plan, ask, then build.** Present the steps in plain words (and the session requirements above) and ask with `AskUserQuestion` before writing the flow. Then `creating-flow` (its `docs/patterns/image.md` maps the sequence to `main.ts`).
 
@@ -78,7 +78,7 @@ The click point inside the template is recorded too (Delta X / Y). If nothing ar
 
 ## Typing and keys
 
-- `image_type target=@eN text="..."` records Click & Type: click the field, select all (`clear=true`, the default), type. The field is read back with OCR and the result says what it shows. Characters missing → the session drops fast keystrokes: repeat with `delay_per_key=30`.
+- `image_type target=@eN text="..."` records Click & Type: click the field, select all (`clear=true`, the default), type. The field is read back with OCR the way the robot will (its inside, found from the click point) and the result says what it shows; when it is readable the step is recorded with **Verify** - on the robot it reads the field back and retypes slowly once if a keystroke was lost. Characters missing now → the session drops fast keystrokes: repeat with `delay_per_key=30`.
 - Passwords: `secret=true` - not read back or echoed; the step's note says to read it from a Vault credential in the flow. Never put a real password into a flow as Custom text.
 - `image_send_keys keys="ctrl+s"` / `"enter"` / `"alt+f"` records Send Hotkey; text with tokens (`"Smith{TAB}John{ENTER}"`) records Send Keys. Keys go to the window in front - the scope window is brought to the front first.
 
