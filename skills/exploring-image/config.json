@@ -1,0 +1,17 @@
+{
+  "name": "Exploring Image",
+  "namespace": "Robomotion.Skill.ExploringImage",
+  "version": "0.1.0",
+  "categories": [
+    "Artificial Intelligence"
+  ],
+  "description": "Explores a screen the robot can only see - a Remote Desktop, Citrix or VNC session, a legacy app with no accessibility - through the robomotion-image-mcp server: reads it with OCR and computer vision into refs, performs the steps, and returns a recorded sequence of Robomotion.ImageAutomation nodes whose template images were verified unique on the screen. Use before writing any image automation flow.",
+  "icon": "icon.png",
+  "skill": {
+    "runtime": "none",
+    "command": "exploring-image",
+    "platforms": [
+      "windows"
+    ]
+  }
+}

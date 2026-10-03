@@ -684,6 +684,48 @@
           "value": "Every Window Title + Full Path comes from an exploring-java recording (verified against the app); a click that opens a dialog is a mouse click (Click Coordinate on 1.7.x, Click Element on 2.1.0+), never Do Action 'click'; the dependency version is a published one at least the recording's minVersion."
         }
       ]
+    },
+    {
+      "id": 18,
+      "tier": "regression",
+      "title": "Remote Desktop screen from an exploring-image recording",
+      "prompt": "Our ERP runs on a Remote Desktop server (acme-erp01). Sign in, open Acme ERP from the desktop, save the customer Grace Hopper (grace@navy.example, Germany) and read the status bar.",
+      "fixture": "fixtures/12-image-rdp-customer.ts",
+      "assertions": [
+        {
+          "kind": "validator-passes"
+        },
+        {
+          "kind": "must-contain",
+          "value": "f.addDependency('Robomotion.ImageAutomation'",
+          "reason": "Robomotion.ImageAutomation is not a Core package: it needs a pinned dependency."
+        },
+        {
+          "kind": "must-contain",
+          "value": "optBackground: true",
+          "reason": "Core.Process.StartProcess without background mode waits for the client to exit and the flow never reaches the next step."
+        },
+        {
+          "kind": "must-contain-regex",
+          "value": "image: IMG_[A-Z0-9_]+,",
+          "reason": "A template is the identifier of a const image_write_templates wrote - never a quoted string."
+        },
+        {
+          "kind": "must-not-contain-regex",
+          "value": "image: '",
+          "reason": "No template pasted inline into a node (and never a guessed file name or URL)."
+        },
+        {
+          "kind": "must-not-contain-regex",
+          "value": "delta[XY]: Custom\\(",
+          "reason": "deltaX / deltaY are plain numbers."
+        },
+        {
+          "kind": "must-contain",
+          "value": "optWaitTimeout: Custom('15')",
+          "reason": "A remote screen answers late: find steps keep their Wait Timeout."
+        }
+      ]
     }
   ]
 }
