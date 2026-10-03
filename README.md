@@ -17,6 +17,7 @@ Start with `creating-flow` if you're new — it bundles the full Robomotion 101 
 | [`running-chat-assistant`](./skills/running-chat-assistant/SKILL.md) | Run and test a Chat Assistant flow as an Agent in the real chat page: `robomotion agent` push → create → start → chat, guided and conversational. |
 | [`searching-packages`](./skills/searching-packages/SKILL.md) | Find packages, nodes, templates, examples via the `robomotion` CLI (Bleve-backed fuzzy + semantic search). |
 | [`exploring-browser`](./skills/exploring-browser/SKILL.md) | Interactive browser exploration through `robomotion-browser-mcp`: snapshot, record actions, capture traffic. |
+| [`exploring-windows`](./skills/exploring-windows/SKILL.md) | Interactive Windows desktop exploration through `robomotion-windows-mcp`: read the app's UI tree like a DOM, search it, screenshot it, act, and record `Robomotion.WindowsAutomation` steps with verified selectors. Windows only. |
 | [`reversing-network`](./skills/reversing-network/SKILL.md) | Reverse-engineer a site's API from captured traffic and replace browser automation with HTTP. |
 | [`building-app`](./skills/building-app/SKILL.md) | Build a Robomotion App: screens under `app/` in front of a flow, in one repository. The harness tools under Build, or the `robomotion app` verbs from a terminal. |
 | [`document-understanding`](./skills/document-understanding/SKILL.md) | Read fields and tables out of invoices, receipts, statements and other documents; build the flow with the Document Understanding nodes and a human check. |
@@ -38,7 +39,8 @@ robomotion create flow "<name>"     # a flow alone
 # 3. Install the skills into the project, from inside its folder. One command
 #    puts the skills under .claude/skills/, wires the `robomotion-browser-mcp`
 #    server into .mcp.json (REQUIRED for exploring-browser and
-#    reversing-network), and adds the app hand-over check (a Stop hook that
+#    reversing-network; on Windows also `robomotion-windows-mcp` for
+#    exploring-windows), and adds the app hand-over check (a Stop hook that
 #    holds a hand-over until the app was validated, its buttons pressed and
 #    its screens read) to .claude/settings.json. Run it again to update.
 robomotion skills install
@@ -61,12 +63,13 @@ Only installing a subset? `npx skills add` supports per-skill installation — c
 
 ## Prerequisites
 
-Both binaries are **required** and must be on `PATH`. Install from [robomotion.io/downloads](https://www.robomotion.io/downloads):
+Both binaries are **required** and must be on `PATH` (on Windows, `robomotion-windows-mcp` too, for desktop automation). Install from [robomotion.io/downloads](https://www.robomotion.io/downloads):
 
 | Binary | Purpose |
 |--------|---------|
 | `robomotion` | CLI used by every skill — `build`, `validate`, `run`, `search`, `get`, `describe`, `docs`. |
 | `robomotion-browser-mcp` | MCP server the `exploring-browser` and `reversing-network` skills drive via `mcp__browser__*` tools. |
+| `robomotion-windows-mcp` | Windows only. MCP server the `exploring-windows` skill drives via `mcp__windows__*` tools; ships with the Robomotion desktop app. |
 
 `bun` is required for `testing-flow` (`bun test` is the test runner) and for `building-app` (the screens are a Vite project under `app/`). No other MCP servers are needed — `robomotion` shells out to `robomotion-sdk-mcp` internally.
 
@@ -146,6 +149,8 @@ skills/
 ├── exploring-browser/
 │   ├── SKILL.md
 │   └── docs/patterns/browser.md
+├── exploring-windows/
+│   └── SKILL.md
 ├── reversing-network/
 │   └── SKILL.md
 ├── running-chat-assistant/
