@@ -17,6 +17,7 @@ Start with `creating-flow` if you're new — it bundles the full Robomotion 101 
 | [`running-chat-assistant`](./skills/running-chat-assistant/SKILL.md) | Run and test a Chat Assistant flow as an Agent in the real chat page: `robomotion agent` push → create → start → chat, guided and conversational. |
 | [`searching-packages`](./skills/searching-packages/SKILL.md) | Find packages, nodes, templates, examples via the `robomotion` CLI (Bleve-backed fuzzy + semantic search). |
 | [`exploring-browser`](./skills/exploring-browser/SKILL.md) | Interactive browser exploration through `robomotion-browser-mcp`: snapshot, record actions, capture traffic. |
+| [`exploring-java`](./skills/exploring-java/SKILL.md) | Java (Swing/AWT) desktop app exploration through `robomotion-java-mcp`: snapshot the UI tree, search it, act, and get a recorded sequence of Java Automation nodes with verified selectors. Windows. |
 | [`exploring-windows`](./skills/exploring-windows/SKILL.md) | Interactive Windows desktop exploration through `robomotion-windows-mcp`: read the app's UI tree like a DOM, search it, screenshot it, act, and record `Robomotion.WindowsAutomation` steps with verified selectors. Windows only. |
 | [`reversing-network`](./skills/reversing-network/SKILL.md) | Reverse-engineer a site's API from captured traffic and replace browser automation with HTTP. |
 | [`building-app`](./skills/building-app/SKILL.md) | Build a Robomotion App: screens under `app/` in front of a flow, in one repository. The harness tools under Build, or the `robomotion app` verbs from a terminal. |
@@ -69,6 +70,7 @@ Both binaries are **required** and must be on `PATH` (on Windows, `robomotion-wi
 |--------|---------|
 | `robomotion` | CLI used by every skill — `build`, `validate`, `run`, `search`, `get`, `describe`, `docs`. |
 | `robomotion-browser-mcp` | MCP server the `exploring-browser` and `reversing-network` skills drive via `mcp__browser__*` tools. |
+| `robomotion-java-mcp` | MCP server the `exploring-java` skill drives via `mcp__java__*` tools (Windows; ships with the Robomotion installer). |
 | `robomotion-windows-mcp` | Windows only. MCP server the `exploring-windows` skill drives via `mcp__windows__*` tools; ships with the Robomotion desktop app. |
 
 `bun` is required for `testing-flow` (`bun test` is the test runner) and for `building-app` (the screens are a Vite project under `app/`). No other MCP servers are needed — `robomotion` shells out to `robomotion-sdk-mcp` internally.
@@ -147,6 +149,7 @@ skills/
 │   ├── SKILL.md
 │   └── docs/                    # sdk-grammar, architecture, patterns/, reference/
 ├── exploring-browser/
+├── exploring-java/
 │   ├── SKILL.md
 │   └── docs/patterns/browser.md
 ├── exploring-windows/

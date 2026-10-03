@@ -1,0 +1,17 @@
+{
+  "name": "Exploring Java",
+  "namespace": "Robomotion.Skill.ExploringJava",
+  "version": "0.1.0",
+  "categories": [
+    "Artificial Intelligence"
+  ],
+  "description": "Explores a Java (Swing / AWT) desktop application through the robomotion-java-mcp server - reads its UI tree like a DOM through the Java Access Bridge, searches it, takes screenshots, performs the steps - and returns a recorded sequence of Robomotion.JavaAutomation nodes whose selectors were verified against the live app. Use before writing any Java desktop automation flow.",
+  "icon": "icon.png",
+  "skill": {
+    "runtime": "none",
+    "command": "exploring-java",
+    "platforms": [
+      "windows"
+    ]
+  }
+}

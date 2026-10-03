@@ -99,6 +99,10 @@ Then verify property names with `robomotion describe node <type>[,<type>...]`.
 
 Use the canonical SubFlow example in `./docs/patterns/subflows.md`: `subflow.create(name, fn)` with `Begin` → nodes → `End(sfPort: 0)`. SubFlow node ID in the parent equals the subflow filename. No need to call `robomotion describe node` for Begin/End/SubFlow.
 
+### Java desktop flows — mandatory exploration
+
+If the flow uses `Robomotion.JavaAutomation.*`, explore the application before writing code, in the main session: `Skill(skill="exploring-java", args="<what to do in which app>")`. It drives the live app through `mcp__java__*`, records every step as the node that repeats it with a verified Window Title + Full Path, and returns the sequence; `./docs/patterns/java.md` maps it to `main.ts`. Exploring ends with `java_end` (it closes the windows it launched) before the first line of flow code. If `java_status` says the Java Access Bridge is off, ask the person before enabling it (`jabswitch -enable`, then restart the app).
+
 ### Browser flows — mandatory exploration
 
 If the flow uses `Core.Browser.*`, explore the page before writing code. **Do this in the main session** — MCP servers are scoped to the main conversation; `Agent` sub-agents cannot use `mcp__browser__*`.

@@ -26,6 +26,12 @@
       "runtime": "none"
     },
     {
+      "name": "exploring-java",
+      "path": "skills/exploring-java",
+      "version": "0.1.0",
+      "runtime": "none"
+    },
+    {
       "name": "exploring-windows",
       "path": "skills/exploring-windows",
       "version": "0.1.0",
