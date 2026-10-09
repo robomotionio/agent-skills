@@ -7653,6 +7653,7 @@ function AnimatedNumber({ value, from: startFrom, durationMs = 600, format, loca
 import { isValidElement as isValidElement4, useEffect as useEffect11, useRef as useRef9, useState as useState15 } from "react";
 var FLASH_MS = 1600;
 var LEAVE_MS = 250;
+var EMPTY_SETTLE_MS = 1e3;
 var NONE = { added: /* @__PURE__ */ new Set(), removed: [], changed: /* @__PURE__ */ new Map() };
 function fingerprint(v) {
   if (v === void 0) return "u";
@@ -7682,7 +7683,7 @@ function drawnFingerprint(node, depth = 0) {
   return null;
 }
 function diffRows(prev, next, fields) {
-  if (!prev || !prev.ready || !next.ready || prev.scope !== next.scope || prev.rows.size === 0) {
+  if (!prev || !prev.ready || !next.ready || prev.scope !== next.scope) {
     return NONE;
   }
   const added = /* @__PURE__ */ new Set();
@@ -7748,6 +7749,18 @@ function useRowDiff(rows, keyOf, fields, opts) {
   );
   if (marks === NONE && leaving.length === 0) return marks;
   return { added: marks.added, changed: marks.changed, removed: leaving };
+}
+function useListAnswered(rowCount, loading) {
+  const [settled, setSettled] = useState15(false);
+  const answered = useRef9(false);
+  if (rowCount > 0) answered.current = true;
+  const waiting = !answered.current && !settled && !loading && rowCount === 0;
+  useEffect11(() => {
+    if (!waiting) return;
+    const t = setTimeout(() => setSettled(true), EMPTY_SETTLE_MS);
+    return () => clearTimeout(t);
+  }, [waiting]);
+  return answered.current || settled;
 }
 function withLeaving(rows, removed) {
   const out = rows.map((row, index) => ({ row, index }));
@@ -11808,9 +11821,10 @@ function DataTable(props) {
     value: (row) => col.render ? drawnFingerprint(col.render(row)) : defaultValue(row, col)
   }));
   const localScope = `${filter}|${sortKey ?? ""}|${sortDir}|${clampedPage}|${effPageSize}`;
+  const rowsAnswered = useListAnswered(rows.length, loading);
   const diff = useRowDiff(pageRows, liveKeyOf, liveFields, {
     scope: paged ? remote?.scope ?? "" : localScope,
-    ready: paged ? remote !== null : !loading
+    ready: paged ? remote !== null : !loading && rowsAnswered
   });
   const busy = loading || remoteLoading;
   const firstLoad = busy && (paged ? remote === null : pageRows.length === 0);
