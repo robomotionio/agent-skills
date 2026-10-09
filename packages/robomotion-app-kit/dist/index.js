@@ -7650,7 +7650,7 @@ function AnimatedNumber({ value, from: startFrom, durationMs = 600, format, loca
 }
 
 // src/live-diff.ts
-import { useEffect as useEffect11, useRef as useRef9, useState as useState15 } from "react";
+import { isValidElement as isValidElement4, useEffect as useEffect11, useRef as useRef9, useState as useState15 } from "react";
 var FLASH_MS = 1600;
 var LEAVE_MS = 250;
 var NONE = { added: /* @__PURE__ */ new Set(), removed: [], changed: /* @__PURE__ */ new Map() };
@@ -7661,6 +7661,25 @@ function fingerprint(v) {
   } catch {
     return String(v);
   }
+}
+function drawnFingerprint(node, depth = 0) {
+  if (depth > 12) return "\u2026";
+  if (node === null || node === void 0 || typeof node === "boolean") return null;
+  if (typeof node === "string" || typeof node === "number") return node;
+  if (Array.isArray(node)) return node.map((n) => drawnFingerprint(n, depth + 1));
+  if (isValidElement4(node)) {
+    const t = node.type;
+    const name = typeof t === "string" ? t : t?.displayName ?? t?.name ?? "?";
+    const props = node.props ?? {};
+    const plain = [];
+    for (const k of Object.keys(props).sort()) {
+      const v = props[k];
+      if (k === "children") continue;
+      if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") plain.push([k, v]);
+    }
+    return [name, plain, drawnFingerprint(props.children, depth + 1)];
+  }
+  return null;
 }
 function diffRows(prev, next, fields) {
   if (!prev || !prev.ready || !next.ready || prev.scope !== next.scope || prev.rows.size === 0) {
@@ -8156,7 +8175,7 @@ ${s.status}`)
 // src/components/stepper.tsx
 import {
   Children as Children4,
-  isValidElement as isValidElement4,
+  isValidElement as isValidElement5,
   useState as useState19
 } from "react";
 import { jsx as jsx34, jsxs as jsxs31 } from "react/jsx-runtime";
@@ -8174,8 +8193,8 @@ function Stepper({
   children
 }) {
   const items3 = Children4.toArray(children);
-  const steps = items3.filter((c) => isValidElement4(c) && c.type === Step);
-  const rest = items3.filter((c) => !(isValidElement4(c) && c.type === Step));
+  const steps = items3.filter((c) => isValidElement5(c) && c.type === Step);
+  const rest = items3.filter((c) => !(isValidElement5(c) && c.type === Step));
   const [ownValue, setOwnValue] = useState19(defaultValue2);
   const current = Math.max(0, Math.min(value ?? ownValue, Math.max(0, steps.length - 1)));
   const [furthest, setFurthest] = useState19(current);
@@ -8189,7 +8208,7 @@ function Stepper({
   const last = current >= steps.length - 1;
   return /* @__PURE__ */ jsxs31("div", { className: cn("text-left", className), children: [
     /* @__PURE__ */ jsx34("ol", { "aria-label": label, className: "flex flex-wrap items-center gap-x-2 gap-y-2", children: steps.map((child, i) => {
-      const props = isValidElement4(child) ? child.props : { title: "" };
+      const props = isValidElement5(child) ? child.props : { title: "" };
       const state = i < current ? "done" : i === current ? "current" : "todo";
       const reachable = nonLinear || i <= furthest;
       return /* @__PURE__ */ jsxs31("li", { className: "flex items-center gap-2", children: [
@@ -11784,9 +11803,9 @@ function DataTable(props) {
   };
   const liveFields = columns.map((col) => ({
     key: col.key,
-    // A column drawn from something other than its own property (a Status
-    // column over `done`) compares the whole row.
-    value: (row) => col.value || row !== null && typeof row === "object" && col.key in row ? defaultValue(row, col) : row
+    // A drawn cell is compared by what it draws, so a Status badge rendered
+    // from `done` under the key "status" glows when `done` flips.
+    value: (row) => col.render ? drawnFingerprint(col.render(row)) : defaultValue(row, col)
   }));
   const localScope = `${filter}|${sortKey ?? ""}|${sortDir}|${clampedPage}|${effPageSize}`;
   const diff = useRowDiff(pageRows, liveKeyOf, liveFields, {
@@ -12125,7 +12144,7 @@ function SortIcon({ active, dir }) {
 import {
   Children as Children7,
   createContext as createContext5,
-  isValidElement as isValidElement5,
+  isValidElement as isValidElement6,
   useContext as useContext6,
   useEffect as useEffect22,
   useRef as useRef21,
@@ -12139,7 +12158,7 @@ function Kanban({ onMove, action, className, children }) {
   const items3 = Children7.toArray(children);
   const columns = [];
   for (const c of items3) {
-    if (isValidElement5(c) && c.type === KanbanColumn) columns.push(String(c.props.id));
+    if (isValidElement6(c) && c.type === KanbanColumn) columns.push(String(c.props.id));
   }
   const [dragKey, setDragKey] = useState29(null);
   const [dragFrom, setDragFrom] = useState29(null);
