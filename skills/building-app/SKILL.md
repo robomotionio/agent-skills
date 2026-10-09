@@ -708,7 +708,7 @@ The count query repeats the page's `WHERE` exactly and nothing else: no
 row, and SQLite spells "no limit" `LIMIT -1`, hence the `if`.
 
 **Text that can hold an apostrophe: let the node quote it.** The SQLite nodes
-(`Robomotion.SQLite` 1.6.6) double a text value's single quotes themselves when
+(`Robomotion.SQLite` 1.7.1) double a text value's single quotes themselves when
 **every** placeholder for that key sits directly between single quotes:
 `WHERE name = '{{{name}}}'` with `O'Brien` runs as `'O''Brien'`. Anywhere else
 the value goes in as it is, and an apostrophe ends the SQL string early: the
