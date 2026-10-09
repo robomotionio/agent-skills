@@ -1,7 +1,7 @@
 import {
   Xa,
   clsx
-} from "./chunk-3YWKORSK.js";
+} from "./chunk-AAFKE4O6.js";
 
 // node_modules/tailwind-merge/dist/bundle-mjs.mjs
 var CLASS_PART_SEPARATOR = "-";
@@ -2546,7 +2546,7 @@ function accentRamp(accent) {
 }
 
 // src/styles/tokens.generated.ts
-var TOKENS_CSS = ':root {\n--rm-kit: 0.5;\n--rm-background: 0.985 0.002 250;\n--rm-foreground: 0.2 0.02 260;\n--rm-card: 1 0 0;\n--rm-card-foreground: 0.2 0.02 260;\n--rm-popover: 1 0 0;\n--rm-popover-foreground: 0.2 0.02 260;\n--rm-muted: 0.962 0.004 250;\n--rm-muted-foreground: 0.5 0.02 260;\n--rm-border: 0.915 0.006 250;\n--rm-input: 0.86 0.01 250;\n--rm-accent: #FF4F00;\n--rm-primary: 0.67 0.222 37.4;\n--rm-primary-foreground: 1 0 0;\n--rm-ring: 0.67 0.222 37.4;\n--rm-accent-50: 0.975 0.031 37.4;\n--rm-accent-100: 0.945 0.067 37.4;\n--rm-accent-200: 0.89 0.115 37.4;\n--rm-accent-300: 0.815 0.164 37.4;\n--rm-accent-400: 0.73 0.2 37.4;\n--rm-accent-500: 0.655 0.222 37.4;\n--rm-accent-600: 0.585 0.222 37.4;\n--rm-accent-700: 0.51 0.204 37.4;\n--rm-accent-800: 0.43 0.173 37.4;\n--rm-accent-900: 0.36 0.138 37.4;\n--rm-accent-950: 0.26 0.1 37.4;\n--rm-secondary: 0.95 0.005 250;\n--rm-secondary-foreground: 0.3 0.02 260;\n--rm-success: 0.627 0.17 149.2;\n--rm-success-foreground: 1 0 0;\n--rm-warning: 0.666 0.157 58.3;\n--rm-warning-foreground: 1 0 0;\n--rm-destructive: 0.577 0.215 27.3;\n--rm-destructive-foreground: 1 0 0;\n--rm-info: 0.546 0.215 262.9;\n--rm-info-foreground: 1 0 0;\n--rm-sidebar: 0.975 0.003 250;\n--rm-sidebar-foreground: 0.38 0.02 260;\n--rm-sidebar-border: 0.915 0.006 250;\n--rm-sidebar-accent: 0.93 0.006 250;\n--rm-chart-1: 0.67 0.222 37.4;\n--rm-chart-2: 0.6 0.16 255;\n--rm-chart-3: 0.7 0.14 165;\n--rm-chart-4: 0.78 0.15 85;\n--rm-chart-5: 0.62 0.2 320;\n--rm-radius: 0.5rem;\n--rm-shadow-sm: 0 1px 2px 0 oklch(0.2 0.02 260 / 0.06);\n--rm-shadow-md: 0 4px 12px -2px oklch(0.2 0.02 260 / 0.1), 0 2px 4px -2px oklch(0.2 0.02 260 / 0.06);\n--rm-shadow-lg: 0 12px 32px -6px oklch(0.2 0.02 260 / 0.16), 0 4px 8px -4px oklch(0.2 0.02 260 / 0.08);\n--rm-font-sans: "Inter Variable", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;\n--rm-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;\n}\n.dark {\n--rm-background: 0.15 0.008 260;\n--rm-foreground: 0.95 0.005 250;\n--rm-card: 0.195 0.009 260;\n--rm-card-foreground: 0.95 0.005 250;\n--rm-popover: 0.215 0.01 260;\n--rm-popover-foreground: 0.95 0.005 250;\n--rm-muted: 0.255 0.01 260;\n--rm-muted-foreground: 0.7 0.015 255;\n--rm-border: 0.28 0.01 260;\n--rm-input: 0.34 0.012 260;\n--rm-secondary: 0.265 0.01 260;\n--rm-secondary-foreground: 0.92 0.005 250;\n--rm-success: 0.723 0.192 149.6;\n--rm-success-foreground: 0.15 0.008 260;\n--rm-warning: 0.769 0.165 70.1;\n--rm-warning-foreground: 0.15 0.008 260;\n--rm-destructive: 0.637 0.208 25.3;\n--rm-destructive-foreground: 1 0 0;\n--rm-info: 0.623 0.188 259.8;\n--rm-info-foreground: 1 0 0;\n--rm-sidebar: 0.17 0.009 260;\n--rm-sidebar-foreground: 0.76 0.015 255;\n--rm-sidebar-border: 0.26 0.01 260;\n--rm-sidebar-accent: 0.245 0.01 260;\n--rm-chart-2: 0.68 0.15 255;\n--rm-chart-3: 0.76 0.13 165;\n--rm-chart-4: 0.82 0.14 85;\n--rm-chart-5: 0.7 0.17 320;\n--rm-shadow-sm: 0 1px 2px 0 oklch(0 0 0 / 0.4);\n--rm-shadow-md: 0 4px 12px -2px oklch(0 0 0 / 0.5), 0 2px 4px -2px oklch(0 0 0 / 0.4);\n--rm-shadow-lg: 0 12px 32px -6px oklch(0 0 0 / 0.6), 0 4px 8px -4px oklch(0 0 0 / 0.4);\n}\nhtml {\nfont-family: var(--rm-font-sans);\n-webkit-font-smoothing: antialiased;\n-moz-osx-font-smoothing: grayscale;\ntext-rendering: optimizeLegibility;\n}\n@keyframes rm-fade-in { from { opacity: 0; } to { opacity: 1; } }\n@keyframes rm-fade-out { from { opacity: 1; } to { opacity: 0; } }\n@keyframes rm-zoom-in { from { opacity: 0; transform: scale(0.96) translateY(4px); } to { opacity: 1; transform: none; } }\n@keyframes rm-zoom-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: scale(0.96) translateY(4px); } }\n@keyframes rm-slide-in-right { from { transform: translateX(100%); } to { transform: none; } }\n@keyframes rm-slide-out-right { from { transform: none; } to { transform: translateX(100%); } }\n@keyframes rm-slide-in-left { from { transform: translateX(-100%); } to { transform: none; } }\n@keyframes rm-slide-out-left { from { transform: none; } to { transform: translateX(-100%); } }\n@keyframes rm-slide-in-bottom { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }\n@keyframes rm-slide-out-bottom { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(12px); } }\n@keyframes rm-slide-in-top { from { opacity: 0; translate: 0 -6px; } to { opacity: 1; translate: 0 0; } }\n@keyframes rm-slide-out-top { from { opacity: 1; translate: 0 0; } to { opacity: 0; translate: 0 -6px; } }\n@keyframes rm-collapse-in { from { grid-template-rows: 0fr; } to { grid-template-rows: 1fr; } }\n@keyframes rm-spin { to { transform: rotate(360deg); } }\n[data-rm-anim="backdrop"][data-state="open"] { animation: rm-fade-in 160ms ease-out both; }\n[data-rm-anim="backdrop"][data-state="closed"] { animation: rm-fade-out 140ms ease-in both; }\n[data-rm-anim="dialog"][data-state="open"] { animation: rm-zoom-in 180ms cubic-bezier(0.16, 1, 0.3, 1) both; }\n[data-rm-anim="dialog"][data-state="closed"] { animation: rm-zoom-out 140ms ease-in both; }\n[data-rm-anim="popover"][data-state="open"] { animation: rm-slide-in-top 140ms cubic-bezier(0.16, 1, 0.3, 1) both; }\n[data-rm-anim="popover"][data-state="closed"] { animation: rm-fade-out 100ms ease-in both; }\n[data-rm-anim="drawer-right"][data-state="open"] { animation: rm-slide-in-right 220ms cubic-bezier(0.16, 1, 0.3, 1) both; }\n[data-rm-anim="drawer-right"][data-state="closed"] { animation: rm-slide-out-right 180ms ease-in both; }\n[data-rm-anim="drawer-left"][data-state="open"] { animation: rm-slide-in-left 220ms cubic-bezier(0.16, 1, 0.3, 1) both; }\n[data-rm-anim="drawer-left"][data-state="closed"] { animation: rm-slide-out-left 180ms ease-in both; }\n[data-rm-anim="toast"][data-state="open"] { animation: rm-slide-in-bottom 200ms cubic-bezier(0.16, 1, 0.3, 1) both; }\n[data-rm-anim="toast"][data-state="closed"] { animation: rm-fade-out 160ms ease-in both; }\n[data-rm-anim="collapse"][data-state="open"] { animation: rm-collapse-in 180ms ease-out both; }\n[data-rm-anim="fade"][data-state="open"] { animation: rm-fade-in 160ms ease-out both; }\n[data-rm-anim="fade"][data-state="closed"] { animation: rm-fade-out 120ms ease-in both; }\n@media (prefers-reduced-motion: reduce) {\n[data-rm-anim] { animation: none !important; }\n}';
+var TOKENS_CSS = ':root {\n--rm-kit: 0.5;\n--rm-background: 0.985 0.002 250;\n--rm-foreground: 0.2 0.02 260;\n--rm-card: 1 0 0;\n--rm-card-foreground: 0.2 0.02 260;\n--rm-popover: 1 0 0;\n--rm-popover-foreground: 0.2 0.02 260;\n--rm-muted: 0.962 0.004 250;\n--rm-muted-foreground: 0.5 0.02 260;\n--rm-border: 0.915 0.006 250;\n--rm-input: 0.86 0.01 250;\n--rm-accent: #FF4F00;\n--rm-primary: 0.67 0.222 37.4;\n--rm-primary-foreground: 1 0 0;\n--rm-ring: 0.67 0.222 37.4;\n--rm-accent-50: 0.975 0.031 37.4;\n--rm-accent-100: 0.945 0.067 37.4;\n--rm-accent-200: 0.89 0.115 37.4;\n--rm-accent-300: 0.815 0.164 37.4;\n--rm-accent-400: 0.73 0.2 37.4;\n--rm-accent-500: 0.655 0.222 37.4;\n--rm-accent-600: 0.585 0.222 37.4;\n--rm-accent-700: 0.51 0.204 37.4;\n--rm-accent-800: 0.43 0.173 37.4;\n--rm-accent-900: 0.36 0.138 37.4;\n--rm-accent-950: 0.26 0.1 37.4;\n--rm-secondary: 0.95 0.005 250;\n--rm-secondary-foreground: 0.3 0.02 260;\n--rm-success: 0.627 0.17 149.2;\n--rm-success-foreground: 1 0 0;\n--rm-warning: 0.666 0.157 58.3;\n--rm-warning-foreground: 1 0 0;\n--rm-destructive: 0.577 0.215 27.3;\n--rm-destructive-foreground: 1 0 0;\n--rm-info: 0.546 0.215 262.9;\n--rm-info-foreground: 1 0 0;\n--rm-sidebar: 0.975 0.003 250;\n--rm-sidebar-foreground: 0.38 0.02 260;\n--rm-sidebar-border: 0.915 0.006 250;\n--rm-sidebar-accent: 0.93 0.006 250;\n--rm-chart-1: 0.67 0.222 37.4;\n--rm-chart-2: 0.6 0.16 255;\n--rm-chart-3: 0.7 0.14 165;\n--rm-chart-4: 0.78 0.15 85;\n--rm-chart-5: 0.62 0.2 320;\n--rm-radius: 0.5rem;\n--rm-shadow-sm: 0 1px 2px 0 oklch(0.2 0.02 260 / 0.06);\n--rm-shadow-md: 0 4px 12px -2px oklch(0.2 0.02 260 / 0.1), 0 2px 4px -2px oklch(0.2 0.02 260 / 0.06);\n--rm-shadow-lg: 0 12px 32px -6px oklch(0.2 0.02 260 / 0.16), 0 4px 8px -4px oklch(0.2 0.02 260 / 0.08);\n--rm-font-sans: "Inter Variable", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;\n--rm-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;\n}\n.dark {\n--rm-background: 0.15 0.008 260;\n--rm-foreground: 0.95 0.005 250;\n--rm-card: 0.195 0.009 260;\n--rm-card-foreground: 0.95 0.005 250;\n--rm-popover: 0.215 0.01 260;\n--rm-popover-foreground: 0.95 0.005 250;\n--rm-muted: 0.255 0.01 260;\n--rm-muted-foreground: 0.7 0.015 255;\n--rm-border: 0.28 0.01 260;\n--rm-input: 0.34 0.012 260;\n--rm-secondary: 0.265 0.01 260;\n--rm-secondary-foreground: 0.92 0.005 250;\n--rm-success: 0.723 0.192 149.6;\n--rm-success-foreground: 0.15 0.008 260;\n--rm-warning: 0.769 0.165 70.1;\n--rm-warning-foreground: 0.15 0.008 260;\n--rm-destructive: 0.637 0.208 25.3;\n--rm-destructive-foreground: 1 0 0;\n--rm-info: 0.623 0.188 259.8;\n--rm-info-foreground: 1 0 0;\n--rm-sidebar: 0.17 0.009 260;\n--rm-sidebar-foreground: 0.76 0.015 255;\n--rm-sidebar-border: 0.26 0.01 260;\n--rm-sidebar-accent: 0.245 0.01 260;\n--rm-chart-2: 0.68 0.15 255;\n--rm-chart-3: 0.76 0.13 165;\n--rm-chart-4: 0.82 0.14 85;\n--rm-chart-5: 0.7 0.17 320;\n--rm-shadow-sm: 0 1px 2px 0 oklch(0 0 0 / 0.4);\n--rm-shadow-md: 0 4px 12px -2px oklch(0 0 0 / 0.5), 0 2px 4px -2px oklch(0 0 0 / 0.4);\n--rm-shadow-lg: 0 12px 32px -6px oklch(0 0 0 / 0.6), 0 4px 8px -4px oklch(0 0 0 / 0.4);\n}\nhtml {\nfont-family: var(--rm-font-sans);\n-webkit-font-smoothing: antialiased;\n-moz-osx-font-smoothing: grayscale;\ntext-rendering: optimizeLegibility;\n}\n@keyframes rm-fade-in { from { opacity: 0; } to { opacity: 1; } }\n@keyframes rm-fade-out { from { opacity: 1; } to { opacity: 0; } }\n@keyframes rm-zoom-in { from { opacity: 0; transform: scale(0.96) translateY(4px); } to { opacity: 1; transform: none; } }\n@keyframes rm-zoom-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: scale(0.96) translateY(4px); } }\n@keyframes rm-slide-in-right { from { transform: translateX(100%); } to { transform: none; } }\n@keyframes rm-slide-out-right { from { transform: none; } to { transform: translateX(100%); } }\n@keyframes rm-slide-in-left { from { transform: translateX(-100%); } to { transform: none; } }\n@keyframes rm-slide-out-left { from { transform: none; } to { transform: translateX(-100%); } }\n@keyframes rm-slide-in-bottom { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }\n@keyframes rm-slide-out-bottom { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(12px); } }\n@keyframes rm-slide-in-top { from { opacity: 0; translate: 0 -6px; } to { opacity: 1; translate: 0 0; } }\n@keyframes rm-slide-out-top { from { opacity: 1; translate: 0 0; } to { opacity: 0; translate: 0 -6px; } }\n@keyframes rm-collapse-in { from { grid-template-rows: 0fr; } to { grid-template-rows: 1fr; } }\n@keyframes rm-spin { to { transform: rotate(360deg); } }\n[data-rm-anim="backdrop"][data-state="open"] { animation: rm-fade-in 160ms ease-out both; }\n[data-rm-anim="backdrop"][data-state="closed"] { animation: rm-fade-out 140ms ease-in both; }\n[data-rm-anim="dialog"][data-state="open"] { animation: rm-zoom-in 180ms cubic-bezier(0.16, 1, 0.3, 1) both; }\n[data-rm-anim="dialog"][data-state="closed"] { animation: rm-zoom-out 140ms ease-in both; }\n[data-rm-anim="popover"][data-state="open"] { animation: rm-slide-in-top 140ms cubic-bezier(0.16, 1, 0.3, 1) both; }\n[data-rm-anim="popover"][data-state="closed"] { animation: rm-fade-out 100ms ease-in both; }\n[data-rm-anim="drawer-right"][data-state="open"] { animation: rm-slide-in-right 220ms cubic-bezier(0.16, 1, 0.3, 1) both; }\n[data-rm-anim="drawer-right"][data-state="closed"] { animation: rm-slide-out-right 180ms ease-in both; }\n[data-rm-anim="drawer-left"][data-state="open"] { animation: rm-slide-in-left 220ms cubic-bezier(0.16, 1, 0.3, 1) both; }\n[data-rm-anim="drawer-left"][data-state="closed"] { animation: rm-slide-out-left 180ms ease-in both; }\n[data-rm-anim="toast"][data-state="open"] { animation: rm-slide-in-bottom 200ms cubic-bezier(0.16, 1, 0.3, 1) both; }\n[data-rm-anim="toast"][data-state="closed"] { animation: rm-fade-out 160ms ease-in both; }\n[data-rm-anim="collapse"][data-state="open"] { animation: rm-collapse-in 180ms ease-out both; }\n[data-rm-anim="fade"][data-state="open"] { animation: rm-fade-in 160ms ease-out both; }\n[data-rm-anim="fade"][data-state="closed"] { animation: rm-fade-out 120ms ease-in both; }\n@keyframes rm-flash {\nfrom { background-color: oklch(var(--rm-primary) / 0.16); }\nto { background-color: transparent; }\n}\n@keyframes rm-enter { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }\n[data-rm-flash] { animation: rm-flash 1600ms ease-out both; }\n[data-rm-enter] { animation: rm-enter 240ms cubic-bezier(0.16, 1, 0.3, 1) both, rm-flash 1600ms ease-out both; }\n[data-rm-leave] { animation: rm-fade-out 250ms ease-in both; pointer-events: none; }\n@media (prefers-reduced-motion: reduce) {\n[data-rm-anim], [data-rm-flash], [data-rm-enter], [data-rm-leave] { animation: none !important; }\n}';
 
 // src/theme.ts
 var DEFAULT_ACCENT = "#FF4F00";
@@ -7595,6 +7595,9 @@ function Tooltip2({ content, side = "top", className, children }) {
   );
 }
 
+// src/components/stat.tsx
+import { useEffect as useEffect12, useRef as useRef10, useState as useState16 } from "react";
+
 // src/components/animated-number.tsx
 import { useMemo as useMemo4, useRef as useRef8, useState as useState14 } from "react";
 import { Fragment as Fragment7, jsx as jsx28, jsxs as jsxs26 } from "react/jsx-runtime";
@@ -7604,12 +7607,12 @@ function decimalsOf(n) {
   const dot = s.indexOf(".");
   return dot < 0 || s.includes("e") ? 0 : Math.min(3, s.length - dot - 1);
 }
-function AnimatedNumber({ value, durationMs = 600, format, locale, className }) {
+function AnimatedNumber({ value, from: startFrom, durationMs = 600, format, locale, className }) {
   const formatKey = format ? JSON.stringify(format) : "";
   const formatter = useMemo4(() => new Intl.NumberFormat(locale, format), [locale, formatKey]);
   const elRef = useRef8(null);
   const [frame, setFrame] = useState14(null);
-  const shown = useRef8(value);
+  const shown = useRef8(startFrom ?? value);
   useIsoLayoutEffect(() => {
     const from = shown.current;
     const to = value;
@@ -7644,6 +7647,95 @@ function AnimatedNumber({ value, durationMs = 600, format, locale, className }) 
     /* @__PURE__ */ jsx28("span", { "aria-hidden": "true", children: formatter.format(frame) }),
     /* @__PURE__ */ jsx28("span", { className: "sr-only", children: final })
   ] }) });
+}
+
+// src/live-diff.ts
+import { useEffect as useEffect11, useRef as useRef9, useState as useState15 } from "react";
+var FLASH_MS = 1600;
+var LEAVE_MS = 250;
+var NONE = { added: /* @__PURE__ */ new Set(), removed: [], changed: /* @__PURE__ */ new Map() };
+function fingerprint(v) {
+  if (v === void 0) return "u";
+  try {
+    return JSON.stringify(v) ?? String(v);
+  } catch {
+    return String(v);
+  }
+}
+function diffRows(prev, next, fields) {
+  if (!prev || !prev.ready || !next.ready || prev.scope !== next.scope || prev.rows.size === 0) {
+    return NONE;
+  }
+  const added = /* @__PURE__ */ new Set();
+  const changed = /* @__PURE__ */ new Map();
+  for (const [key, cur] of next.rows) {
+    const old = prev.rows.get(key);
+    if (!old) {
+      added.add(key);
+      continue;
+    }
+    let diff;
+    fields.forEach((f, i) => {
+      if (old.values[i] !== cur.values[i]) (diff ??= /* @__PURE__ */ new Set()).add(f.key);
+    });
+    if (diff) changed.set(key, diff);
+  }
+  const removed = [];
+  for (const [key, old] of prev.rows) {
+    if (!next.rows.has(key)) removed.push({ key, row: old.row, index: old.index });
+  }
+  if (added.size === 0 && changed.size === 0 && removed.length === 0) return NONE;
+  return { added, removed, changed };
+}
+function snapshot(rows, keyOf, fields, opts) {
+  const out = /* @__PURE__ */ new Map();
+  for (let i = 0; i < rows.length; i++) {
+    const key = keyOf(rows[i], i);
+    if (key === null) return null;
+    out.set(key, { row: rows[i], index: i, values: fields.map((f) => fingerprint(f.value(rows[i]))) });
+  }
+  return { scope: opts.scope, ready: opts.ready, rows: out };
+}
+function useRowDiff(rows, keyOf, fields, opts) {
+  const prev = useRef9(null);
+  const [marks, setMarks] = useState15(NONE);
+  const [leaving, setLeaving] = useState15([]);
+  const flashTimer = useRef9(null);
+  const leaveTimer = useRef9(null);
+  useIsoLayoutEffect(() => {
+    const next = snapshot(rows, keyOf, fields, opts);
+    const diff = next ? diffRows(prev.current, next, fields) : NONE;
+    prev.current = next;
+    if (diff === NONE) return;
+    setMarks(diff);
+    if (flashTimer.current) clearTimeout(flashTimer.current);
+    flashTimer.current = setTimeout(() => setMarks(NONE), FLASH_MS);
+    if (diff.removed.length > 0) {
+      setLeaving(diff.removed);
+      if (leaveTimer.current) clearTimeout(leaveTimer.current);
+      leaveTimer.current = setTimeout(() => setLeaving([]), LEAVE_MS);
+    }
+  });
+  useIsoLayoutEffect(() => {
+    setMarks(NONE);
+    setLeaving((l) => l.length === 0 ? l : []);
+  }, [opts.scope]);
+  useEffect11(
+    () => () => {
+      if (flashTimer.current) clearTimeout(flashTimer.current);
+      if (leaveTimer.current) clearTimeout(leaveTimer.current);
+    },
+    []
+  );
+  if (marks === NONE && leaving.length === 0) return marks;
+  return { added: marks.added, changed: marks.changed, removed: leaving };
+}
+function withLeaving(rows, removed) {
+  const out = rows.map((row, index) => ({ row, index }));
+  for (const r of [...removed].sort((a, b) => a.index - b.index)) {
+    out.splice(Math.min(r.index, out.length), 0, { row: r.row, index: -1, leaving: r.key });
+  }
+  return out;
 }
 
 // src/components/skeleton.tsx
@@ -7705,6 +7797,7 @@ function Stat({
   className
 }) {
   const inverted = emphasis === "inverted";
+  const counting = useCountOnChange(value, loading);
   const good = delta !== void 0 && delta !== 0 && delta > 0 === upIsGood;
   const flat = delta === void 0 || delta === 0;
   const quiet = inverted ? tk.fgBackgroundMuted : tk.fgMuted;
@@ -7720,7 +7813,7 @@ function Stat({
           /* @__PURE__ */ jsxs27("div", { className: "min-w-0 flex-1", children: [
             /* @__PURE__ */ jsx30("div", { className: cn("truncate", textStyles.muted, inverted && quiet), children: label }),
             loading ? /* @__PURE__ */ jsx30(Skeleton, { variant: "text", lines: 1, width: "60%", className: "mt-3 h-6" }) : /* @__PURE__ */ jsxs27("div", { className: cn("mt-1", textStyles.stat, inverted && tk.fgBackground), children: [
-              animate && typeof value === "number" ? /* @__PURE__ */ jsx30(AnimatedNumber, { value }) : value,
+              /* @__PURE__ */ jsx30("span", { "data-rm-flash": counting.flash ? "" : void 0, children: typeof value === "number" && (animate || counting.from !== void 0) ? /* @__PURE__ */ jsx30(AnimatedNumber, { value, from: counting.from }) : value }),
               unit !== void 0 && /* @__PURE__ */ jsx30("span", { className: cn("ml-1 text-base font-normal tracking-normal", quiet), children: unit })
             ] })
           ] }),
@@ -7758,6 +7851,28 @@ function Stat({
     }
   );
   return card ? /* @__PURE__ */ jsx30(Card, { className: cn(surface, className), children: body }) : body;
+}
+function useCountOnChange(value, loading) {
+  const last = useRef10({ value, shown: !loading });
+  const [from, setFrom] = useState16(void 0);
+  const [flash, setFlash] = useState16(false);
+  const timer = useRef10(null);
+  useIsoLayoutEffect(() => {
+    const prev = last.current;
+    last.current = { value, shown: prev.shown || !loading };
+    if (loading || !prev.shown || prev.value == null || Object.is(prev.value, value)) return;
+    if (typeof prev.value === "number" && typeof value === "number" && from === void 0) setFrom(prev.value);
+    setFlash(true);
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => setFlash(false), FLASH_MS);
+  }, [value, loading]);
+  useEffect12(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+    },
+    []
+  );
+  return { from, flash };
 }
 
 // src/components/meter.tsx
@@ -7839,7 +7954,7 @@ function Meter({
 }
 
 // src/components/bar-list.tsx
-import { useRef as useRef9, useState as useState15 } from "react";
+import { useRef as useRef11, useState as useState17 } from "react";
 import { Fragment as Fragment8, jsx as jsx32, jsxs as jsxs29 } from "react/jsx-runtime";
 var grouped = new Intl.NumberFormat();
 function BarList({
@@ -7856,13 +7971,13 @@ function BarList({
   label,
   className
 }) {
-  const [expanded, setExpanded] = useState15(false);
+  const [expanded, setExpanded] = useState17(false);
   const ranked = sort === "none" ? items3 : [...items3].sort((a, b) => sort === "asc" ? a.value - b.value : b.value - a.value);
   const capped = limit !== void 0 && limit > 0 && ranked.length > limit;
   const shown = capped && !expanded ? ranked.slice(0, limit) : ranked;
   const top = max2 !== void 0 && max2 > 0 ? max2 : Math.max(0, ...items3.map((i) => Number.isFinite(i.value) ? i.value : 0));
-  const rowEls = useRef9(/* @__PURE__ */ new Map());
-  const tops = useRef9(/* @__PURE__ */ new Map());
+  const rowEls = useRef11(/* @__PURE__ */ new Map());
+  const tops = useRef11(/* @__PURE__ */ new Map());
   const order2 = shown.map((i) => i.key).join("\n");
   useIsoLayoutEffect(() => {
     const before = tops.current;
@@ -7940,7 +8055,7 @@ function BarList({
 }
 
 // src/components/progress-steps.tsx
-import { useEffect as useEffect11, useRef as useRef10, useState as useState16 } from "react";
+import { useEffect as useEffect13, useRef as useRef12, useState as useState18 } from "react";
 import { Fragment as Fragment9, jsx as jsx33, jsxs as jsxs30 } from "react/jsx-runtime";
 var STATUS_WORDS = {
   pending: "Waiting",
@@ -7974,9 +8089,9 @@ function ProgressSteps({
   const vertical = orientation === "vertical";
   const speaking = steps.filter((s) => s.status === "active" || s.status === "failed").map((s) => `${s.key}
 ${s.status}`).join("\n\n");
-  const spoken = useRef10(speaking);
-  const [announcement, setAnnouncement] = useState16("");
-  useEffect11(() => {
+  const spoken = useRef12(speaking);
+  const [announcement, setAnnouncement] = useState18("");
+  useEffect13(() => {
     if (spoken.current === speaking) return;
     const before = new Set(spoken.current.split("\n\n"));
     spoken.current = speaking;
@@ -8042,7 +8157,7 @@ ${s.status}`)
 import {
   Children as Children4,
   isValidElement as isValidElement4,
-  useState as useState17
+  useState as useState19
 } from "react";
 import { jsx as jsx34, jsxs as jsxs31 } from "react/jsx-runtime";
 function Stepper({
@@ -8061,9 +8176,9 @@ function Stepper({
   const items3 = Children4.toArray(children);
   const steps = items3.filter((c) => isValidElement4(c) && c.type === Step);
   const rest = items3.filter((c) => !(isValidElement4(c) && c.type === Step));
-  const [ownValue, setOwnValue] = useState17(defaultValue2);
+  const [ownValue, setOwnValue] = useState19(defaultValue2);
   const current = Math.max(0, Math.min(value ?? ownValue, Math.max(0, steps.length - 1)));
-  const [furthest, setFurthest] = useState17(current);
+  const [furthest, setFurthest] = useState19(current);
   if (current > furthest) setFurthest(current);
   const go = (next) => {
     const clamped = Math.max(0, Math.min(next, steps.length - 1));
@@ -8142,8 +8257,8 @@ import {
   createContext as createContext4,
   useContext as useContext5,
   useId as useId11,
-  useRef as useRef11,
-  useState as useState18
+  useRef as useRef13,
+  useState as useState20
 } from "react";
 import { jsx as jsx35, jsxs as jsxs32 } from "react/jsx-runtime";
 var AccordionContext = createContext4(null);
@@ -8156,9 +8271,9 @@ function Accordion({
   children
 }) {
   const baseId = useId11();
-  const [ownValue, setOwnValue] = useState18(defaultValue2 ?? []);
+  const [ownValue, setOwnValue] = useState20(defaultValue2 ?? []);
   const open = value ?? ownValue;
-  const rootRef = useRef11(null);
+  const rootRef = useRef13(null);
   const set = (next) => {
     if (value === void 0) setOwnValue(next);
     onChange?.(next);
@@ -8405,7 +8520,7 @@ function initials(name) {
 }
 
 // src/components/image.tsx
-import { useEffect as useEffect13, useRef as useRef13, useState as useState20 } from "react";
+import { useEffect as useEffect15, useRef as useRef15, useState as useState22 } from "react";
 
 // src/image-source.ts
 import { useFileUrl } from "@robomotion/apps-runtime/react";
@@ -8423,9 +8538,9 @@ function useImageSource(src, file) {
 // src/components/lightbox.tsx
 import {
   useCallback as useCallback5,
-  useEffect as useEffect12,
-  useRef as useRef12,
-  useState as useState19
+  useEffect as useEffect14,
+  useRef as useRef14,
+  useState as useState21
 } from "react";
 import { jsx as jsx39, jsxs as jsxs35 } from "react/jsx-runtime";
 var VEIL = "bg-[color:oklch(0.16_0.01_260/0.94)]";
@@ -8447,18 +8562,18 @@ function Lightbox({
 }) {
   const { panelRef, onKeyDown: overlayKeyDown } = useOverlay(open, onClose);
   const presence = usePresence(open);
-  const [own, setOwn] = useState19(defaultIndex);
+  const [own, setOwn] = useState21(defaultIndex);
   const count = items3.length;
   const at = clamp2(index ?? own, 0, Math.max(0, count - 1));
   const item = items3[at];
-  const [view, setView] = useState19(FIT);
-  const viewRef = useRef12(view);
+  const [view, setView] = useState21(FIT);
+  const viewRef = useRef14(view);
   viewRef.current = view;
-  const stageRef = useRef12(null);
-  useEffect12(() => {
+  const stageRef = useRef14(null);
+  useEffect14(() => {
     setView(FIT);
   }, [at, open]);
-  useEffect12(() => {
+  useEffect14(() => {
     if (open && index === void 0) setOwn(clamp2(defaultIndex, 0, Math.max(0, count - 1)));
   }, [open]);
   const go = useCallback5(
@@ -8482,7 +8597,7 @@ function Lightbox({
   const pan = useCallback5((dx, dy) => {
     setView((v) => v.scale <= MIN_SCALE ? v : { ...v, x: v.x + dx, y: v.y + dy });
   }, []);
-  useEffect12(() => {
+  useEffect14(() => {
     const stage = stageRef.current;
     if (!open || !stage) return;
     const onWheel = (e) => {
@@ -8493,9 +8608,9 @@ function Lightbox({
     stage.addEventListener("wheel", onWheel, { passive: false });
     return () => stage.removeEventListener("wheel", onWheel);
   }, [open, zoomAbout, presence.present]);
-  const pointers = useRef12(/* @__PURE__ */ new Map());
-  const [dragging, setDragging] = useState19(false);
-  useEffect12(() => {
+  const pointers = useRef14(/* @__PURE__ */ new Map());
+  const [dragging, setDragging] = useState21(false);
+  useEffect14(() => {
     if (!dragging) return;
     const held = pointers.current;
     const onMove = (e) => {
@@ -8665,7 +8780,7 @@ function Lightbox({
 }
 function Slide({ item, view, moving }) {
   const { url, failed, resolving } = useImageSource(item.src, item.file);
-  const [broken, setBroken] = useState19(false);
+  const [broken, setBroken] = useState21(false);
   if (broken || failed || !url && !resolving) {
     return /* @__PURE__ */ jsx39("span", { role: "img", "aria-label": item.alt ? `${item.alt} (picture unavailable)` : "Picture unavailable", children: /* @__PURE__ */ jsx39(Icon, { name: "image-off", size: 32, strokeWidth: 1.5 }) });
   }
@@ -8733,16 +8848,16 @@ function Image({
   style
 }) {
   const { url, resolving, failed, refresh, fromFile } = useImageSource(src, file);
-  const [status, setStatus] = useState20(url ? "loading" : "idle");
-  const [open, setOpen] = useState20(false);
-  const imgRef = useRef13(null);
-  const retried = useRef13(false);
-  useEffect13(() => {
+  const [status, setStatus] = useState22(url ? "loading" : "idle");
+  const [open, setOpen] = useState22(false);
+  const imgRef = useRef15(null);
+  const retried = useRef15(false);
+  useEffect15(() => {
     setStatus(url ? "loading" : "idle");
     const el = imgRef.current;
     if (url && el && el.complete && el.naturalWidth > 0) setStatus("loaded");
   }, [url]);
-  useEffect13(() => {
+  useEffect15(() => {
     retried.current = false;
   }, [file?.artifact_id, src]);
   const handleLoad = (e) => {
@@ -8847,10 +8962,10 @@ function Image({
 import {
   forwardRef as forwardRef5,
   useCallback as useCallback6,
-  useEffect as useEffect14,
+  useEffect as useEffect16,
   useImperativeHandle,
-  useRef as useRef14,
-  useState as useState21
+  useRef as useRef16,
+  useState as useState23
 } from "react";
 
 // src/geometry.ts
@@ -9114,15 +9229,15 @@ var ImageMarkup = forwardRef5(function ImageMarkup2({
   const { ref: boxRef, width: vw0, height: vh0 } = useMeasure();
   const vw = vw0 || 1e3;
   const vh = vh0 || 1e3;
-  const imgRef = useRef14(null);
-  const [broken, setBroken] = useState21(false);
-  const retried = useRef14(false);
-  useEffect14(() => {
+  const imgRef = useRef16(null);
+  const [broken, setBroken] = useState23(false);
+  const retried = useRef16(false);
+  useEffect16(() => {
     setBroken(false);
     retried.current = false;
   }, [url]);
   const controlled = selectedId !== void 0 || onSelect !== void 0;
-  const [ownSelected, setOwnSelected] = useState21(void 0);
+  const [ownSelected, setOwnSelected] = useState23(void 0);
   const selected = controlled ? selectedId : ownSelected;
   const select = useCallback6(
     (id) => {
@@ -9131,14 +9246,14 @@ var ImageMarkup = forwardRef5(function ImageMarkup2({
     },
     [controlled, onSelect]
   );
-  const [gesture, setGesture] = useState21(null);
-  const [draft, setDraft] = useState21(null);
-  const [editing, setEditing] = useState21(null);
-  const [said, setSaid] = useState21("");
-  const live = useRef14({ marks, draft, gesture, tone, brushWidth });
+  const [gesture, setGesture] = useState23(null);
+  const [draft, setDraft] = useState23(null);
+  const [editing, setEditing] = useState23(null);
+  const [said, setSaid] = useState23("");
+  const live = useRef16({ marks, draft, gesture, tone, brushWidth });
   live.current = { marks, draft, gesture, tone, brushWidth };
-  const stroke = useRef14([]);
-  const badges = useRef14(/* @__PURE__ */ new Map());
+  const stroke = useRef16([]);
+  const badges = useRef16(/* @__PURE__ */ new Map());
   const full = maxMarks !== void 0 && marks.length >= maxMarks;
   const toPoint = useCallback6(
     (clientX, clientY) => {
@@ -9192,7 +9307,7 @@ var ImageMarkup = forwardRef5(function ImageMarkup2({
     },
     [commit]
   );
-  useEffect14(() => {
+  useEffect16(() => {
     if (!gesture) return;
     const onMove = (e) => {
       const p = toPoint(e.clientX, e.clientY);
@@ -9617,10 +9732,10 @@ function NoteBox({
   y,
   onDone
 }) {
-  const [text2, setText] = useState21(initial);
-  const inputRef = useRef14(null);
-  const done = useRef14(false);
-  useEffect14(() => {
+  const [text2, setText] = useState23(initial);
+  const inputRef = useRef16(null);
+  const done = useRef16(false);
+  useEffect16(() => {
     inputRef.current?.focus();
     inputRef.current?.select();
   }, []);
@@ -9787,9 +9902,9 @@ function noteEditOf(a, b) {
   return edited;
 }
 function useMarkHistory(initial = [], limit = 100) {
-  const [state, setState] = useState21({ past: [], present: initial, future: [] });
-  const latest = useRef14(state);
-  const typing = useRef14(null);
+  const [state, setState] = useState23({ past: [], present: initial, future: [] });
+  const latest = useRef16(state);
+  const typing = useRef16(null);
   const apply = useCallback6((next) => {
     latest.current = next;
     setState(next);
@@ -10036,9 +10151,9 @@ async function loadForCanvas(url) {
 // src/components/thread.tsx
 import {
   useCallback as useCallback7,
-  useEffect as useEffect15,
-  useRef as useRef15,
-  useState as useState22
+  useEffect as useEffect17,
+  useRef as useRef17,
+  useState as useState24
 } from "react";
 import { useFileUpload } from "@robomotion/apps-runtime/react";
 
@@ -10115,10 +10230,10 @@ function Thread({
   sendLabel,
   className
 }) {
-  const listRef = useRef15(null);
+  const listRef = useRef17(null);
   const count = messages.length;
   const lastBody = messages[count - 1]?.body;
-  useEffect15(() => {
+  useEffect17(() => {
     const el = listRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [count, lastBody]);
@@ -10197,7 +10312,7 @@ function ComposerBox({
   className,
   tray
 }) {
-  const [text2, setText] = useState22("");
+  const [text2, setText] = useState24("");
   const working = busy ?? action?.loading ?? false;
   const uploading = tray?.uploading ?? false;
   const files = tray?.ready ?? NO_FILES;
@@ -10280,12 +10395,12 @@ function AttachmentTray({
   children
 }) {
   const { upload, error } = useFileUpload();
-  const [items3, setItems] = useState22([]);
-  const [problem, setProblem] = useState22(null);
-  const inputRef = useRef15(null);
-  const held = useRef15([]);
+  const [items3, setItems] = useState24([]);
+  const [problem, setProblem] = useState24(null);
+  const inputRef = useRef17(null);
+  const held = useRef17([]);
   held.current = items3;
-  useEffect15(
+  useEffect17(
     () => () => {
       for (const it of held.current) revoke(it.preview);
     },
@@ -10458,11 +10573,11 @@ function formatAt2(at) {
 // src/components/image-grid.tsx
 import {
   useCallback as useCallback8,
-  useEffect as useEffect16,
+  useEffect as useEffect18,
   useLayoutEffect as useLayoutEffect4,
   useMemo as useMemo5,
-  useRef as useRef16,
-  useState as useState23
+  useRef as useRef18,
+  useState as useState25
 } from "react";
 import { jsx as jsx45, jsxs as jsxs40 } from "react/jsx-runtime";
 var COLS = {
@@ -10603,9 +10718,9 @@ function ImageGrid({
     }
     return cols.base;
   }, [strip, solved, cols.base, boxRef]);
-  const [active, setActive] = useState23(0);
-  const wantFocus = useRef16(false);
-  const anchor = useRef16(null);
+  const [active, setActive] = useState25(0);
+  const wantFocus = useRef18(false);
+  const anchor = useRef18(null);
   const activeIndex = Math.min(active, Math.max(0, count - 1));
   useLayoutEffect4(() => {
     if (!wantFocus.current) return;
@@ -10704,8 +10819,8 @@ function ImageGrid({
     focusTile(to);
   };
   const windowing = !strip && !filling && measured && slots > WINDOW_ABOVE;
-  const [rowMetrics, setRowMetrics] = useState23(null);
-  const [visible, setVisible] = useState23(null);
+  const [rowMetrics, setRowMetrics] = useState25(null);
+  const [visible, setVisible] = useState25(null);
   useLayoutEffect4(() => {
     if (!windowing) {
       if (rowMetrics) setRowMetrics(null);
@@ -10720,7 +10835,7 @@ function ImageGrid({
     const rowHeight = h + gapPx;
     setRowMetrics((m) => m && m.per === per && Math.abs(m.rowHeight - rowHeight) < 0.5 ? m : { per, rowHeight });
   }, [windowing, width, gapPx, density, aspect, cols.base, cols.md, cols.lg]);
-  useEffect16(() => {
+  useEffect18(() => {
     if (!windowing || !rowMetrics) {
       setVisible(null);
       return;
@@ -10907,14 +11022,14 @@ function useSourceItems(source) {
   const action = active ? source.action : null;
   const pageSize = active ? source.pageSize ?? 0 : 0;
   const name = action?.name ?? "";
-  const actionRef = useRef16(action);
+  const actionRef = useRef18(action);
   actionRef.current = action;
-  const [state, setState] = useState23({ items: [], total: void 0 });
-  const [loading, setLoading] = useState23(active);
-  const [error, setError] = useState23(null);
-  const [reload, setReload] = useState23(0);
-  const seq2 = useRef16(0);
-  const held = useRef16([]);
+  const [state, setState] = useState25({ items: [], total: void 0 });
+  const [loading, setLoading] = useState25(active);
+  const [error, setError] = useState25(null);
+  const [reload, setReload] = useState25(0);
+  const seq2 = useRef18(0);
+  const held = useRef18([]);
   held.current = state.items;
   const fetchPage = useCallback8(
     async (offset3) => {
@@ -10943,11 +11058,11 @@ function useSourceItems(source) {
     },
     [pageSize]
   );
-  useEffect16(() => {
+  useEffect18(() => {
     if (!active) return;
     void fetchPage(0);
   }, [active, name, fetchPage, reload]);
-  useEffect16(() => {
+  useEffect18(() => {
     if (!active) return;
     return onActionDone((writer) => {
       if (writer && writer === actionRef.current?.name) return;
@@ -10963,9 +11078,9 @@ function useSourceItems(source) {
 
 // src/components/image-compare.tsx
 import {
-  useEffect as useEffect17,
-  useRef as useRef17,
-  useState as useState24
+  useEffect as useEffect19,
+  useRef as useRef19,
+  useState as useState26
 } from "react";
 import { Fragment as Fragment14, jsx as jsx46, jsxs as jsxs41 } from "react/jsx-runtime";
 var ASPECT2 = {
@@ -11048,19 +11163,19 @@ function Overlay({
 }) {
   const a = useImageSource(before.src, before.file);
   const b = useImageSource(after.src, after.file);
-  const boxRef = useRef17(null);
-  const [own, setOwn] = useState24(clamp012(defaultPosition));
+  const boxRef = useRef19(null);
+  const [own, setOwn] = useState26(clamp012(defaultPosition));
   const at = clamp012(position ?? own);
-  const [dragging, setDragging] = useState24(false);
-  const [held, setHeld] = useState24(false);
+  const [dragging, setDragging] = useState26(false);
+  const [held, setHeld] = useState26(false);
   const move = (next) => {
     const to = Math.round(clamp012(next) * 1e3) / 1e3;
     if (position === void 0) setOwn(to);
     onPositionChange?.(to);
   };
-  const moveRef = useRef17(move);
+  const moveRef = useRef19(move);
   moveRef.current = move;
-  useEffect17(() => {
+  useEffect19(() => {
     if (!dragging) return;
     let live = true;
     const onMove = (e) => {
@@ -11081,7 +11196,7 @@ function Overlay({
       window.removeEventListener("pointercancel", finish2);
     };
   }, [dragging]);
-  useEffect17(() => {
+  useEffect19(() => {
     if (!held) return;
     const release = () => setHeld(false);
     window.addEventListener("pointerup", release);
@@ -11255,14 +11370,14 @@ function clamp012(n) {
 // src/components/data-table.tsx
 import {
   useCallback as useCallback9,
-  useEffect as useEffect19,
+  useEffect as useEffect21,
   useMemo as useMemo6,
-  useRef as useRef18,
-  useState as useState26
+  useRef as useRef20,
+  useState as useState28
 } from "react";
 
 // src/components/error-state.tsx
-import { useEffect as useEffect18, useState as useState25 } from "react";
+import { useEffect as useEffect20, useState as useState27 } from "react";
 import { AppError } from "@robomotion/apps-runtime";
 import { useMaybeAppClient as useMaybeAppClient2 } from "@robomotion/apps-runtime/react";
 import { jsx as jsx47, jsxs as jsxs42 } from "react/jsx-runtime";
@@ -11306,8 +11421,8 @@ function looksLikeRefusal(error) {
 }
 function useSaidByTheBanner(error) {
   const app = useMaybeAppClient2();
-  const [state, setState] = useState25(app?.connection.state);
-  useEffect18(() => {
+  const [state, setState] = useState27(app?.connection.state);
+  useEffect20(() => {
     if (!app) return;
     setState(app.connection.state);
     return app.connection.onChange(setState);
@@ -11360,6 +11475,17 @@ function isLinkedBulk(a) {
   return "action" in a && !!a.action;
 }
 var NO_ROWS = [];
+function pageScope(req) {
+  return JSON.stringify([req.filter ?? "", req.sort?.key ?? "", req.sort?.dir ?? "", req.offset, req.limit]);
+}
+function currentRequest(filter, sortKey, sortDir, page, pageSize) {
+  return {
+    filter,
+    sort: sortKey ? { key: sortKey, dir: sortDir } : void 0,
+    offset: page * (pageSize || 0),
+    limit: pageSize
+  };
+}
 function defaultValue(row, col) {
   if (col.value) return col.value(row);
   const v = row[col.key];
@@ -11394,25 +11520,25 @@ function DataTable(props) {
     exportable = false,
     exportFilename = "export.csv"
   } = props;
-  const [filter, setFilter] = useState26("");
-  const [sortKey, setSortKey] = useState26(null);
-  const [sortDir, setSortDir] = useState26("asc");
-  const [page, setPage] = useState26(0);
+  const [filter, setFilter] = useState28("");
+  const [sortKey, setSortKey] = useState28(null);
+  const [sortDir, setSortDir] = useState28("asc");
+  const [page, setPage] = useState28(0);
   const paged = !!source && isActionSource(source);
   const pagedAction = paged ? source.action : null;
   const actionName = pagedAction?.name ?? "";
-  const actionRef = useRef18(pagedAction);
+  const actionRef = useRef20(pagedAction);
   actionRef.current = pagedAction;
   const effPageSize = paged ? source.pageSize ?? pageSize : pageSize;
-  const [remote, setRemote] = useState26(null);
-  const [remoteLoading, setRemoteLoading] = useState26(false);
-  const [remoteError, setRemoteError] = useState26(null);
-  const [reloadTick, setReloadTick] = useState26(0);
-  const seq2 = useRef18(0);
-  const ownFetch = useRef18(false);
-  const superseded = useRef18(0);
-  const [askedFilter, setAskedFilter] = useState26("");
-  useEffect19(() => {
+  const [remote, setRemote] = useState28(null);
+  const [remoteLoading, setRemoteLoading] = useState28(false);
+  const [remoteError, setRemoteError] = useState28(null);
+  const [reloadTick, setReloadTick] = useState28(0);
+  const seq2 = useRef20(0);
+  const ownFetch = useRef20(false);
+  const superseded = useRef20(0);
+  const [askedFilter, setAskedFilter] = useState28("");
+  useEffect21(() => {
     if (!paged) return;
     const t = setTimeout(() => setAskedFilter(filter), 250);
     return () => clearTimeout(t);
@@ -11465,7 +11591,7 @@ function DataTable(props) {
     setRemoteLoading(true);
     setRemoteError(null);
     try {
-      const reply = await action.run(req, { refreshOnWrite: false });
+      const reply = await action.run(req, { refreshOnWrite: false, read: true });
       if (mine !== seq2.current) return;
       const failure = reply === void 0 ? action.error : void 0;
       if (failure) {
@@ -11482,7 +11608,7 @@ function DataTable(props) {
         }
       }
       superseded.current = 0;
-      setRemote(readPageReply(reply, req));
+      setRemote({ ...readPageReply(reply, req), scope: pageScope(req) });
     } catch (e) {
       if (mine !== seq2.current) return;
       setRemoteError(e);
@@ -11491,12 +11617,12 @@ function DataTable(props) {
       if (mine === seq2.current) setRemoteLoading(false);
     }
   }, [askedFilter, sortKey, sortDir, clampedPage, effPageSize]);
-  useEffect19(() => {
+  useEffect21(() => {
     if (!paged || !actionName) return;
     void fetchPage();
   }, [paged, actionName, fetchPage, reloadTick]);
-  const wasLoading = useRef18(false);
-  useEffect19(() => {
+  const wasLoading = useRef20(false);
+  useEffect21(() => {
     if (!paged) {
       wasLoading.current = false;
       return;
@@ -11508,10 +11634,10 @@ function DataTable(props) {
     }
     wasLoading.current = busy2;
   });
-  useEffect19(() => {
+  useEffect21(() => {
     if (!paged) return;
-    return onActionDone((name) => {
-      if (name && name === actionRef.current?.name) return;
+    return onActionDone((name, info) => {
+      if (!info?.remote && name && name === actionRef.current?.name) return;
       setReloadTick((t) => t + 1);
     });
   }, [paged]);
@@ -11522,18 +11648,18 @@ function DataTable(props) {
     setReloadTick((t) => t + 1);
   }, []);
   const pageRows = paged ? remote?.rows ?? rows : paging ? sorted.slice(clampedPage * effPageSize, clampedPage * effPageSize + effPageSize) : sorted;
-  useEffect19(() => {
+  useEffect21(() => {
     if (page > pageCount - 1) setPage(pageCount - 1);
   }, [page, pageCount]);
   const keyOf = useCallback9(
     (row, index) => rowKey ? rowKey(row) : String(clampedPage * effPageSize + index),
     [rowKey, clampedPage, effPageSize]
   );
-  const [ownKeys, setOwnKeys] = useState26(defaultSelectedKeys ?? []);
-  const [allMatching, setAllMatching] = useState26(false);
+  const [ownKeys, setOwnKeys] = useState28(defaultSelectedKeys ?? []);
+  const [allMatching, setAllMatching] = useState28(false);
   const keys = selectedKeys ?? ownKeys;
   const keySet = useMemo6(() => new Set(keys), [keys]);
-  const seen = useRef18(/* @__PURE__ */ new Map());
+  const seen = useRef20(/* @__PURE__ */ new Map());
   pageRows.forEach((row, i) => {
     if (selectable) seen.current.set(keyOf(row, i), row);
   });
@@ -11558,12 +11684,12 @@ function DataTable(props) {
     if (selectedKeys === void 0) setOwnKeys([]);
     onSelectionChange?.([], []);
   }, [selectedKeys, onSelectionChange]);
-  useEffect19(() => {
+  useEffect21(() => {
     setAllMatching(false);
   }, [askedFilter, filter]);
-  const selectionRef = useRef18(selection);
+  const selectionRef = useRef20(selection);
   selectionRef.current = selection;
-  useEffect19(() => {
+  useEffect21(() => {
     if (!tableRef) return;
     tableRef.current = {
       refresh,
@@ -11614,7 +11740,7 @@ function DataTable(props) {
     a.onSelect(sel);
   };
   const bulkNames = joinNames((bulkActions ?? []).map((a) => isLinkedBulk(a) ? a.action.name : void 0));
-  const [exporting, setExporting] = useState26(false);
+  const [exporting, setExporting] = useState28(false);
   const exportColumns = useMemo6(() => columns.filter((c) => !c.noExport), [columns]);
   const exportCsv = async () => {
     setExporting(true);
@@ -11651,8 +11777,28 @@ function DataTable(props) {
     }
   };
   const alignClass = (align) => align === "right" ? "text-right" : align === "center" ? "text-center" : "text-left";
+  const liveKeyOf = (row) => {
+    if (rowKey) return rowKey(row);
+    const id = row?.id;
+    return typeof id === "string" || typeof id === "number" ? String(id) : null;
+  };
+  const liveFields = columns.map((col) => ({
+    key: col.key,
+    // A column drawn from something other than its own property (a Status
+    // column over `done`) compares the whole row.
+    value: (row) => col.value || row !== null && typeof row === "object" && col.key in row ? defaultValue(row, col) : row
+  }));
+  const localScope = `${filter}|${sortKey ?? ""}|${sortDir}|${clampedPage}|${effPageSize}`;
+  const diff = useRowDiff(pageRows, liveKeyOf, liveFields, {
+    scope: paged ? remote?.scope ?? "" : localScope,
+    ready: paged ? remote !== null : !loading
+  });
   const busy = loading || remoteLoading;
-  const showEmpty = !busy && pageRows.length === 0;
+  const firstLoad = busy && (paged ? remote === null : pageRows.length === 0);
+  const asking = paged ? remoteLoading && remote !== null && remote.scope !== pageScope(currentRequest(askedFilter, sortKey, sortDir, clampedPage, effPageSize)) : loading;
+  const dimmed = busy && !firstLoad && asking;
+  const showEmpty = !firstLoad && !busy && pageRows.length === 0;
+  const drawn = firstLoad ? [] : withLeaving(pageRows, diff.removed);
   const linkAttrs = useMemo6(
     () => source ? sourceLinkAttrs(source) : rowsLinkAttrs(rows),
     [rows, source]
@@ -11777,61 +11923,88 @@ function DataTable(props) {
         }),
         rowActions && rowActions.length > 0 && /* @__PURE__ */ jsx48("th", { scope: "col", className: "w-12 px-3 py-2.5", children: /* @__PURE__ */ jsx48("span", { className: "sr-only", children: "Actions" }) })
       ] }) }),
-      /* @__PURE__ */ jsxs43("tbody", { children: [
-        busy && // The shape of the rows that are coming, not a word in the
-        // middle of an empty box; the word is still there for a
-        // screen reader.
-        LOADING_ROWS.map((n) => /* @__PURE__ */ jsx48("tr", { className: cn("border-b last:border-b-0", tk.border), "aria-hidden": n > 0 || void 0, children: /* @__PURE__ */ jsxs43("td", { colSpan: columnCount, className: "px-3 py-3", children: [
-          n === 0 && /* @__PURE__ */ jsx48("span", { className: "sr-only", children: "Loading" }),
-          /* @__PURE__ */ jsx48(Skeleton, { variant: "text", width: n % 2 === 0 ? "70%" : "45%" })
-        ] }) }, n)),
-        !busy && pageRows.map((row, i) => {
-          const key = keyOf(row, i);
-          const ticked = allMatching || keySet.has(key);
-          return /* @__PURE__ */ jsxs43(
-            "tr",
-            {
-              onClick: onRowClick ? () => onRowClick(row) : void 0,
-              "aria-selected": selectable ? ticked : void 0,
-              className: cn(
-                "border-b last:border-b-0",
-                tk.border,
-                interactiveRow,
-                onRowClick && "cursor-pointer",
-                ticked && tk.selectedBgPrimarySoft
-              ),
-              children: [
-                selectable && /* @__PURE__ */ jsx48("td", { className: "px-3 py-2.5", onClick: (e) => e.stopPropagation(), children: /* @__PURE__ */ jsx48(
-                  TickBox,
+      /* @__PURE__ */ jsxs43(
+        "tbody",
+        {
+          "aria-busy": busy || void 0,
+          className: cn("transition-opacity duration-150", dimmed && "opacity-60"),
+          children: [
+            firstLoad && // The shape of the rows that are coming, not a word in the
+            // middle of an empty box; the word is still there for a
+            // screen reader.
+            LOADING_ROWS.map((n) => /* @__PURE__ */ jsx48("tr", { className: cn("border-b last:border-b-0", tk.border), "aria-hidden": n > 0 || void 0, children: /* @__PURE__ */ jsxs43("td", { colSpan: columnCount, className: "px-3 py-3", children: [
+              n === 0 && /* @__PURE__ */ jsx48("span", { className: "sr-only", children: "Loading" }),
+              /* @__PURE__ */ jsx48(Skeleton, { variant: "text", width: n % 2 === 0 ? "70%" : "45%" })
+            ] }) }, n)),
+            drawn.map(({ row, index: i, leaving }) => {
+              if (leaving !== void 0) {
+                return /* @__PURE__ */ jsxs43(
+                  "tr",
                   {
-                    label: `Select row ${i + 1}`,
-                    checked: ticked,
-                    onChange: () => toggleRow(key)
-                  }
-                ) }),
-                columns.map((col) => /* @__PURE__ */ jsx48(
-                  "td",
-                  {
-                    className: cn("px-3 py-2.5", tk.fg, alignClass(col.align), col.className),
-                    children: col.render ? col.render(row) : cellText(defaultValue(row, col))
+                    "data-rm-leave": "",
+                    "aria-hidden": "true",
+                    className: cn("border-b last:border-b-0", tk.border),
+                    children: [
+                      selectable && /* @__PURE__ */ jsx48("td", { className: "px-3 py-2.5" }),
+                      columns.map((col) => /* @__PURE__ */ jsx48("td", { className: cn("px-3 py-2.5", tk.fg, alignClass(col.align), col.className), children: col.render ? col.render(row) : cellText(defaultValue(row, col)) }, col.key)),
+                      rowActions && rowActions.length > 0 && /* @__PURE__ */ jsx48("td", { className: "px-2 py-1.5" })
+                    ]
                   },
-                  col.key
-                )),
-                rowActions && rowActions.length > 0 && /* @__PURE__ */ jsx48("td", { className: "px-2 py-1.5 text-right", onClick: (e) => e.stopPropagation(), children: /* @__PURE__ */ jsx48(Menu, { items: rowMenuItems(row, rowActions, afterOwnWrite) }) })
-              ]
-            },
-            key
-          );
-        }),
-        showEmpty && /* @__PURE__ */ jsx48("tr", { children: /* @__PURE__ */ jsx48("td", { colSpan: columnCount, className: "p-0", children: remoteError ? /* @__PURE__ */ jsx48(ErrorState, { className: "m-3", error: remoteError, onRetry: refresh }) : emptyState ?? /* @__PURE__ */ jsx48(
-          EmptyState,
-          {
-            className: "rounded-none border-0",
-            title: emptyTitle,
-            description: emptyDescription ?? (filter ? "No rows match the current filter." : void 0)
-          }
-        ) }) })
-      ] })
+                  `leaving:${leaving}`
+                );
+              }
+              const key = keyOf(row, i);
+              const liveKey = liveKeyOf(row);
+              const changedCells = liveKey !== null ? diff.changed.get(liveKey) : void 0;
+              const ticked = allMatching || keySet.has(key);
+              return /* @__PURE__ */ jsxs43(
+                "tr",
+                {
+                  "data-rm-enter": liveKey !== null && diff.added.has(liveKey) ? "" : void 0,
+                  onClick: onRowClick ? () => onRowClick(row) : void 0,
+                  "aria-selected": selectable ? ticked : void 0,
+                  className: cn(
+                    "border-b last:border-b-0",
+                    tk.border,
+                    interactiveRow,
+                    onRowClick && "cursor-pointer",
+                    ticked && tk.selectedBgPrimarySoft
+                  ),
+                  children: [
+                    selectable && /* @__PURE__ */ jsx48("td", { className: "px-3 py-2.5", onClick: (e) => e.stopPropagation(), children: /* @__PURE__ */ jsx48(
+                      TickBox,
+                      {
+                        label: `Select row ${i + 1}`,
+                        checked: ticked,
+                        onChange: () => toggleRow(key)
+                      }
+                    ) }),
+                    columns.map((col) => /* @__PURE__ */ jsx48(
+                      "td",
+                      {
+                        "data-rm-flash": changedCells?.has(col.key) ? "" : void 0,
+                        className: cn("px-3 py-2.5", tk.fg, alignClass(col.align), col.className),
+                        children: col.render ? col.render(row) : cellText(defaultValue(row, col))
+                      },
+                      col.key
+                    )),
+                    rowActions && rowActions.length > 0 && /* @__PURE__ */ jsx48("td", { className: "px-2 py-1.5 text-right", onClick: (e) => e.stopPropagation(), children: /* @__PURE__ */ jsx48(Menu, { items: rowMenuItems(row, rowActions, afterOwnWrite) }) })
+                  ]
+                },
+                liveKey ?? key
+              );
+            }),
+            showEmpty && /* @__PURE__ */ jsx48("tr", { children: /* @__PURE__ */ jsx48("td", { colSpan: columnCount, className: "p-0", children: remoteError ? /* @__PURE__ */ jsx48(ErrorState, { className: "m-3", error: remoteError, onRetry: refresh }) : emptyState ?? /* @__PURE__ */ jsx48(
+              EmptyState,
+              {
+                className: "rounded-none border-0",
+                title: emptyTitle,
+                description: emptyDescription ?? (filter ? "No rows match the current filter." : void 0)
+              }
+            ) }) })
+          ]
+        }
+      )
     ] }) }) }),
     paging && total > effPageSize && /* @__PURE__ */ jsx48(
       Pagination,
@@ -11855,8 +12028,8 @@ function TickBox({
   indeterminate = false,
   onChange
 }) {
-  const ref = useRef18(null);
-  useEffect19(() => {
+  const ref = useRef20(null);
+  useEffect21(() => {
     if (ref.current) ref.current.indeterminate = indeterminate && !checked;
   }, [indeterminate, checked]);
   return /* @__PURE__ */ jsx48(
@@ -11954,24 +12127,26 @@ import {
   createContext as createContext5,
   isValidElement as isValidElement5,
   useContext as useContext6,
-  useEffect as useEffect20,
-  useRef as useRef19,
-  useState as useState27
+  useEffect as useEffect22,
+  useRef as useRef21,
+  useState as useState29
 } from "react";
 import { jsx as jsx49, jsxs as jsxs44 } from "react/jsx-runtime";
 var KanbanContext = createContext5(null);
+var SLIDE_MS = 250;
+var MOVE_WINDOW_MS = 1e3;
 function Kanban({ onMove, action, className, children }) {
   const items3 = Children7.toArray(children);
   const columns = [];
   for (const c of items3) {
     if (isValidElement5(c) && c.type === KanbanColumn) columns.push(String(c.props.id));
   }
-  const [dragKey, setDragKey] = useState27(null);
-  const [dragFrom, setDragFrom] = useState27(null);
-  const [dragOffset, setDragOffset] = useState27({ x: 0, y: 0 });
-  const [overColumn, setOverColumn] = useState27(null);
-  const origin = useRef19({ x: 0, y: 0 });
-  const latest = useRef19({
+  const [dragKey, setDragKey] = useState29(null);
+  const [dragFrom, setDragFrom] = useState29(null);
+  const [dragOffset, setDragOffset] = useState29({ x: 0, y: 0 });
+  const [overColumn, setOverColumn] = useState29(null);
+  const origin = useRef21({ x: 0, y: 0 });
+  const latest = useRef21({
     key: "",
     from: "",
     over: null
@@ -11990,7 +12165,7 @@ function Kanban({ onMove, action, className, children }) {
     setDragOffset({ x: 0, y: 0 });
     setOverColumn(null);
   };
-  useEffect20(() => {
+  useEffect22(() => {
     if (!dragKey) return;
     const onPointerMove = (e) => {
       setDragOffset({ x: e.clientX - origin.current.x, y: e.clientY - origin.current.y });
@@ -12016,7 +12191,12 @@ function Kanban({ onMove, action, className, children }) {
       window.removeEventListener("pointercancel", finish2);
     };
   }, [dragKey]);
+  const live = useRef21({ cards: /* @__PURE__ */ new Map(), ready: { current: false } }).current;
+  useIsoLayoutEffect(() => {
+    if (live.cards.size > 0) live.ready.current = true;
+  });
   const ctx = {
+    live,
     columns,
     dragKey,
     dragFrom,
@@ -12061,8 +12241,40 @@ function KanbanColumn({ id, title, meta, emptyState, className, children }) {
 }
 function KanbanCard({ id, column, disabled = false, className, children }) {
   const ctx = useContext6(KanbanContext);
-  const ref = useRef19(null);
+  const ref = useRef21(null);
   const dragging = ctx?.dragKey === id;
+  const [mark, setMark] = useState29(null);
+  const markTimer = useRef21(null);
+  const live = ctx?.live;
+  useIsoLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || !live || dragging) return;
+    const where = column ?? columnOf(el) ?? "";
+    const rect = el.getBoundingClientRect();
+    const seen = live.cards.get(id);
+    const returned = seen?.goneAt === void 0 || Date.now() - seen.goneAt < MOVE_WINDOW_MS;
+    let next = null;
+    if (seen && returned && seen.column !== where) {
+      next = "flash";
+      if (seen.rect && canAnimate(el)) slideFrom(el, seen.rect, rect);
+    } else if ((!seen || !returned) && live.ready.current) {
+      next = "enter";
+    }
+    live.cards.set(id, { column: where, rect });
+    if (next) {
+      setMark(next);
+      if (markTimer.current) clearTimeout(markTimer.current);
+      markTimer.current = setTimeout(() => setMark(null), FLASH_MS);
+    }
+  });
+  useEffect22(
+    () => () => {
+      if (markTimer.current) clearTimeout(markTimer.current);
+      const place = live?.cards.get(id);
+      if (place) place.goneAt = Date.now();
+    },
+    [id, live]
+  );
   const onPointerDown = (e) => {
     if (disabled || e.button !== 0) return;
     const owner = column ?? columnOf(e.currentTarget) ?? "";
@@ -12085,6 +12297,8 @@ function KanbanCard({ id, column, disabled = false, className, children }) {
     {
       ref,
       "data-rm-kanban-card": id,
+      "data-rm-flash": mark === "flash" ? "" : void 0,
+      "data-rm-enter": mark === "enter" ? "" : void 0,
       tabIndex: disabled ? -1 : 0,
       "aria-grabbed": dragging || void 0,
       onPointerDown,
@@ -12107,12 +12321,29 @@ function KanbanCard({ id, column, disabled = false, className, children }) {
     }
   );
 }
+function slideFrom(el, from, to) {
+  const dx = from.left - to.left;
+  const dy = from.top - to.top;
+  if (dx === 0 && dy === 0) return;
+  el.style.transition = "none";
+  el.style.transform = `translate(${dx}px, ${dy}px)`;
+  requestAnimationFrame(() => {
+    el.style.transition = `transform ${SLIDE_MS}ms cubic-bezier(0.2, 0.8, 0.2, 1)`;
+    el.style.transform = "";
+    const done = () => {
+      el.style.transition = "";
+      el.removeEventListener("transitionend", done);
+    };
+    el.addEventListener("transitionend", done);
+    setTimeout(done, SLIDE_MS + 50);
+  });
+}
 function columnOf(el) {
   return el?.closest("[data-rm-kanban-column]")?.getAttribute("data-rm-kanban-column") ?? null;
 }
 
 // src/components/calendar.tsx
-import { useMemo as useMemo7, useState as useState28 } from "react";
+import { useMemo as useMemo7, useState as useState30 } from "react";
 import { Fragment as Fragment15, jsx as jsx50, jsxs as jsxs45 } from "react/jsx-runtime";
 function iso(y, m, d) {
   return `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
@@ -12134,7 +12365,7 @@ function Calendar({
   className
 }) {
   const today = /* @__PURE__ */ new Date();
-  const [ownMonth, setOwnMonth] = useState28(
+  const [ownMonth, setOwnMonth] = useState30(
     defaultMonth ?? `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`
   );
   const current = month ?? ownMonth;
@@ -12260,7 +12491,7 @@ function NavButton({ label, onClick, dir }) {
 }
 
 // src/components/json-view.tsx
-import { useState as useState29 } from "react";
+import { useState as useState31 } from "react";
 import { jsx as jsx51, jsxs as jsxs46 } from "react/jsx-runtime";
 function isEmpty2(value) {
   if (value === void 0 || value === null) return true;
@@ -12276,7 +12507,7 @@ function JsonView({
   label = "Result",
   className
 }) {
-  const [copied, setCopied] = useState29(false);
+  const [copied, setCopied] = useState31(false);
   if (isEmpty2(value)) {
     return /* @__PURE__ */ jsx51(
       "div",
@@ -12341,7 +12572,7 @@ function Node2({
   maxDepth
 }) {
   const branch = value !== null && typeof value === "object";
-  const [open, setOpen] = useState29(depth < maxDepth);
+  const [open, setOpen] = useState31(depth < maxDepth);
   if (!branch) {
     return /* @__PURE__ */ jsxs46("li", { role: "treeitem", className: "whitespace-pre-wrap break-words", children: [
       name !== null && /* @__PURE__ */ jsx51(Key, { name }),
@@ -12398,11 +12629,11 @@ import {
   createContext as createContext6,
   useCallback as useCallback10,
   useContext as useContext7,
-  useEffect as useEffect21,
+  useEffect as useEffect23,
   useId as useId12,
   useMemo as useMemo8,
-  useRef as useRef20,
-  useState as useState30
+  useRef as useRef22,
+  useState as useState32
 } from "react";
 import { Fragment as Fragment16, jsx as jsx52, jsxs as jsxs47 } from "react/jsx-runtime";
 var FormContext = createContext6(null);
@@ -12525,11 +12756,11 @@ function Form({
   className,
   ...props
 }) {
-  const [ownValues, setOwnValues] = useState30(initialValues ?? {});
-  const [errors, setErrors] = useState30({});
+  const [ownValues, setOwnValues] = useState32(initialValues ?? {});
+  const [errors, setErrors] = useState32({});
   const values = controlledValues ?? ownValues;
-  const formRef = useRef20(null);
-  useEffect21(() => {
+  const formRef = useRef22(null);
+  useEffect23(() => {
     const form = formRef.current;
     if (!form || !action) return;
     const target = submitControlOf(form) ?? form;
@@ -12538,7 +12769,7 @@ function Form({
       target.setAttribute("data-rm-action", [...current, action.name].join(" "));
     }
   });
-  const latest = useRef20(values);
+  const latest = useRef22(values);
   latest.current = values;
   const setValue = useCallback10(
     (name, value) => {
@@ -12722,7 +12953,7 @@ function Select({
   const seed = bound === void 0 ? value !== void 0 && value !== "" ? value : firstEnabled : void 0;
   const current = value ?? bound ?? firstEnabled ?? "";
   const write = c.write;
-  useEffect21(() => {
+  useEffect23(() => {
     if (seed !== void 0) write(seed);
   }, [seed]);
   return /* @__PURE__ */ jsxs47(
@@ -13001,11 +13232,11 @@ function RowButton2({
 // src/components/combobox.tsx
 import {
   useCallback as useCallback11,
-  useEffect as useEffect22,
+  useEffect as useEffect24,
   useId as useId13,
   useMemo as useMemo9,
-  useRef as useRef21,
-  useState as useState31
+  useRef as useRef23,
+  useState as useState33
 } from "react";
 import { jsx as jsx53, jsxs as jsxs48 } from "react/jsx-runtime";
 function Combobox({
@@ -13029,24 +13260,24 @@ function Combobox({
     () => multiple ? Array.isArray(raw) ? raw : raw ? [String(raw)] : [] : raw ? [String(raw)] : [],
     [multiple, raw]
   );
-  const [open, setOpen] = useState31(false);
-  const [query, setQuery] = useState31("");
-  const [active, setActive] = useState31(0);
-  const [loaded, setLoaded] = useState31([]);
-  const [loading, setLoading] = useState31(false);
+  const [open, setOpen] = useState33(false);
+  const [query, setQuery] = useState33("");
+  const [active, setActive] = useState33(0);
+  const [loaded, setLoaded] = useState33([]);
+  const [loading, setLoading] = useState33(false);
   const openPanel = () => {
     setOpen(true);
     setActive(0);
   };
-  const rootRef = useRef21(null);
-  const listRef = useRef21(null);
-  const inputRef = useRef21(null);
+  const rootRef = useRef23(null);
+  const listRef = useRef23(null);
+  const inputRef = useRef23(null);
   const off = disabled || c.disabled;
   const floating = useFloating({ open, side: "bottom", align: "start", gap: 4, matchWidth: true });
-  const seq2 = useRef21(0);
-  const loadRef = useRef21(loadOptions);
+  const seq2 = useRef23(0);
+  const loadRef = useRef23(loadOptions);
   loadRef.current = loadOptions;
-  useEffect22(() => {
+  useEffect24(() => {
     if (!open || !loadRef.current) return;
     const mine = ++seq2.current;
     setLoading(true);
@@ -13071,7 +13302,7 @@ function Combobox({
     );
   }, [all, query, loadOptions]);
   const enabled = useMemo9(() => shown.filter((o) => !o.disabled), [shown]);
-  useEffect22(() => {
+  useEffect24(() => {
     if (active > enabled.length - 1) setActive(Math.max(0, enabled.length - 1));
   }, [enabled.length, active]);
   const labelFor = useCallback11(
@@ -13095,7 +13326,7 @@ function Combobox({
     setQuery("");
     setOpen(false);
   };
-  useEffect22(() => {
+  useEffect24(() => {
     if (!open) return;
     const onDocClick = (e) => {
       const target = e.target;
@@ -13461,7 +13692,7 @@ function Switch({
 }
 
 // src/components/tag-input.tsx
-import { useRef as useRef22, useState as useState32 } from "react";
+import { useRef as useRef24, useState as useState34 } from "react";
 import { jsx as jsx56, jsxs as jsxs51 } from "react/jsx-runtime";
 function TagInput({
   value,
@@ -13476,8 +13707,8 @@ function TagInput({
   const c = useControl(id);
   const bound = c.read();
   const tags = value ?? (Array.isArray(bound) ? bound : []);
-  const [draft, setDraft] = useState32("");
-  const inputRef = useRef22(null);
+  const [draft, setDraft] = useState34("");
+  const inputRef = useRef24(null);
   const off = disabled || c.disabled;
   const commit = (next) => {
     onChange?.(next);
@@ -13627,7 +13858,7 @@ function Slider({
 }
 
 // src/components/rating.tsx
-import { useState as useState33 } from "react";
+import { useState as useState35 } from "react";
 import { jsx as jsx58, jsxs as jsxs53 } from "react/jsx-runtime";
 function Rating({
   value,
@@ -13646,7 +13877,7 @@ function Rating({
   const bound = c.read();
   const current = value ?? (typeof bound === "number" && Number.isFinite(bound) ? bound : void 0);
   const off = disabled || c.disabled || readOnly;
-  const [hover, setHover] = useState33(null);
+  const [hover, setHover] = useState35(null);
   const values = [];
   for (let v = min2; v <= max2; v++) values.push(v);
   const pick = (v) => {
@@ -13711,7 +13942,7 @@ function Rating({
 }
 
 // src/components/json-input.tsx
-import { useEffect as useEffect23, useRef as useRef23, useState as useState34 } from "react";
+import { useEffect as useEffect25, useRef as useRef25, useState as useState36 } from "react";
 import { jsx as jsx59, jsxs as jsxs54 } from "react/jsx-runtime";
 function print(value) {
   if (value === void 0 || value === null) return "";
@@ -13735,10 +13966,10 @@ function JsonInput({
 }) {
   const c = useControl(id);
   const bound = value ?? c.read();
-  const [text2, setText] = useState34(() => print(bound));
-  const [invalid, setInvalid] = useState34(false);
-  const ownWrite = useRef23(print(bound));
-  useEffect23(() => {
+  const [text2, setText] = useState36(() => print(bound));
+  const [invalid, setInvalid] = useState36(false);
+  const ownWrite = useRef25(print(bound));
+  useEffect25(() => {
     const next = print(bound);
     if (next === ownWrite.current) return;
     ownWrite.current = next;
@@ -13804,7 +14035,7 @@ function JsonInput({
 }
 
 // src/components/file-upload.tsx
-import { useEffect as useEffect24, useRef as useRef24, useState as useState35 } from "react";
+import { useEffect as useEffect26, useRef as useRef26, useState as useState37 } from "react";
 import { markGesture } from "@robomotion/apps-runtime";
 import { useFileUpload as useFileUpload2 } from "@robomotion/apps-runtime/react";
 
@@ -13866,13 +14097,13 @@ function FileUpload({
   className
 }) {
   const { upload, uploading, progress, error } = useFileUpload2();
-  const inputRef = useRef24(null);
-  const zoneRef = useRef24(null);
-  const [dragOver, setDragOver] = useState35(false);
-  const [uploaded, setUploaded] = useState35(null);
-  const onErrorRef = useRef24(onError);
+  const inputRef = useRef26(null);
+  const zoneRef = useRef26(null);
+  const [dragOver, setDragOver] = useState37(false);
+  const [uploaded, setUploaded] = useState37(null);
+  const onErrorRef = useRef26(onError);
   onErrorRef.current = onError;
-  useEffect24(() => {
+  useEffect26(() => {
     if (error) onErrorRef.current?.(error);
   }, [error]);
   const start = async (file) => {
@@ -13958,7 +14189,7 @@ function FileUpload({
 }
 
 // src/components/layout.tsx
-import { useCallback as useCallback12, useEffect as useEffect25, useState as useState36 } from "react";
+import { useCallback as useCallback12, useEffect as useEffect27, useState as useState38 } from "react";
 import { jsx as jsx62, jsxs as jsxs57 } from "react/jsx-runtime";
 var GAP2 = {
   0: "gap-0",
@@ -14063,7 +14294,7 @@ function ScrollRow({
   ...props
 }) {
   const { ref, width } = useMeasure();
-  const [more, setMore] = useState36({ left: false, right: false });
+  const [more, setMore] = useState38({ left: false, right: false });
   const read = useCallback12(() => {
     const el = ref.current;
     if (!el) return;
@@ -14071,8 +14302,8 @@ function ScrollRow({
     const right = el.scrollLeft + el.clientWidth < el.scrollWidth - 1;
     setMore((m) => m.left === left && m.right === right ? m : { left, right });
   }, [ref]);
-  useEffect25(read);
-  useEffect25(read, [read, width]);
+  useEffect27(read);
+  useEffect27(read, [read, width]);
   const scrollTo = (left) => {
     const el = ref.current;
     if (!el) return;
@@ -14137,7 +14368,7 @@ function ScrollRow({
 }
 
 // src/components/assistant-widget.tsx
-import { useEffect as useEffect26, useRef as useRef25, useState as useState37 } from "react";
+import { useEffect as useEffect28, useRef as useRef27, useState as useState39 } from "react";
 import { useAssistant, useMaybeAppClient as useMaybeAppClient3 } from "@robomotion/apps-runtime/react";
 import { jsx as jsx63, jsxs as jsxs58 } from "react/jsx-runtime";
 function didLine(tools) {
@@ -14167,24 +14398,24 @@ function AssistantWidgetInner({ title, placeholder, className }) {
   const assistant = useAssistant();
   const { available, greeting, messages, busy, send } = assistant;
   const stop = assistant.stop;
-  const [open, setOpen] = useState37(() => {
+  const [open, setOpen] = useState39(() => {
     try {
       return sessionStorage.getItem(STORAGE_OPEN) === "1";
     } catch {
       return false;
     }
   });
-  const [draft, setDraft] = useState37("");
-  const listRef = useRef25(null);
-  const inputRef = useRef25(null);
-  useEffect26(() => {
+  const [draft, setDraft] = useState39("");
+  const listRef = useRef27(null);
+  const inputRef = useRef27(null);
+  useEffect28(() => {
     try {
       sessionStorage.setItem(STORAGE_OPEN, open ? "1" : "0");
     } catch {
     }
     if (open) inputRef.current?.focus();
   }, [open]);
-  useEffect26(() => {
+  useEffect28(() => {
     const el = listRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages]);
@@ -14331,13 +14562,13 @@ function AssistantWidgetInner({ title, placeholder, className }) {
 import {
   forwardRef as forwardRef6,
   useCallback as useCallback13,
-  useEffect as useEffect27,
+  useEffect as useEffect29,
   useId as useId14,
   useImperativeHandle as useImperativeHandle2,
   useLayoutEffect as useLayoutEffect5,
   useMemo as useMemo11,
-  useRef as useRef26,
-  useState as useState38
+  useRef as useRef28,
+  useState as useState40
 } from "react";
 import { createPortal as createPortal2 } from "react-dom";
 
@@ -16662,28 +16893,28 @@ var MarkdownEditor = forwardRef6(function MarkdownEditor2(props, ref) {
     contentClassName
   } = props;
   const schema = useMemo11(() => createSchema(extensions ?? []), [extensions]);
-  const propsRef = useRef26(props);
+  const propsRef = useRef28(props);
   propsRef.current = props;
   const initial = useMemo11(() => ensureBlock(parseDoc(value ?? defaultValue2 ?? "", schema)), []);
-  const [doc, setDoc] = useState38(initial);
-  const docRef = useRef26(doc);
-  const [hidden, setHidden] = useState38(() => /* @__PURE__ */ new Set());
-  const hiddenRef = useRef26(hidden);
-  const [selectedAtom, setSelectedAtom] = useState38(null);
-  const [version, setVersion] = useState38(0);
-  const rootRef = useRef26(null);
-  const surfaceRef = useRef26(null);
-  const lastEmitted = useRef26(serializeDoc(initial));
-  const emitted = useRef26([lastEmitted.current]);
-  const history = useRef26({ undo: [], redo: [] });
-  const pendingSel = useRef26(null);
-  const savedSel = useRef26(null);
-  const selBefore = useRef26(null);
-  const synced = useRef26(null);
-  const keys = useRef26(/* @__PURE__ */ new Map());
-  const keySeq = useRef26(0);
-  const hints = useRef26(/* @__PURE__ */ new Map());
-  const composing = useRef26(false);
+  const [doc, setDoc] = useState40(initial);
+  const docRef = useRef28(doc);
+  const [hidden, setHidden] = useState40(() => /* @__PURE__ */ new Set());
+  const hiddenRef = useRef28(hidden);
+  const [selectedAtom, setSelectedAtom] = useState40(null);
+  const [version, setVersion] = useState40(0);
+  const rootRef = useRef28(null);
+  const surfaceRef = useRef28(null);
+  const lastEmitted = useRef28(serializeDoc(initial));
+  const emitted = useRef28([lastEmitted.current]);
+  const history = useRef28({ undo: [], redo: [] });
+  const pendingSel = useRef28(null);
+  const savedSel = useRef28(null);
+  const selBefore = useRef28(null);
+  const synced = useRef28(null);
+  const keys = useRef28(/* @__PURE__ */ new Map());
+  const keySeq = useRef28(0);
+  const hints = useRef28(/* @__PURE__ */ new Map());
+  const composing = useRef28(false);
   const menuId = useId14();
   const commit = useCallback13(
     (next, opts) => {
@@ -16770,7 +17001,7 @@ var MarkdownEditor = forwardRef6(function MarkdownEditor2(props, ref) {
     const sel = readSel(rootRef.current) ?? null;
     commit(ensureBlock({ blocks, tail: parsed.tail }), { kind: "external", key: "external", sel });
   }, [value, schema, commit]);
-  useEffect27(() => {
+  useEffect29(() => {
     history.current = { undo: [], redo: [] };
     setVersion((v) => v + 1);
   }, [documentKey]);
@@ -16853,11 +17084,11 @@ var MarkdownEditor = forwardRef6(function MarkdownEditor2(props, ref) {
     }
     return { byBlock, sig, resolved, proposals: props2 };
   }, [doc, idx, annotations, proposals, hidden, readOnly, schema]);
-  useEffect27(() => {
+  useEffect29(() => {
     propsRef.current.onAnnotationsResolved?.(deco.resolved);
   }, [deco.resolved]);
-  const statsTimer = useRef26(null);
-  useEffect27(() => {
+  const statsTimer = useRef28(null);
+  useEffect29(() => {
     if (!propsRef.current.onStats) return;
     const report = () => propsRef.current.onStats?.(countWords(idx.text));
     if (statsTimer.current === null) {
@@ -16871,7 +17102,7 @@ var MarkdownEditor = forwardRef6(function MarkdownEditor2(props, ref) {
       report();
     }, 250);
   }, [idx.text]);
-  useEffect27(() => {
+  useEffect29(() => {
     const root = rootRef.current;
     if (!root) return;
     for (const el of Array.from(root.querySelectorAll("[data-ann]"))) {
@@ -16936,7 +17167,7 @@ var MarkdownEditor = forwardRef6(function MarkdownEditor2(props, ref) {
     if (root.ownerDocument.activeElement === root || root.contains(root.ownerDocument.activeElement)) writeSel(root, s);
     savedSel.current = s;
   });
-  useEffect27(() => {
+  useEffect29(() => {
     if (autoFocus) rootRef.current?.focus();
   }, [autoFocus]);
   const syncFromDom = useCallback13(
@@ -16973,9 +17204,9 @@ var MarkdownEditor = forwardRef6(function MarkdownEditor2(props, ref) {
     },
     [commit, schema]
   );
-  const [slash, setSlash] = useState38(null);
-  const [bubble, setBubble] = useState38(null);
-  const [linkEdit, setLinkEdit] = useState38(null);
+  const [slash, setSlash] = useState40(null);
+  const [bubble, setBubble] = useState40(null);
+  const [linkEdit, setLinkEdit] = useState40(null);
   const slashItems = useMemo11(() => {
     const own = props.slashItems;
     return typeof own === "function" ? own(DEFAULT_SLASH) : own ? [...DEFAULT_SLASH, ...own] : DEFAULT_SLASH;
@@ -17139,9 +17370,9 @@ var MarkdownEditor = forwardRef6(function MarkdownEditor2(props, ref) {
     commit(docRef.current, { kind: "reject-all", hidden: nextHidden });
     for (const id of ids) propsRef.current.onRejectProposal?.(id);
   }, [commit, deco.proposals]);
-  const editTarget = useRef26(null);
-  const expectedCaret = useRef26(null);
-  useEffect27(() => {
+  const editTarget = useRef28(null);
+  const expectedCaret = useRef28(null);
+  useEffect29(() => {
     const root = rootRef.current;
     if (!root) return;
     const onBeforeInput = (e) => {
@@ -17245,7 +17476,7 @@ var MarkdownEditor = forwardRef6(function MarkdownEditor2(props, ref) {
       root.removeEventListener("compositionend", onCompEnd);
     };
   }, [afterInput, apply, canEdit, exec, redo, schema, syncFromDom, undo]);
-  useEffect27(() => {
+  useEffect29(() => {
     const onSel = () => {
       const root = rootRef.current;
       if (!root) return;
@@ -17531,7 +17762,7 @@ var MarkdownEditor = forwardRef6(function MarkdownEditor2(props, ref) {
     }),
     [apply, exec, redo, replaceSel, schema, undo]
   );
-  const handleRef = useRef26(handle);
+  const handleRef = useRef28(handle);
   handleRef.current = handle;
   useImperativeHandle2(ref, () => handle, [handle]);
   const showFixed = !readOnly && (toolbar === true || toolbar === "fixed");
@@ -17587,7 +17818,7 @@ var MarkdownEditor = forwardRef6(function MarkdownEditor2(props, ref) {
     }
     return out;
   }, [annotations, renderAnnotation, activeAnnotation, deco.resolved]);
-  const [noteTops, setNoteTops] = useState38({});
+  const [noteTops, setNoteTops] = useState40({});
   useLayoutEffect5(() => {
     const root = rootRef.current;
     const surface = surfaceRef.current;
@@ -17754,8 +17985,8 @@ function spansAtom(d, from, to) {
   return sliceRuns(getRuns(b, from.cell), from.offset, to.offset).some((r) => r.kind === "atom");
 }
 function Floating({ rect, children, below }) {
-  const ref = useRef26(null);
-  const [pos, setPos] = useState38({ top: rect.top, left: rect.left });
+  const ref = useRef28(null);
+  const [pos, setPos] = useState40({ top: rect.top, left: rect.left });
   useLayoutEffect5(() => {
     const el = ref.current;
     const w = el?.offsetWidth ?? 0;
@@ -17777,7 +18008,7 @@ function FormatBar({
   onEscape
 }) {
   const groups = fixed ? [HEAD_TOOLS, INLINE_TOOLS, BLOCK_TOOLS] : [HEAD_TOOLS.slice(0, 2), INLINE_TOOLS, BLOCK_TOOLS.slice(0, 1).concat(BLOCK_TOOLS.slice(3, 4))];
-  const barRef = useRef26(null);
+  const barRef = useRef28(null);
   const onKeyDown = (e) => {
     const buttons = Array.from(barRef.current?.querySelectorAll("button:not(:disabled)") ?? []);
     const i = buttons.indexOf(document.activeElement);

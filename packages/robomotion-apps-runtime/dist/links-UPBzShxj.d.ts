@@ -1,4 +1,4 @@
-import { j as FileUploadOptions, F as FileRef, d as ConnectionState, V as Viewer, i as CreateAppOptions, C as CallOptions, c as AppErrorCode } from './types-BPU0cmpz.js';
+import { k as FileUploadOptions, F as FileRef, e as ConnectionState, V as Viewer, j as CreateAppOptions, C as CallOptions, d as ChangedInfo, c as AppErrorCode } from './types-HDsW7Plg.js';
 
 /**
  * File transfer over the existing /v1/artifacts.* REST endpoints
@@ -183,6 +183,7 @@ declare class AppClient {
     private pending;
     private assistantTurns;
     private eventHandlers;
+    private changedHandlers;
     constructor(options: CreateAppOptions);
     /**
      * What this page SAYS about who it is for: an explicit option, else the
@@ -315,6 +316,13 @@ declare class AppClient {
     private settle;
     /** Subscribe to a server event by name. Returns an off function. */
     on(event: string, handler: (payload: unknown) => void): () => void;
+    /**
+     * Hear about every write that finished somewhere else - another tab,
+     * another person, the assistant, an MCP client - so what this page shows
+     * can be read again. Writes this page made are not included: their callers
+     * already have the result. Returns an off function.
+     */
+    onChanged(handler: (info: ChangedInfo) => void): () => void;
 }
 /**
  * Create, connect and return an AppClient (sdk.md "Creating a client").

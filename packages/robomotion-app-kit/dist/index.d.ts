@@ -197,10 +197,13 @@ interface ActionLike<P = unknown> {
     error?: unknown;
     /**
      * Method syntax keeps typed actions assignable to ActionLike<unknown>.
-     * `refreshOnWrite: false` tells a useAction hook the caller re-asks itself.
+     * `refreshOnWrite: false` tells a useAction hook the caller re-asks itself;
+     * `read: true` tells the robot the call only reads, so other open pages
+     * are not told about it.
      */
     run(params?: P, opts?: {
         refreshOnWrite?: boolean;
+        read?: boolean;
     }): Promise<unknown>;
 }
 /** Params for an action-bound widget: a value, or a function of the triggering event. */
@@ -736,7 +739,8 @@ interface StatProps {
     /**
      * Count to a new value instead of swapping to it, for a number that changes
      * while it is watched. Needs a `value` that is a number; it is then grouped
-     * for the person's locale ("1,234").
+     * for the person's locale ("1,234"). Without it the first value is shown as
+     * it is, and a number that changes later counts to its new value anyway.
      */
     animate?: boolean;
     /**
@@ -753,6 +757,11 @@ declare function Stat({ label, value, unit, delta, deltaLabel, upIsGood, trend, 
 interface AnimatedNumberProps {
     /** The number to show. A change counts from what is showing to this. */
     value: number;
+    /**
+     * What was showing before this component was there, so the first render
+     * counts from it. For a figure that only starts counting once it changes.
+     */
+    from?: number;
     /** How long a change takes. Default 600. 0 swaps without counting. */
     durationMs?: number;
     /** Intl.NumberFormat options: `{ style: "percent" }`, `{ maximumFractionDigits: 1 }`. */
@@ -761,7 +770,7 @@ interface AnimatedNumberProps {
     locale?: string;
     className?: string;
 }
-declare function AnimatedNumber({ value, durationMs, format, locale, className }: AnimatedNumberProps): react.JSX.Element;
+declare function AnimatedNumber({ value, from: startFrom, durationMs, format, locale, className }: AnimatedNumberProps): react.JSX.Element;
 
 type MeterTone = "default" | "success" | "warning" | "danger";
 interface MeterProps {

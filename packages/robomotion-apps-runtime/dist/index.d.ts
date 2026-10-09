@@ -1,6 +1,6 @@
-export { A as AppClient, a as AppError, b as ArtifactAddress, c as AssistantTurnHandle, d as AssistantTurnHandlers, C as ConnectionInfo, F as FILE_URL_REFRESH_EARLY_MS, e as FILE_URL_TTL_MS, f as FilesApi, I as InstallLinksOptions, L as LinkHandler, g as LinkKind, h as LinkMode, i as LinkNamespace, j as LinkSite, k as LinkState, l as LinksHandle, V as ViewerInfo, m as bindAction, n as createApp, o as currentCause, p as decodeArtifactId, q as encodeArtifactId, r as installLinks, s as isAppError, t as linkKey, u as lookupTag, v as markGesture, w as splitLinkKey, x as tagAction } from './links-Nz-qosOC.js';
-import { a as AppRuntimeConfig, R as ResolvedInstance } from './types-BPU0cmpz.js';
-export { b as ActionProgress, A as AppContract, c as AppErrorCode, C as CallOptions, d as ConnectionState, e as ContractAction, f as ContractEvent, g as ContractSchema, h as ContractScreen, i as CreateAppOptions, F as FileRef, j as FileUploadOptions, H as HelloAck, S as StorageLike, W as WebSocketLike, k as WireEnvelope, l as WireIdentity } from './types-BPU0cmpz.js';
+export { A as AppClient, a as AppError, b as ArtifactAddress, c as AssistantTurnHandle, d as AssistantTurnHandlers, C as ConnectionInfo, F as FILE_URL_REFRESH_EARLY_MS, e as FILE_URL_TTL_MS, f as FilesApi, I as InstallLinksOptions, L as LinkHandler, g as LinkKind, h as LinkMode, i as LinkNamespace, j as LinkSite, k as LinkState, l as LinksHandle, V as ViewerInfo, m as bindAction, n as createApp, o as currentCause, p as decodeArtifactId, q as encodeArtifactId, r as installLinks, s as isAppError, t as linkKey, u as lookupTag, v as markGesture, w as splitLinkKey, x as tagAction } from './links-UPBzShxj.js';
+import { a as AppRuntimeConfig, R as ResolvedInstance } from './types-HDsW7Plg.js';
+export { b as ActionProgress, A as AppContract, c as AppErrorCode, C as CallOptions, d as ChangedInfo, e as ConnectionState, f as ContractAction, g as ContractEvent, h as ContractSchema, i as ContractScreen, j as CreateAppOptions, F as FileRef, k as FileUploadOptions, H as HelloAck, S as StorageLike, W as WebSocketLike, l as WireEnvelope, m as WireIdentity } from './types-HDsW7Plg.js';
 
 /**
  * Load the runtime config (sdk.md "Runtime config").
@@ -37,6 +37,12 @@ interface LiveReaderOptions<TData> {
     onChange: (state: LiveState<TData>) => void;
     /** Called with each event, before the re-read, for a view that animates the hint. */
     onEvent?: (event: string, payload: unknown) => void;
+    /**
+     * Subscribe to "a write finished" - on this page or anywhere else. Each one
+     * asks again like an event does, under the same floor. Returns the
+     * unsubscribe.
+     */
+    subscribeWrites?: (cb: () => void) => () => void;
 }
 interface LiveState<TData> {
     /** The latest answer. Kept while a newer one is being fetched, and when one fails. */

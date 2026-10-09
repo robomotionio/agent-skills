@@ -787,11 +787,15 @@ time is taken inside SQL instead, keep the zone in it
 (`strftime('%Y-%m-%dT%H:%M:%fZ','now')` in SQLite). A calendar date with no
 time of day (a due date, a birthday) stays a plain `YYYY-MM-DD` string.
 
-**When a change has to reach a screen that is not asking, emit an event.**
-`App Emit Event` plus `useEvent` on the screen: a decision somebody else made, a
-long job finishing, a number crossing its limit. A table re-asks by itself after
-a run of its own action, so the event is for the screens that would otherwise sit
-there showing yesterday.
+**A write through an action reaches every open screen by itself.** From
+`Robomotion.Apps` 0.6.0, when an action that writes finishes - pressed on a page,
+run by the assistant, or called over MCP - the robot tells every other open page,
+and their tables and read hooks ask again and show the change in place. That
+needs `read_only` on every read action in `mcp.json`, and nothing else.
+
+**When a change made outside the actions has to reach a screen, emit an event.**
+`App Emit Event` plus `useEvent` or `useLive` on the screen: a long job
+finishing, a scheduled branch writing, a number crossing its limit.
 
 And hard rule 6 applies hardest here: the flow creates its table before the
 first write, on every path that reads or writes it.
