@@ -1174,6 +1174,13 @@ var LiveReader = class {
         })
       );
     }
+    if (this.opts.subscribeWrites) {
+      this.unsubscribes.push(
+        this.opts.subscribeWrites(() => {
+          if (!this.stopped) this.request();
+        })
+      );
+    }
     void this.read();
   }
   stop() {
@@ -1260,4 +1267,4 @@ export {
   installLinks,
   LiveReader
 };
-//# sourceMappingURL=chunk-4IJJAWQH.js.map
+//# sourceMappingURL=chunk-UE2EYT7M.js.map

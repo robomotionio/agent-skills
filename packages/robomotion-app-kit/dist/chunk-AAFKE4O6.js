@@ -12129,7 +12129,6 @@ var constructsWithoutStrikethrough = [
   "titleQuote",
   "titleApostrophe"
 ];
-handleDelete.attention = attentionDelete;
 handleDelete.peek = peekDelete;
 function gfmStrikethroughFromMarkdown() {
   return {
@@ -12140,38 +12139,34 @@ function gfmStrikethroughFromMarkdown() {
 }
 function gfmStrikethroughToMarkdown() {
   return {
-    handlers: { delete: handleDelete },
     unsafe: [
       {
         character: "~",
         inConstruct: "phrasing",
         notInConstruct: constructsWithoutStrikethrough
       }
-    ]
+    ],
+    handlers: { delete: handleDelete }
   };
 }
 function enterStrikethrough(token) {
-  this.enter({ type: "delete", children: [], position: void 0 }, token);
+  this.enter({ type: "delete", children: [] }, token);
 }
 function exitStrikethrough(token) {
   this.exit(token);
 }
 function handleDelete(node2, _2, state, info) {
   const tracker = state.createTracker(info);
-  const sequence = state.stack.includes("strikethrough") ? "~" : "~~";
   const exit3 = state.enter("strikethrough");
-  let value = tracker.move(sequence);
+  let value = tracker.move("~~");
   value += state.containerPhrasing(node2, {
     ...tracker.current(),
     before: value,
     after: "~"
   });
-  value += tracker.move(sequence);
+  value += tracker.move("~~");
   exit3();
   return value;
-}
-function attentionDelete() {
-  return { construct: "strikethrough", markers: ["~"], sizes: [2, 1] };
 }
 function peekDelete() {
   return "~";
@@ -12318,34 +12313,6 @@ function toAlignment(value) {
   return code4 === 67 || code4 === 99 ? 99 : code4 === 76 || code4 === 108 ? 108 : code4 === 82 || code4 === 114 ? 114 : 0;
 }
 
-// node_modules/mdast-util-phrasing/lib/index.js
-var phrasing = (
-  /** @type {(node?: unknown) => node is Exclude<PhrasingContent, Html>} */
-  convert([
-    "break",
-    "delete",
-    "emphasis",
-    // To do: next major: removed since footnotes were added to GFM.
-    "footnote",
-    "footnoteReference",
-    "image",
-    "imageReference",
-    "inlineCode",
-    // Enabled by `mdast-util-math`:
-    "inlineMath",
-    "link",
-    "linkReference",
-    // Enabled by `mdast-util-mdx`:
-    "mdxJsxTextElement",
-    // Enabled by `mdast-util-mdx`:
-    "mdxTextExpression",
-    "strong",
-    "text",
-    // Enabled by `mdast-util-directive`:
-    "textDirective"
-  ])
-);
-
 // node_modules/mdast-util-to-markdown/lib/handle/blockquote.js
 function blockquote(node2, _2, state, info) {
   const exit3 = state.enter("blockquote");
@@ -12387,9 +12354,8 @@ function listInScope(stack, list4, none) {
 function hardBreak(_2, _1, state, info) {
   let index2 = -1;
   while (++index2 < state.unsafe.length) {
-    const pattern = state.unsafe[index2];
-    if (pattern.character === "\n" && !pattern.before && !pattern.after && patternInScope(state.stack, pattern)) {
-      return /[\t ]/.test(info.before) ? "" : " ";
+    if (state.unsafe[index2].character === "\n" && patternInScope(state.stack, state.unsafe[index2])) {
+      return /[ \t]/.test(info.before) ? "" : " ";
     }
   }
   return "\\\n";
@@ -12424,8 +12390,8 @@ function formatCodeAsIndented(node2, state) {
   return Boolean(
     state.options.fences === false && node2.value && // If there’s no info…
     !node2.lang && // And there’s a non-whitespace character…
-    /[^\n\r ]/.test(node2.value) && // And the value doesn’t start or end in a blank…
-    !/^[\t ]*(?:[\n\r]|$)|(?:^|[\n\r])[\t ]*$/.test(node2.value)
+    /[^ \r\n]/.test(node2.value) && // And the value doesn’t start or end in a blank…
+    !/^[\t ]*(?:[\r\n]|$)|(?:^|[\r\n])[\t ]*$/.test(node2.value)
   );
 }
 
@@ -12444,6 +12410,7 @@ function checkFence(state) {
 function code(node2, _2, state, info) {
   const marker = checkFence(state);
   const raw2 = node2.value || "";
+  const suffix = marker === "`" ? "GraveAccent" : "Tilde";
   if (formatCodeAsIndented(node2, state)) {
     const exit4 = state.enter("codeIndented");
     const value2 = state.indentLines(raw2, map2);
@@ -12453,7 +12420,6 @@ function code(node2, _2, state, info) {
   const tracker = state.createTracker(info);
   const sequence = marker.repeat(Math.max(longestStreak(raw2, marker) + 1, 3));
   const exit3 = state.enter("codeFenced");
-  const suffix = marker === "`" ? "GraveAccent" : "Tilde";
   let value = tracker.move(sequence);
   if (node2.lang) {
     const subexit = state.enter(`codeFencedLang${suffix}`);
@@ -12570,30 +12536,101 @@ function checkEmphasis(state) {
   return marker;
 }
 
-// node_modules/mdast-util-to-markdown/lib/handle/emphasis.js
-emphasis.attention = attention;
-emphasis.peek = peek;
-function emphasis(node2, _2, state, info) {
-  const exit3 = state.enter("phrasing");
-  const value = state.containerPhrasing({ type: "root", children: [node2] }, info);
-  exit3();
-  return value;
-}
-function attention(_2, state) {
-  const marker = checkEmphasis(state);
-  return {
-    construct: "emphasis",
-    markers: marker === "*" ? ["*", "_"] : ["_", "*"],
-    sizes: [1]
-  };
-}
-function peek(_2, _1, state) {
-  return state.options.emphasis || "*";
-}
-
 // node_modules/mdast-util-to-markdown/lib/util/encode-character-reference.js
 function encodeCharacterReference(code4) {
   return "&#x" + code4.toString(16).toUpperCase() + ";";
+}
+
+// node_modules/micromark-util-classify-character/index.js
+function classifyCharacter(code4) {
+  if (code4 === null || markdownLineEndingOrSpace(code4) || unicodeWhitespace(code4)) {
+    return 1;
+  }
+  if (unicodePunctuation(code4)) {
+    return 2;
+  }
+}
+
+// node_modules/mdast-util-to-markdown/lib/util/encode-info.js
+function encodeInfo(outside, inside, marker) {
+  const outsideKind = classifyCharacter(outside);
+  const insideKind = classifyCharacter(inside);
+  if (outsideKind === void 0) {
+    return insideKind === void 0 ? (
+      // Letter inside:
+      // we have to encode *both* letters for `_` as it is looser.
+      // it already forms for `*` (and GFMs `~`).
+      marker === "_" ? { inside: true, outside: true } : { inside: false, outside: false }
+    ) : insideKind === 1 ? (
+      // Whitespace inside: encode both (letter, whitespace).
+      { inside: true, outside: true }
+    ) : (
+      // Punctuation inside: encode outer (letter)
+      { inside: false, outside: true }
+    );
+  }
+  if (outsideKind === 1) {
+    return insideKind === void 0 ? (
+      // Letter inside: already forms.
+      { inside: false, outside: false }
+    ) : insideKind === 1 ? (
+      // Whitespace inside: encode both (whitespace).
+      { inside: true, outside: true }
+    ) : (
+      // Punctuation inside: already forms.
+      { inside: false, outside: false }
+    );
+  }
+  return insideKind === void 0 ? (
+    // Letter inside: already forms.
+    { inside: false, outside: false }
+  ) : insideKind === 1 ? (
+    // Whitespace inside: encode inner (whitespace).
+    { inside: true, outside: false }
+  ) : (
+    // Punctuation inside: already forms.
+    { inside: false, outside: false }
+  );
+}
+
+// node_modules/mdast-util-to-markdown/lib/handle/emphasis.js
+emphasis.peek = emphasisPeek;
+function emphasis(node2, _2, state, info) {
+  const marker = checkEmphasis(state);
+  const exit3 = state.enter("emphasis");
+  const tracker = state.createTracker(info);
+  const before = tracker.move(marker);
+  let between = tracker.move(
+    state.containerPhrasing(node2, {
+      after: marker,
+      before,
+      ...tracker.current()
+    })
+  );
+  const betweenHead = between.charCodeAt(0);
+  const open = encodeInfo(
+    info.before.charCodeAt(info.before.length - 1),
+    betweenHead,
+    marker
+  );
+  if (open.inside) {
+    between = encodeCharacterReference(betweenHead) + between.slice(1);
+  }
+  const betweenTail = between.charCodeAt(between.length - 1);
+  const close = encodeInfo(info.after.charCodeAt(0), betweenTail, marker);
+  if (close.inside) {
+    between = between.slice(0, -1) + encodeCharacterReference(betweenTail);
+  }
+  const after = tracker.move(marker);
+  exit3();
+  state.attentionEncodeSurroundingInfo = {
+    after: close.outside,
+    before: open.outside
+  };
+  return before + between + after;
+}
+function emphasisPeek(_2, _1, state) {
+  return state.options.emphasis || "*";
 }
 
 // node_modules/mdast-util-to-string/lib/index.js
@@ -12677,9 +12714,8 @@ function heading(node2, _2, state, info) {
     after: "\n",
     ...tracker.current()
   });
-  const head = value.charCodeAt(0);
-  if (head === 9 || head === 32) {
-    value = encodeCharacterReference(head) + value.slice(1);
+  if (/^[\t ]/.test(value)) {
+    value = encodeCharacterReference(value.charCodeAt(0)) + value.slice(1);
   }
   value = value ? sequence + " " + value : sequence;
   if (state.options.closeAtx) {
@@ -12772,9 +12808,7 @@ function imageReference(node2, _2, state, info) {
   value += tracker.move(alt + "][");
   subexit();
   const stack = state.stack;
-  state.stack = stack.filter(function(d2) {
-    return d2 !== "phrasing";
-  });
+  state.stack = [];
   subexit = state.enter("reference");
   const reference = state.safe(state.associationId(node2), {
     before: value,
@@ -12806,14 +12840,14 @@ function inlineCode(node2, _2, state) {
   while (new RegExp("(^|[^`])" + sequence + "([^`]|$)").test(value)) {
     sequence += "`";
   }
-  if (/[^\n\r ]/.test(value) && (/^[\n\r ]/.test(value) && /[\n\r ]$/.test(value) || /^`|`$/.test(value))) {
+  if (/[^ \r\n]/.test(value) && (/^[ \r\n]/.test(value) && /[ \r\n]$/.test(value) || /^`|`$/.test(value))) {
     value = " " + value + " ";
   }
   while (++index2 < state.unsafe.length) {
     const pattern = state.unsafe[index2];
     const expression = state.compilePattern(pattern);
-    if (!pattern.atBreak) continue;
     let match;
+    if (!pattern.atBreak) continue;
     while (match = expression.exec(value)) {
       let position4 = match.index;
       if (value.charCodeAt(position4) === 10 && value.charCodeAt(position4 - 1) === 13) {
@@ -12833,11 +12867,11 @@ function formatLinkAsAutolink(node2, state) {
   const raw2 = toString2(node2);
   return Boolean(
     !state.options.resourceLink && // If there’s a url…
-    node2.url && // And there’s no title…
+    node2.url && // And there’s a no title…
     !node2.title && // And the content of `node` is a single text node…
     node2.children && node2.children.length === 1 && node2.children[0].type === "text" && // And if the url is the same as the content…
     (raw2 === node2.url || "mailto:" + raw2 === node2.url) && // And that starts w/ a protocol…
-    /^[a-z][+\-.a-z]+:/i.test(node2.url) && // And that doesn’t contain ASCII control codes (character escapes and
+    /^[a-z][a-z+.-]+:/i.test(node2.url) && // And that doesn’t contain ASCII control codes (character escapes and
     // references don’t work), space, or angle brackets…
     !/[\0- <>\u007F]/.test(node2.url)
   );
@@ -12849,12 +12883,12 @@ function link(node2, _2, state, info) {
   const quote = checkQuote(state);
   const suffix = quote === '"' ? "Quote" : "Apostrophe";
   const tracker = state.createTracker(info);
+  let exit3;
+  let subexit;
   if (formatLinkAsAutolink(node2, state)) {
     const stack = state.stack;
-    state.stack = stack.filter(function(d2) {
-      return d2 !== "phrasing";
-    });
-    const exit4 = state.enter("autolink");
+    state.stack = [];
+    exit3 = state.enter("autolink");
     let value2 = tracker.move("<");
     value2 += tracker.move(
       state.containerPhrasing(node2, {
@@ -12864,12 +12898,12 @@ function link(node2, _2, state, info) {
       })
     );
     value2 += tracker.move(">");
-    exit4();
+    exit3();
     state.stack = stack;
     return value2;
   }
-  const exit3 = state.enter("link");
-  let subexit = state.enter("label");
+  exit3 = state.enter("link");
+  subexit = state.enter("label");
   let value = tracker.move("[");
   value += tracker.move(
     state.containerPhrasing(node2, {
@@ -12939,9 +12973,7 @@ function linkReference(node2, _2, state, info) {
   value += tracker.move(text10 + "][");
   subexit();
   const stack = state.stack;
-  state.stack = stack.filter(function(d2) {
-    return d2 !== "phrasing";
-  });
+  state.stack = [];
   subexit = state.enter("reference");
   const reference = state.safe(state.associationId(node2), {
     before: value,
@@ -13107,16 +13139,41 @@ function paragraph(node2, _2, state, info) {
   return value;
 }
 
+// node_modules/mdast-util-phrasing/lib/index.js
+var phrasing = (
+  /** @type {(node?: unknown) => node is Exclude<PhrasingContent, Html>} */
+  convert([
+    "break",
+    "delete",
+    "emphasis",
+    // To do: next major: removed since footnotes were added to GFM.
+    "footnote",
+    "footnoteReference",
+    "image",
+    "imageReference",
+    "inlineCode",
+    // Enabled by `mdast-util-math`:
+    "inlineMath",
+    "link",
+    "linkReference",
+    // Enabled by `mdast-util-mdx`:
+    "mdxJsxTextElement",
+    // Enabled by `mdast-util-mdx`:
+    "mdxTextExpression",
+    "strong",
+    "text",
+    // Enabled by `mdast-util-directive`:
+    "textDirective"
+  ])
+);
+
 // node_modules/mdast-util-to-markdown/lib/handle/root.js
 function root4(node2, _2, state, info) {
   const hasPhrasing = node2.children.some(function(d2) {
     return phrasing(d2);
   });
-  if (!hasPhrasing) return state.containerFlow(node2, info);
-  const exit3 = state.enter("phrasing");
-  const value = state.containerPhrasing(node2, info);
-  exit3();
-  return value;
+  const container = hasPhrasing ? state.containerPhrasing : state.containerFlow;
+  return container.call(state, node2, info);
 }
 
 // node_modules/mdast-util-to-markdown/lib/util/check-strong.js
@@ -13131,23 +13188,42 @@ function checkStrong(state) {
 }
 
 // node_modules/mdast-util-to-markdown/lib/handle/strong.js
-strong.attention = attention2;
-strong.peek = peek2;
+strong.peek = strongPeek;
 function strong(node2, _2, state, info) {
-  const exit3 = state.enter("phrasing");
-  const value = state.containerPhrasing({ type: "root", children: [node2] }, info);
-  exit3();
-  return value;
-}
-function attention2(_2, state) {
   const marker = checkStrong(state);
-  return {
-    construct: "strong",
-    markers: marker === "*" ? ["*", "_"] : ["_", "*"],
-    sizes: [2]
+  const exit3 = state.enter("strong");
+  const tracker = state.createTracker(info);
+  const before = tracker.move(marker + marker);
+  let between = tracker.move(
+    state.containerPhrasing(node2, {
+      after: marker,
+      before,
+      ...tracker.current()
+    })
+  );
+  const betweenHead = between.charCodeAt(0);
+  const open = encodeInfo(
+    info.before.charCodeAt(info.before.length - 1),
+    betweenHead,
+    marker
+  );
+  if (open.inside) {
+    between = encodeCharacterReference(betweenHead) + between.slice(1);
+  }
+  const betweenTail = between.charCodeAt(between.length - 1);
+  const close = encodeInfo(info.after.charCodeAt(0), betweenTail, marker);
+  if (close.inside) {
+    between = between.slice(0, -1) + encodeCharacterReference(betweenTail);
+  }
+  const after = tracker.move(marker + marker);
+  exit3();
+  state.attentionEncodeSurroundingInfo = {
+    after: close.outside,
+    before: open.outside
   };
+  return before + between + after;
 }
-function peek2(_2, _1, state) {
+function strongPeek(_2, _1, state) {
   return state.options.strong || "*";
 }
 
@@ -13197,73 +13273,6 @@ var handle = {
   thematicBreak
 };
 
-// node_modules/micromark-util-html-tag-name/index.js
-var htmlBlockNames = [
-  "address",
-  "article",
-  "aside",
-  "base",
-  "basefont",
-  "blockquote",
-  "body",
-  "caption",
-  "center",
-  "col",
-  "colgroup",
-  "dd",
-  "details",
-  "dialog",
-  "dir",
-  "div",
-  "dl",
-  "dt",
-  "fieldset",
-  "figcaption",
-  "figure",
-  "footer",
-  "form",
-  "frame",
-  "frameset",
-  "h1",
-  "h2",
-  "h3",
-  "h4",
-  "h5",
-  "h6",
-  "head",
-  "header",
-  "hr",
-  "html",
-  "iframe",
-  "legend",
-  "li",
-  "link",
-  "main",
-  "menu",
-  "menuitem",
-  "nav",
-  "noframes",
-  "ol",
-  "optgroup",
-  "option",
-  "p",
-  "param",
-  "search",
-  "section",
-  "summary",
-  "table",
-  "tbody",
-  "td",
-  "tfoot",
-  "th",
-  "thead",
-  "title",
-  "tr",
-  "track",
-  "ul"
-];
-var htmlRawNames = ["pre", "script", "style", "textarea"];
-
 // node_modules/decode-named-character-reference/index.dom.js
 var element5 = document.createElement("i");
 function decodeNamedCharacterReference(value) {
@@ -13310,16 +13319,6 @@ function decode($0, $1, $22) {
     return decodeNumericCharacterReference($22.slice(hex ? 2 : 1), hex ? 16 : 10);
   }
   return decodeNamedCharacterReference($22) || $0;
-}
-
-// node_modules/micromark-util-classify-character/index.js
-function classifyCharacter(code4) {
-  if (code4 === null || markdownLineEndingOrSpace(code4) || unicodeWhitespace(code4)) {
-    return 1;
-  }
-  if (unicodePunctuation(code4)) {
-    return 2;
-  }
 }
 
 // node_modules/mdast-util-gfm-table/lib/index.js
@@ -14040,24 +14039,31 @@ function resolveAll(constructs2, events, context) {
 }
 
 // node_modules/micromark-core-commonmark/lib/attention.js
-var attention3 = {
+var attention = {
   name: "attention",
   resolveAll: resolveAllAttention,
   tokenize: tokenizeAttention
 };
 function resolveAllAttention(events, context) {
   let index2 = -1;
+  let open;
+  let group;
+  let text10;
+  let openingSequence;
+  let closingSequence;
+  let use;
   let nextEvents;
+  let offset;
   while (++index2 < events.length) {
     if (events[index2][0] === "enter" && events[index2][1].type === "attentionSequence" && events[index2][1]._close) {
-      let open = index2;
+      open = index2;
       while (open--) {
         if (events[open][0] === "exit" && events[open][1].type === "attentionSequence" && events[open][1]._open && // If the markers are the same:
         context.sliceSerialize(events[open][1]).charCodeAt(0) === context.sliceSerialize(events[index2][1]).charCodeAt(0)) {
           if ((events[open][1]._close || events[index2][1]._open) && (events[index2][1].end.offset - events[index2][1].start.offset) % 3 && !((events[open][1].end.offset - events[open][1].start.offset + events[index2][1].end.offset - events[index2][1].start.offset) % 3)) {
             continue;
           }
-          const use = events[open][1].end.offset - events[open][1].start.offset > 1 && events[index2][1].end.offset - events[index2][1].start.offset > 1 ? 2 : 1;
+          use = events[open][1].end.offset - events[open][1].start.offset > 1 && events[index2][1].end.offset - events[index2][1].start.offset > 1 ? 2 : 1;
           const start2 = {
             ...events[open][1].end
           };
@@ -14066,21 +14072,21 @@ function resolveAllAttention(events, context) {
           };
           movePoint(start2, -use);
           movePoint(end, use);
-          const openingSequence = {
+          openingSequence = {
             type: use > 1 ? "strongSequence" : "emphasisSequence",
             start: start2,
             end: {
               ...events[open][1].end
             }
           };
-          const closingSequence = {
+          closingSequence = {
             type: use > 1 ? "strongSequence" : "emphasisSequence",
             start: {
               ...events[index2][1].start
             },
             end
           };
-          const text10 = {
+          text10 = {
             type: use > 1 ? "strongText" : "emphasisText",
             start: {
               ...events[open][1].end
@@ -14089,7 +14095,7 @@ function resolveAllAttention(events, context) {
               ...events[index2][1].start
             }
           };
-          const group = {
+          group = {
             type: use > 1 ? "strong" : "emphasis",
             start: {
               ...openingSequence.start
@@ -14111,10 +14117,11 @@ function resolveAllAttention(events, context) {
           nextEvents = push(nextEvents, [["enter", group, context], ["enter", openingSequence, context], ["exit", openingSequence, context], ["enter", text10, context]]);
           nextEvents = push(nextEvents, resolveAll(context.parser.constructs.insideSpan.null, events.slice(open + 1, index2), context));
           nextEvents = push(nextEvents, [["exit", text10, context], ["enter", closingSequence, context], ["exit", closingSequence, context], ["exit", group, context]]);
-          let offset = 0;
           if (events[index2][1].end.offset - events[index2][1].start.offset) {
             offset = 2;
             nextEvents = push(nextEvents, [["enter", events[index2][1], context], ["exit", events[index2][1], context]]);
+          } else {
+            offset = 0;
           }
           splice(events, open - 1, index2 - open + 3, nextEvents);
           index2 = open + nextEvents.length - offset - 2;
@@ -14149,8 +14156,8 @@ function tokenizeAttention(effects, ok3) {
     }
     const token = effects.exit("attentionSequence");
     const after = classifyCharacter(code4);
-    const open = !after || after === 2 && before || attentionMarkers2.includes(code4) && code4 !== 42 && code4 !== 95;
-    const close = !before || before === 2 && after || attentionMarkers2.includes(previous3) && previous3 !== 42 && previous3 !== 95;
+    const open = !after || after === 2 && before || attentionMarkers2.includes(code4);
+    const close = !before || before === 2 && after || attentionMarkers2.includes(previous3);
     token._open = Boolean(marker === 42 ? open : open && (before || !close));
     token._close = Boolean(marker === 42 ? close : close && (after || !open));
     return ok3(code4);
@@ -14265,7 +14272,7 @@ function tokenizeAutolink(effects, ok3, nok) {
 
 // node_modules/micromark-factory-space/index.js
 function factorySpace(effects, ok3, type, max) {
-  const limit = max ? max - 1 : Infinity;
+  const limit = max ? max - 1 : Number.POSITIVE_INFINITY;
   let size = 0;
   return start2;
   function start2(code4) {
@@ -14282,29 +14289,6 @@ function factorySpace(effects, ok3, type, max) {
     }
     effects.exit(type);
     return ok3(code4);
-  }
-}
-function factorySpaceMinMax(effects, ok3, nok, type, min, max) {
-  let size = 0;
-  return start2;
-  function start2(code4) {
-    if (max > 0 && markdownSpace(code4)) {
-      effects.enter(type);
-      return prefix(code4);
-    }
-    return after(code4);
-  }
-  function prefix(code4) {
-    if (markdownSpace(code4) && size < max) {
-      effects.consume(code4);
-      size++;
-      return prefix;
-    }
-    effects.exit(type);
-    return after(code4);
-  }
-  function after(code4) {
-    return size >= min ? ok3(code4) : nok(code4);
   }
 }
 
@@ -14472,29 +14456,11 @@ function tokenizeCharacterReference(effects, ok3, nok) {
   }
 }
 
-// node_modules/micromark-core-commonmark/lib/partial-non-lazy-continuation.js
+// node_modules/micromark-core-commonmark/lib/code-fenced.js
 var nonLazyContinuation = {
   partial: true,
   tokenize: tokenizeNonLazyContinuation
 };
-function tokenizeNonLazyContinuation(effects, ok3, nok) {
-  const self2 = this;
-  return start2;
-  function start2(code4) {
-    if (code4 === null) {
-      return nok(code4);
-    }
-    effects.enter("lineEnding");
-    effects.consume(code4);
-    effects.exit("lineEnding");
-    return after;
-  }
-  function after(code4) {
-    return self2.parser.lazy[self2.now().line] ? nok(code4) : ok3(code4);
-  }
-}
-
-// node_modules/micromark-core-commonmark/lib/code-fenced.js
 var codeFenced = {
   concrete: true,
   name: "codeFenced",
@@ -14656,6 +14622,22 @@ function tokenizeCodeFenced(effects, ok3, nok) {
     }
   }
 }
+function tokenizeNonLazyContinuation(effects, ok3, nok) {
+  const self2 = this;
+  return start2;
+  function start2(code4) {
+    if (code4 === null) {
+      return nok(code4);
+    }
+    effects.enter("lineEnding");
+    effects.consume(code4);
+    effects.exit("lineEnding");
+    return lineStart;
+  }
+  function lineStart(code4) {
+    return self2.parser.lazy[self2.now().line] ? nok(code4) : ok3(code4);
+  }
+}
 
 // node_modules/micromark-core-commonmark/lib/code-indented.js
 var codeIndented = {
@@ -14667,10 +14649,15 @@ var furtherStart = {
   tokenize: tokenizeFurtherStart
 };
 function tokenizeCodeIndented(effects, ok3, nok) {
+  const self2 = this;
   return start2;
   function start2(code4) {
     effects.enter("codeIndented");
-    return factorySpaceMinMax(effects, atBreak, nok, "linePrefix", 4, 4)(code4);
+    return factorySpace(effects, afterPrefix, "linePrefix", 4 + 1)(code4);
+  }
+  function afterPrefix(code4) {
+    const tail = self2.events[self2.events.length - 1];
+    return tail && tail[1].type === "linePrefix" && tail[2].sliceSerialize(tail[1], true).length >= 4 ? atBreak(code4) : nok(code4);
   }
   function atBreak(code4) {
     if (code4 === null) {
@@ -14708,10 +14695,11 @@ function tokenizeFurtherStart(effects, ok3, nok) {
       effects.exit("lineEnding");
       return furtherStart2;
     }
-    return factorySpaceMinMax(effects, ok3, onNotEnoughPrefix, "linePrefix", 4, 4)(code4);
+    return factorySpace(effects, afterPrefix, "linePrefix", 4 + 1)(code4);
   }
-  function onNotEnoughPrefix(code4) {
-    return markdownLineEnding(code4) ? furtherStart2(code4) : nok(code4);
+  function afterPrefix(code4) {
+    const tail = self2.events[self2.events.length - 1];
+    return tail && tail[1].type === "linePrefix" && tail[2].sliceSerialize(tail[1], true).length >= 4 ? ok3(code4) : markdownLineEnding(code4) ? furtherStart2(code4) : nok(code4);
   }
 }
 
@@ -15597,6 +15585,8 @@ var headingAtx = {
 function resolveHeadingAtx(events, context) {
   let contentEnd = events.length - 2;
   let contentStart = 3;
+  let content3;
+  let text10;
   if (events[contentStart][1].type === "whitespace") {
     contentStart += 2;
   }
@@ -15607,12 +15597,12 @@ function resolveHeadingAtx(events, context) {
     contentEnd -= contentStart + 1 === contentEnd ? 2 : 4;
   }
   if (contentEnd > contentStart) {
-    const content3 = {
+    content3 = {
       type: "atxHeadingText",
       start: events[contentStart][1].start,
       end: events[contentEnd][1].end
     };
-    const text10 = {
+    text10 = {
       type: "chunkText",
       start: events[contentStart][1].start,
       end: events[contentEnd][1].end,
@@ -15677,6 +15667,73 @@ function tokenizeHeadingAtx(effects, ok3, nok) {
   }
 }
 
+// node_modules/micromark-util-html-tag-name/index.js
+var htmlBlockNames = [
+  "address",
+  "article",
+  "aside",
+  "base",
+  "basefont",
+  "blockquote",
+  "body",
+  "caption",
+  "center",
+  "col",
+  "colgroup",
+  "dd",
+  "details",
+  "dialog",
+  "dir",
+  "div",
+  "dl",
+  "dt",
+  "fieldset",
+  "figcaption",
+  "figure",
+  "footer",
+  "form",
+  "frame",
+  "frameset",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+  "head",
+  "header",
+  "hr",
+  "html",
+  "iframe",
+  "legend",
+  "li",
+  "link",
+  "main",
+  "menu",
+  "menuitem",
+  "nav",
+  "noframes",
+  "ol",
+  "optgroup",
+  "option",
+  "p",
+  "param",
+  "search",
+  "section",
+  "summary",
+  "table",
+  "tbody",
+  "td",
+  "tfoot",
+  "th",
+  "thead",
+  "title",
+  "tr",
+  "track",
+  "ul"
+];
+var htmlRawNames = ["pre", "script", "style", "textarea"];
+
 // node_modules/micromark-core-commonmark/lib/html-flow.js
 var htmlFlow = {
   concrete: true,
@@ -15687,6 +15744,10 @@ var htmlFlow = {
 var blankLineBefore = {
   partial: true,
   tokenize: tokenizeBlankLineBefore
+};
+var nonLazyContinuationStart = {
+  partial: true,
+  tokenize: tokenizeNonLazyContinuationStart
 };
 function resolveToHtmlFlow(events) {
   let index2 = events.length;
@@ -15949,7 +16010,7 @@ function tokenizeHtmlFlow(effects, ok3, nok) {
     return continuation;
   }
   function continuationStart(code4) {
-    return effects.check(nonLazyContinuation, continuationStartNonLazy, continuationAfter)(code4);
+    return effects.check(nonLazyContinuationStart, continuationStartNonLazy, continuationAfter)(code4);
   }
   function continuationStartNonLazy(code4) {
     effects.enter("lineEnding");
@@ -16024,6 +16085,22 @@ function tokenizeHtmlFlow(effects, ok3, nok) {
   function continuationAfter(code4) {
     effects.exit("htmlFlow");
     return ok3(code4);
+  }
+}
+function tokenizeNonLazyContinuationStart(effects, ok3, nok) {
+  const self2 = this;
+  return start2;
+  function start2(code4) {
+    if (markdownLineEnding(code4)) {
+      effects.enter("lineEnding");
+      effects.consume(code4);
+      effects.exit("lineEnding");
+      return after;
+    }
+    return nok(code4);
+  }
+  function after(code4) {
+    return self2.parser.lazy[self2.now().line] ? nok(code4) : ok3(code4);
   }
 }
 function tokenizeBlankLineBefore(effects, ok3, nok) {
@@ -16378,11 +16455,12 @@ function resolveAllLabelEnd(events) {
 function resolveToLabelEnd(events, context) {
   let index2 = events.length;
   let offset = 0;
+  let token;
   let open;
   let close;
   let media;
   while (index2--) {
-    const token = events[index2][1];
+    token = events[index2][1];
     if (open) {
       if (token.type === "link" || token.type === "labelLink" && token._inactive) {
         break;
@@ -16441,14 +16519,14 @@ function resolveToLabelEnd(events, context) {
 }
 function tokenizeLabelEnd(effects, ok3, nok) {
   const self2 = this;
-  const labelStarts = self2._labelStarts;
+  let index2 = self2.events.length;
   let labelStart;
   let defined;
-  if (labelStarts) {
-    while (labelStarts.length > 0 && labelStarts[labelStarts.length - 1]._balanced) {
-      labelStarts.pop();
+  while (index2--) {
+    if ((self2.events[index2][1].type === "labelImage" || self2.events[index2][1].type === "labelLink") && !self2.events[index2][1]._balanced) {
+      labelStart = self2.events[index2][1];
+      break;
     }
-    labelStart = labelStarts[labelStarts.length - 1];
   }
   return start2;
   function start2(code4) {
@@ -16482,7 +16560,6 @@ function tokenizeLabelEnd(effects, ok3, nok) {
     return effects.attempt(referenceCollapsedConstruct, labelEndOk, labelEndNok)(code4);
   }
   function labelEndOk(code4) {
-    labelStarts.pop();
     return ok3(code4);
   }
   function labelEndNok(code4) {
@@ -16576,7 +16653,6 @@ var labelStartImage = {
 };
 function tokenizeLabelStartImage(effects, ok3, nok) {
   const self2 = this;
-  let labelImage;
   return start2;
   function start2(code4) {
     effects.enter("labelImage");
@@ -16590,18 +16666,13 @@ function tokenizeLabelStartImage(effects, ok3, nok) {
       effects.enter("labelMarker");
       effects.consume(code4);
       effects.exit("labelMarker");
-      labelImage = effects.exit("labelImage");
+      effects.exit("labelImage");
       return after;
     }
     return nok(code4);
   }
   function after(code4) {
-    if (code4 === 94 && "_hiddenFootnoteSupport" in self2.parser.constructs) {
-      return nok(code4);
-    }
-    self2._labelStarts = self2._labelStarts || [];
-    self2._labelStarts.push(labelImage);
-    return ok3(code4);
+    return code4 === 94 && "_hiddenFootnoteSupport" in self2.parser.constructs ? nok(code4) : ok3(code4);
   }
 }
 
@@ -16613,23 +16684,17 @@ var labelStartLink = {
 };
 function tokenizeLabelStartLink(effects, ok3, nok) {
   const self2 = this;
-  let labelLink;
   return start2;
   function start2(code4) {
     effects.enter("labelLink");
     effects.enter("labelMarker");
     effects.consume(code4);
     effects.exit("labelMarker");
-    labelLink = effects.exit("labelLink");
+    effects.exit("labelLink");
     return after;
   }
   function after(code4) {
-    if (code4 === 94 && "_hiddenFootnoteSupport" in self2.parser.constructs) {
-      return nok(code4);
-    }
-    self2._labelStarts = self2._labelStarts || [];
-    self2._labelStarts.push(labelLink);
-    return ok3(code4);
+    return code4 === 94 && "_hiddenFootnoteSupport" in self2.parser.constructs ? nok(code4) : ok3(code4);
   }
 }
 
@@ -16817,104 +16882,6 @@ function tokenizeListItemPrefixWhitespace(effects, ok3, nok) {
   }
 }
 
-// node_modules/micromark-util-edit-map/index.js
-var EditMap = class {
-  /**
-   * Create a new edit map.
-   *
-   * @returns
-   *   New instance.
-   */
-  constructor() {
-    this.index = /* @__PURE__ */ new Map();
-    this.map = [];
-  }
-  /**
-   * Create an edit: a remove and/or add at a certain place.
-   *
-   * @param {number} index
-   *   Index at which to apply the edit.
-   * @param {number} remove
-   *   Count of items to remove at the index.
-   * @param {Array<Event>} add
-   *   Items to add at the index.
-   * @returns {undefined}
-   *   Nothing.
-   */
-  add(index2, remove, add) {
-    addImplementation(this, index2, remove, add, false);
-  }
-  /**
-   * Create an edit: but insert `add` before existing additions, instead of
-   * after them.
-   *
-   * @param {number} index
-   *   Index at which to apply the edit.
-   * @param {number} remove
-   *   Count of items to remove at the index.
-   * @param {Array<Event>} add
-   *   Items to add at the index.
-   * @returns {undefined}
-   *   Nothing.
-   */
-  addBefore(index2, remove, add) {
-    addImplementation(this, index2, remove, add, true);
-  }
-  /**
-   * Done, change the events.
-   *
-   * @param {Array<Event>} events
-   *   List of events to apply the edits to.
-   * @returns {undefined}
-   *   Nothing.
-   */
-  consume(events) {
-    this.map.sort(function(a, b3) {
-      return a[0] - b3[0];
-    });
-    if (this.map.length === 0) {
-      return;
-    }
-    let index2 = this.map.length;
-    const vecs = [];
-    while (index2 > 0) {
-      index2 -= 1;
-      vecs.push(events.slice(this.map[index2][0] + this.map[index2][1]), this.map[index2][2]);
-      events.length = this.map[index2][0];
-    }
-    vecs.push(events.slice());
-    events.length = 0;
-    let slice = vecs.pop();
-    while (slice) {
-      for (const element7 of slice) {
-        events.push(element7);
-      }
-      slice = vecs.pop();
-    }
-    this.map.length = 0;
-    this.index.clear();
-  }
-};
-function addImplementation(editMap, at, remove, add, before) {
-  if (remove === 0 && add.length === 0) {
-    return;
-  }
-  const existing = editMap.index.get(at);
-  if (existing) {
-    existing[1] += remove;
-    if (before) {
-      add.push(...existing[2]);
-      existing[2] = add;
-    } else {
-      existing[2].push(...add);
-    }
-    return;
-  }
-  const change = [at, remove, add];
-  editMap.map.push(change);
-  editMap.index.set(at, change);
-}
-
 // node_modules/micromark-core-commonmark/lib/setext-underline.js
 var setextUnderline = {
   name: "setextUnderline",
@@ -16922,7 +16889,6 @@ var setextUnderline = {
   tokenize: tokenizeSetextUnderline
 };
 function resolveToSetextUnderline(events, context) {
-  const editMap = new EditMap();
   let index2 = events.length;
   let content3;
   let text10;
@@ -16938,7 +16904,7 @@ function resolveToSetextUnderline(events, context) {
       }
     } else {
       if (events[index2][1].type === "content") {
-        editMap.add(index2, 1, []);
+        events.splice(index2, 1);
       }
       if (!definition3 && events[index2][1].type === "definition") {
         definition3 = index2;
@@ -16956,16 +16922,15 @@ function resolveToSetextUnderline(events, context) {
   };
   events[text10][1].type = "setextHeadingText";
   if (definition3) {
-    editMap.add(text10, 0, [["enter", heading3, context]]);
-    editMap.add(definition3 + 1, 0, [["exit", events[content3][1], context]]);
+    events.splice(text10, 0, ["enter", heading3, context]);
+    events.splice(definition3 + 1, 0, ["exit", events[content3][1], context]);
     events[content3][1].end = {
       ...events[definition3][1].end
     };
   } else {
     events[content3][1] = heading3;
   }
-  editMap.add(events.length, 0, [["exit", heading3, context]]);
-  editMap.consume(events);
+  events.push(["exit", heading3, context]);
   return events;
 }
 function tokenizeSetextUnderline(effects, ok3, nok) {
@@ -17379,7 +17344,7 @@ function gfmStrikethrough(options) {
 }
 
 // node_modules/micromark-extension-gfm-table/lib/edit-map.js
-var EditMap2 = class {
+var EditMap = class {
   /**
    * Create a new edit map.
    */
@@ -17400,7 +17365,7 @@ var EditMap2 = class {
    *   Nothing.
    */
   add(index2, remove, add) {
-    addImplementation2(this, index2, remove, add);
+    addImplementation(this, index2, remove, add);
   }
   // To do: add this when moving to `micromark`.
   // /**
@@ -17449,7 +17414,7 @@ var EditMap2 = class {
     this.index.clear();
   }
 };
-function addImplementation2(editMap, at, remove, add) {
+function addImplementation(editMap, at, remove, add) {
   if (remove === 0 && add.length === 0) {
     return;
   }
@@ -17734,7 +17699,7 @@ function resolveTable(events, context) {
   let currentTable;
   let currentBody;
   let currentCell;
-  const map3 = new EditMap2();
+  const map3 = new EditMap();
   while (++index2 < events.length) {
     const event = events[index2];
     const token = event[1];
@@ -22488,10 +22453,8 @@ function initializeDocument(effects) {
         };
         index2++;
       }
-      const editMap = new EditMap();
-      editMap.add(indexBeforeFlow + 1, 0, self2.events.slice(indexBeforeExits));
-      editMap.add(indexBeforeExits, index2 - indexBeforeExits, []);
-      editMap.consume(self2.events);
+      splice(self2.events, indexBeforeFlow + 1, 0, self2.events.slice(indexBeforeExits));
+      self2.events.length = index2;
       return checkNewContainers(code4);
     }
     return start2(code4);
@@ -22510,9 +22473,7 @@ function initializeDocument(effects) {
     return effects.check(containerConstruct, thereIsANewContainer, thereIsNoNewContainer)(code4);
   }
   function thereIsANewContainer(code4) {
-    if (childFlow) {
-      closeFlow();
-    }
+    if (childFlow) closeFlow();
     exitContainers(continued);
     return documentContinued(code4);
   }
@@ -22532,9 +22493,7 @@ function initializeDocument(effects) {
   }
   function flowStart(code4) {
     if (code4 === null) {
-      if (childFlow) {
-        closeFlow();
-      }
+      if (childFlow) closeFlow();
       exitContainers(0);
       effects.consume(code4);
       return;
@@ -22566,13 +22525,9 @@ function initializeDocument(effects) {
   }
   function writeToChild(token, endOfFile) {
     const stream = self2.sliceStream(token);
-    if (endOfFile) {
-      stream.push(null);
-    }
+    if (endOfFile) stream.push(null);
     token.previous = childToken;
-    if (childToken) {
-      childToken.next = token;
-    }
+    if (childToken) childToken.next = token;
     childToken = token;
     childFlow.defineSkip(token.start);
     childFlow.write(stream);
@@ -22609,10 +22564,8 @@ function initializeDocument(effects) {
         };
         index2++;
       }
-      const editMap = new EditMap();
-      editMap.add(indexBeforeFlow + 1, 0, self2.events.slice(indexBeforeExits));
-      editMap.add(indexBeforeExits, index2 - indexBeforeExits, []);
-      editMap.consume(self2.events);
+      splice(self2.events, indexBeforeFlow + 1, 0, self2.events.slice(indexBeforeExits));
+      self2.events.length = index2;
     }
   }
   function exitContainers(size) {
@@ -22751,7 +22704,6 @@ function createResolver(extraResolver) {
   }
 }
 function resolveAllLineSuffixes(events, context) {
-  const editMap = new EditMap();
   let eventIndex = 0;
   while (++eventIndex <= events.length) {
     if ((eventIndex === events.length || events[eventIndex][1].type === "lineEnding") && events[eventIndex - 1][1].type === "data") {
@@ -22769,9 +22721,7 @@ function resolveAllLineSuffixes(events, context) {
             size++;
             bufferIndex--;
           }
-          if (bufferIndex) {
-            break;
-          }
+          if (bufferIndex) break;
           bufferIndex = -1;
         } else if (chunk === -2) {
           tabs = true;
@@ -22805,13 +22755,13 @@ function resolveAllLineSuffixes(events, context) {
         if (data.start.offset === data.end.offset) {
           Object.assign(data, token);
         } else {
-          editMap.add(eventIndex, 0, [["enter", token, context], ["exit", token, context]]);
+          events.splice(eventIndex, 0, ["enter", token, context], ["exit", token, context]);
+          eventIndex += 2;
         }
       }
       eventIndex++;
     }
   }
-  editMap.consume(events);
   return events;
 }
 
@@ -22872,16 +22822,16 @@ var text8 = {
   [-3]: lineEnding,
   [33]: labelStartImage,
   [38]: characterReference,
-  [42]: attention3,
+  [42]: attention,
   [60]: [autolink, htmlText],
   [91]: labelStartLink,
   [92]: [hardBreakEscape, characterEscape],
   [93]: labelEnd,
-  [95]: attention3,
+  [95]: attention,
   [96]: codeText
 };
 var insideSpan = {
-  null: [attention3, resolver]
+  null: [attention, resolver]
 };
 var attentionMarkers = {
   null: [42, 95]
@@ -22969,10 +22919,11 @@ function createTokenizer(parser, initialize, from) {
     accountForPotentialSkip();
   }
   function main() {
+    let chunkIndex;
     while (point5._index < chunks.length) {
       const chunk = chunks[point5._index];
       if (typeof chunk === "string") {
-        const chunkIndex = point5._index;
+        chunkIndex = point5._index;
         if (point5._bufferIndex < 0) {
           point5._bufferIndex = 0;
         }
@@ -23180,34 +23131,30 @@ function serializeChunks(chunks, expandTabs) {
     let value;
     if (typeof chunk === "string") {
       value = chunk;
-    } else {
-      switch (chunk) {
-        case -5: {
-          value = "\r";
-          break;
-        }
-        case -4: {
-          value = "\n";
-          break;
-        }
-        case -3: {
-          value = "\r\n";
-          break;
-        }
-        case -2: {
-          value = expandTabs ? " " : "	";
-          break;
-        }
-        case -1: {
-          if (!expandTabs && atTab) {
-            continue;
-          }
-          value = " ";
-          break;
-        }
-        default: {
-          value = String.fromCharCode(chunk);
-        }
+    } else switch (chunk) {
+      case -5: {
+        value = "\r";
+        break;
+      }
+      case -4: {
+        value = "\n";
+        break;
+      }
+      case -3: {
+        value = "\r\n";
+        break;
+      }
+      case -2: {
+        value = expandTabs ? " " : "	";
+        break;
+      }
+      case -1: {
+        if (!expandTabs && atTab) continue;
+        value = " ";
+        break;
+      }
+      default: {
+        value = String.fromCharCode(chunk);
       }
     }
     atTab = chunk === -2;
@@ -23258,9 +23205,14 @@ function preprocess() {
   let atCarriageReturn;
   return preprocessor;
   function preprocessor(value, encoding, end) {
-    value = buffer + (typeof value === "string" ? value.toString() : new TextDecoder(encoding || void 0).decode(value));
     const chunks = [];
-    let startPosition = 0;
+    let match;
+    let next2;
+    let startPosition;
+    let endPosition;
+    let code4;
+    value = buffer + (typeof value === "string" ? value.toString() : new TextDecoder(encoding || void 0).decode(value));
+    startPosition = 0;
     buffer = "";
     if (start2) {
       if (value.charCodeAt(0) === 65279) {
@@ -23270,9 +23222,9 @@ function preprocess() {
     }
     while (startPosition < value.length) {
       search2.lastIndex = startPosition;
-      const match = search2.exec(value);
-      const endPosition = match && match.index !== void 0 ? match.index : value.length;
-      const code4 = value.charCodeAt(endPosition);
+      match = search2.exec(value);
+      endPosition = match && match.index !== void 0 ? match.index : value.length;
+      code4 = value.charCodeAt(endPosition);
       if (!match) {
         buffer = value.slice(startPosition);
         break;
@@ -23296,11 +23248,9 @@ function preprocess() {
             break;
           }
           case 9: {
-            const next2 = Math.ceil(column / 4) * 4;
+            next2 = Math.ceil(column / 4) * 4;
             chunks.push(-2);
-            while (column++ < next2) {
-              chunks.push(-1);
-            }
+            while (column++ < next2) chunks.push(-1);
             break;
           }
           case 10: {
@@ -23317,12 +23267,8 @@ function preprocess() {
       startPosition = endPosition + 1;
     }
     if (end) {
-      if (atCarriageReturn) {
-        chunks.push(-5);
-      }
-      if (buffer) {
-        chunks.push(buffer);
-      }
+      if (atCarriageReturn) chunks.push(-5);
+      if (buffer) chunks.push(buffer);
       chunks.push(null);
     }
     return chunks;
@@ -27871,7 +27817,7 @@ var $r = (e) => {
 `; ) t--;
   return e.slice(0, t);
 };
-var qr = lazy(() => import("./highlighted-body-KPVGNVTW-E3FOM34Y.js").then((e) => ({ default: e.HighlightedCodeBlockBody })));
+var qr = lazy(() => import("./highlighted-body-KPVGNVTW-P4SDUNWK.js").then((e) => ({ default: e.HighlightedCodeBlockBody })));
 var Tt = ({ code: e, language: t, className: o, children: n, isIncomplete: r2 = false, startLine: s2, lineNumbers: a, ...l }) => {
   let i = C3(), { codeBlockMaxHeight: c2 } = useContext(S2), d2 = useMemo(() => $r(e), [e]), p2 = useMemo(() => ({ bg: "transparent", fg: "inherit", tokens: d2.split(`
 `).map((m3) => [{ content: m3, color: "inherit", bgColor: "transparent", htmlStyle: {}, offset: 0 }]) }), [d2]);
@@ -28303,7 +28249,7 @@ var Xo = ({ children: e, className: t, maxHeight: o, showControls: n, showCopy: 
 };
 var Fs = /startLine=(\d+)/;
 var js = /\bnoLineNumbers\b/;
-var _s = lazy(() => import("./mermaid-HWGCJPDP-HKKQUHB5.js").then((e) => ({ default: e.Mermaid })));
+var _s = lazy(() => import("./mermaid-HWGCJPDP-62WW4FJ2.js").then((e) => ({ default: e.Mermaid })));
 var zs = /language-([^\s]+)/;
 var $s = "node";
 function D3(e, t) {
@@ -29041,4 +28987,4 @@ export {
   Xa,
   Vo
 };
-//# sourceMappingURL=chunk-3YWKORSK.js.map
+//# sourceMappingURL=chunk-AAFKE4O6.js.map

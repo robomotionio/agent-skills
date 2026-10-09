@@ -619,7 +619,9 @@ It also refetches after a write **it ran itself** - a `bulkActions` entry, or a 
 
 And it refetches after a write run by **any other kit widget on the screen**: a `Form` carrying an `action`, a `ConfirmDialog`, a `Button`, a `Menu` item, a `FileUpload`. Adding a supplier from a dialog and removing one from a confirm are different actions from the one the table reads with, and every widget that runs an action announces it when the call **settles**, so the list asks again at the right moment.
 
-A list you load yourself with a generated hook (`const items = useListItems()`, `useEffect(() => { void items.run({}); }, [])`, rows passed by hand) asks again on the same announcement **only when its action is marked `"read_only": true` in `mcp.json`**, and only after `robomotion app codegen` has run with that `mcp.json` in place: codegen then binds the hook as a read. A hook whose action is not marked read-only is never re-run, because running a write again stores it again. So mark every action that only reads as `read_only`, and never mark one that changes anything.
+And it refetches after a write made **anywhere else**: another tab, another person, the app's assistant, or an agent calling the app over MCP. The robot tells every open page, the table asks again quietly, and the change shows up in place - the changed cell glows, a new row fades in, a removed one fades out - with no reload and no loading rows. Give the table a `rowKey` (or rows with an `id`) so it can follow each row from one answer to the next. A `Kanban` fed by a read hook slides a moved card to its new column, and a `Stat` counts a changed number to its new value, the same way.
+
+A list you load yourself with a generated hook (`const items = useListItems()`, `useEffect(() => { void items.run({}); }, [])`, rows passed by hand) asks again on the same announcements, from this screen or from anywhere else, **only when its action is marked `"read_only": true` in `mcp.json`**, and only after `robomotion app codegen` has run with that `mcp.json` in place: codegen then binds the hook as a read. That re-read is quiet: `loading` stays false and `data` stays on screen, so never show a spinner or blank the list on anything but `loading`. A hook whose action is not marked read-only is never re-run, because running a write again stores it again. So mark every action that only reads as `read_only`, and never mark one that changes anything; `read_only` also keeps an agent's reads from making every open page read again.
 
 **So do not wire refreshing into the screen.** In particular, never hang a refresh off `onClick`, `onSubmit` or `onConfirm`:
 
@@ -1245,12 +1247,12 @@ import {
 
 | Hook | Returns | Use for |
 |---|---|---|
-| `use<Action>()` (generated) | `{ run, data, error, loading, progress, cancel, name }`, typed from the contract | every button that makes the robot do something; pass the whole object to `Button`'s `action`. Import it from `@/generated/actions.gen`, never write `useAction("name")` yourself |
+| `use<Action>()` (generated) | `{ run, data, error, loading, refreshing, progress, cancel, name }`, typed from the contract; `refreshing` is a read hook's quiet re-read after a write | every button that makes the robot do something; pass the whole object to `Button`'s `action`. Import it from `@/generated/actions.gen`, never write `useAction("name")` yourself |
 | `useEvent(name, cb)` | subscribes for the component's lifetime | toasts and refreshes when the robot announces something |
 | `useConnection()` | `{ state, robotOnline }` | anything that must react to `"connecting" \| "ready" \| "offline" \| "robot_offline" \| "app_not_running" \| "contract_mismatch" \| "unconfigured"` |
 | `useFileUpload()` | `{ upload, uploading, progress, error }` | getting a `FileRef` to pass into an action |
 | `useFileUrl(ref)` | `{ url, loading, error, refresh }` | a `FileRef` as a URL, for the rare custom surface. `Image` and the picture components already do this - never call it to feed them |
-| `useLive(action, { events, params?, pollMs? })` | `{ data, error, loading, refreshing, done, refresh, name }` | anything the robot is still changing: a run's counters, a queue. Asks the read action on open, again when one of `events` arrives (a burst is one question), by the clock when nothing is heard, and stops polling at `done: true` |
+| `useLive(action, { events, params?, pollMs? })` | `{ data, error, loading, refreshing, done, refresh, name }` | anything the robot is still changing: a run's counters, a queue. Asks the read action on open, again when one of `events` arrives (a burst is one question) or any write finishes, by the clock when nothing is heard, and stops polling at `done: true` |
 
 **Events are not buffered.** A page that reloads mid-run hears none of what it missed, so never keep a count by adding events up in state. The robot keeps the state (SQLite), a read action returns it, and `useLive` keeps that read current:
 

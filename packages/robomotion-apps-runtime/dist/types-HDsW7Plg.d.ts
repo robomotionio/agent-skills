@@ -54,6 +54,25 @@ interface CallOptions {
     signal?: AbortSignal;
     /** Defaults to the manifest value for the action, else 30000. */
     timeoutMs?: number;
+    /**
+     * True when this call only reads. The robot does not tell the other open
+     * pages about a read, so a page re-reading after a change never sets off
+     * another round of re-reads elsewhere.
+     */
+    read?: boolean;
+}
+/**
+ * The robot's word that a write finished somewhere else: another tab, another
+ * person, the assistant or an MCP client (protocol.md section 4.2). It names
+ * the action, never what was written.
+ */
+interface ChangedInfo {
+    action: string;
+    callId: string;
+    by: {
+        via: "page" | "mcp" | "agent" | string;
+        userId: string;
+    };
 }
 /** The JSON Schema subset app.json is allowed to use (draft 2020-12 subset). */
 interface ContractSchema {
@@ -283,4 +302,4 @@ interface FileUploadOptions {
     isPublic?: boolean;
 }
 
-export type { AppContract as A, CallOptions as C, FileRef as F, HelloAck as H, ResolvedInstance as R, StorageLike as S, Viewer as V, WebSocketLike as W, AppRuntimeConfig as a, ActionProgress as b, AppErrorCode as c, ConnectionState as d, ContractAction as e, ContractEvent as f, ContractSchema as g, ContractScreen as h, CreateAppOptions as i, FileUploadOptions as j, WireEnvelope as k, WireIdentity as l };
+export type { AppContract as A, CallOptions as C, FileRef as F, HelloAck as H, ResolvedInstance as R, StorageLike as S, Viewer as V, WebSocketLike as W, AppRuntimeConfig as a, ActionProgress as b, AppErrorCode as c, ChangedInfo as d, ConnectionState as e, ContractAction as f, ContractEvent as g, ContractSchema as h, ContractScreen as i, CreateAppOptions as j, FileUploadOptions as k, WireEnvelope as l, WireIdentity as m };

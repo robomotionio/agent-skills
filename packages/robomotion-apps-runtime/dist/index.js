@@ -12,7 +12,7 @@ import {
   setCause,
   splitLinkKey,
   tagAction
-} from "./chunk-4IJJAWQH.js";
+} from "./chunk-UE2EYT7M.js";
 
 // src/files.ts
 function encodeArtifactId(addr) {
@@ -577,6 +577,7 @@ var AppClient = class {
   pending = /* @__PURE__ */ new Map();
   assistantTurns = /* @__PURE__ */ new Map();
   eventHandlers = /* @__PURE__ */ new Map();
+  changedHandlers = /* @__PURE__ */ new Set();
   constructor(options) {
     this.opts = options;
     this.contractHash = options.contractHash;
@@ -852,6 +853,7 @@ var AppClient = class {
       case "event":
       case "contract_mismatch":
       case "assistant_event":
+      case "changed":
         return true;
       default:
         return false;
@@ -1204,6 +1206,26 @@ var AppClient = class {
         }
         return;
       }
+      case "changed": {
+        const by = body.by ?? {};
+        const info = {
+          action: String(body.action ?? ""),
+          callId: String(body.call_id ?? ""),
+          by: {
+            via: typeof by.via === "string" ? by.via : "page",
+            userId: typeof by.user_id === "string" ? by.user_id : ""
+          }
+        };
+        if (!info.action) return;
+        for (const h of [...this.changedHandlers]) {
+          try {
+            h(info);
+          } catch {
+          }
+        }
+        dispatchDom("rm:changed", { action: info.action, callId: info.callId, via: info.by.via });
+        return;
+      }
       case "event": {
         const name = String(body.event ?? "");
         const handlers = this.eventHandlers.get(name);
@@ -1399,9 +1421,9 @@ var AppClient = class {
         opts.signal.addEventListener("abort", p.onAbort, { once: true });
       }
       this.pending.set(callId, p);
-      void this.sendEnvelope("action_call", { call_id: callId, action, params: params ?? {} }, {
-        call_id: callId
-      });
+      const callBody = { call_id: callId, action, params: params ?? {} };
+      if (opts.read) callBody.read = true;
+      void this.sendEnvelope("action_call", callBody, { call_id: callId });
       dispatchDom("rm:action-invoked", { action, callId });
     });
   }
@@ -1444,6 +1466,18 @@ var AppClient = class {
     return () => {
       set.delete(handler);
       if (set.size === 0) this.eventHandlers.delete(event);
+    };
+  }
+  /**
+   * Hear about every write that finished somewhere else - another tab,
+   * another person, the assistant, an MCP client - so what this page shows
+   * can be read again. Writes this page made are not included: their callers
+   * already have the result. Returns an off function.
+   */
+  onChanged(handler) {
+    this.changedHandlers.add(handler);
+    return () => {
+      this.changedHandlers.delete(handler);
     };
   }
 };

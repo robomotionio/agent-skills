@@ -178,7 +178,20 @@ html {
 [data-rm-anim="fade"][data-state="open"] { animation: rm-fade-in 160ms ease-out both; }
 [data-rm-anim="fade"][data-state="closed"] { animation: rm-fade-out 120ms ease-in both; }
 
+/* Live changes. A write made anywhere - another tab, another person, the
+   assistant - lands in place: the cell or card that changed glows and fades,
+   a new row fades in, a removed one fades out. live-diff.ts decides which
+   element gets which attribute; these only paint it. */
+@keyframes rm-flash {
+  from { background-color: oklch(var(--rm-primary) / 0.16); }
+  to { background-color: transparent; }
+}
+@keyframes rm-enter { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+[data-rm-flash] { animation: rm-flash 1600ms ease-out both; }
+[data-rm-enter] { animation: rm-enter 240ms cubic-bezier(0.16, 1, 0.3, 1) both, rm-flash 1600ms ease-out both; }
+[data-rm-leave] { animation: rm-fade-out 250ms ease-in both; pointer-events: none; }
+
 @media (prefers-reduced-motion: reduce) {
-  [data-rm-anim] { animation: none !important; }
+  [data-rm-anim], [data-rm-flash], [data-rm-enter], [data-rm-leave] { animation: none !important; }
 }
 /* @end-tokens */

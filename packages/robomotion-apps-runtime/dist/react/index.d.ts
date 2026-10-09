@@ -1,21 +1,42 @@
 import * as react from 'react';
 import { ReactNode } from 'react';
-import { A as AppClient, a as AppError } from '../links-Nz-qosOC.js';
-export { m as bindAction, v as markGesture } from '../links-Nz-qosOC.js';
-import { b as ActionProgress, d as ConnectionState, j as FileUploadOptions, F as FileRef, V as Viewer } from '../types-BPU0cmpz.js';
+import { A as AppClient, a as AppError } from '../links-UPBzShxj.js';
+export { m as bindAction, v as markGesture } from '../links-UPBzShxj.js';
+import { b as ActionProgress, e as ConnectionState, k as FileUploadOptions, F as FileRef, d as ChangedInfo, V as Viewer } from '../types-HDsW7Plg.js';
 
 interface AppProviderProps {
     app: AppClient;
     children?: ReactNode;
 }
 declare function AppProvider({ app, children }: AppProviderProps): react.FunctionComponentElement<react.ProviderProps<AppClient | null>>;
+/** Remote changes closer together than this are one re-read. */
+declare const REMOTE_CHANGE_SPACING_MS = 500;
+/** How long the first remote change waits for the rest of its burst. */
+declare const REMOTE_CHANGE_GATHER_MS = 50;
+/**
+ * Feeds the robot's `changed` messages into the write bus as remote writes.
+ * A burst is one announcement: the assistant marking five tasks done is five
+ * changes inside a second, and the list on screen asks once or twice, never
+ * five times. Returns the unsubscribe.
+ */
+declare function relayRemoteChanges(app: Pick<AppClient, "onChanged">): () => void;
 /** The client from the nearest AppProvider. Throws outside a provider. */
 declare function useAppClient(): AppClient;
 /** Like useAppClient but returns null outside a provider (used by app-kit). */
 declare function useMaybeAppClient(): AppClient | null;
-type WriteDoneListener = (name: string) => void;
-/** Says a pressed action has settled, naming it. The kit's widgets call this. */
-declare function announceWriteDone(name: string): void;
+/** What is known about an announced write. */
+interface WriteDoneInfo {
+    /** True when the write happened somewhere else: another tab, person, assistant or MCP client. */
+    remote?: boolean;
+    /** Who made a remote write, as the robot said it. */
+    by?: ChangedInfo["by"];
+}
+type WriteDoneListener = (name: string, info: WriteDoneInfo) => void;
+/**
+ * Says an action has settled, naming it. The kit's widgets call this for a
+ * press; AppProvider calls it with `remote` for the robot's `changed`.
+ */
+declare function announceWriteDone(name: string, info?: WriteDoneInfo): void;
 /** Listens for announced writes. Returns the unsubscribe. */
 declare function onWriteDone(listen: WriteDoneListener): () => void;
 /**
@@ -55,6 +76,11 @@ interface RunOptions {
      * re-asks for its page itself, and re-running here too fetched it twice.
      */
     refreshOnWrite?: boolean;
+    /**
+     * True when this call only reads, so the robot does not tell the other
+     * open pages about it. A `readOnly` hook sets it on every call by itself.
+     */
+    read?: boolean;
 }
 interface UseActionOptions {
     /**
@@ -63,6 +89,10 @@ interface UseActionOptions {
      * write, so a list loaded by hand shows the row a form beside it added.
      * Anything not known to be a read is never re-run: replaying a write
      * stores it again. Codegen sets this; screens do not.
+     *
+     * The same goes for a write made anywhere else (another tab, person,
+     * assistant or MCP client). Such a re-read is quiet: `loading` stays false
+     * and `data` stays on screen until the new answer replaces it.
      */
     readOnly?: boolean;
 }
@@ -71,6 +101,11 @@ interface UseActionResult<TParams = unknown, TData = unknown> {
     data: TData | undefined;
     error: AppError | undefined;
     loading: boolean;
+    /**
+     * True while a quiet re-read is out: the one a read hook makes by itself
+     * after a write. `loading` stays false for it, so nothing on screen blinks.
+     */
+    refreshing: boolean;
     progress: ActionProgress | undefined;
     cancel: () => void;
     /** The action name, so a kit Button or bindAction can stamp the link. */
@@ -188,8 +223,8 @@ interface UseLiveResult<TData = unknown> {
  * `listQueue` - and this hook keeps asking it at the right moments: when the
  * screen opens, when one of `events` arrives (a burst of them is one
  * question, at most one per `minIntervalMs`), when nothing has been heard for
- * `pollMs`, and when the connection comes back. It stops by itself when the
- * answer has `done: true`.
+ * `pollMs`, when a write finishes on this page or any other, and when the
+ * connection comes back. It stops by itself when the answer has `done: true`.
  *
  *   const run = useLive<{ id: string }, RunView>("getRun", {
  *     params: { id }, events: ["runProgress", "adAnalyzed", "runFinished"],
@@ -232,4 +267,4 @@ interface UseAssistantResult {
  */
 declare function useAssistant(): UseAssistantResult;
 
-export { AppProvider, type AppProviderProps, type AssistantMessage, LOOP_LIMIT, LOOP_WINDOW_MS, LoopBrake, type RunOptions, type UseActionOptions, type UseActionResult, type UseAssistantResult, type UseConnectionResult, type UseFileUploadResult, type UseFileUrlResult, type UseLiveOptions, type UseLiveResult, announceWriteDone, callKey, onWriteDone, shouldRetryOnReconnect, useAction, useAppClient, useAssistant, useConnection, useEvent, useFileUpload, useFileUrl, useLive, useMaybeAppClient, useViewer };
+export { AppProvider, type AppProviderProps, type AssistantMessage, LOOP_LIMIT, LOOP_WINDOW_MS, LoopBrake, REMOTE_CHANGE_GATHER_MS, REMOTE_CHANGE_SPACING_MS, type RunOptions, type UseActionOptions, type UseActionResult, type UseAssistantResult, type UseConnectionResult, type UseFileUploadResult, type UseFileUrlResult, type UseLiveOptions, type UseLiveResult, type WriteDoneInfo, announceWriteDone, callKey, onWriteDone, relayRemoteChanges, shouldRetryOnReconnect, useAction, useAppClient, useAssistant, useConnection, useEvent, useFileUpload, useFileUrl, useLive, useMaybeAppClient, useViewer };

@@ -6,7 +6,7 @@ import {
   markGesture,
   noteHookUse,
   tagAction
-} from "../chunk-4IJJAWQH.js";
+} from "../chunk-UE2EYT7M.js";
 
 // src/react/index.ts
 import {
@@ -21,7 +21,36 @@ import {
 } from "react";
 var AppContext = createContext(null);
 function AppProvider({ app, children }) {
+  useEffect(() => relayRemoteChanges(app), [app]);
   return createElement(AppContext.Provider, { value: app }, children);
+}
+var REMOTE_CHANGE_SPACING_MS = 500;
+var REMOTE_CHANGE_GATHER_MS = 50;
+function relayRemoteChanges(app) {
+  if (typeof app?.onChanged !== "function") return () => {
+  };
+  const pending = /* @__PURE__ */ new Map();
+  let timer = null;
+  let lastFlush = -Infinity;
+  const flush = () => {
+    timer = null;
+    lastFlush = Date.now();
+    const batch = [...pending.values()];
+    pending.clear();
+    for (const info of batch) announceWriteDone(info.action, { remote: true, by: info.by });
+  };
+  const off = app.onChanged((info) => {
+    pending.set(info.action, info);
+    if (timer !== null) return;
+    const wait = Math.max(REMOTE_CHANGE_GATHER_MS, lastFlush + REMOTE_CHANGE_SPACING_MS - Date.now());
+    timer = setTimeout(flush, wait);
+  });
+  return () => {
+    off();
+    if (timer !== null) clearTimeout(timer);
+    timer = null;
+    pending.clear();
+  };
 }
 function useAppClient() {
   const app = useContext(AppContext);
@@ -35,11 +64,11 @@ function useMaybeAppClient() {
 }
 var writeDoneListeners = /* @__PURE__ */ new Set();
 var writeEpoch = 0;
-function announceWriteDone(name) {
-  writeEpoch += 1;
+function announceWriteDone(name, info = {}) {
+  if (!info.remote) writeEpoch += 1;
   for (const listen of [...writeDoneListeners]) {
     try {
-      listen(name);
+      listen(name, info);
     } catch {
     }
   }
@@ -115,6 +144,7 @@ function useAction(name, hookOpts) {
   const [data, setData] = useState(void 0);
   const [error, setError] = useState(void 0);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [progress, setProgress] = useState(void 0);
   const abortRef = useRef(null);
   const aliveRef = useRef(true);
@@ -152,8 +182,9 @@ function useAction(name, hookOpts) {
   const lastCallRef = useRef(null);
   const errorRef = useRef(void 0);
   errorRef.current = error;
+  const dataRef = useRef(void 0);
+  dataRef.current = data;
   const loadingRef = useRef(false);
-  loadingRef.current = loading;
   const runRef = useRef(null);
   useEffect(
     () => app.connection.onChange((state) => {
@@ -164,18 +195,23 @@ function useAction(name, hookOpts) {
     [app]
   );
   const readOnly = hookOpts?.readOnly === true;
+  const dirtyRef = useRef(false);
+  const rerunRef = useRef(null);
   useEffect(() => {
     if (!readOnly) return;
     let queued = false;
-    return onWriteDone((writer) => {
-      if (writer === name || queued) return;
+    return onWriteDone((writer, info) => {
+      if (writer === name && !info.remote || queued) return;
       const last = lastCallRef.current;
-      if (!last || last.opts?.refreshOnWrite === false || loadingRef.current) return;
+      if (!last || last.opts?.refreshOnWrite === false) return;
+      if (loadingRef.current) {
+        dirtyRef.current = true;
+        return;
+      }
       queued = true;
       queueMicrotask(() => {
         queued = false;
-        if (!aliveRef.current || loadingRef.current) return;
-        void runRef.current?.(last.params, last.opts);
+        rerunRef.current?.();
       });
     });
   }, [name, readOnly]);
@@ -195,7 +231,7 @@ function useAction(name, hookOpts) {
         }
         return Promise.resolve(void 0);
       }
-      const promise = send(params, opts);
+      const promise = send(params, opts, false);
       if (key !== null) {
         const entry = { key, promise };
         inflightRef.current = entry;
@@ -208,12 +244,13 @@ function useAction(name, hookOpts) {
     },
     // send and brake are stable for the hook's life (refs / created once).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [app, name]
+    [app, name, readOnly]
   );
   const send = useCallback(
-    async (params, opts) => {
+    async (params, opts, quiet = false) => {
       lastCallRef.current = { params, opts };
       loadingRef.current = true;
+      dirtyRef.current = false;
       abortRef.current?.abort();
       const controller = new AbortController();
       abortRef.current = controller;
@@ -221,14 +258,20 @@ function useAction(name, hookOpts) {
       const seq = runSeqRef.current;
       const current = () => aliveRef.current && runSeqRef.current === seq;
       if (current()) {
-        setLoading(true);
-        setError(void 0);
-        setProgress(void 0);
+        if (quiet) {
+          setRefreshing(true);
+        } else {
+          setLoading(true);
+          setRefreshing(false);
+          setError(void 0);
+          setProgress(void 0);
+        }
       }
       try {
         const result = await app.call(name, params, {
           signal: controller.signal,
           timeoutMs: opts?.timeoutMs,
+          read: readOnly || opts?.read === true || void 0,
           onProgress: (p) => {
             tagAction(p, name);
             if (current()) setProgress(p);
@@ -243,6 +286,9 @@ function useAction(name, hookOpts) {
       } catch (e) {
         const err = e instanceof AppError ? e : new AppError("internal", String(e), false);
         tagAction(err, name);
+        if (current() && quiet && dataRef.current !== void 0) {
+          return void 0;
+        }
         if (current()) {
           setError(err);
           setData(void 0);
@@ -252,13 +298,36 @@ function useAction(name, hookOpts) {
         if (current()) {
           loadingRef.current = false;
           setLoading(false);
+          setRefreshing(false);
+          if (dirtyRef.current) {
+            dirtyRef.current = false;
+            queueMicrotask(() => rerunRef.current?.());
+          }
         }
       }
     },
-    [app, name]
+    [app, name, readOnly]
   );
   runRef.current = run;
-  return { run, data, error, loading, progress, cancel, name };
+  rerunRef.current = () => {
+    const last = lastCallRef.current;
+    if (!aliveRef.current || !last) return;
+    if (loadingRef.current) {
+      dirtyRef.current = true;
+      return;
+    }
+    const key = callKey(last.params, last.opts);
+    const promise = send(last.params, last.opts, true);
+    if (key !== null) {
+      const entry = { key, promise };
+      inflightRef.current = entry;
+      const clear = () => {
+        if (inflightRef.current === entry) inflightRef.current = null;
+      };
+      promise.then(clear, clear);
+    }
+  };
+  return { run, data, error, loading, refreshing, progress, cancel, name };
 }
 function shouldRetryOnReconnect(error, state) {
   if (state !== "ready" || !error || error.code !== "robot_offline") return false;
@@ -405,7 +474,7 @@ function useLive(action, opts) {
     if (!enabled) return;
     const reader = new LiveReader({
       read: async () => {
-        const result = await app.call(name, latest.current.params, { timeoutMs });
+        const result = await app.call(name, latest.current.params, { timeoutMs, read: true });
         tagAction(result, name);
         return result;
       },
@@ -415,6 +484,9 @@ function useLive(action, opts) {
       minIntervalMs,
       isDone: (data) => latest.current.isDone ? latest.current.isDone(data) : liveDoneDefault(data),
       onEvent: (event, payload) => latest.current.onEvent?.(event, payload),
+      subscribeWrites: (cb) => onWriteDone((writer, info) => {
+        if (writer !== name || info.remote) cb();
+      }),
       onChange: setState
     });
     readerRef.current = reader;
@@ -501,11 +573,14 @@ export {
   LOOP_LIMIT,
   LOOP_WINDOW_MS,
   LoopBrake,
+  REMOTE_CHANGE_GATHER_MS,
+  REMOTE_CHANGE_SPACING_MS,
   announceWriteDone,
   bindAction,
   callKey,
   markGesture,
   onWriteDone,
+  relayRemoteChanges,
   shouldRetryOnReconnect,
   useAction,
   useAppClient,
