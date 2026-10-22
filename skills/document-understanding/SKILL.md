@@ -10,7 +10,7 @@ A **document reader** (a Document Understanding project) knows what kind of docu
 
 ## Words
 
-The person never hears: project, taxonomy, schema, template, field id, confidence, job, version, JSON, selector, or any id. Say **reader**, **the values it found**, **I'm not sure about**, **someone checks it**. Show values as a short list, as printed on the document. Ids in tool results are for `main.ts` only.
+The person never hears: project, taxonomy, schema, template, field id, confidence, job, version, staging, F1, JSON, selector, or any id. Say **reader**, **the values it found**, **I'm not sure about**, **someone checks it**. Show values as a short list, as printed on the document. Ids in tool results are for `main.ts` only.
 
 ## The conversation (one question per turn)
 
@@ -18,11 +18,23 @@ The person never hears: project, taxonomy, schema, template, field id, confidenc
 2. **Reuse first.** `du_list_projects`. If a reader already reads this kind of document, use it and say so in one line.
 3. **Set one up.** Pick the template yourself (`du_list_templates` if unsure; never show the list). With sample files: `du_create_project_from_samples` (1 to 3 samples). Without: `du_create_project` with the template, or with `fields` when nothing fits.
 4. **Confirm the fields in plain words.** Name what it will read in one sentence ("It will read the invoice number, date, supplier, total and the line items."). Then ask at most one question per turn, only where the meaning is unclear: "Is 'Total' the amount to pay, including tax?", "Do you also need the PO number?" Apply answers with `du_update_schema`; a `description` saying where the value is on the page helps the reader.
+
+   **Values that are not printed as they are** (a one-line summary, a category, a risk level, an end date that is only the start date plus "6 months"): set `work_it_out: true` on that field and say in its `description` how to work it out ("The start date plus the contract's term"). Tell the person in plain words: "I'll work out the end date from the start date and how long the contract runs." Guidance that holds for every document (the language to answer in, what counts as high risk) goes in `instructions`, not in each field.
 5. **Try it on one sample.** `du_process`. Show what it found:
    > From *invoice-0412.pdf*: Invoice number INV-0412, Date 14 March 2026, Total 1,200.00 EUR. I'm not sure about the due date, so invoices like this one will go to a person to check.
 
    Ask "Does that look right?" If a value is wrong, fix the field's `description` (or type) with `du_update_schema` and try again, at most twice, then move on.
 6. **Ask what happens next,** only what is still unknown: where the values go (an Excel file, a sheet, a folder of CSVs), and whether the robot should wait for a person to check uncertain documents or leave them for later.
+
+## Making the reader better
+
+When the person asks how well it reads, or a value keeps coming back wrong, run this loop, **at most two rounds**:
+
+1. `du_review_status`. Measuring needs documents a person has checked and set aside for measuring. If there are none, say so plainly ("To tell how well it reads, someone needs to check a few documents first") and stop.
+2. `du_measure`. Tell the person the result in words: "It reads 8 of 10 values right. It gets the end date right only about half the time."
+3. Reword what is weakest: the field's `description`, or the shared `instructions`, with `du_update_schema` and `as_staging: true`, so the current reader keeps working while the new wording is tried.
+4. `du_measure` with the new version the update reported, then `du_compare_versions`.
+5. Better: `du_promote` it and say "The new wording reads the end date right more often, so I've switched to it." Worse or the same: leave things as they were and say so in one line.
 
 If `du_process` says no computer picked the document up, say plainly that document reading is not running on any of their computers yet, and carry on building the flow: it will work once it is.
 
@@ -32,7 +44,7 @@ Follow `creating-flow` for everything else (hex ids, `validate_flow`, `save_flow
 
 | Node | Use |
 |---|---|
-| `Robomotion.DocumentUnderstanding.ProcessDocument` | `inFilePath`, `inProjectId` (the reader's id, `Custom('...')`). `optCreateReview: 'yes'` opens a check for a person when unsure (the default `'no'` never does). Outputs `msg.result`, `msg.fields` (value per field id), `msg.needsReview`, `msg.reviewTaskId`. |
+| `Robomotion.DocumentUnderstanding.ProcessDocument` | `inFilePath`, `inProjectId` (the reader's id, `Custom('...')`). `optCreateReview: 'yes'` opens a check for a person when unsure (the default `'no'` never does). `optTag: 'staging'` reads with the wording being tried instead of the live one. Outputs `msg.result`, `msg.fields` (value per field id; a field inside a group has a dotted id, read it as `msg.fields['contract_info.end_date']`), `msg.needsReview`, `msg.reviewTaskId`. |
 | `Robomotion.DocumentUnderstanding.WaitForReview` | `inTaskId: Message('reviewTaskId')`. Holds the flow until the person has checked it (`optTimeout`, default one hour; `optContinueOnTimeout: 'continue'` to go on instead of failing). Its output is `msg.validatedResult`; set `outResult: Message('result')` so both paths carry `msg.result`. |
 | `Robomotion.DocumentUnderstanding.Export` | `inResult: Message('result')` gives `msg.fieldsTable` (`optFieldsLayout: 'columns'` for one row per document) and `msg.lineItemsTable` (`optTableID` picks the table). Both are `{columns, rows}`: write them with the nodes in `creating-flow`'s `./docs/patterns/data-tables.md`. |
 | `CreateReviewTask`, `GetReviewResult`, `Digitize`, `Classify`, `Extract` | Rarely needed: a check sent without waiting, polling a check later, or the steps one by one. |
