@@ -63,7 +63,7 @@ Colours and logo: use the brand colour if they mention one (`theme.color`); a lo
        outData: Message('item'),          // { <question id>: <value>, ... }
      });
    ```
-   An empty queue is not an error: `item_id` and `item` stay unset, so branch on `msg.item_id` before reading. When the work is done, `Core.Queue.Update` with `inStatus: 'successful'` (or `'failed'`) and `inItemID: Message('item_id')`. To work through every waiting answer, loop back to Get until it comes back empty. Every answer also starts any trigger that names this queue, so a published flow can run on each answer by itself.
+   An empty queue is not an error: `item_id` and `item` stay unset, so branch on `msg.item_id` before reading, with a `Core.Programming.Function` of `outputs: 2` (`return msg.item_id ? [msg, null] : [null, msg];`; there is no If node). When the work is done, `Core.Queue.Update` with `inStatus: 'successful'` (or `'failed'`) and `inItemID: Message('item_id')`. To work through every waiting answer, loop back to Get until it comes back empty. Every answer also starts any trigger that names this queue, so a published flow can run on each answer by itself.
 7. **Run it** (`running-flow`): `robomotion validate`, then `robomotion run`. The test answer from step 5 must come out with every question's value; a `Core.Programming.Debug` on `item` shows them. Never say it works without that.
 8. **Tell the person**, in their words: the link, that anyone with it can answer, and what happens to each answer.
 
