@@ -11,6 +11,7 @@ Start with `creating-flow` if you're new — it bundles the full Robomotion 101 
 | Skill | Description |
 |-------|-------------|
 | [`creating-flow`](./skills/creating-flow/SKILL.md) | Create Robomotion flows end-to-end: requirements → plan → build → validate → deploy. **Foundational — install first.** |
+| [`creating-form`](./skills/creating-form/SKILL.md) | Build a Robomotion Form: a public link anyone can answer, each answer encrypted in the browser and added to a queue, plus the flow that reads it. Changes by prompt keep the same link. |
 | [`validating-flow`](./skills/validating-flow/SKILL.md) | Run `robomotion validate` against pspec schemas; node-by-node error report. |
 | [`testing-flow`](./skills/testing-flow/SKILL.md) | Author and run behavioral tests with `@robomotion/sdk/testing` + `bun test`. |
 | [`running-flow`](./skills/running-flow/SKILL.md) | Execute a flow on a robot and stream agent-mode events with bounded retries. |
@@ -150,6 +151,9 @@ skills/
 ├── creating-flow/
 │   ├── SKILL.md
 │   └── docs/                    # sdk-grammar, architecture, patterns/, reference/
+├── creating-form/
+│   ├── SKILL.md
+│   └── docs/form-json.md        # the form definition and what each question sends
 ├── exploring-browser/
 │   ├── SKILL.md
 │   └── docs/patterns/browser.md

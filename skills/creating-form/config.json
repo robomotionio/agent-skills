@@ -1,0 +1,19 @@
+{
+  "name": "Creating Form",
+  "namespace": "Robomotion.Skill.CreatingForm",
+  "version": "0.1.0",
+  "categories": [
+    "Artificial Intelligence"
+  ],
+  "description": "Builds a Robomotion Form by conversation - a public web page anyone can answer through a link, no account needed, each answer encrypted in the visitor's browser and added to a queue - and the flow that reads the answers. Owns the loop - questions → form.json → push → publish a link (queue created when missing) → open the link and answer it → the flow takes the answer off the queue → changes by prompt on the same link. Use when people outside the workspace send something in - applications, requests, sign-ups, claims, orders, surveys, files.",
+  "icon": "icon.png",
+  "skill": {
+    "runtime": "none",
+    "command": "creating-form",
+    "platforms": [
+      "linux",
+      "darwin",
+      "windows"
+    ]
+  }
+}
