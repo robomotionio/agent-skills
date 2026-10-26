@@ -253,7 +253,9 @@ Narrate progress with the task list, in the person's language ("Design the revie
    own MCP door - the same `action_call` a press in the screens sends - with
    stand-in values built from each action's schema (a description's own
    example first, then an enum's first member, today for a date, "smoke test"
-   / 1 / true otherwise). The report has one row per button, and the row's word is the
+   / 1 / true otherwise). Those values are the smoke's, not the ones the screen's
+   own code builds: a green row proves the flow, not a button's own `params`.
+   The report has one row per button, and the row's word is the
    whole diagnosis. Classify, then act - never explain:
 
    | Row says | It means | Do this |

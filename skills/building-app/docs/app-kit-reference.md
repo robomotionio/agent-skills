@@ -233,7 +233,7 @@ a full URL with its scheme.
 
 ### `Button`
 
-`variant`: `primary` / `secondary` / `outline` / `ghost` / `danger`; `size`: `sm` / `md` / `lg` / `icon` (a square for one icon and an `aria-label`). `icon` puts a kit icon before the label and `iconRight` after it: `<Button icon="plus">Add a supplier</Button>`. A button that makes the robot do something takes the action through `action` (the object the generated `use<Action>()` hook returns) and its `params` (a value, or a function of the click event). The click runs it, the spinner shows and the button is disabled while it runs, and the Build view can jump from the button to the step in the flow. Never write your own `onClick={() => run(...)}` plus `loading` plus `disabled` for that.
+`variant`: `primary` / `secondary` / `outline` / `ghost` / `danger`; `size`: `sm` / `md` / `lg` / `icon` (a square for one icon and an `aria-label`). `icon` puts a kit icon before the label and `iconRight` after it: `<Button icon="plus">Add a supplier</Button>`. A button that makes the robot do something takes the action through `action` (the object the generated `use<Action>()` hook returns) and its `params` (a value, or a function of the click event). The click runs it, the spinner shows on the pressed button and every button on the same action is disabled while it runs, a failure shows as a toast, and the Build view can jump from the button to the step in the flow. Never write your own `onClick={() => run(...)}` plus `loading` plus `disabled` for that.
 
 ```tsx
 const approve = useApproveInvoice();
@@ -570,6 +570,16 @@ const [cancelling, setCancelling] = useState<Booking | null>(null);
   title="Cancel this booking?" confirmLabel="Cancel it" danger
   action={cancelBooking} params={() => ({ id: cancelling?.id })} />
 ```
+
+A button on the row that runs an action straight away (no confirm) takes the row's values as a plain object, made inside `render` where the row is in hand:
+
+```tsx
+{ key: "return", header: "", render: (row) => (
+  <Button size="sm" action={markReturned} params={{ id: row.id }}>Mark returned</Button>
+) },
+```
+
+Never `params={(row) => ...}` on a `Button`: a `Button`'s function form is called with the click, not the row, so `row.id` is undefined and the press sends nothing useful. Only `rowActions` hands its function the row.
 
 `rowActions` is for the things nobody asked to see on every row - export this one, copy its link. A button that only navigates goes in a column the same way, with `navigate(...)` in its `onClick`.
 

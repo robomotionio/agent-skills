@@ -1,6 +1,6 @@
 import { ClassValue } from 'clsx';
 import * as react from 'react';
-import { CSSProperties, SVGAttributes, ReactNode, HTMLAttributes, ButtonHTMLAttributes, MouseEvent, InputHTMLAttributes, MutableRefObject, FormHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
+import { CSSProperties, SVGAttributes, ReactNode, HTMLAttributes, ButtonHTMLAttributes, MouseEvent, RefAttributes, ReactElement, InputHTMLAttributes, MutableRefObject, FormHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
 import { ConnectionState, FileRef, ContractSchema, AppError } from '@robomotion/apps-runtime';
 import * as class_variance_authority_types from 'class-variance-authority/types';
 import { VariantProps } from 'class-variance-authority';
@@ -362,24 +362,52 @@ declare const buttonVariants: (props?: ({
     variant?: "primary" | "secondary" | "outline" | "ghost" | "danger" | null | undefined;
     size?: "sm" | "md" | "lg" | "icon" | null | undefined;
 } & class_variance_authority_types.ClassProp) | undefined) => string;
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
-    /** Shows a spinner and disables the button while true. Defaults to `action.loading` when an action is given. */
+/**
+ * Any params value that is not a function. Used when the action carries no
+ * params type (a hand-made stand-in, an untyped useAction), so a function
+ * still has to be one of the click event.
+ */
+type PlainParams = string | number | boolean | null | readonly unknown[] | {
+    [key: string]: unknown;
+} | (object & {
+    call?: never;
+});
+/**
+ * What `params` may be for an action whose params are `P`: a value of that
+ * type, or a function of the click event returning one.
+ *
+ * `ParamsOf<unknown, E>` is just `unknown`, which let `params={(r: Loan) =>
+ * ({ id: r.id })}` through on a button in a table row: the function was
+ * handed the click event, not the row, and no row was ever named. Typed from
+ * the action, a function of anything but the event no longer compiles.
+ */
+type ButtonParams<P> = unknown extends P ? ParamsOf<PlainParams, MouseEvent<HTMLButtonElement>> : ParamsOf<P, MouseEvent<HTMLButtonElement>>;
+interface ButtonProps<P = unknown> extends ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
+    /**
+     * Shows a spinner and disables the button while true. Defaults to this
+     * button's own press of `action` still running.
+     */
     loading?: boolean;
     /**
      * The action this button runs (the object from useAction). A click runs
-     * it with `params`, the spinner shows and the button is disabled while it
-     * runs, and the widget is linked to the action's node in the flow.
+     * it with `params`, the spinner shows on this button while that call
+     * runs, every button on the same action is disabled meanwhile, a failure
+     * is shown as a toast, and the widget is linked to the action's node in
+     * the flow.
      */
-    action?: ActionLike;
-    /** Params for `action`: a value, or a function of the click event. */
-    params?: ParamsOf<unknown, MouseEvent<HTMLButtonElement>>;
+    action?: ActionLike<P>;
+    /**
+     * Params for `action`: a value, or a function of the click EVENT. A button
+     * in a table row closes over its row instead: `params={{ id: row.id }}`.
+     */
+    params?: ButtonParams<P>;
     /** An icon before the label: a kit icon name, or an element. */
     icon?: IconName | ReactNode;
     /** An icon after the label. */
     iconRight?: IconName | ReactNode;
     children?: ReactNode;
 }
-declare const Button: react.ForwardRefExoticComponent<ButtonProps & react.RefAttributes<HTMLButtonElement>>;
+declare const Button: <P = unknown>(props: ButtonProps<P> & RefAttributes<HTMLButtonElement>) => ReactElement | null;
 declare function Spinner({ className }: {
     className?: string;
 }): react.JSX.Element;

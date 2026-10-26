@@ -1423,7 +1423,16 @@ var AppClient = class {
       this.pending.set(callId, p);
       const callBody = { call_id: callId, action, params: params ?? {} };
       if (opts.read) callBody.read = true;
-      void this.sendEnvelope("action_call", callBody, { call_id: callId });
+      this.sendEnvelope("action_call", callBody, { call_id: callId }).catch((e) => {
+        const reason = e instanceof Error ? e.message : String(e);
+        const err = new AppError(
+          e instanceof TypeError ? "invalid_params" : "internal",
+          `The action could not be sent: ${reason}`,
+          false
+        );
+        err.callId = callId;
+        this.settle(p, void 0, err);
+      });
       dispatchDom("rm:action-invoked", { action, callId });
     });
   }
