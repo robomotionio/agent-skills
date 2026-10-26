@@ -178,6 +178,10 @@ outTotal: Global('globalTotal') // Saves to global.globalTotal (rare)
 
 Several nodes have multiple output ports. See `./patterns/loops.md` for port reference.
 
+## Escapes inside `func`
+
+`func` is a TypeScript template literal, so it is read twice: once by TypeScript, once by the robot as JavaScript. An escape meant for the JavaScript must be doubled. `'line one\\nline two'` inside `` func: `...` `` reaches the robot as `'line one\nline two'`; written with one backslash, the robot gets a real line break inside a quoted string and the flow fails with `SyntaxError` when it starts. The same holds for `\\t`, `\\'` and a backslash in a regular expression (`/\\d+/`). When in doubt, join lines with `String.fromCharCode(10)`.
+
 ## Multi-Output Function Nodes
 
 Function nodes can have multiple outputs (1-32):

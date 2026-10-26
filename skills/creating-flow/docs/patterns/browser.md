@@ -293,6 +293,14 @@ the *next* page, and keep going until you reach the goal. Build exactly the step
 you actually saw, with the selectors from your own snapshots. Whatever extra
 screen appears, handle it before moving on.
 
+When the person signs in by hand in the browser you opened (you never see the
+vault's password), you do not see what they passed between Sign In and the page
+they stopped on: a code, a "trust this device", a consent page. Ask them, in
+plain words, what came after they pressed Sign In, and build every step they
+name. After a sign-in, move on by clicking the site's own links: going to a page
+by its address can lose the signed-in session. The full rules are in
+`/exploring-browser`, "Signing in while exploring".
+
 If a verification step asks for a code: the code is **per-run and secret — never
 hardcode it**. Take it from a flow variable / input the user provides
 (`Message('otp_code')`), or from email/SMS via the relevant node. How the field

@@ -211,6 +211,21 @@ Here's the TypeScript flow:
 // ... generated code ...
 ```
 
+## Signing in while exploring
+
+- **Never type a password you made up, and never sign in as an account you found
+  in the site's code, its scripts or its files.** A real site's sign-in takes the
+  person's own login. The flow reads it from the vault; while you explore, ask the
+  person to sign in themselves in the browser you opened, and wait.
+- **A sign-in by hand hides its steps from you.** Between Sign In and the page you
+  snapshot next there may have been a code, a "trust this device" or a consent
+  page. Ask the person what came after they pressed Sign In (or ask them to stop at
+  the first page after it and tell you), and build every step they name. A flow
+  built as Sign In, then the dashboard, stops at the step you never saw.
+- **Stay in the session.** After a sign-in, reach the next page by clicking the
+  site's own links, not by its address: opening an address can drop the session and
+  send you back to the sign-in page.
+
 ## Tips
 
 1. **Snapshot first, always** — one `browser_snapshot` shows every interactive element with refs.
@@ -294,8 +309,9 @@ Claude: Let me capture network traffic to see what API this uses...
 [browser_start_network_capture capture_body=true]
 
 Claude: Now I'll fill in the login form...
+// A test login the person gave you; never one you made up (see "Signing in while exploring")
 [browser_type selector="//input[@name='email']" text="test@example.com"]
-[browser_type selector="//input[@name='password']" text="password"]
+[browser_type selector="//input[@name='password']" text="<the test password they gave>"]
 [browser_click selector="//button[@type='submit']"]
 
 Claude: Let me check what API calls were made...
@@ -304,7 +320,7 @@ Claude: Let me check what API calls were made...
 Result: Found POST to /api/auth/login with JSON body:
 {
   "email": "test@example.com",
-  "password": "password"
+  "password": "<the test password they gave>"
 }
 
 Claude: I found the login API endpoint. Instead of browser automation,

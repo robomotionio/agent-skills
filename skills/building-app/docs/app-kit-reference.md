@@ -571,6 +571,16 @@ const [cancelling, setCancelling] = useState<Booking | null>(null);
   action={cancelBooking} params={() => ({ id: cancelling?.id })} />
 ```
 
+A button on the row that runs an action straight away (no confirm) takes the row's values as a plain object, made inside `render` where the row is in hand:
+
+```tsx
+{ key: "return", header: "", render: (row) => (
+  <Button size="sm" action={markReturned} params={{ id: row.id }}>Mark returned</Button>
+) },
+```
+
+Never `params={(row) => ...}` on a `Button`: a `Button`'s function form is called with the click, not the row, so `row.id` is undefined and the press sends nothing useful. Only `rowActions` hands its function the row.
+
 `rowActions` is for the things nobody asked to see on every row - export this one, copy its link. A button that only navigates goes in a column the same way, with `navigate(...)` in its `onClick`.
 
 **The robot has it and there is too much of it.** `source={{ action }}` turns the same table into a paged one: it asks the flow for one page at a time, and the filter box and the sortable headers go with the question instead of running in the browser. Reach for this whenever the rows live in a system the flow queries - a database, a spreadsheet, an API with paging - which is where everything an app remembers between visits lives.
