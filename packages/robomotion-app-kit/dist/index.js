@@ -1,9 +1,9 @@
 import {
   Xa,
   clsx
-} from "./chunk-FDVPBPLB.js";
+} from "./chunk-AAFKE4O6.js";
 
-// ../../robomotion/robomotion-app-kit/node_modules/tailwind-merge/dist/bundle-mjs.mjs
+// node_modules/tailwind-merge/dist/bundle-mjs.mjs
 var CLASS_PART_SEPARATOR = "-";
 var createClassGroupUtils = (config) => {
   const classMap = createClassMap(config);
@@ -3310,7 +3310,7 @@ import {
   useState as useState3
 } from "react";
 
-// ../../robomotion/robomotion-app-kit/node_modules/class-variance-authority/dist/index.mjs
+// node_modules/class-variance-authority/dist/index.mjs
 var falsyToString = (value) => typeof value === "boolean" ? `${value}` : value === 0 ? "0" : value;
 var cx = clsx;
 var cva = (base2, config) => (props) => {
@@ -5766,7 +5766,7 @@ import {
 // src/floating.ts
 import { useCallback as useCallback3, useEffect as useEffect10, useRef as useRef5, useState as useState11 } from "react";
 
-// ../../robomotion/robomotion-app-kit/node_modules/@floating-ui/utils/dist/floating-ui.utils.mjs
+// node_modules/@floating-ui/utils/dist/floating-ui.utils.mjs
 var min = Math.min;
 var max = Math.max;
 var round2 = Math.round;
@@ -5894,7 +5894,7 @@ function rectToClientRect(rect) {
   };
 }
 
-// ../../robomotion/robomotion-app-kit/node_modules/@floating-ui/core/dist/floating-ui.core.mjs
+// node_modules/@floating-ui/core/dist/floating-ui.core.mjs
 function computeCoordsFromPlacement(_ref, placement, rtl) {
   let {
     reference,
@@ -6405,7 +6405,7 @@ var size = function(options) {
   };
 };
 
-// ../../robomotion/robomotion-app-kit/node_modules/@floating-ui/utils/dist/floating-ui.utils.dom.mjs
+// node_modules/@floating-ui/utils/dist/floating-ui.utils.dom.mjs
 function hasWindow() {
   return typeof window !== "undefined";
 }
@@ -6561,7 +6561,7 @@ function getFrameElement(win) {
   return win.parent && Object.getPrototypeOf(win.parent) ? win.frameElement : null;
 }
 
-// ../../robomotion/robomotion-app-kit/node_modules/@floating-ui/dom/dist/floating-ui.dom.mjs
+// node_modules/@floating-ui/dom/dist/floating-ui.dom.mjs
 function getCssDimensions(element) {
   const css = getComputedStyle2(element);
   let width = parseFloat(css.width) || 0;
@@ -12820,6 +12820,7 @@ function Form({
   action,
   disabled = false,
   hideError = false,
+  resetOnSuccess,
   children,
   className,
   ...props
@@ -12854,6 +12855,21 @@ function Form({
     },
     [controlledValues, onChange]
   );
+  const clearAfter = resetOnSuccess ?? (controlledValues === void 0 && initialValues === void 0);
+  const pendingClear = useRef23("none");
+  useEffect24(() => {
+    if (pendingClear.current === "none" || !action) return;
+    if (action.loading) {
+      pendingClear.current = "loading";
+      return;
+    }
+    if (pendingClear.current !== "loading") return;
+    pendingClear.current = "none";
+    if (action.error || controlledValues !== void 0) return;
+    const empty = initialValues ?? {};
+    latest.current = empty;
+    setOwnValues(empty);
+  }, [action, action?.loading, action?.error, controlledValues, initialValues]);
   const ctx = useMemo8(
     () => ({ values, errors, disabled, setValue }),
     [values, errors, disabled, setValue]
@@ -12869,6 +12885,7 @@ function Form({
         const nextErrors = validateAgainstSchema(schema, values);
         setErrors(nextErrors);
         if (Object.keys(nextErrors).length === 0) {
+          if (clearAfter && action) pendingClear.current = "sent";
           let ranInSubmit = false;
           const originalRun = action?.run;
           if (action && originalRun) {
