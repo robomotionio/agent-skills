@@ -487,6 +487,9 @@ f.node('6b7c8d', 'Core.Excel.Create', 'Create Excel', {
   });
 ```
 
+Call Save before Close. Close does not save: every change since the last Save
+is lost, and the run still succeeds.
+
 ### Insert into SQLite
 
 `inTable` is the **data** (`{columns, rows}`); the table's name in the database is
