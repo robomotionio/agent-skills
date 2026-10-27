@@ -164,6 +164,22 @@ A value read from a page, an XML or JSON reply, or a CSV is text until you
 convert it, and the writer stores text as text: Excel then shows "number
 stored as text", and sums, sorting and charts on that column do not work.
 Convert in the Function node that builds the row: `rate: Number(m[1])`.
+Keep every digit the source gives: round only when the person asks.
+
+## A date comes back as this computer shows dates
+
+`SetRange` turns a date-looking string (`2026-10-27`) into a real date cell,
+and `GetRange` gives it back the way the computer shows dates (`10/27/2026`
+on one, `27.10.2026` on another), never as you wrote it. A check like "is
+today already in the file?" that compares the two texts never matches, and
+every run adds the day again. Read with `optRawValue: true` instead: a date
+cell then comes back as its day number, the same on every computer:
+
+```javascript
+const t = new Date();
+const today = Math.round((Date.UTC(t.getFullYear(), t.getMonth(), t.getDate()) - Date.UTC(1899, 11, 30)) / 86400000);
+const already = msg.rows.some((r) => Number(r.Date) === today);
+```
 
 ## Operations Using This Format
 
