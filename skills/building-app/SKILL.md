@@ -1094,3 +1094,12 @@ milliseconds, or an ISO string ending in `Z` or `+03:00`. A string with no
 zone (`09/14/2026 11:25:14`, `2026-09-14 11:25:14`) is read as the viewer's
 local time, which is the wrong time whenever the flow wrote UTC. Store times
 as the section on remembering something says, and the screen stays right.
+
+## Money on screen
+
+Show an amount in the currency the person named, formatted for their locale:
+`new Intl.NumberFormat(undefined, { style: "currency", currency: "EUR" }).format(n)`.
+When they named none, the currency is a default you picked: say which in
+your reply, in one line ("Amounts are in euros - tell me if you use
+another currency"), as Ask vs decide says. A currency sign nobody chose,
+shown without a word, is read as the app getting their money wrong.
