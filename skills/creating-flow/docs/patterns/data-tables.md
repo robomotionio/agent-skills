@@ -130,41 +130,14 @@ msg.table = {
 };
 ```
 
-### Best Practice: Use Jsonify-Style Keys Consistently
+### Leave Jsonify off when you read a file you know
 
-When using `optJsonify: true` on GetRange, always use lowercase keys with underscores throughout your flow:
-
-```typescript
-// Reading with jsonify - columns become lowercase
-f.node('4a7c91', 'Core.Excel.GetRange', 'Read Data', {
-  inFileDescriptor: { name: 'excel_fd', scope: 'Message' },
-  optHeaders: true,
-  optJsonify: true,  // "Name" -> "name", "Screenshot Path" -> "screenshot_path"
-  outRange: { name: 'stores', scope: 'Message' }
-});
-
-// In loop, access with lowercase keys
-// msg.store.name, msg.store.url (NOT msg.store.Name)
-
-// When building results, use matching lowercase keys
-func: `
-msg.results.push({
-  "name": msg.store_name,
-  "url": msg.store_url,
-  "screenshot_path": msg.saved_path
-});
-return msg;
-`
-
-// When writing back, use lowercase columns
-func: `
-msg.final_table = {
-  "columns": ["name", "url", "screenshot_path"],
-  "rows": msg.results
-};
-return msg;
-`
-```
+With `optHeaders: true` and Jsonify off, each row's keys are the header
+exactly as it is in the file, the same names you write and read
+(`row.Date`, `row["Price Range"]`). Jsonify changes every key to lowercase
+with underscores, so `row.Date` is then always empty and a check like "is
+today already in the file?" never matches. Turn it on only when you do not
+know the headers, and then read the keys in that form (`row.date`).
 
 ## Always write the header row
 
@@ -234,10 +207,9 @@ f.node('c5f4a1', 'Core.Excel.GetRange', 'Get Range', {
   inFromCell: Custom('A1'),
   inToCell: Custom('C10'),
   optHeaders: true,
-  optJsonify: true,
   outRange: Message('table')
 });
-// With jsonify: "Price Range" -> "price_range"
+// Keys are the headers as written: msg.table.rows[0]["Price Range"]
 ```
 
 ### Excel 365 (Cloud)
@@ -248,7 +220,6 @@ f.node('d2e8b6', 'Robomotion.Excel365.RangeRead', 'Read Range', {
   inSheetName: Custom('Sheet1'),
   inRange: Custom('A1:C10'),
   optHeaders: true,
-  optJsonify: true,
   outTable: Message('table')
 });
 ```
@@ -260,7 +231,6 @@ f.node('e9c3d4', 'Robomotion.GoogleSheets.GetRange', 'Get Range', {
   inSpreadsheetId: Custom('spreadsheet-id'),
   inRange: Custom('Sheet1!A1:C10'),
   optHeaders: true,
-  optJsonify: true,
   outTable: Message('table')
 });
 ```
