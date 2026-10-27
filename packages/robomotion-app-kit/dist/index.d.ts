@@ -1716,9 +1716,17 @@ interface FormProps extends Omit<FormHTMLAttributes<HTMLFormElement>, "onSubmit"
      * refused every press. Pass `hideError` when the screen shows it elsewhere.
      */
     hideError?: boolean;
+    /**
+     * Empty the fields once the action has succeeded, for the next entry. On by
+     * default for a form that adds things (uncontrolled, no `initialValues`):
+     * two apps built in a row kept the last claim and the last parcel in their
+     * boxes after a good submit (2026-10-27). Off for a form that edits a
+     * record, which keeps showing what was saved.
+     */
+    resetOnSuccess?: boolean;
     children?: ReactNode;
 }
-declare function Form({ schema, initialValues, values: controlledValues, onChange, onSubmit, action, disabled, hideError, children, className, ...props }: FormProps): react.JSX.Element;
+declare function Form({ schema, initialValues, values: controlledValues, onChange, onSubmit, action, disabled, hideError, resetOnSuccess, children, className, ...props }: FormProps): react.JSX.Element;
 /** Read the surrounding form's values and errors (advanced layouts). */
 declare function useFormValues(): FormValues;
 interface FieldProps {

@@ -91,7 +91,7 @@ Keep ids stable: rewording a question keeps its id, because the flow reads by id
 
 | What you see | What it means | Do |
 |---|---|---|
-| `could not read the public key: Vault ... locked` / no access | The robot was not given that vault | Ask the person to give the robot the vault (Robots → Inject Vault Secret), then publish again |
+| `could not read the public key: Vault ... locked` / no access | The robot was not given that vault | Pass on the link in the robot's error (`/designer/?vault=...&robot=...`): the person opens it and presses Allow, which gives the robot the vault, then publish again |
 | `that vault item has no public key` | `--key` names an item that is not an RSA Key Pair | Pick the item with `"category": 8` |
 | `reading the public key runs a short flow on your robot` | No robot known for this project | `--robot <name>` (`robomotion get robots`) |
 | `could not create the queue: upgrade_plan` | The plan has no queues | Tell the person; nothing to fix in the form |

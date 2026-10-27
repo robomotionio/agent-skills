@@ -62,6 +62,8 @@ Map an error symptom to the doc that fixes it. When `robomotion validate` fails,
 | `the Flow Designer cannot read it` (an import, a spread, a helper, a value "not a const declared in this file") | The file is a program, not a declaration (hard rule 6) | Inline: one `@robomotion/sdk` import, nodes written in the callback, same-file `const`s, no spreads. `./docs/reference/project-format.md` |
 | `several statements on one line` / `a whole block on one line` / `the same block opens N Function nodes` | Code not written for a person, or a helper library pasted into the steps (hard rule 7) | Format it (one statement per line, blocks on their own lines); SQL into the SQL node with `{{{field}}}`; one Function per rule; formatting on the screen. `./docs/reference/function-nodes.md` |
 | `Invalid input port 0. Node has 0 input(s)` on a Label | Wired into `Core.Flow.Label` (Label has 0 inputs in some pspecs) | Use `Core.Flow.GoTo` with `optNodes.ids: [<labelId>]` to jump to the Label |
+| `queue_not_found` from `Core.Queue.Add` / `Core.Queue.Get` | The queue named in `optQueueName` was never made | `robomotion queue create "<name>"` (no key, nothing to ask the person), then run again. Make it before the first run when the flow adds to a new queue |
+| The robot says a vault is locked / not available to it | That robot was never given the vault | Pass on the link in the robot's error (`/designer/?vault=...&robot=...`) as it is: the person opens it and presses Allow. Never ask for the vault's secret in the chat |
 | `Vault has to be selected` at runtime | Missing `optCredentials` on `Core.Vault.GetItem` | `./docs/patterns/credentials.md` |
 | `Property 'optCredentials' requires vault credentials but has empty/placeholder values` | An OPTIONAL credential prop (e.g. `Core.Excel.Open` for password-protected files) set with `_`/blank placeholders | Omit `optCredentials` entirely unless you have a real vault reference — `./docs/patterns/credentials.md` |
 | `inSelectorType` invalid value `'xpath'` (allowed: `xpath:position`, `css`) | Wrote `inSelectorType: 'xpath'` — not a valid enum value | For XPath just OMIT `inSelectorType` (it's the default); the XPath enum literal is `xpath:position`, never `xpath`. CSS ⇒ `inSelectorType: 'css'`. `./docs/patterns/browser.md` |
@@ -134,6 +136,7 @@ For schemas, examples, and package docs, use the `robomotion` CLI (it's already 
 | Template source | `robomotion describe template <slug>` |
 | Package docs (llms.txt) | `robomotion docs <namespace> [--grep <pattern>]` |
 | List vaults / vault items | `robomotion get vaults` · `robomotion get vault-items <vault-id>` |
+| List / make queues | `robomotion queue list` · `robomotion queue create "<name>"` |
 | List robots | `robomotion get robots` |
 
 > **Public templates repo:** [`github.com/robomotionio/robomotion-templates`](https://github.com/robomotionio/robomotion-templates) is the canonical source. Prefer cloning/forking a matching template over building from scratch.

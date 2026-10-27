@@ -217,11 +217,8 @@ Here's the TypeScript flow:
   in the site's code, its scripts or its files.** A real site's sign-in takes the
   person's own login. The flow reads it from the vault; while you explore, ask the
   person to sign in themselves in the browser you opened, and wait.
-- **A sign-in by hand hides its steps from you.** Between Sign In and the page you
-  snapshot next there may have been a code, a "trust this device" or a consent
-  page. Ask the person what came after they pressed Sign In (or ask them to stop at
-  the first page after it and tell you), and build every step they name. A flow
-  built as Sign In, then the dashboard, stops at the step you never saw.
+- **A sign-in by hand hides its steps from you.** See tip 3: the snapshot after it
+  lists the pages it went through.
 - **Stay in the session.** After a sign-in, reach the next page by clicking the
   site's own links, not by its address: opening an address can drop the session and
   send you back to the sign-in page.
@@ -230,7 +227,8 @@ Here's the TypeScript flow:
 
 1. **Snapshot first, always** — one `browser_snapshot` shows every interactive element with refs.
 2. **Re-snapshot after page changes** — navigation/clicks invalidate refs.
-3. **Close the browser when done** — always `browser_close`. Never leave it open while writing code.
+3. **Pages you did not look at** - `browser_snapshot` also lists the pages the tab loaded since your last snapshot. Each one you did not see (a code, a consent, a "trust this device" page) is a step the flow has to take too; a flow built from only the pages you looked at stops at the first one you skipped.
+4. **Close the browser when done** — always `browser_close`. Never leave it open while writing code.
 
 The conversion from recorded JSON to TypeScript belongs to `creating-flow`; this skill's job ends at the sequence JSON. For browser-specific SDK patterns (proxy config, selector tips), see `./docs/patterns/browser.md`.
 
