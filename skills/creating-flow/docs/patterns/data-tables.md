@@ -158,6 +158,13 @@ header takes care of itself. Don't hand-prepend a header row into `rows`; that
 double-writes it. (Reading back uses the same flag: `optHeaders: true` on
 `ReadCSV`/`GetRange` so row keys come from the header.)
 
+## Numbers go in as numbers
+
+A value read from a page, an XML or JSON reply, or a CSV is text until you
+convert it, and the writer stores text as text: Excel then shows "number
+stored as text", and sums, sorting and charts on that column do not work.
+Convert in the Function node that builds the row: `rate: Number(m[1])`.
+
 ## Operations Using This Format
 
 | Operation | Direction |
