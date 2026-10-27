@@ -219,12 +219,12 @@ Here's the TypeScript flow:
   person to sign in themselves in the browser you opened, and wait.
 - **A sign-in by hand hides its steps from you.** Between Sign In and the page you
   snapshot next there may have been a code, a "trust this device" or a consent
-  page. So watch it: call `browser_start_network_capture` before you ask them to
-  sign in, and when they say they are in, `browser_get_requests` with `method: GET`
-  lists the pages the tab loaded. Every page between the sign-in page and the one
-  they landed on (`/login/2fa`, `/verify`, `/consent`) is a step to build. If the
-  capture is not available, ask them what came after Sign In. A flow built as
-  Sign In, then the dashboard, stops at the step you never saw.
+  page. When they say they are in, take a `browser_snapshot`: it names the pages
+  the tab went through since your last look ("Since your last look this tab went
+  through 3 pages: .../login -> .../verify -> .../reports"). Every page between
+  the sign-in page and the one they landed on is a step the flow has to take too:
+  a code it waits for or asks for, a consent it clicks. A flow built as Sign In,
+  then the dashboard, stops at the step you never saw.
 - **Stay in the session.** After a sign-in, reach the next page by clicking the
   site's own links, not by its address: opening an address can drop the session and
   send you back to the sign-in page.
