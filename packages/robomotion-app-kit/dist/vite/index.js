@@ -4,6 +4,202 @@ import { readFileSync } from "fs";
 import { isAbsolute, join, resolve } from "path";
 import { pathToFileURL } from "url";
 
+// src/vite/drive.ts
+async function previewAppStep(req) {
+  const norm = (s) => String(s || "").replace(/\*+\s*$/, "").replace(/\s+/g, " ").trim().toLowerCase();
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const visible = (el) => el.offsetParent !== null || getComputedStyle(el).position === "fixed";
+  const words = (el) => norm(el.innerText || el.textContent || el.value || el.getAttribute("aria-label"));
+  const scope = () => {
+    const open = Array.from(document.querySelectorAll('[role="dialog"], [role="alertdialog"], dialog[open]')).filter(visible);
+    return open.length ? open[open.length - 1] : document;
+  };
+  const findControl = (label2) => {
+    const want = norm(label2);
+    const root = scope();
+    for (const l of Array.from(root.querySelectorAll("label"))) {
+      if (norm(l.innerText || l.textContent) !== want) continue;
+      if (l.htmlFor) {
+        const byId = document.getElementById(l.htmlFor);
+        if (byId) return byId;
+      }
+      const inner = l.querySelector('input, select, textarea, [role="combobox"], [role="switch"], [contenteditable="true"]');
+      if (inner) return inner;
+      const near = l.parentElement?.querySelector('input, select, textarea, [role="combobox"], [role="switch"]');
+      if (near) return near;
+    }
+    for (const el of Array.from(root.querySelectorAll("[aria-label]"))) {
+      if (norm(el.getAttribute("aria-label")) === want) return el;
+    }
+    for (const el of Array.from(root.querySelectorAll("input[placeholder], textarea[placeholder]"))) {
+      if (norm(el.getAttribute("placeholder")) === want) return el;
+    }
+    return null;
+  };
+  const setNative = (el, value) => {
+    const proto = el.tagName === "TEXTAREA" ? HTMLTextAreaElement.prototype : el.tagName === "SELECT" ? HTMLSelectElement.prototype : HTMLInputElement.prototype;
+    const desc = Object.getOwnPropertyDescriptor(proto, "value");
+    if (desc && desc.set) desc.set.call(el, value);
+    else el.value = value;
+    el.dispatchEvent(new Event("input", { bubbles: true }));
+    el.dispatchEvent(new Event("change", { bubbles: true }));
+  };
+  const press = (want, row) => {
+    const rowSize = (el) => {
+      if (!row) return 0;
+      for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
+        const t = norm(a.innerText);
+        if (t.indexOf(row) >= 0) return t.length;
+      }
+      return -1;
+    };
+    let exact = null;
+    let partial = null;
+    let exactSize = Infinity;
+    let partialSize = Infinity;
+    const els = scope().querySelectorAll('button, a, [role="button"], [role="menuitem"], [role="tab"], [role="link"], input[type="submit"]');
+    for (const el of Array.from(els)) {
+      if (el.disabled || !visible(el)) continue;
+      const t = words(el);
+      const size = rowSize(el);
+      if (size < 0) continue;
+      if (t === want && size < exactSize) {
+        exact = el;
+        exactSize = size;
+      } else if (t !== want && t.indexOf(want) >= 0 && size < partialSize) {
+        partial = el;
+        partialSize = size;
+      }
+    }
+    const hit = exact || partial;
+    if (!hit) {
+      const off = Array.from(els).find((el) => words(el) === want && el.disabled);
+      if (off) return `"${want}" is there but cannot be pressed yet (it is greyed out)`;
+      return `nothing to press reads "${want}"${row ? ` in the row showing "${row}"` : ""}`;
+    }
+    try {
+      hit.scrollIntoView({ block: "center" });
+    } catch {
+    }
+    hit.click();
+    return "";
+  };
+  const label = String(req.label || "");
+  switch (req.action) {
+    case "read":
+      return "";
+    case "press":
+      if (!label) return "say which button to press";
+      return press(norm(label), norm(req.row));
+    case "fill": {
+      const el = findControl(label);
+      if (!el) return `no field is labelled "${label}"`;
+      if (el.tagName === "SELECT" || el.getAttribute("role") === "combobox") return `"${label}" is a choice: pick an option instead`;
+      const type = el.type;
+      if (type === "checkbox" || type === "radio" || el.getAttribute("role") === "switch") return `"${label}" is a tick box: check it instead`;
+      el.focus();
+      if (el.isContentEditable) {
+        el.textContent = String(req.value ?? "");
+        el.dispatchEvent(new Event("input", { bubbles: true }));
+      } else setNative(el, String(req.value ?? ""));
+      el.dispatchEvent(new Event("blur", { bubbles: true }));
+      return "";
+    }
+    case "pick": {
+      const want = norm(req.value);
+      const el = findControl(label);
+      if (!el) return `no field is labelled "${label}"`;
+      if (el.tagName === "SELECT") {
+        const sel = el;
+        for (const o of Array.from(sel.options)) {
+          if (norm(o.text) === want || norm(o.value) === want) {
+            setNative(sel, o.value);
+            return "";
+          }
+        }
+        return `"${label}" has no option "${req.value}"; it offers: ${Array.from(sel.options).map((o) => o.text.trim()).filter(Boolean).join(", ")}`;
+      }
+      el.focus();
+      el.click();
+      if (el.tagName === "INPUT" && !el.readOnly) setNative(el, String(req.value ?? ""));
+      for (let i = 0; i < 20; i++) {
+        await sleep(100);
+        const options = Array.from(document.querySelectorAll('[role="option"], [role="menuitemradio"], [role="menuitem"]')).filter(visible);
+        const hit = options.find((o) => norm(o.innerText || o.textContent) === want) || options.find((o) => norm(o.innerText || o.textContent).indexOf(want) === 0);
+        if (hit) {
+          hit.click();
+          return "";
+        }
+        if (i === 19 && options.length) return `"${label}" has no option "${req.value}"; it offers: ${options.map((o) => (o.innerText || o.textContent || "").trim()).join(", ")}`;
+      }
+      return `"${label}" opened no list of options`;
+    }
+    case "check": {
+      const el = findControl(label);
+      if (!el) return `no field is labelled "${label}"`;
+      const on = req.checked !== false;
+      const role = el.getAttribute("role");
+      if (role === "switch" || role === "checkbox") {
+        if (el.getAttribute("aria-checked") === "true" !== on) el.click();
+        return "";
+      }
+      const box = el;
+      if (box.type !== "checkbox" && box.type !== "radio") return `"${label}" is not a tick box`;
+      if (box.checked !== on) box.click();
+      return "";
+    }
+    case "route": {
+      const where = String(req.route || label).trim();
+      if (!where) return "say which screen to open";
+      const want = norm(where);
+      const nav = Array.from(document.querySelectorAll('a, [role="link"], [role="tab"], [role="menuitem"], nav button, header button, aside button'));
+      const link = nav.find((el) => visible(el) && words(el) === want);
+      if (link) {
+        link.click();
+        return "";
+      }
+      if (where.charAt(0) !== "/") return `nothing in the app's navigation reads "${where}"`;
+      const base = document.baseURI.replace(/[?#].*$/, "");
+      history.pushState(null, "", new URL(where.replace(/^\//, ""), base).toString());
+      window.dispatchEvent(new PopStateEvent("popstate"));
+      return "";
+    }
+    default:
+      return `"${String(req.action)}" is not something the preview can do`;
+  }
+}
+async function previewAppSettle(busy, timeoutMs) {
+  const loading = /\b(loading|getting your app ready|connecting|starting up|please wait)\b|…\s*$/i;
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const read = () => String(document.body && (document.body.innerText || document.body.textContent) || "").split("\n").map((l) => l.replace(/[ \t ]+/g, " ").trim()).filter(Boolean).join("\n");
+  const deadline = Date.now() + timeoutMs;
+  await sleep(150);
+  let last = read();
+  let same = 0;
+  for (; ; ) {
+    await sleep(300);
+    const text = read();
+    const quiet = !busy() && !document.querySelector('[aria-busy="true"]') && !!text && !loading.test(text);
+    same = text === last ? same + 1 : 0;
+    last = text;
+    if (quiet && same >= 2) return { screen: text, settled: true };
+    if (Date.now() >= deadline) return { screen: text, settled: false };
+  }
+}
+function previewAppHostAllowed(parentOrigin, pageHost, pageOrigin) {
+  if (parentOrigin === pageOrigin) return true;
+  let host = "";
+  try {
+    host = new URL(parentOrigin).hostname;
+  } catch {
+    return false;
+  }
+  const loopback = (h) => h === "localhost" || h === "127.0.0.1" || h === "[::1]" || h === "::1";
+  if (loopback(pageHost)) return loopback(host);
+  const site = pageHost.split(".").slice(1).join(".");
+  return !!site && site.indexOf(".") > 0 && (host === site || host.slice(-(site.length + 1)) === "." + site);
+}
+
 // src/vite/heal.ts
 function createHealer(deps) {
   var targets = {};
@@ -222,6 +418,7 @@ function bridgeScript(screens, revision = 0) {
     };
     post("rm-app-error", payload);
     reportToDevServer(payload);
+    try { window.dispatchEvent(new CustomEvent("rm:app-error-noted", { detail: payload.message })); } catch (e) {}
     // Something failed, so start watching for it to stop failing.
     if (typeof watchForRecovery === "function") watchForRecovery();
     // A failure before the first screen may be one no module 500 names
@@ -546,6 +743,56 @@ function bridgeScript(screens, revision = 0) {
     var d = (e && e.detail) || {};
     post("rm-connection", { state: d.state, mismatch: d.mismatch || null });
   });
+
+  // The builder's hands in the App preview (drive.ts): the Designer posts
+  // robomotion:preview-app, the step is done here where the person watches,
+  // and the screen it settled on goes back with what failed on the way. The
+  // app's calls still out are counted so a press is read once its answer is
+  // drawn, not while the row is still on its way.
+  var inFlight = 0;
+  var lastErrors = [];
+  var failedCalls = [];
+  window.addEventListener("rm:action-invoked", function () { inFlight++; });
+  window.addEventListener("rm:action-settled", function (e) {
+    inFlight = Math.max(0, inFlight - 1);
+    var d = (e && e.detail) || {};
+    if (!d.ok) failedCalls.push(String(d.action || "an action") + " failed" + (d.message ? ": " + d.message : ""));
+  });
+  window.addEventListener("rm:app-error-noted", function (e) {
+    if (e && e.detail) lastErrors.push(String(e.detail));
+  });
+  var previewAppHostAllowed = ${previewAppHostAllowed.toString()};
+  var previewAppStep = ${previewAppStep.toString()};
+  var previewAppSettle = ${previewAppSettle.toString()};
+  var stepping = Promise.resolve();
+  window.addEventListener("message", function (e) {
+    if (!embedded || e.source !== window.parent) return;
+    var d = e && e.data;
+    if (!d || d.type !== "robomotion:preview-app" || typeof d.id !== "string") return;
+    if (!previewAppHostAllowed(e.origin, location.hostname, location.origin)) return;
+    var reply = function (r) {
+      var msg = { type: "robomotion:preview-app-done", id: d.id };
+      for (var k in r) msg[k] = r[k];
+      try { window.parent.postMessage(msg, e.origin); } catch (err) { /* the Designer is gone */ }
+    };
+    // One step at a time, in the order asked.
+    stepping = stepping.then(function () {
+      lastErrors = [];
+      failedCalls = [];
+      return previewAppStep(d).then(function (problem) {
+        return previewAppSettle(function () { return inFlight > 0; }, 20000).then(function (s) {
+          var errors = lastErrors.concat(failedCalls).slice(-10);
+          var r = { ok: !problem, screen: s.screen.slice(0, 6000), settled: s.settled, consoleErrors: errors, route: appRoute() };
+          if (problem) r.error = problem;
+          reply(r);
+        });
+      });
+    }).catch(function (err) {
+      reply({ ok: false, error: String((err && err.message) || err), screen: "", consoleErrors: [] });
+    });
+  });
+  // The Designer asks only once this page says it can be used.
+  post("robomotion:preview-ready", {});
 
 })();`;
 }
