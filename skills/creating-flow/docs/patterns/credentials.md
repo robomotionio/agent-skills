@@ -96,7 +96,7 @@ cannot un-send what it forwards, and the value still reaches the agent.
 
 Not every credential property is mandatory. Some nodes take credentials only for an *optional* capability — e.g. `Core.Excel.Open`'s `optCredentials` exists solely to open **password-protected** files, and a Gemini node needs no `optApiKey` when it gets `inConnectionId` from a `Connect` node or runs on credits. When you don't need it, **leave the property out completely**.
 
-Do NOT write a credential property with placeholder/empty vault values (`{ vaultId: '_', itemId: '_' }` or blank strings). It builds to exactly what leaving it out does (the build fills every unset credential property with that placeholder), so it adds nothing, and it reads as if the node needed a credential it does not. `robomotion validate` passes either way, so it will not tell you a *needed* credential is missing either: a node that does need one then fails at run time (`Core.Vault.GetItem` says "Vault has to be selected").
+Do NOT write a credential property with placeholder/empty vault values (`{ vaultId: '_', itemId: '_' }` or blank strings). It builds to exactly what leaving it out does (the build fills every unset credential property with that placeholder), so it adds nothing, and it reads as if the node needed a credential it does not. A node that does need one fails without it: `robomotion validate` reports it (older CLIs did not), and the robot says "Vault has to be selected".
 
 ```typescript
 // WRONG — placeholder credentials on an unprotected file
