@@ -93,7 +93,7 @@ f.node('b82ce8', 'Robomotion.ChatAssistant.ChatIn', 'Chat In', {
     inQuery:     Message('payload.text'),
     inSessionId: Message('session_id'),
     optUseRobomotionCredits: true,                  // §7
-    optModelName: 'openrouter/deepseek-v4.1-flash',
+    optModelName: 'openrouter/glm-5.3-flash',
   });
 
 // The answer. Declared on its own, because it hangs off the agent's port 2.
@@ -134,7 +134,7 @@ f.node('b82ce8', 'Robomotion.ChatAssistant.ChatIn', 'Chat In', { optTurnTimeout:
     inQuery:     Message('payload.text'),
     inSessionId: Message('session_id'),
     optUseRobomotionCredits: true,
-    optModelName: 'openrouter/deepseek-v4.1-flash',
+    optModelName: 'openrouter/glm-5.3-flash',
   });
 
 // Close the bubble the deltas were filling, THEN end the turn.
@@ -211,7 +211,7 @@ f.node('b82ce8', 'Robomotion.ChatAssistant.ChatIn', 'Chat In', { optTurnTimeout:
     inSessionId: Message('session_id'),
     inFiles:     Message('local_files'),     // GetAttachments' output
     optUseRobomotionCredits: true,
-    optModelName: 'openrouter/deepseek-v4.1-flash',
+    optModelName: 'openrouter/glm-5.3-flash',
   });
 
 f.node('a04f9a', 'Robomotion.ChatAssistant.Text', 'Answer', {
@@ -317,10 +317,14 @@ A tool branch ends at `Tool Out`, never at `ChatOut` — it runs inside the turn
 
 ## 7. The model, AI credits, and the agent's own tools
 
+**The model is `'openrouter/glm-5.3-flash'`**, and it stays that one unless the person asks
+for another. An assistant that does not do what its instructions say is fixed in its
+instructions or its tools, not by trying another model.
+
 **AI credits.** `optUseRobomotionCredits: true` bills the model to the workspace's
 Robomotion AI credits — no API key, no vault item. Calls go through OpenRouter, and **every
 curated `optModelName` works**: an `openrouter/...` entry (for example
-`'openrouter/deepseek-v4.1-flash'`), or a direct entry, which 0.23.3 sends as its OpenRouter
+`'openrouter/glm-5.3-flash'`), or a direct entry, which 0.23.3 sends as its OpenRouter
 id — so a Claude model is `'claude-haiku-4-5'` (sent as `anthropic/claude-haiku-4-5`) or
 `'openrouter/claude-haiku-4-5'`. The list is in
 `robomotion describe node Robomotion.HermesAgent.Agent.HermesAgent`. With credits on,
@@ -355,7 +359,7 @@ f.node('63b7c9', 'Robomotion.HermesAgent.Agent.HermesAgent', 'Agent', {
   inQuery:     Message('payload.text'),
   inSessionId: Message('session_id'),
   optUseRobomotionCredits: true,
-  optModelName:  'openrouter/deepseek-v4.1-flash',
+  optModelName:  'openrouter/glm-5.3-flash',
   optToolSearch: 'off',                  // every tool here is a Tool In branch
   optEnabledToolsets: Custom('["todo"]'), // nothing that touches the robot's machine
 });
