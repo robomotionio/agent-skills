@@ -18,13 +18,13 @@ them for you.
 | `git commit && git push` | `save_flow` on the project root: one save records the flow, the contract and the screens together. `git add`, `git commit`, `git push`, `git reset` are refused inside the checkout while `save_flow` is registered; reading (`git status`, `git log`, `git diff`) is free. |
 | `robomotion app validate` | `validate_app` |
 | `robomotion app dev` | nothing: **the preview comes up on its own a few seconds after the first save** and appears in the person's preview panel. Do not call `app_dev_server start` for it (it answers "already running", one useless row on the person's screen); `app_dev_server status` only when you think the preview is down. |
-| `robomotion app screen "<label>"` | `app_dev_server` with `read_screen` and `screen` set to the label or route |
+| `robomotion app screen "<label>"` | `app_in_preview` with one `route` step to the label or route (the person watches it in the App preview); `app_dev_server` `read_screen` only when `app_in_preview` says no App preview is showing, or you do not have it |
 | the console errors from `app screen` / `app try` | `app_dev_server get_preview_errors`: what the dev server compiled, and what the BROWSER reported. The browser half is empty until the preview has loaded, so "nothing from the browser" on a page nobody opened is not a clean bill of health. |
 | `robomotion app robot` | `create_app_robot` (only with the yes) |
 | `robomotion app start` | `start_app_session`; a save bounces the session by itself |
 | `robomotion app smoke` | nothing: **the harness runs `smoke_app` after every `start_app_session`** and puts the report in front of you as a second block of that result. Call `smoke_app` yourself only after a fix that did not need a restart. |
 | `robomotion app press` | `call_action` |
-| `robomotion app try` | not available: the preview is signed in as the person, not as you, and nothing you do can drive it. Press through the door (`smoke_app`, `call_action`) and read with `read_screen`. |
+| `robomotion app try` | `app_in_preview`: the same steps (`route`, `fill`, `pick`, `check`, `press` with `row`, `read`) by the words on the screen, done in the App preview the person is watching, signed in as them; each step answers with what it changed on the screen. Without that tool, press through the door (`smoke_app`, `call_action`) and read with `read_screen`. |
 | `robomotion app logs` | `poll_logs` on the `studio_id` that `start_app_session` returned. A restart mints a NEW `studio_id`: read the old one before restarting, or you are reading an empty log that looks like "the press never arrived". |
 | `robomotion app publish` | `publish_app` |
 | `robomotion app status` | `list_apps`, `app_dev_server status` |
@@ -41,7 +41,8 @@ from the app folder, as in `SKILL.md`.
   restarted the backend; reads the report's leftovers and asks you to add a
   delete when a create has none.
 - Holds your turn when `.robomotion/request-checks.md` exists and the
-  screens changed but none was read, and asks you to `read_screen` them.
+  screens changed but none was read, and asks you to read them (with
+  `app_in_preview` when you have it).
 - Refuses a delete pressed on a record the pass did not make.
 
 So the steps `SKILL.md` marks as yours (smoke after start, read every screen

@@ -24,12 +24,12 @@ The person never hears: JSON, schema, field id, instance, RSA, AES, public key, 
 
 1. **A signed-in flow project.** `robomotion create flow "<name>"` makes one (sign-in on first use). The form lives in it as `form.json`, beside `main.ts`.
 2. **A robot on this computer**, the one the flow will run on: `running-flow` step 2. `publish` runs a short flow on it.
-3. **An RSA Key Pair item in a vault that robot can open.** Look before asking:
+3. **An RSA Key Pair item the robot can open.** `credentials need` finds it, or has it made, in the person's AI Assistant vault:
    ```bash
-   robomotion get vaults
-   robomotion get vault-items <vault-id> --json     # an RSA Key Pair item has "category": 8
+   robomotion credentials need --rsa-key "Forms key" --robot <robot>
    ```
-   One item can lock many forms; reuse it. If there is none, ask the person once, in plain words, to make one in Robomotion: **Vault → open a vault (or New Vault) → Add Item → RSA Key → generate → Save**, then give the robot that vault: **Robots → the robot → Inject Vault Secret**. Never ask for the vault's secret key or their password, and never try to make the key pair yourself.
+   One item can lock many forms. Do not look through the person's other vaults for a key pair: one saved on another computer needs a key they may not have. Only a vault they name goes in, with `--vault "<its name>"`.
+   It prints the `Credential(...)` when the item is there and the robot can open it. Otherwise it prints one link: the key pair is made there for them (nothing to type), and the robot is given the vault. Give them the link in one sentence, go on with the questions, and run it again when they say it is done. Never ask for a vault's secret key or their password, and never make the key pair yourself.
 
 ## The conversation (one question per turn)
 
@@ -51,7 +51,7 @@ Colours and logo: use the brand colour if they mention one (`theme.color`); a lo
    robomotion form publish --queue "<Queue Name>" --key <vault-id>/<item-id> --robot "<robot>"
    ```
    It pushes again, creates the queue when missing, reads the lock key's public half on the robot, and prints the **link** and an **embed** link (for an `<iframe>` on their own site). `--robot` is needed once per project; `--key` and `--queue` are remembered. Name the queue for what lands on it ("Internship Applications").
-5. **See it as a visitor.** Open the link in a browser (`exploring-browser`'s `browser_open`, headed) and snapshot it: the title, every question in order, the required marks, the dropdown's choices. Then answer it once with realistic test values (a small file for a file question) and press the submit button: the page must say the thank-you text. Close the browser. If submitting is refused with a captcha message, ask the person to send one test answer themselves from the link.
+5. **See it as a visitor.** When you have a `form_in_preview` tool, do this step with it: `read` gives the questions as a visitor sees them, `answer` fills them in and presses the button, in the Form preview the person is looking at. Otherwise open the link in a browser (`exploring-browser`'s `browser_open`, headed) and snapshot it: the title, every question in order, the required marks, the dropdown's choices. Then answer it once with realistic test values (a small file for a file question) and press the submit button: the page must say the thank-you text. Close the browser. If submitting is refused with a captcha message, ask the person to send one test answer themselves from the link.
 6. **The flow** (`creating-flow`): take one answer off the queue and do the work.
    ```ts
    f.node('1a2b3c', 'Core.Trigger.Inject', 'Start', {})
@@ -91,7 +91,7 @@ Keep ids stable: rewording a question keeps its id, because the flow reads by id
 
 | What you see | What it means | Do |
 |---|---|---|
-| `could not read the public key: Vault ... locked` / no access | The robot was not given that vault | Pass on the link in the robot's error (`/designer/?vault=...&robot=...`): the person opens it and presses Allow, which gives the robot the vault, then publish again |
+| `could not read the public key: Vault ... locked` / no access | The robot was not given that vault | Pass on the link in the robot's error (`/designer/?vault=...&robot=...`): it gives the robot the vault, and may ask for their Robomotion password and the vault's secret key, typed there, never in the chat. Then publish again |
 | `that vault item has no public key` | `--key` names an item that is not an RSA Key Pair | Pick the item with `"category": 8` |
 | `reading the public key runs a short flow on your robot` | No robot known for this project | `--robot <name>` (`robomotion get robots`) |
 | `could not create the queue: upgrade_plan` | The plan has no queues | Tell the person; nothing to fix in the form |

@@ -19,6 +19,8 @@ robomotion agent logs -n 20                  #    wait for "Started running <nam
 robomotion agent chat "…" --expect "…"       # 5. the real page, one step at a time, every reply printed
 ```
 
+**When you have a `chat_in_preview` tool, step 5 is that tool**: it says each message in the Chat preview the person is looking at and returns the reply. `robomotion agent chat` is for when you have no such tool, or it reports that no Chat preview is showing (then with `--headless`).
+
 **In a folder that is a git checkout of its cloud flow, `agent push` refuses** (saving there is git). Step 2 is then `git add -A && git commit -m "…" && git push`; steps 3 to 5 stay the same. Everywhere else, `agent push` is step 2. After an edit, see Step 4.
 
 **What you need:** the `robomotion` CLI on PATH. It brings `robomotion-deskbot` (the robot) and `robomotion-browser-mcp` (the browser) with it. Plus a login made with `robomotion auth login` in the flow folder (a session, not an API key: the chat page signs in with it). Nothing else: no Designer, no Admin Console, no Desktop App, no Playwright, no curl.
@@ -45,7 +47,8 @@ robomotion agent start                # makes the robot a connect token, starts 
 
 - **The flow's own id is never touched.** A template or a flow with `flow.create('main', …)` gets a dev copy; so does any folder that is not a git checkout of its cloud flow. In a git checkout, `push` refuses: save with `git add -A && git commit -m "…" && git push` instead, then go on with `create` and `start` as above.
 - **`create` publishes for you.** If the flow has no version yet, `create` cuts one and publishes it before making the agent. Don't run `publish` first.
-- **The agent's robot is not the person's robot.** `create` makes an Application robot that belongs to the agent and runs nothing else; `start` connects it on this machine with its own token. It uses one Application-robot slot in the workspace. If `create` says there is no free slot, tell the person; don't delete their other agents.
+- **The agent's robot is not the person's robot.** `create` makes an Application robot that belongs to the agent and runs nothing else; `start` connects it on this machine with its own token. It uses one robot place in the workspace. If `create` says there is no free place, it lists the assistants and apps holding them: ask the person on a question card which one they no longer use (one option each, as listed, and "Not now"), never send them to the Admin Console, and remove only the one they pick with `robomotion agent free "<its name>"`. Then `robomotion agent delete` and `create` again. `robomotion agent places` lists them any time.
+- **Its robot starts with no vault.** When the flow uses a `Credential(...)` (a queue's key, a login), run `robomotion credentials check` after `start`: it says whether this robot can open each one, and prints a link for the person when it cannot. Before the first chat, not after a failed one.
 - **Wait for the robot before you chat.** `start` returns once the server has accepted the start; the robot still has to fetch the flow and start its packages. The flow is running when `robomotion agent logs` shows `Started running <name> [<version>]` (`[master]` after `--draft`). A message sent before that line can be lost, and `chat` then waits for an answer that never comes. The CLI is being changed so that `start` itself waits for that line; until your `robomotion` does, check `robomotion agent logs -n 20` first.
 - Everything is remembered in `.robomotion/agent.json` (0600: it holds the robot's token). Each flow folder has its own agent, robot and deskbot, so several agents can be developed side by side. `robomotion agent status` shows where things stand.
 

@@ -51,17 +51,22 @@ they were answering the question they were asked.
 
 What to do instead, in order:
 
-1. **`AskUserQuestion` with `type: "vault_picker"`.** The person picks an item
-   they already hold; you receive `{vault_id, item_id}` and nothing else. This
-   is the whole answer when the credential exists.
-2. **If they have no item yet, ask them to create one** and say where: Vault
-   in their workspace, the category that matches the site (see
-   `reference/credential-categories.md`). Then use the picker. A sentence like
-   "add it in Vault and I'll pick it up from there" costs one turn and is the
-   only safe path.
+1. **`robomotion credentials need`**, with what the flow needs and what it is
+   for: `--login "<name>"`, `--api-key "<name>"`, `--aes-key "<name>"` (a
+   queue's key), `--rsa-key "<name>"` (a form's key pair), several at once,
+   and `--for "<what the automation does>"`. It finds the item and checks that
+   the robot running the flow can open its vault, then prints the
+   `Credential(...)` to use. When the person already holds one under another
+   name, let them pick it first (`AskUserQuestion` with `type:
+   "vault_picker"`) and pass its name.
+2. **Otherwise it prints one link.** Give it to the person in one sentence.
+   On that page they type the login or key themselves, choose or make the
+   vault, and the robot is given it; it may ask for their Robomotion password
+   and a vault's secret key. In the Designer it opens by itself. Do not wait
+   for it.
 3. **Build everything else meanwhile.** A missing credential does not block
-   the screens, the flow shape, or the preview - wire `Credential({vaultId,
-   itemId})` once you have the pick.
+   the screens, the flow shape, or the preview. When they say it is done, run
+   the same command again and wire the `Credential(...)` it prints.
 
 The username is not a secret and can be asked for normally. The password, PIN,
 API key, token, one-time code and card number are, and the rule is the same
@@ -76,7 +81,8 @@ unlike a masked question box, nothing downstream can soften that. The reply is
 one sentence and then the route:
 
 > I can't take a password in chat - it would be saved in this conversation.
-> Add it in Vault and I'll read it straight from there.
+> Type it on this page instead and I'll read it from your vault: <the link
+> `robomotion credentials need` printed>
 
 Then carry on building. There is nothing to negotiate here, and no phrasing of
 the request that makes chat a safe place to put a secret.
@@ -96,7 +102,7 @@ cannot un-send what it forwards, and the value still reaches the agent.
 
 Not every credential property is mandatory. Some nodes take credentials only for an *optional* capability — e.g. `Core.Excel.Open`'s `optCredentials` exists solely to open **password-protected** files, and a Gemini node needs no `optApiKey` when it gets `inConnectionId` from a `Connect` node or runs on credits. When you don't need it, **leave the property out completely**.
 
-Do NOT write a credential property with placeholder/empty vault values (`{ vaultId: '_', itemId: '_' }` or blank strings). It builds to exactly what leaving it out does (the build fills every unset credential property with that placeholder), so it adds nothing, and it reads as if the node needed a credential it does not. `robomotion validate` passes either way, so it will not tell you a *needed* credential is missing either: a node that does need one then fails at run time (`Core.Vault.GetItem` says "Vault has to be selected").
+Do NOT write a credential property with placeholder/empty vault values (`{ vaultId: '_', itemId: '_' }` or blank strings). It builds to exactly what leaving it out does (the build fills every unset credential property with that placeholder), so it adds nothing, and it reads as if the node needed a credential it does not. A node that does need one fails without it: `robomotion validate` reports it (older CLIs did not), and the robot says "Vault has to be selected".
 
 ```typescript
 // WRONG — placeholder credentials on an unprotected file

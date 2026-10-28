@@ -84,6 +84,7 @@ One project, one folder, one save. The layout:
 | `git add -A && git commit -m "..." && git push` | the save, at the project root - screens and flow together |
 | `robomotion app robot` | gives the app its own robot (only after the person said yes) |
 | `robomotion app start [--restart]` | brings that robot up on this computer and starts the app on it; `--restart` after a save that changed the flow |
+| `robomotion credentials check --robot <the app's robot>` | after the first `app start`, when the flow uses a `Credential(...)`: the app's robot starts with no vault; it prints a link for the person when the robot cannot open one |
 | `robomotion app smoke` | presses every button once through the app's own door and reports what each answered |
 | `robomotion app press <action> --params '{...}'` | presses one button with values you choose |
 | `robomotion app try --screen "<label>" --fill "Label=value" --select "Label=option" --click "Button" --expect "text"` | uses the app the way a person does, on the live preview (`--local` for localhost, `--url` for another address), in a browser signed in as them, and prints what the screen shows and what the robot did |
@@ -291,6 +292,8 @@ Narrate progress with the task list, in the person's language ("Design the revie
 
     robomotion app try --screen "Items" --fill "Name=Rice" --fill "Unit=kg" --click "Add item" --expect "Rice"
     robomotion app try --screen "Movements" --select "Item=Rice (kg)" --select "In or out=Out" --fill "Quantity=8" --click "Save" --expect "only"
+
+   **When you have an `app_in_preview` tool, this step is that tool**: the same steps (`route` to the screen, `fill`, `pick`, `check`, `press`, with `row` for a row's button), done in the App preview the person is looking at. `app try` and `app screen` are for when you have no such tool, or it reports that no App preview is showing.
 
    **A button that opens a dialog.** While a dialog is open, `--click` looks for the button inside it first. A confirm dialog's button often carries the same words as the row button that opened it (a row's "Remove" opens "Remove this item?" with its own "Remove"), so a delete is the same word twice: `--click "Remove" --click "Remove"` - the first opens the dialog, the second confirms it, rather than pressing the row button behind it again. A confirm that is worded differently is named by its own words (`--click "Remove" --click "Yes, remove it"`).
 
