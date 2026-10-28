@@ -19,6 +19,8 @@ robomotion agent logs -n 20                  #    wait for "Started running <nam
 robomotion agent chat "…" --expect "…"       # 5. the real page, one step at a time, every reply printed
 ```
 
+**When you have a `chat_in_preview` tool, step 5 is that tool**: it says each message in the Chat preview the person is looking at and returns the reply. `robomotion agent chat` is for when you have no such tool, or it reports that no Chat preview is showing (then with `--headless`).
+
 **In a folder that is a git checkout of its cloud flow, `agent push` refuses** (saving there is git). Step 2 is then `git add -A && git commit -m "…" && git push`; steps 3 to 5 stay the same. Everywhere else, `agent push` is step 2. After an edit, see Step 4.
 
 **What you need:** the `robomotion` CLI on PATH. It brings `robomotion-deskbot` (the robot) and `robomotion-browser-mcp` (the browser) with it. Plus a login made with `robomotion auth login` in the flow folder (a session, not an API key: the chat page signs in with it). Nothing else: no Designer, no Admin Console, no Desktop App, no Playwright, no curl.

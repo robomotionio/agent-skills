@@ -93,7 +93,8 @@ f.node('b82ce8', 'Robomotion.ChatAssistant.ChatIn', 'Chat In', {
     inQuery:     Message('payload.text'),
     inSessionId: Message('session_id'),
     optUseRobomotionCredits: true,                  // §7
-    optModelName: 'openrouter/deepseek-v4.1-flash',
+    optModelName: 'custom',
+    optModel:     Custom('deepseek/deepseek-v4.1-flash-1017'),
   });
 
 // The answer. Declared on its own, because it hangs off the agent's port 2.
@@ -134,7 +135,8 @@ f.node('b82ce8', 'Robomotion.ChatAssistant.ChatIn', 'Chat In', { optTurnTimeout:
     inQuery:     Message('payload.text'),
     inSessionId: Message('session_id'),
     optUseRobomotionCredits: true,
-    optModelName: 'openrouter/deepseek-v4.1-flash',
+    optModelName: 'custom',
+    optModel:     Custom('deepseek/deepseek-v4.1-flash-1017'),
   });
 
 // Close the bubble the deltas were filling, THEN end the turn.
@@ -211,7 +213,8 @@ f.node('b82ce8', 'Robomotion.ChatAssistant.ChatIn', 'Chat In', { optTurnTimeout:
     inSessionId: Message('session_id'),
     inFiles:     Message('local_files'),     // GetAttachments' output
     optUseRobomotionCredits: true,
-    optModelName: 'openrouter/deepseek-v4.1-flash',
+    optModelName: 'custom',
+    optModel:     Custom('deepseek/deepseek-v4.1-flash-1017'),
   });
 
 f.node('a04f9a', 'Robomotion.ChatAssistant.Text', 'Answer', {
@@ -317,6 +320,11 @@ A tool branch ends at `Tool Out`, never at `ChatOut` — it runs inside the turn
 
 ## 7. The model, AI credits, and the agent's own tools
 
+**The model is DeepSeek V4.1 Flash, `optModelName: 'custom'` with
+`optModel: Custom('deepseek/deepseek-v4.1-flash-1017')`**, and it stays that one unless the
+person asks for another. An assistant that does not do what its instructions say is fixed in
+its instructions or its tools, not by trying another model.
+
 **AI credits.** `optUseRobomotionCredits: true` bills the model to the workspace's
 Robomotion AI credits — no API key, no vault item. Calls go through OpenRouter, and **every
 curated `optModelName` works**: an `openrouter/...` entry (for example
@@ -355,7 +363,8 @@ f.node('63b7c9', 'Robomotion.HermesAgent.Agent.HermesAgent', 'Agent', {
   inQuery:     Message('payload.text'),
   inSessionId: Message('session_id'),
   optUseRobomotionCredits: true,
-  optModelName:  'openrouter/deepseek-v4.1-flash',
+  optModelName: 'custom',
+  optModel:     Custom('deepseek/deepseek-v4.1-flash-1017'),
   optToolSearch: 'off',                  // every tool here is a Tool In branch
   optEnabledToolsets: Custom('["todo"]'), // nothing that touches the robot's machine
 });

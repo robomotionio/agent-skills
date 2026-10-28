@@ -216,7 +216,11 @@ Here's the TypeScript flow:
 - **Never type a password you made up, and never sign in as an account you found
   in the site's code, its scripts or its files.** A real site's sign-in takes the
   person's own login. The flow reads it from the vault; while you explore, ask the
-  person to sign in themselves in the browser you opened, and wait.
+  person to sign in themselves in the browser you opened, and wait. In Robomotion's
+  Build with AI that browser is not a window: it is live in the **Automation
+  preview** beside the conversation. Ask them, in plain words, to press **Take
+  control** there, sign in (and type any code their phone gets), then press **Give
+  back** and tell you.
 - **A sign-in by hand hides its steps from you.** See tip 3: the snapshot after it
   lists the pages it went through.
 - **Stay in the session.** After a sign-in, reach the next page by clicking the
