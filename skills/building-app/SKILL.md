@@ -292,6 +292,8 @@ Narrate progress with the task list, in the person's language ("Design the revie
     robomotion app try --screen "Items" --fill "Name=Rice" --fill "Unit=kg" --click "Add item" --expect "Rice"
     robomotion app try --screen "Movements" --select "Item=Rice (kg)" --select "In or out=Out" --fill "Quantity=8" --click "Save" --expect "only"
 
+   **When you have an `app_in_preview` tool, this step is that tool**: the same steps (`route` to the screen, `fill`, `pick`, `check`, `press`, with `row` for a row's button), done in the App preview the person is looking at. `app try` and `app screen` are for when you have no such tool, or it reports that no App preview is showing.
+
    **A button that opens a dialog.** While a dialog is open, `--click` looks for the button inside it first. A confirm dialog's button often carries the same words as the row button that opened it (a row's "Remove" opens "Remove this item?" with its own "Remove"), so a delete is the same word twice: `--click "Remove" --click "Remove"` - the first opens the dialog, the second confirms it, rather than pressing the row button behind it again. A confirm that is worded differently is named by its own words (`--click "Remove" --click "Yes, remove it"`).
 
    It fills fields by their labels, presses buttons by their words, then prints the screen's text, the page's console errors, and every step the robot ran meanwhile. Check every line of `request-checks.md` against what the screen shows - reading a screen is not checking it. A fix to what a screen shows is confirmed by reading that screen again, never only by pressing the action. Fix any mismatch, save, restart when the flow changed, try again. Take away the records your tries made before you hand over, through the app's own delete.
