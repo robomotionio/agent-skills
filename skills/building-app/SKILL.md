@@ -84,6 +84,7 @@ One project, one folder, one save. The layout:
 | `git add -A && git commit -m "..." && git push` | the save, at the project root - screens and flow together |
 | `robomotion app robot` | gives the app its own robot (only after the person said yes) |
 | `robomotion app start [--restart]` | brings that robot up on this computer and starts the app on it; `--restart` after a save that changed the flow |
+| `robomotion credentials check --robot <the app's robot>` | after the first `app start`, when the flow uses a `Credential(...)`: the app's robot starts with no vault; it prints a link for the person when the robot cannot open one |
 | `robomotion app smoke` | presses every button once through the app's own door and reports what each answered |
 | `robomotion app press <action> --params '{...}'` | presses one button with values you choose |
 | `robomotion app try --screen "<label>" --fill "Label=value" --select "Label=option" --click "Button" --expect "text"` | uses the app the way a person does, on the live preview (`--local` for localhost, `--url` for another address), in a browser signed in as them, and prints what the screen shows and what the robot did |
