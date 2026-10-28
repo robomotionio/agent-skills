@@ -24,11 +24,12 @@ The person never hears: JSON, schema, field id, instance, RSA, AES, public key, 
 
 1. **A signed-in flow project.** `robomotion create flow "<name>"` makes one (sign-in on first use). The form lives in it as `form.json`, beside `main.ts`.
 2. **A robot on this computer**, the one the flow will run on: `running-flow` step 2. `publish` runs a short flow on it.
-3. **An RSA Key Pair item in a vault that robot can open.** One item can lock many forms; reuse the one you find with `robomotion get vault-items <vault-id> --json` (`"category": 8`):
+3. **An RSA Key Pair item the robot can open.** `credentials need` finds it, or has it made, in the person's AI Assistant vault:
    ```bash
-   robomotion credentials need --rsa-key "<its name, or a new one: Forms key>" --robot <robot>
+   robomotion credentials need --rsa-key "Forms key" --robot <robot>
    ```
-   It prints the `Credential(...)` when the item is there and the robot can open it. Otherwise it prints one link: the key pair is made there for them (nothing to type), and the robot is given the vault; it may ask for their Robomotion password and the vault's secret key. Give them the link in one sentence, go on with the questions, and run it again when they say it is done. Never ask for the vault's secret key or their password, and never make the key pair yourself.
+   One item can lock many forms. Do not look through the person's other vaults for a key pair: one saved on another computer needs a key they may not have. Only a vault they name goes in, with `--vault "<its name>"`.
+   It prints the `Credential(...)` when the item is there and the robot can open it. Otherwise it prints one link: the key pair is made there for them (nothing to type), and the robot is given the vault. Give them the link in one sentence, go on with the questions, and run it again when they say it is done. Never ask for a vault's secret key or their password, and never make the key pair yourself.
 
 ## The conversation (one question per turn)
 
