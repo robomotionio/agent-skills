@@ -1,4 +1,5 @@
 // src/vite/index.ts
+import { createHash, createHmac } from "crypto";
 import { createRequire } from "module";
 import { readFileSync } from "fs";
 import { isAbsolute, join, resolve } from "path";
@@ -186,6 +187,16 @@ async function previewAppSettle(busy, timeoutMs) {
     if (Date.now() >= deadline) return { screen: text, settled: false };
   }
 }
+async function previewAppKeyMatches(key, keyHash) {
+  if (!keyHash || typeof key !== "string" || !key) return false;
+  try {
+    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(key));
+    const hex = Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
+    return hex === keyHash;
+  } catch {
+    return false;
+  }
+}
 function previewAppHostAllowed(parentOrigin, pageHost, pageOrigin) {
   if (parentOrigin === pageOrigin) return true;
   let host = "";
@@ -368,7 +379,15 @@ function screensOf(contract) {
     route: s?.route ?? `/${name}`
   }));
 }
-function bridgeScript(screens, revision = 0) {
+function previewKeyHash(machineKey, base) {
+  if (!machineKey) return "";
+  let path = base || "/";
+  if (!path.startsWith("/")) path = "/" + path;
+  if (!path.endsWith("/")) path += "/";
+  const key = createHmac("sha256", machineKey).update(path).digest("hex");
+  return createHash("sha256").update(key).digest("hex");
+}
+function bridgeScript(screens, revision = 0, keyHash = "") {
   return `(function () {
   var embedded = window.parent !== window;
   var post = function (type, data) {
@@ -762,6 +781,8 @@ function bridgeScript(screens, revision = 0) {
     if (e && e.detail) lastErrors.push(String(e.detail));
   });
   var previewAppHostAllowed = ${previewAppHostAllowed.toString()};
+  var previewAppKeyMatches = ${previewAppKeyMatches.toString()};
+  var previewKeyHash = ${JSON.stringify(keyHash)};
   var previewAppStep = ${previewAppStep.toString()};
   var previewAppSettle = ${previewAppSettle.toString()};
   var stepping = Promise.resolve();
@@ -769,7 +790,10 @@ function bridgeScript(screens, revision = 0) {
     if (!embedded || e.source !== window.parent) return;
     var d = e && e.data;
     if (!d || d.type !== "robomotion:preview-app" || typeof d.id !== "string") return;
-    if (!previewAppHostAllowed(e.origin, location.hostname, location.origin)) return;
+    if (previewAppHostAllowed(e.origin, location.hostname, location.origin)) take(e, d);
+    else previewAppKeyMatches(d.key, previewKeyHash).then(function (ok) { if (ok) take(e, d); });
+  });
+  function take(e, d) {
     var reply = function (r) {
       var msg = { type: "robomotion:preview-app-done", id: d.id };
       for (var k in r) msg[k] = r[k];
@@ -790,7 +814,7 @@ function bridgeScript(screens, revision = 0) {
     }).catch(function (err) {
       reply({ ok: false, error: String((err && err.message) || err), screen: "", consoleErrors: [] });
     });
-  });
+  }
   // The Designer asks only once this page says it can be used.
   post("robomotion:preview-ready", {});
 
@@ -978,7 +1002,7 @@ function bridgePlugin(options = {}) {
       const tags = [
         {
           tag: "script",
-          children: bridgeScript(screensOf(contract), revision),
+          children: bridgeScript(screensOf(contract), revision, previewKeyHash(process.env.ROBOMOTION_PREVIEW_DRIVE_KEY, base)),
           injectTo: "head"
         }
       ];
@@ -992,6 +1016,7 @@ function bridgePlugin(options = {}) {
 var vite_default = robomotionAppKit;
 export {
   vite_default as default,
+  previewKeyHash,
   robomotionAppKit
 };
 //# sourceMappingURL=index.js.map
