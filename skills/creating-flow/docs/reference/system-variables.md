@@ -53,6 +53,17 @@ msg.tempFile = global.get('$TempDir$') + '/' + 'data.json';
 | `$TempDir$` | System temp directory | `/tmp`, `C:\Users\user\AppData\Local\Temp` |
 | `$PathSeparator$` | OS path separator — **unreliable, may return char code `47`; join paths with a literal `'/'` instead** | `/` (Linux/Mac), `\` (Windows) |
 
+### The person's own folders
+
+When the person names their Documents, Desktop or Downloads folder, in any
+language, it is the folder already in their home: `Documents`, `Desktop` or
+`Downloads` on disk on Windows, macOS and most Linux machines (the file manager only
+shows the name translated). Never make a new folder with the translated name.
+
+```javascript
+msg.dir = global.get('$Home$') + '/Documents/' + 'Statements';
+```
+
 ### Operating System
 
 | Variable | Description | Example Values |
