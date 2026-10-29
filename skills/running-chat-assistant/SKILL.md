@@ -13,7 +13,7 @@ By hand that is the Designer (version, publish), Admin Console > Agents (create,
 ```bash
 robomotion validate .                        # 1. pspec-clean first, always
 robomotion agent push                        # 2. this folder's flow → "<name> (dev)" in the workspace
-robomotion agent create --mode guided        # 3. the agent with one instance (or --mode conversational); publishes a version itself if there is none
+robomotion agent create --mode guided --description "<one line in their language: what it helps with>"   # 3. the agent with one instance (or --mode conversational); publishes a version itself if there is none; the line shows under its name on the chat page
 robomotion agent start                       # 4. connect the agent's own robot on this machine, then Play
 robomotion agent logs -n 20                  #    wait for "Started running <name> [...]" before chatting
 robomotion agent chat "…" --expect "…"       # 5. the real page, one step at a time, every reply printed
