@@ -56,9 +56,16 @@ What to do instead, in order:
    queue's key), `--rsa-key "<name>"` (a form's key pair), several at once,
    and `--for "<what the automation does>"`. It finds the item and checks that
    the robot running the flow can open its vault, then prints the
-   `Credential(...)` to use. When the person already holds one under another
-   name, let them pick it first (`AskUserQuestion` with `type:
-   "vault_picker"`) and pass its name.
+   `Credential(...)` to use. A key it makes (a queue's, a form's) is the
+   project's own and is used again on every run, whatever you call it.
+   **When it says a login or key "may already be saved"**, it lists the
+   saved ones that look like the same thing (names only: it reads them
+   without the vault's key) and makes nothing. Ask the person on one card
+   (`AskUserQuestion`): a choice for each saved one by its name and when it
+   was saved, and "Add a new one" last. Then run it again with
+   `--use <vaultId>/<itemId>` for theirs, or `--new`. Never pick one for
+   them, and never add a new one without asking: that is how one person
+   ended up with four copies of the same API key.
 2. **Otherwise it prints one link.** Give it to the person in one sentence.
    On that page they type the login or key themselves, choose or make the
    vault, and the robot is given it; it may ask for their Robomotion password
