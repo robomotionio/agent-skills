@@ -45,7 +45,7 @@ Colours and logo: use the brand colour if they mention one (`theme.color`); a lo
 
 1. **Write `form.json`** at the project root. The format, every question type and the value each one sends: [docs/form-json.md](docs/form-json.md). Give every question a short `snake_case` id; it is the key the flow reads (`msg.item.email`).
 2. **Check it**: `robomotion form validate`. Fix every error; read the warnings (they are things the page ignores).
-3. **Save it**: `robomotion form push`. Creates the form the first time, updates it after.
+3. **Save it**: `robomotion form push`. Creates the form the first time, updates it after. Then save the project too: `git add -A && git commit -m "<what changed>" && git push` at the project root. `form push` changes the live form; the push keeps the project in Robomotion the same as what people see.
 4. **Publish**:
    ```bash
    robomotion form publish --queue "<Queue Name>" --key <vault-id>/<item-id> --robot "<robot>"
@@ -72,7 +72,7 @@ Colours and logo: use the brand colour if they mention one (`theme.color`); a lo
 The link reads the form every time it opens, so a change needs no new link:
 
 1. Edit `form.json` as asked (add, remove, reword, reorder a question; required or not; a choice; the thank-you text; the colour).
-2. `robomotion form validate`, then `robomotion form push`.
+2. `robomotion form validate`, then `robomotion form push`, then `git add -A && git commit -m "<what changed>" && git push`. A change is saved only when both are done.
 3. Reload the link in the browser and check the change is there.
 4. If a question was **added or removed**, update the flow to read or stop reading it, and run it once more.
 
